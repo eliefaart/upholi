@@ -1,0 +1,4 @@
+[package]
+name = "hummingbird"
+version = "0.1.0"
+authors = ["Eric <eric@e10t.nl>"]
