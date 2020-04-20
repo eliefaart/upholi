@@ -1,4 +1,4 @@
-![Build & Test](https://github.com/eliefaart/hummingbird/workflows/Build%20&%20Test/badge.svg)
+![Hummingbird](https://github.com/eliefaart/hummingbird/workflows/Hummingbird/badge.svg)
 
 # Hummingbird
 Image processing service
