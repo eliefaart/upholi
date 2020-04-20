@@ -1,2 +1,2 @@
-# hummingbird
+# Hummingbird
 Image processing service
