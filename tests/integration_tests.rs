@@ -1,9 +1,4 @@
 #[test]
-fn integration_test_add() {
+fn integration_test() {
     assert_eq!(1, 1);
-}
-
-#[test]
-fn integration_test_bad() {
-    assert_eq!(1, 2);
 }
