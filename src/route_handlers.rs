@@ -17,11 +17,15 @@ pub async fn handle_get_albums() -> impl Responder {
 	web::Json(albums)
 }
 
-fn get_albums() -> [Album;2] {
-	let albums = [
-		Album{ id: 1, title: "Boom".to_string() },
-		Album{ id: 3, title: "Hello world".to_string() }
-	];
+fn get_albums() -> Vec<Album> {
+	let mut albums: Vec<Album> = Vec::new();
+	let album_titles = ["Boom", "Hello world"];
+
+	for id in 0..album_titles.len() {
+		let album_title = album_titles[id];
+
+		albums.push(Album{ id: id as u32, title: album_title.to_string() });
+	}
 
 	albums
 }
@@ -38,7 +42,6 @@ mod tests {
 			let album_title_length = album.title.len();
 
 			assert!(album_title_length >= 1, "Album title is empty");
-			assert!(album.id > 0, "Album ID is 0");
 		}
 	}
 }

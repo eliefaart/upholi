@@ -19,12 +19,3 @@ async fn main() -> std::io::Result<()> {
 	.run()
 	.await
 }
-
-#[cfg(test)]
-mod tests {
-
-	#[test]
-	fn test() {
-		assert_eq!(1, 1);
-	}
-}
