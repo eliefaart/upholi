@@ -1,21 +1,19 @@
+// I only need to include those 'extern' in main file?
 extern crate actix_web;
 extern crate actix_rt;
+extern crate serde;
 
-use actix_web::{web, App, HttpRequest, HttpServer, Responder};
+use actix_web::{web, App, HttpServer};
 
-async fn greet(req: HttpRequest) -> impl Responder {
-	let name = req.match_info().get("name").unwrap_or("World");
-	format!("Hello {}!", &name)
-}
+mod route_handlers;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
-	println!("Hello world.");
-
 	HttpServer::new(|| {
 		App::new()
-			.route("/", web::get().to(greet))
-			.route("/{name}", web::get().to(greet))
+			.route("/", web::get().to(route_handlers::handle_greet))
+			.route("/albums", web::get().to(route_handlers::handle_get_albums))
+			.route("/{name}", web::get().to(route_handlers::handle_greet))
 	})
 	.bind("127.0.0.1:8000")?
 	.run()
