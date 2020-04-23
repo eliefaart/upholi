@@ -17,6 +17,11 @@ pub async fn handle_get_albums() -> impl Responder {
 	web::Json(albums)
 }
 
+pub async fn handle_create_album() -> impl Responder {
+	let albums = get_albums();
+	web::Json(albums)
+}
+
 fn get_albums() -> Vec<Album> {
 	let mut albums: Vec<Album> = Vec::new();
 	let album_titles = ["Boom", "Hello world"];
