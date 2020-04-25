@@ -1,10 +1,21 @@
 use actix_web::{web, HttpRequest, Responder};
-use serde::{Serialize};
+use http::{StatusCode};
+use serde::{Serialize, Deserialize};
+
+use crate::database;
 
 #[derive(Serialize)]
 struct Album {
 	id: u32,
 	title: String
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Photo {
+	name: String,
+	content_type: String,
+	base64: String
 }
 
 pub async fn handle_greet(req: HttpRequest) -> impl Responder {
@@ -17,9 +28,24 @@ pub async fn handle_get_albums() -> impl Responder {
 	web::Json(albums)
 }
 
-pub async fn handle_create_album() -> impl Responder {
-	let albums = get_albums();
-	web::Json(albums)
+pub async fn handle_insert_album() -> impl Responder {
+	web::HttpResponse::build(StatusCode::OK)
+}
+
+pub async fn handle_insert_photo(photo_json: web::Json<Photo>) -> impl Responder {
+	let photo = database::Photo{
+		id: 0,
+		name: "help".to_string(), //photo_json.name,
+		width: 1,
+		height: 1,
+		landscape: true,
+		date_taken: 0,
+		path_thumbnail: "path_thumbnail".to_string(),
+		path_preview: "path_preview".to_string(),
+		path_original: "path_original".to_string()
+	};
+	database::add_photo(photo);
+	web::HttpResponse::build(StatusCode::OK)
 }
 
 fn get_albums() -> Vec<Album> {
