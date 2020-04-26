@@ -11,10 +11,9 @@ const COLLECTION_PHOTOS: &str = "photos";
 
 #[derive(Serialize)]
 pub struct Photo {
-	pub id: u32,
 	pub name: String,
-	pub width: u16,
-	pub height: u16,
+	pub width: u32,
+	pub height: u32,
 	pub landscape: bool,
 	pub date_taken: u32,
 	pub path_thumbnail: String,
@@ -28,7 +27,7 @@ pub fn add_photo(photo: Photo) {
 
 	let doc = doc!{
 		// TODO: Utilize _id field
-		"id": photo.id,
+		
 		"name": photo.name,
 		"width": photo.width as u32,
 		"height": photo.height as u32,

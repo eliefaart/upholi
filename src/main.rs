@@ -12,6 +12,7 @@ use futures::future::FutureExt;
 
 mod route_handlers;
 mod database;
+mod images;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
@@ -27,7 +28,6 @@ async fn main() -> std::io::Result<()> {
 					query_string = req.query_string());
 
 				srv.call(req).map(move |res| {
-					// TODO: Research ownership (Remove 'move' keyword)
 					let elapsed_ms = now.elapsed().as_millis();
 					println!("< {}ms", elapsed_ms);
 					res
@@ -39,6 +39,7 @@ async fn main() -> std::io::Result<()> {
 			.route("/albums", web::put().to(route_handlers::handle_insert_album))
 
 			.route("/photos", web::put().to(route_handlers::handle_insert_photo))
+			.route("/test", web::post().to(route_handlers::test_upload_photo))
 
 			.route("/{name}", web::get().to(route_handlers::handle_greet))
 	})
