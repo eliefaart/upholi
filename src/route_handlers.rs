@@ -1,12 +1,16 @@
-use actix_web::{web, HttpRequest, Responder};
-use actix_multipart::Multipart;
 use http::{StatusCode};
+use actix_web::{web, Error, HttpRequest, HttpResponse, Responder};
+use actix_multipart::{Multipart, Field};
 use serde::{Serialize, Deserialize};
 use image::GenericImageView;
-use futures::stream::Stream;
+use futures::{StreamExt, TryStreamExt};
 
 use crate::database;
 use crate::images;
+use crate::files;
+
+const DIMENSIONS_THUMB: u32 = 400;
+const DIMENSIONS_PREVIEW: u32 = 1500;
 
 #[derive(Serialize)]
 struct Album {
@@ -22,6 +26,11 @@ pub struct Photo {
 	base64: String
 }
 
+struct FormData {
+	name: String,
+	bytes: Vec<u8>
+}
+
 pub async fn handle_greet(req: HttpRequest) -> impl Responder {
 	let name = req.match_info().get("name").unwrap_or("World");
 	format!("Hello {}!", &name)
@@ -33,35 +42,86 @@ pub async fn handle_get_albums() -> impl Responder {
 }
 
 pub async fn handle_insert_album() -> impl Responder {
-	web::HttpResponse::build(StatusCode::OK)
+	HttpResponse::build(StatusCode::OK)
 }
 
-pub async fn test_upload_photo(payload: Multipart/*, photo_json: web::Json<Photo>*/) -> impl Responder {
-	
-	let size = payload.size_hint();
-	println!("{:?}", size);
-	//println!("{}", photo_json.name);
+pub async fn test_upload_photo(payload: Multipart) -> Result<HttpResponse, Error> {
 
-	// iterate over multipart stream
-    // while let Ok(Some(mut field)) = payload.try_next().await {
-    //     let content_type = field.content_disposition().unwrap();
-    //     let filename = content_type.get_filename().unwrap();
-    //     let filepath = format!("./tmp/{}", filename);
-    //     // File::create is blocking operation, use threadpool
-    //     let mut f = web::block(|| std::fs::File::create(filepath))
-    //         .await
-    //         .unwrap();
-    //     // Field in turn is stream of *Bytes* object
-    //     while let Some(chunk) = field.next().await {
-    //         let data = chunk.unwrap();
-    //         // filesystem operations are blocking, we have to use threadpool
-    //         f = web::block(move || f.write_all(&data).map(|_| f)).await?;
-    //     }
-    // }
+	let form_data = get_form_data(payload).await;
+	for data in form_data {
+		println!("\t{}: {}", data.name, data.bytes.len());
 
-	web::HttpResponse::build(StatusCode::OK)
+		if data.name == "file" {
+			let file_name = "TODO.jpg".to_string();
+
+			let original_path = format!("C:/Development/_TestData/hummingbird/photos/{}", file_name);
+			let thumbnail_path = format!("C:/Development/_TestData/hummingbird/photos/thumb_{}", file_name);
+			let preview_path = format!("C:/Development/_TestData/hummingbird/photos/preview_{}", file_name);
+
+			let thumbnail_file_name = format!("thumb_{}", file_name);
+			let preview_file_name = format!("preview_{}", file_name);
+
+			let thumbnail_image_bytes = images::resize_image(&data.bytes, DIMENSIONS_THUMB);
+			let preview_image_bytes = images::resize_image(&data.bytes, DIMENSIONS_PREVIEW);
+			
+			files::store_photo(&file_name.to_string(), &data.bytes);
+			files::store_photo(&thumbnail_file_name.to_string(), &thumbnail_image_bytes);
+			files::store_photo(&preview_file_name.to_string(), &preview_image_bytes);
+
+			let (photo_width, photo_height) = images::get_image_dimensions(&data.bytes);
+
+			let photo = database::Photo {
+				name: file_name.to_string(),
+				width: photo_width,
+				height: photo_height,
+				path_thumbnail: thumbnail_path,
+				path_preview: preview_path,
+				path_original: original_path
+			};
+		
+			database::add_photo(photo);
+		}
+	}
+
+	Ok(HttpResponse::Ok().into())
 }
 
+// Gets all fields from multipart payload.
+async fn get_form_data(mut payload: Multipart) -> Vec<FormData> {
+
+	let mut form_data: Vec<FormData> = Vec::new();
+
+	while let Ok(Some(field)) = payload.try_next().await {
+		
+		let content_disposition = field.content_disposition().unwrap();
+		let content_type = field.content_type();
+		let name = content_disposition.get_name().unwrap();
+
+		println!("name: {}", name);
+		println!("content_type: {}", content_type);
+		println!("content_disposition: {:?}", content_disposition);
+
+		let field_bytes = get_form_field_bytes(field).await;
+		form_data.push(FormData{name: name.to_string(), bytes: field_bytes});
+	}
+
+	form_data
+}
+
+// Gets the bytes of a single multipart field.
+async fn get_form_field_bytes(mut field: Field) -> Vec<u8> {
+	let mut field_bytes: Vec<u8> = Vec::new();
+				
+	while let Some(chunk) = field.next().await {
+		let chunk_bytes = chunk.unwrap();
+
+		for byte in chunk_bytes {
+			field_bytes.push(byte);
+		}
+	}
+
+	field_bytes
+}
 
 pub async fn handle_insert_photo(photo_json: web::Json<Photo>) -> impl Responder {
 
@@ -111,8 +171,6 @@ pub async fn handle_insert_photo(photo_json: web::Json<Photo>) -> impl Responder
 		name: photo_name.to_string(),
 		width: photo_width,
 		height: photo_height,
-		landscape: true,
-		date_taken: 0,
 		path_thumbnail: thumbnail_path,
 		path_preview: preview_path,
 		path_original: image_path

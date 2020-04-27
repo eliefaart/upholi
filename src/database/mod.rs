@@ -14,8 +14,6 @@ pub struct Photo {
 	pub name: String,
 	pub width: u32,
 	pub height: u32,
-	pub landscape: bool,
-	pub date_taken: u32,
 	pub path_thumbnail: String,
 	pub path_preview: String,
 	pub path_original: String
@@ -31,8 +29,6 @@ pub fn add_photo(photo: Photo) {
 		"name": photo.name,
 		"width": photo.width as u32,
 		"height": photo.height as u32,
-		"landscape": photo.landscape,
-		"date_taken": photo.date_taken,
 		"path_thumbnail": photo.path_thumbnail,
 		"path_preview": photo.path_preview,
 		"path_original": photo.path_original
@@ -68,21 +64,3 @@ fn init_database(connection_string: &str) -> Result<mongodb::Database, mongodb::
 
 	Ok(database)
 }
-
-// fn insert_docs(database: mongodb::Database) {
-// 	// Get a handle to a collection in the database.
-// 	let collection = database.collection("books");
-
-// 	let docs = vec![
-// 		doc! { "title": "1984", "author": "George Orwell" },
-// 		doc! { "title": "Animal Farm", "author": "George Orwell" },
-// 		doc! { "title": "The Great Gatsby", "author": "F. Scott Fitzgerald" },
-// 	];
-
-// 	// Insert some documents into the "mydb.books" collection.
-// 	let result = collection.insert_many(docs, None);
-// 	match result {
-// 		Ok(_v) => (),
-// 		Err(e) => println!("error: {:?}", e),
-// 	}
-// }

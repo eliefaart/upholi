@@ -13,6 +13,7 @@ use futures::future::FutureExt;
 mod route_handlers;
 mod database;
 mod images;
+mod files;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
