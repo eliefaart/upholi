@@ -27,6 +27,7 @@ struct Album {
 
 struct FormData {
 	name: String,
+	filename: String,
 	bytes: Vec<u8>
 }
 
@@ -64,22 +65,24 @@ pub async fn route_upload_photo(payload: Multipart) -> Result<HttpResponse, Erro
 		println!("\t{}: {}", data.name, data.bytes.len());
 
 		if data.name == "file" {
-			let file_name = "TODO.jpg".to_string();
+			// TODO: Generate a new filename if it already exists in database and/or disk.
+			// OR, always generate one?
+			let filename = data.filename;
 
-			let thumbnail_file_name = format!("thumb_{}", file_name);
-			let preview_file_name = format!("preview_{}", file_name);
+			let thumbnail_file_name = format!("thumb_{}", filename);
+			let preview_file_name = format!("preview_{}", filename);
 
 			let thumbnail_image_bytes = images::resize_image(&data.bytes, DIMENSIONS_THUMB);
 			let preview_image_bytes = images::resize_image(&data.bytes, DIMENSIONS_PREVIEW);
 			
-			let original_path = files::store_photo(&file_name.to_string(), &data.bytes);
+			let original_path = files::store_photo(&filename.to_string(), &data.bytes);
 			let thumbnail_path = files::store_photo(&thumbnail_file_name.to_string(), &thumbnail_image_bytes);
 			let preview_path = files::store_photo(&preview_file_name.to_string(), &preview_image_bytes);
 
 			let (photo_width, photo_height) = images::get_image_dimensions(&data.bytes);
 
 			let photo = database::Photo {
-				name: file_name.to_string(),
+				name: filename.to_string(),
 				width: photo_width,
 				height: photo_height,
 				path_thumbnail: thumbnail_path,
@@ -111,14 +114,15 @@ async fn get_form_data(mut payload: Multipart) -> Vec<FormData> {
 		
 		let content_disposition = field.content_disposition().unwrap();
 		let content_type = field.content_type();
-		let name = content_disposition.get_name().unwrap();
-
-		println!("name: {}", name);
-		println!("content_type: {}", content_type);
-		println!("content_disposition: {:?}", content_disposition);
+		let key = content_disposition.get_name().unwrap();
+		let filename = content_disposition.get_filename().unwrap_or_default();
 
 		let field_bytes = get_form_field_bytes(field).await;
-		form_data.push(FormData{name: name.to_string(), bytes: field_bytes});
+		form_data.push(FormData{
+			name: key.to_string(), 
+			filename: filename.to_string(),
+			bytes: field_bytes
+		});
 	}
 
 	form_data
