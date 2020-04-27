@@ -34,15 +34,17 @@ async fn main() -> std::io::Result<()> {
 					res
 				})
 			})
-			.route("/", web::get().to(route_handlers::handle_greet))
+			.route("/", web::get().to(route_handlers::route_index))
 
-			.route("/albums", web::get().to(route_handlers::handle_get_albums))
-			.route("/albums", web::put().to(route_handlers::handle_insert_album))
+			.route("/albums", web::get().to(route_handlers::route_get_albums))
+			.route("/album", web::post().to(route_handlers::route_insert_album))
+			.route("/album/{album_id}", web::put().to(route_handlers::route_update_album))
+			.route("/album/{album_id}", web::delete().to(route_handlers::route_delete_album))
 
-			.route("/photos", web::put().to(route_handlers::handle_insert_photo))
-			.route("/test", web::post().to(route_handlers::test_upload_photo))
-
-			.route("/{name}", web::get().to(route_handlers::handle_greet))
+			.route("/photos", web::get().to(route_handlers::route_get_photos))
+			.route("/photo", web::post().to(route_handlers::route_upload_photo))
+			.route("/photo/{photo_id}", web::put().to(route_handlers::route_update_photo))
+			.route("/photo/{photo_id}", web::delete().to(route_handlers::route_delete_photo))
 	})
 	.bind("127.0.0.1:8000")?
 	.run()

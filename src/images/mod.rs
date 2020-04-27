@@ -2,13 +2,6 @@ extern crate base64;
 
 use image::{GenericImageView, DynamicImage, ImageFormat};
 
-pub fn from_base64(image_base64: &str) -> Vec<u8> {
-	let result = base64::decode(image_base64);
-	let image_bytes = result.unwrap();
-
-	image_bytes
-}
-
 /*
 	TODO
 	This can be optimized if I can make an image class, with get_image_dimensions and resize_image

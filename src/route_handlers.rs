@@ -2,7 +2,6 @@ use http::{StatusCode};
 use actix_web::{web, Error, HttpRequest, HttpResponse, Responder};
 use actix_multipart::{Multipart, Field};
 use serde::{Serialize, Deserialize};
-use image::GenericImageView;
 use futures::{StreamExt, TryStreamExt};
 
 use crate::database;
@@ -12,40 +11,53 @@ use crate::files;
 const DIMENSIONS_THUMB: u32 = 400;
 const DIMENSIONS_PREVIEW: u32 = 1500;
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 struct Album {
 	id: u32,
 	title: String
 }
 
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Photo {
-	name: String,
-	//content_type: String,
-	base64: String
-}
+// #[derive(Deserialize)]
+// #[serde(rename_all = "camelCase")]
+// pub struct Photo {
+// 	name: String,
+// 	//content_type: String,
+// 	base64: String
+// }
 
 struct FormData {
 	name: String,
 	bytes: Vec<u8>
 }
 
-pub async fn handle_greet(req: HttpRequest) -> impl Responder {
-	let name = req.match_info().get("name").unwrap_or("World");
-	format!("Hello {}!", &name)
+pub async fn route_index() -> impl Responder {
+	format!("Hello world!")
 }
 
-pub async fn handle_get_albums() -> impl Responder {
+pub async fn route_get_albums() -> impl Responder {
 	let albums = get_albums();
 	web::Json(albums)
 }
 
-pub async fn handle_insert_album() -> impl Responder {
+pub async fn route_insert_album() -> impl Responder {
 	HttpResponse::build(StatusCode::OK)
 }
 
-pub async fn test_upload_photo(payload: Multipart) -> Result<HttpResponse, Error> {
+pub async fn route_update_album(req: HttpRequest) -> impl Responder {
+	let _album_id = req.match_info().get("album_id").unwrap();
+	HttpResponse::build(StatusCode::OK)
+}
+
+pub async fn route_delete_album() -> impl Responder {
+	HttpResponse::build(StatusCode::OK)
+}
+
+pub async fn route_get_photos() -> impl Responder {
+	let photos = get_photos();
+	web::Json(photos)
+}
+
+pub async fn route_upload_photo(payload: Multipart) -> Result<HttpResponse, Error> {
 
 	let form_data = get_form_data(payload).await;
 	for data in form_data {
@@ -54,19 +66,15 @@ pub async fn test_upload_photo(payload: Multipart) -> Result<HttpResponse, Error
 		if data.name == "file" {
 			let file_name = "TODO.jpg".to_string();
 
-			let original_path = format!("C:/Development/_TestData/hummingbird/photos/{}", file_name);
-			let thumbnail_path = format!("C:/Development/_TestData/hummingbird/photos/thumb_{}", file_name);
-			let preview_path = format!("C:/Development/_TestData/hummingbird/photos/preview_{}", file_name);
-
 			let thumbnail_file_name = format!("thumb_{}", file_name);
 			let preview_file_name = format!("preview_{}", file_name);
 
 			let thumbnail_image_bytes = images::resize_image(&data.bytes, DIMENSIONS_THUMB);
 			let preview_image_bytes = images::resize_image(&data.bytes, DIMENSIONS_PREVIEW);
 			
-			files::store_photo(&file_name.to_string(), &data.bytes);
-			files::store_photo(&thumbnail_file_name.to_string(), &thumbnail_image_bytes);
-			files::store_photo(&preview_file_name.to_string(), &preview_image_bytes);
+			let original_path = files::store_photo(&file_name.to_string(), &data.bytes);
+			let thumbnail_path = files::store_photo(&thumbnail_file_name.to_string(), &thumbnail_image_bytes);
+			let preview_path = files::store_photo(&preview_file_name.to_string(), &preview_image_bytes);
 
 			let (photo_width, photo_height) = images::get_image_dimensions(&data.bytes);
 
@@ -84,6 +92,14 @@ pub async fn test_upload_photo(payload: Multipart) -> Result<HttpResponse, Error
 	}
 
 	Ok(HttpResponse::Ok().into())
+}
+
+pub async fn route_update_photo() -> impl Responder {
+	HttpResponse::build(StatusCode::OK)
+}
+
+pub async fn route_delete_photo() -> impl Responder {
+	HttpResponse::build(StatusCode::OK)
 }
 
 // Gets all fields from multipart payload.
@@ -123,64 +139,23 @@ async fn get_form_field_bytes(mut field: Field) -> Vec<u8> {
 	field_bytes
 }
 
-pub async fn handle_insert_photo(photo_json: web::Json<Photo>) -> impl Responder {
+fn get_albums() -> Vec<Album> {
+	let mut albums: Vec<Album> = Vec::new();
+	let album_titles = ["Boom", "Hello world"];
 
-	const DIMENSIONS_THUMB: u32 = 300;
-	const DIMENSIONS_PREVIEW: u32 = 1250;
+	for id in 0..album_titles.len() {
+		let album_title = album_titles[id];
 
-	// std::env::current_dir().unwrap().to_string_lossy()
-	let photo_name = &photo_json.name;
-
-	// Convert base64 string to image
-	let photo_bytes = images::from_base64(&photo_json.base64);
-	let image_result = image::load_from_memory(&photo_bytes[0..]);
-	let image = image_result.unwrap();
-
-	let image_path = format!("C:/Development/_TestData/hummingbird/photos/{}", photo_name);
-	let mut thumbnail_path = format!("C:/Development/_TestData/hummingbird/photos/thumb_{}", photo_name);
-	let mut preview_path = format!("C:/Development/_TestData/hummingbird/photos/preview_{}", photo_name);
-
-	// Save original image to disk
-	let save_result = image.save(&image_path);
-	println!("{:?}", save_result);
-
-	let photo_width = image.width();
-	let photo_height = image.height();
-
-	// Create thumbnail image
-	if photo_width > DIMENSIONS_THUMB && photo_height > DIMENSIONS_THUMB {
-		let image_thumbnail = image.thumbnail(DIMENSIONS_THUMB, DIMENSIONS_THUMB);
-		let save_result = image_thumbnail.save(&thumbnail_path);
-		println!("{:?}", save_result);
-	} 
-	else {
-		thumbnail_path = String::from(&image_path);
+		albums.push(Album{ id: id as u32, title: album_title.to_string() });
 	}
 
-	// Create preview image
-	if photo_width > DIMENSIONS_THUMB && photo_height > DIMENSIONS_THUMB {
-		let image_preview = image.thumbnail(DIMENSIONS_PREVIEW, DIMENSIONS_PREVIEW);
-		let save_result = image_preview.save(&preview_path);
-		println!("{:?}", save_result);
-	}
-	else {
-		preview_path = String::from(&image_path);
-	}
-
-	let photo = database::Photo{
-		name: photo_name.to_string(),
-		width: photo_width,
-		height: photo_height,
-		path_thumbnail: thumbnail_path,
-		path_preview: preview_path,
-		path_original: image_path
-	};
-
-	database::add_photo(photo);
-	web::HttpResponse::build(StatusCode::OK)
+	albums
 }
 
-fn get_albums() -> Vec<Album> {
+fn get_photos() -> Vec<Album> {
+
+	// TODO!
+
 	let mut albums: Vec<Album> = Vec::new();
 	let album_titles = ["Boom", "Hello world"];
 
