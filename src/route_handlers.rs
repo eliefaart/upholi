@@ -12,9 +12,16 @@ const DIMENSIONS_THUMB: u32 = 400;
 const DIMENSIONS_PREVIEW: u32 = 1500;
 
 #[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct Album {
 	id: u32,
 	title: String
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct UploadPhotoResult {
+	photo_id: String
 }
 
 // #[derive(Deserialize)]
@@ -58,11 +65,38 @@ pub async fn route_get_photos() -> impl Responder {
 	web::Json(photos)
 }
 
-pub async fn route_upload_photo(payload: Multipart) -> Result<HttpResponse, Error> {
+pub async fn route_get_photo(req: HttpRequest) -> impl Responder {
+	let photo_id = req.match_info().get("photo_id").unwrap();
+	let get_photo_result = database::get_photo(photo_id);
 
+	//let photo: database::Photo;
+
+	match get_photo_result {
+		Some(queried_photo) => web::Json(queried_photo),
+		None => {
+			//HttpResponse::build(StatusCode::OK)
+			//web::Json(None);
+			panic!("no photo")
+		}
+	}
+	// match get_photo_result {
+	// 	Some(queried_photo) => photo = queried_photo,
+	// 	None => ()
+	// }
+
+	// web::Json(photo)
+}
+
+pub async fn route_download_photo(req: HttpRequest) -> impl Responder {
+	let _photo_id = req.match_info().get("photo_id").unwrap();
+	HttpResponse::build(StatusCode::OK)
+}
+
+pub async fn route_upload_photo(payload: Multipart) -> impl Responder {
 	let form_data = get_form_data(payload).await;
+	let mut photo_id: String = "".to_string();
+
 	for data in form_data {
-		println!("\t{}: {}", data.name, data.bytes.len());
 
 		if data.name == "file" {
 			// TODO: Generate a new filename if it already exists in database and/or disk.
@@ -90,11 +124,12 @@ pub async fn route_upload_photo(payload: Multipart) -> Result<HttpResponse, Erro
 				path_original: original_path
 			};
 		
-			database::add_photo(photo);
+			photo_id = database::add_photo(photo).unwrap();
 		}
 	}
 
-	Ok(HttpResponse::Ok().into())
+	//HttpResponse::build(StatusCode::NOT_FOUND)
+	web::Json(UploadPhotoResult{photo_id: photo_id})
 }
 
 pub async fn route_update_photo() -> impl Responder {
@@ -113,7 +148,7 @@ async fn get_form_data(mut payload: Multipart) -> Vec<FormData> {
 	while let Ok(Some(field)) = payload.try_next().await {
 		
 		let content_disposition = field.content_disposition().unwrap();
-		let content_type = field.content_type();
+		//let content_type = field.content_type();
 		let key = content_disposition.get_name().unwrap();
 		let filename = content_disposition.get_filename().unwrap_or_default();
 

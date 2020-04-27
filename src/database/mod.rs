@@ -1,5 +1,5 @@
 use mongodb::{Client, options::ClientOptions};
-use bson::{doc};
+use bson::{doc, oid};
 use serde::{Serialize};
 
 const APP_NAME: &str = "Hummingbird";
@@ -19,7 +19,7 @@ pub struct Photo {
 	pub path_original: String
 }
 
-pub fn add_photo(photo: Photo) {
+pub fn add_photo(photo: Photo) -> Result<String, mongodb::error::Error> {
 	let db = get_database();
 	let collection = db.collection(COLLECTION_PHOTOS);
 
@@ -34,10 +34,44 @@ pub fn add_photo(photo: Photo) {
 		"path_original": photo.path_original
 	};
 
+	// https://github.com/mongodb/bson-rust
+
 	let result = collection.insert_one(doc, None);
 	match result {
-		Ok(_v) => (),
-		Err(e) => println!("error: {:?}", e),
+		Ok(insert_result) => Ok(insert_result.inserted_id.as_object_id().unwrap().to_hex()),
+		Err(e) => Err(e)
+	}
+}
+
+pub fn get_photo(photo_id: &str) -> Option<Photo> {
+	let db = get_database();
+	let collection = db.collection(COLLECTION_PHOTOS);
+
+	let object_id = bson::oid::ObjectId::with_string(photo_id).unwrap();
+
+	let filter = doc!{
+		"_id": object_id
+	};
+
+	let find_result = collection.find_one(filter, None);
+	match find_result {
+		Ok(document_option) => {
+			let document = document_option.unwrap();
+			let photo = Photo{
+				name: document.get_str("name").unwrap().to_string(),
+				width: document.get_i32("width").unwrap() as u32,
+				height: document.get_i32("height").unwrap() as u32,
+				path_thumbnail: document.get_str("path_thumbnail").unwrap().to_string(),
+				path_preview: document.get_str("path_preview").unwrap().to_string(),
+				path_original: document.get_str("path_original").unwrap().to_string(),
+			};
+
+			Some(photo)
+		},
+		Err(e) => {
+			println!("error: {:?}", e);
+			None
+		}
 	}
 }
 

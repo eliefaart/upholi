@@ -43,6 +43,8 @@ async fn main() -> std::io::Result<()> {
 
 			.route("/photos", web::get().to(route_handlers::route_get_photos))
 			.route("/photo", web::post().to(route_handlers::route_upload_photo))
+			.route("/photo/{photo_id}", web::get().to(route_handlers::route_get_photo))
+			.route("/photo/{photo_id}/download", web::get().to(route_handlers::route_download_photo))
 			.route("/photo/{photo_id}", web::put().to(route_handlers::route_update_photo))
 			.route("/photo/{photo_id}", web::delete().to(route_handlers::route_delete_photo))
 	})
