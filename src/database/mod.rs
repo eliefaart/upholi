@@ -1,6 +1,7 @@
 use mongodb::{Client, options::ClientOptions};
-use bson::{doc, oid};
-use serde::{Serialize};
+use bson::{doc};
+
+use crate::types;
 
 const APP_NAME: &str = "Hummingbird";
 const CONNECTION_STRING: &str = "mongodb://localhost:27017";
@@ -9,17 +10,7 @@ const COLLECTION_PHOTOS: &str = "photos";
 
 //static mut DATABASE: Option<mongodb::Database> = None;
 
-#[derive(Serialize)]
-pub struct Photo {
-	pub name: String,
-	pub width: u32,
-	pub height: u32,
-	pub path_thumbnail: String,
-	pub path_preview: String,
-	pub path_original: String
-}
-
-pub fn add_photo(photo: Photo) -> Result<String, mongodb::error::Error> {
+pub fn add_photo(photo: types::Photo) -> Result<String, mongodb::error::Error> {
 	let db = get_database();
 	let collection = db.collection(COLLECTION_PHOTOS);
 
@@ -43,7 +34,7 @@ pub fn add_photo(photo: Photo) -> Result<String, mongodb::error::Error> {
 	}
 }
 
-pub fn get_photo(photo_id: &str) -> Option<Photo> {
+pub fn get_photo(photo_id: &str) -> Option<types::Photo> {
 	let db = get_database();
 	let collection = db.collection(COLLECTION_PHOTOS);
 
@@ -57,14 +48,7 @@ pub fn get_photo(photo_id: &str) -> Option<Photo> {
 	match find_result {
 		Ok(document_option) => {
 			let document = document_option.unwrap();
-			let photo = Photo{
-				name: document.get_str("name").unwrap().to_string(),
-				width: document.get_i32("width").unwrap() as u32,
-				height: document.get_i32("height").unwrap() as u32,
-				path_thumbnail: document.get_str("path_thumbnail").unwrap().to_string(),
-				path_preview: document.get_str("path_preview").unwrap().to_string(),
-				path_original: document.get_str("path_original").unwrap().to_string(),
-			};
+			let photo = bson::from_bson(bson::Bson::Document(document)).unwrap();
 
 			Some(photo)
 		},
@@ -73,6 +57,32 @@ pub fn get_photo(photo_id: &str) -> Option<Photo> {
 			None
 		}
 	}
+}
+
+pub fn get_photos() -> Vec<types::Photo> {
+	let db = get_database();
+	let collection = db.collection(COLLECTION_PHOTOS);
+
+	let find_result = collection.find(None, None);
+	let cursor = find_result.unwrap();
+	
+	let mut photos: Vec<types::Photo> = Vec::new();
+	for result in cursor {
+		match result {
+			Ok(document) => {
+				let photo = bson::from_bson(bson::Bson::Document(document)).unwrap();
+				photos.push(photo);
+				// if let Some(title) = document.get("title").and_then(Bson::as_str) {
+				// 	println!("title: {}", title);
+				// }  else {
+				// 	println!("no title found");
+				// }
+			}
+			Err(e) => println!("Error in cursor: {:?}", e),
+		}
+	}
+
+	photos
 }
 
 fn get_database() -> mongodb::Database {

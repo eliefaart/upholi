@@ -1,9 +1,10 @@
 use http::{StatusCode};
-use actix_web::{web, Error, HttpRequest, HttpResponse, Responder};
+use actix_web::{web, HttpRequest, HttpResponse, Responder};
 use actix_multipart::{Multipart, Field};
 use serde::{Serialize, Deserialize};
 use futures::{StreamExt, TryStreamExt};
 
+use crate::types;
 use crate::database;
 use crate::images;
 use crate::files;
@@ -115,7 +116,8 @@ pub async fn route_upload_photo(payload: Multipart) -> impl Responder {
 
 			let (photo_width, photo_height) = images::get_image_dimensions(&data.bytes);
 
-			let photo = database::Photo {
+			let photo = types::Photo {
+				id: bson::oid::ObjectId::new().unwrap(),
 				name: filename.to_string(),
 				width: photo_width,
 				height: photo_height,
@@ -191,20 +193,8 @@ fn get_albums() -> Vec<Album> {
 	albums
 }
 
-fn get_photos() -> Vec<Album> {
-
-	// TODO!
-
-	let mut albums: Vec<Album> = Vec::new();
-	let album_titles = ["Boom", "Hello world"];
-
-	for id in 0..album_titles.len() {
-		let album_title = album_titles[id];
-
-		albums.push(Album{ id: id as u32, title: album_title.to_string() });
-	}
-
-	albums
+fn get_photos() -> Vec<types::Photo> {
+	database::get_photos()
 }
 
 #[cfg(test)]

@@ -10,6 +10,7 @@ use actix_web::{web, App, HttpServer};
 use actix_service::Service;
 use futures::future::FutureExt;
 
+mod types;
 mod route_handlers;
 mod database;
 mod images;
