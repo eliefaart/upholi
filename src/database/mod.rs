@@ -10,27 +10,26 @@ const COLLECTION_PHOTOS: &str = "photos";
 
 //static mut DATABASE: Option<mongodb::Database> = None;
 
-pub fn add_photo(photo: types::Photo) -> Result<String, mongodb::error::Error> {
+pub fn add_photo(photo: types::Photo) -> Result<String, String> {
 	let db = get_database();
 	let collection = db.collection(COLLECTION_PHOTOS);
 
-	let doc = doc!{
-		// TODO: Utilize _id field
-		
-		"name": photo.name,
-		"width": photo.width as u32,
-		"height": photo.height as u32,
-		"path_thumbnail": photo.path_thumbnail,
-		"path_preview": photo.path_preview,
-		"path_original": photo.path_original
-	};
+	// Photo struct to a bson document.
+	// TODO: Make a generic function to convert any Struct into a bson document.
+	let bson_photo = photo.to_bson_photo();
+	let serialized_bson = bson::to_bson(&bson_photo).unwrap();
 
-	// https://github.com/mongodb/bson-rust
-
-	let result = collection.insert_one(doc, None);
-	match result {
-		Ok(insert_result) => Ok(insert_result.inserted_id.as_object_id().unwrap().to_hex()),
-		Err(e) => Err(e)
+	// I don't fully understand this syntax. 
+	// Something like: if serialized_bson destructures into bson::Bson::Document document succesfully then..
+	// I guess I understand the 'if let' syntax, but not the bson::Bson::Document(document) = serialized_bson part.
+	if let bson::Bson::Document(document) = serialized_bson {
+		let result = collection.insert_one(document, None);
+		match result {
+			Ok(insert_result) => Ok(insert_result.inserted_id.as_object_id().unwrap().to_hex()),
+			Err(e) => Err(e.to_string())
+		}
+	} else {
+		Err("Error converting photo to bson document".to_string())
 	}
 }
 
@@ -48,7 +47,8 @@ pub fn get_photo(photo_id: &str) -> Option<types::Photo> {
 	match find_result {
 		Ok(document_option) => {
 			let document = document_option.unwrap();
-			let photo = bson::from_bson(bson::Bson::Document(document)).unwrap();
+			let bson_photo: types::BsonPhoto = bson::from_bson(bson::Bson::Document(document)).unwrap();
+			let photo = bson_photo.to_photo();
 
 			Some(photo)
 		},
@@ -70,13 +70,8 @@ pub fn get_photos() -> Vec<types::Photo> {
 	for result in cursor {
 		match result {
 			Ok(document) => {
-				let photo = bson::from_bson(bson::Bson::Document(document)).unwrap();
-				photos.push(photo);
-				// if let Some(title) = document.get("title").and_then(Bson::as_str) {
-				// 	println!("title: {}", title);
-				// }  else {
-				// 	println!("no title found");
-				// }
+				let bson_photo: types::BsonPhoto = bson::from_bson(bson::Bson::Document(document)).unwrap();
+				photos.push(bson_photo.to_photo());
 			}
 			Err(e) => println!("Error in cursor: {:?}", e),
 		}

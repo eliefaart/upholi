@@ -117,7 +117,7 @@ pub async fn route_upload_photo(payload: Multipart) -> impl Responder {
 			let (photo_width, photo_height) = images::get_image_dimensions(&data.bytes);
 
 			let photo = types::Photo {
-				id: bson::oid::ObjectId::new().unwrap(),
+				id: "".to_string(),
 				name: filename.to_string(),
 				width: photo_width,
 				height: photo_height,
