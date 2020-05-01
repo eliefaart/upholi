@@ -4,6 +4,7 @@ extern crate actix_rt;
 extern crate serde;
 extern crate mongodb;
 extern crate http;
+extern crate rand;
 
 use std::time::{Instant};
 use actix_web::{web, App, HttpServer};
@@ -11,7 +12,7 @@ use actix_service::Service;
 use futures::future::FutureExt;
 
 mod types;
-mod route_handlers;
+mod routes;
 mod database;
 mod images;
 mod files;
@@ -35,19 +36,19 @@ async fn main() -> std::io::Result<()> {
 					res
 				})
 			})
-			.route("/", web::get().to(route_handlers::route_index))
+			.route("/", web::get().to(routes::route_index))
 
-			.route("/albums", web::get().to(route_handlers::route_get_albums))
-			.route("/album", web::post().to(route_handlers::route_insert_album))
-			.route("/album/{album_id}", web::put().to(route_handlers::route_update_album))
-			.route("/album/{album_id}", web::delete().to(route_handlers::route_delete_album))
+			.route("/albums", web::get().to(routes::route_get_albums))
+			.route("/album", web::post().to(routes::route_insert_album))
+			.route("/album/{album_id}", web::put().to(routes::route_update_album))
+			.route("/album/{album_id}", web::delete().to(routes::route_delete_album))
 
-			.route("/photos", web::get().to(route_handlers::route_get_photos))
-			.route("/photo", web::post().to(route_handlers::route_upload_photo))
-			.route("/photo/{photo_id}", web::get().to(route_handlers::route_get_photo))
-			.route("/photo/{photo_id}/download", web::get().to(route_handlers::route_download_photo))
-			.route("/photo/{photo_id}", web::put().to(route_handlers::route_update_photo))
-			.route("/photo/{photo_id}", web::delete().to(route_handlers::route_delete_photo))
+			.route("/photos", web::get().to(routes::route_get_photos))
+			.route("/photo", web::post().to(routes::route_upload_photo))
+			.route("/photo/{photo_id}", web::get().to(routes::route_get_photo))
+			.route("/photo/{photo_id}/download", web::get().to(routes::route_download_photo))
+			.route("/photo/{photo_id}", web::put().to(routes::route_update_photo))
+			.route("/photo/{photo_id}", web::delete().to(routes::route_delete_photo))
 	})
 	.bind("127.0.0.1:8000")?
 	.run()

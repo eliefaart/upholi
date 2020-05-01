@@ -20,7 +20,6 @@ pub fn get_image_dimensions(image_bytes: &Vec<u8>) -> (u32, u32) {
 
 // Creates a new image with desires size (dimensions)
 pub fn resize_image(image_bytes: &Vec<u8>, to_size: u32) -> Vec<u8> {
-
 	let image = get_image_from_bytes(image_bytes);
 
 	// Get current dimensions
@@ -32,7 +31,8 @@ pub fn resize_image(image_bytes: &Vec<u8>, to_size: u32) -> Vec<u8> {
 		get_image_bytes(&image_thumbnail)
 	}
 	else {
-		// Return bytes as-is from original image. Due to how image is loaded into memory, the size is usually reduced. Possibly because of 'more' or different compression.
+		// Return bytes as-is from original image. Due to how image is loaded into memory, 
+		// the size is usually reduced. Possibly because of 'more' or different compression.
 		get_image_bytes(&image)
 	}
 }

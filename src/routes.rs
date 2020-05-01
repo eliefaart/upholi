@@ -3,6 +3,8 @@ use actix_web::{web, HttpRequest, HttpResponse, Responder};
 use actix_multipart::{Multipart, Field};
 use serde::{Serialize, Deserialize};
 use futures::{StreamExt, TryStreamExt};
+use rand::{thread_rng, Rng};
+use rand::distributions::Alphanumeric;
 
 use crate::types;
 use crate::database;
@@ -14,28 +16,13 @@ const DIMENSIONS_PREVIEW: u32 = 1500;
 
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-struct Album {
-	id: u32,
-	title: String
-}
-
-#[derive(Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 struct UploadPhotoResult {
 	photo_id: String
 }
 
-// #[derive(Deserialize)]
-// #[serde(rename_all = "camelCase")]
-// pub struct Photo {
-// 	name: String,
-// 	//content_type: String,
-// 	base64: String
-// }
-
 struct FormData {
 	name: String,
-	filename: String,
+	//filename: String,
 	bytes: Vec<u8>
 }
 
@@ -44,8 +31,7 @@ pub async fn route_index() -> impl Responder {
 }
 
 pub async fn route_get_albums() -> impl Responder {
-	let albums = get_albums();
-	web::Json(albums)
+	HttpResponse::build(StatusCode::OK)
 }
 
 pub async fn route_insert_album() -> impl Responder {
@@ -62,7 +48,7 @@ pub async fn route_delete_album() -> impl Responder {
 }
 
 pub async fn route_get_photos() -> impl Responder {
-	let photos = get_photos();
+	let photos = database::get_photos();
 	web::Json(photos)
 }
 
@@ -70,22 +56,10 @@ pub async fn route_get_photo(req: HttpRequest) -> impl Responder {
 	let photo_id = req.match_info().get("photo_id").unwrap();
 	let get_photo_result = database::get_photo(photo_id);
 
-	//let photo: database::Photo;
-
 	match get_photo_result {
 		Some(queried_photo) => web::Json(queried_photo),
-		None => {
-			//HttpResponse::build(StatusCode::OK)
-			//web::Json(None);
-			panic!("no photo")
-		}
+		None => panic!("no photo") // How to return HTTP 404?
 	}
-	// match get_photo_result {
-	// 	Some(queried_photo) => photo = queried_photo,
-	// 	None => ()
-	// }
-
-	// web::Json(photo)
 }
 
 pub async fn route_download_photo(req: HttpRequest) -> impl Responder {
@@ -95,37 +69,37 @@ pub async fn route_download_photo(req: HttpRequest) -> impl Responder {
 
 pub async fn route_upload_photo(payload: Multipart) -> impl Responder {
 	let form_data = get_form_data(payload).await;
-	let mut photo_id: String = "".to_string();
+	let mut photo_id = String::new();
 
 	for data in form_data {
-
 		if data.name == "file" {
 			// TODO: Generate a new filename if it already exists in database and/or disk.
 			// OR, always generate one?
-			let filename = data.filename;
+			// let filename = data.filename;
 
-			let thumbnail_file_name = format!("thumb_{}", filename);
-			let preview_file_name = format!("preview_{}", filename);
+			// let thumbnail_file_name = format!("thumb_{}", filename);
+			// let preview_file_name = format!("preview_{}", filename);
 
-			let thumbnail_image_bytes = images::resize_image(&data.bytes, DIMENSIONS_THUMB);
-			let preview_image_bytes = images::resize_image(&data.bytes, DIMENSIONS_PREVIEW);
+			// let thumbnail_image_bytes = images::resize_image(&data.bytes, DIMENSIONS_THUMB);
+			// let preview_image_bytes = images::resize_image(&data.bytes, DIMENSIONS_PREVIEW);
 			
-			let original_path = files::store_photo(&filename.to_string(), &data.bytes);
-			let thumbnail_path = files::store_photo(&thumbnail_file_name.to_string(), &thumbnail_image_bytes);
-			let preview_path = files::store_photo(&preview_file_name.to_string(), &preview_image_bytes);
+			// let original_path = files::store_photo(&filename.to_string(), &data.bytes);
+			// let thumbnail_path = files::store_photo(&thumbnail_file_name.to_string(), &thumbnail_image_bytes);
+			// let preview_path = files::store_photo(&preview_file_name.to_string(), &preview_image_bytes);
 
-			let (photo_width, photo_height) = images::get_image_dimensions(&data.bytes);
+			// let (photo_width, photo_height) = images::get_image_dimensions(&data.bytes);
 
-			let photo = types::Photo {
-				id: "".to_string(),
-				name: filename.to_string(),
-				width: photo_width,
-				height: photo_height,
-				path_thumbnail: thumbnail_path,
-				path_preview: preview_path,
-				path_original: original_path
-			};
+			// let photo = types::Photo {
+			// 	id: "".to_string(),
+			// 	name: filename.to_string(),
+			// 	width: photo_width,
+			// 	height: photo_height,
+			// 	path_thumbnail: thumbnail_path,
+			// 	path_preview: preview_path,
+			// 	path_original: original_path
+			// };
 		
+			let photo = create_photo(&data.bytes);
 			photo_id = database::add_photo(photo).unwrap();
 		}
 	}
@@ -144,7 +118,6 @@ pub async fn route_delete_photo() -> impl Responder {
 
 // Gets all fields from multipart payload.
 async fn get_form_data(mut payload: Multipart) -> Vec<FormData> {
-
 	let mut form_data: Vec<FormData> = Vec::new();
 
 	while let Ok(Some(field)) = payload.try_next().await {
@@ -152,12 +125,12 @@ async fn get_form_data(mut payload: Multipart) -> Vec<FormData> {
 		let content_disposition = field.content_disposition().unwrap();
 		//let content_type = field.content_type();
 		let key = content_disposition.get_name().unwrap();
-		let filename = content_disposition.get_filename().unwrap_or_default();
+		//let filename = content_disposition.get_filename().unwrap_or_default();
 
 		let field_bytes = get_form_field_bytes(field).await;
 		form_data.push(FormData{
 			name: key.to_string(), 
-			filename: filename.to_string(),
+			//filename: filename.to_string(),
 			bytes: field_bytes
 		});
 	}
@@ -180,35 +153,34 @@ async fn get_form_field_bytes(mut field: Field) -> Vec<u8> {
 	field_bytes
 }
 
-fn get_albums() -> Vec<Album> {
-	let mut albums: Vec<Album> = Vec::new();
-	let album_titles = ["Boom", "Hello world"];
 
-	for id in 0..album_titles.len() {
-		let album_title = album_titles[id];
+fn create_photo(photo_bytes: &Vec<u8>) -> types::Photo {
+	// Generate a random filename
+	let mut filename: String = thread_rng()
+		.sample_iter(&Alphanumeric)
+		.take(20)
+		.collect();
+	filename.push_str(&".jpg");
 
-		albums.push(Album{ id: id as u32, title: album_title.to_string() });
-	}
+	let thumbnail_file_name = format!("thumb_{}", filename);
+	let preview_file_name = format!("preview_{}", filename);
 
-	albums
-}
+	let thumbnail_image_bytes = images::resize_image(photo_bytes, DIMENSIONS_THUMB);
+	let preview_image_bytes = images::resize_image(photo_bytes, DIMENSIONS_PREVIEW);
+	
+	let original_path = files::store_photo(&filename.to_string(), photo_bytes);
+	let thumbnail_path = files::store_photo(&thumbnail_file_name.to_string(), &thumbnail_image_bytes);
+	let preview_path = files::store_photo(&preview_file_name.to_string(), &preview_image_bytes);
 
-fn get_photos() -> Vec<types::Photo> {
-	database::get_photos()
-}
+	let (photo_width, photo_height) = images::get_image_dimensions(photo_bytes);
 
-#[cfg(test)]
-mod tests {
-	// Note this useful idiom: importing names from outer (for mod tests) scope.
-    use super::*;
-
-	#[test]
-	fn test_get_albums() {
-		let albums = get_albums();
-		for album in albums.iter() {
-			let album_title_length = album.title.len();
-
-			assert!(album_title_length >= 1, "Album title is empty");
-		}
+	types::Photo {
+		id: String::new(),
+		name: filename,
+		width: photo_width,
+		height: photo_height,
+		path_thumbnail: thumbnail_path,
+		path_preview: preview_path,
+		path_original: original_path
 	}
 }
