@@ -56,7 +56,7 @@ fn find_one<'de, T: serde::Deserialize<'de>>(id: &str, collection: &mongodb::Col
 {
 	let filter = doc!{
 		"_id": bson::oid::ObjectId::with_string(id).unwrap()
-	}
+	};
 
 	let find_result = collection.find_one(filter, None);
 	match find_result {
