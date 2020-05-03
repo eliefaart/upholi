@@ -73,32 +73,6 @@ pub async fn route_upload_photo(payload: Multipart) -> impl Responder {
 
 	for data in form_data {
 		if data.name == "file" {
-			// TODO: Generate a new filename if it already exists in database and/or disk.
-			// OR, always generate one?
-			// let filename = data.filename;
-
-			// let thumbnail_file_name = format!("thumb_{}", filename);
-			// let preview_file_name = format!("preview_{}", filename);
-
-			// let thumbnail_image_bytes = images::resize_image(&data.bytes, DIMENSIONS_THUMB);
-			// let preview_image_bytes = images::resize_image(&data.bytes, DIMENSIONS_PREVIEW);
-			
-			// let original_path = files::store_photo(&filename.to_string(), &data.bytes);
-			// let thumbnail_path = files::store_photo(&thumbnail_file_name.to_string(), &thumbnail_image_bytes);
-			// let preview_path = files::store_photo(&preview_file_name.to_string(), &preview_image_bytes);
-
-			// let (photo_width, photo_height) = images::get_image_dimensions(&data.bytes);
-
-			// let photo = types::Photo {
-			// 	id: "".to_string(),
-			// 	name: filename.to_string(),
-			// 	width: photo_width,
-			// 	height: photo_height,
-			// 	path_thumbnail: thumbnail_path,
-			// 	path_preview: preview_path,
-			// 	path_original: original_path
-			// };
-		
 			let photo = create_photo(&data.bytes);
 			photo_id = database::add_photo(photo).unwrap();
 		}
