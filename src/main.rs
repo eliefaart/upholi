@@ -39,7 +39,8 @@ async fn main() -> std::io::Result<()> {
 			.route("/", web::get().to(routes::route_index))
 
 			.route("/albums", web::get().to(routes::route_get_albums))
-			.route("/album", web::post().to(routes::route_insert_album))
+			.route("/album", web::post().to(routes::route_create_album))
+			.route("/album/{album_id}", web::get().to(routes::route_get_album))
 			.route("/album/{album_id}", web::put().to(routes::route_update_album))
 			.route("/album/{album_id}", web::delete().to(routes::route_delete_album))
 
