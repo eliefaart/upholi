@@ -74,9 +74,47 @@ pub async fn route_get_photo(req: HttpRequest) -> impl Responder {
 	}
 }
 
-pub async fn route_download_photo(req: HttpRequest) -> impl Responder {
+pub async fn route_download_photo_thumbnail(req: HttpRequest) -> impl Responder {
 	let _photo_id = req.match_info().get("photo_id").unwrap();
-	HttpResponse::build(StatusCode::OK)
+	let result = database::photo::get_one(&_photo_id);
+
+	match result {
+		Some(photo_info) => serve_photo(&photo_info.path_thumbnail),
+		None => panic!("File not found")
+	}
+}
+
+pub async fn route_download_photo_preview(req: HttpRequest) -> impl Responder {
+	let _photo_id = req.match_info().get("photo_id").unwrap();
+	let result = database::photo::get_one(&_photo_id);
+
+	match result {
+		Some(photo_info) => serve_photo(&photo_info.path_preview),
+		None => panic!("File not found")
+	}
+}
+
+pub async fn route_download_photo_original(req: HttpRequest) -> impl Responder {
+	let _photo_id = req.match_info().get("photo_id").unwrap();
+	let result = database::photo::get_one(&_photo_id);
+
+	match result {
+		Some(photo_info) => serve_photo(&photo_info.path_original),
+		None => panic!("File not found")
+	}
+}
+
+fn serve_photo(path: &str) -> impl Responder {
+	let result = files::get_photo(path);
+
+	match result {
+		Some(file_bytes) => {
+			HttpResponse::Ok()
+				.content_type("image/jpeg")
+				.body(file_bytes)
+		},
+		None => panic!("Error reading file content from disk, or file not found")
+	}
 }
 
 pub async fn route_upload_photo(payload: Multipart) -> impl Responder {
