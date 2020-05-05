@@ -56,8 +56,14 @@ pub async fn route_update_album(req: HttpRequest) -> impl Responder {
 	HttpResponse::build(StatusCode::OK)
 }
 
-pub async fn route_delete_album() -> impl Responder {
-	HttpResponse::build(StatusCode::OK)
+pub async fn route_delete_album(req: HttpRequest) -> impl Responder {
+	let album_id = req.match_info().get("album_id").unwrap();
+	let result = database::album::delete_one(&album_id);
+
+	match result {
+		Some(_) => HttpResponse::build(StatusCode::OK),
+		None => HttpResponse::build(StatusCode::NOT_FOUND)
+	}
 }
 
 pub async fn route_get_photos() -> impl Responder {
@@ -136,8 +142,14 @@ pub async fn route_update_photo() -> impl Responder {
 	HttpResponse::build(StatusCode::OK)
 }
 
-pub async fn route_delete_photo() -> impl Responder {
-	HttpResponse::build(StatusCode::OK)
+pub async fn route_delete_photo(req: HttpRequest) -> impl Responder {
+	let photo_id = req.match_info().get("photo_id").unwrap();
+	let result = database::photo::delete_one(&photo_id);
+	
+	match result {
+		Some(_) => HttpResponse::build(StatusCode::OK),
+		None => HttpResponse::build(StatusCode::NOT_FOUND)
+	}
 }
 
 // Gets all fields from multipart payload.
