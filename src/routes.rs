@@ -36,7 +36,7 @@ pub async fn route_get_albums() -> impl Responder {
 
 pub async fn route_get_album(req: HttpRequest) -> impl Responder {
 	let album_id = req.match_info().get("album_id").unwrap();
-	let result = database::album::get_one(album_id);
+	let result = database::album::get(album_id);
 
 	match result {
 		Some(album) => web::Json(album),
@@ -51,14 +51,22 @@ pub async fn route_create_album(mut album: web::Json<types::Album>) -> impl Resp
 	web::Json(CreatedResult{id: album_id.unwrap()})
 }
 
-pub async fn route_update_album(req: HttpRequest) -> impl Responder {
-	let _album_id = req.match_info().get("album_id").unwrap();
-	HttpResponse::build(StatusCode::OK)
+pub async fn route_update_album(req: HttpRequest, mut album: web::Json<types::Album>) -> impl Responder {
+	let album_id = req.match_info().get("album_id").unwrap();
+	album.id = album_id.to_string();
+
+	// TODO: Verify if all photoIds & thumbPhotoId are valid.
+
+	let result = database::album::update(&album);
+	match result {
+		Some(_) => HttpResponse::build(StatusCode::OK),
+		None => HttpResponse::build(StatusCode::NOT_FOUND)
+	}
 }
 
 pub async fn route_delete_album(req: HttpRequest) -> impl Responder {
 	let album_id = req.match_info().get("album_id").unwrap();
-	let result = database::album::delete_one(&album_id);
+	let result = database::album::delete(&album_id);
 
 	match result {
 		Some(_) => HttpResponse::build(StatusCode::OK),
@@ -72,7 +80,7 @@ pub async fn route_get_photos() -> impl Responder {
 
 pub async fn route_get_photo(req: HttpRequest) -> impl Responder {
 	let photo_id = req.match_info().get("photo_id").unwrap();
-	let result = database::photo::get_one(photo_id);
+	let result = database::photo::get(photo_id);
 
 	match result {
 		Some(photo) => web::Json(photo),
@@ -82,7 +90,7 @@ pub async fn route_get_photo(req: HttpRequest) -> impl Responder {
 
 pub async fn route_download_photo_thumbnail(req: HttpRequest) -> impl Responder {
 	let _photo_id = req.match_info().get("photo_id").unwrap();
-	let result = database::photo::get_one(&_photo_id);
+	let result = database::photo::get(&_photo_id);
 
 	match result {
 		Some(photo_info) => serve_photo(&photo_info.path_thumbnail),
@@ -92,7 +100,7 @@ pub async fn route_download_photo_thumbnail(req: HttpRequest) -> impl Responder 
 
 pub async fn route_download_photo_preview(req: HttpRequest) -> impl Responder {
 	let _photo_id = req.match_info().get("photo_id").unwrap();
-	let result = database::photo::get_one(&_photo_id);
+	let result = database::photo::get(&_photo_id);
 
 	match result {
 		Some(photo_info) => serve_photo(&photo_info.path_preview),
@@ -102,7 +110,7 @@ pub async fn route_download_photo_preview(req: HttpRequest) -> impl Responder {
 
 pub async fn route_download_photo_original(req: HttpRequest) -> impl Responder {
 	let _photo_id = req.match_info().get("photo_id").unwrap();
-	let result = database::photo::get_one(&_photo_id);
+	let result = database::photo::get(&_photo_id);
 
 	match result {
 		Some(photo_info) => serve_photo(&photo_info.path_original),
@@ -138,13 +146,9 @@ pub async fn route_upload_photo(payload: Multipart) -> impl Responder {
 	web::Json(CreatedResult{id: photo_id})
 }
 
-pub async fn route_update_photo() -> impl Responder {
-	HttpResponse::build(StatusCode::OK)
-}
-
 pub async fn route_delete_photo(req: HttpRequest) -> impl Responder {
 	let photo_id = req.match_info().get("photo_id").unwrap();
-	let result = database::photo::delete_one(&photo_id);
+	let result = database::photo::delete(&photo_id);
 	
 	match result {
 		Some(_) => HttpResponse::build(StatusCode::OK),

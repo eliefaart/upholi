@@ -38,9 +38,6 @@ fn init_database(connection_string: &str) -> Result<mongodb::Database, mongodb::
 fn insert_item<T: serde::Serialize>(collection: &mongodb::Collection, bson_item: &T) -> Option<String> {
 	let serialized_bson = bson::to_bson(bson_item).unwrap();
 
-	// I don't fully understand this syntax. 
-	// Something like: if serialized_bson destructures into bson::Bson::Document document succesfully then..
-	// I guess I understand the 'if let' syntax, but not the bson::Bson::Document(document) = serialized_bson part.
 	if let bson::Bson::Document(document) = serialized_bson {
 		let result = collection.insert_one(document, None);
 		match result {

@@ -8,7 +8,7 @@ pub fn create(album: &types::Album) -> Option<String> {
 	database::insert_item(&collection, &bson_album)
 }
 
-pub fn get_one(id: &str) -> Option<types::Album> {
+pub fn get(id: &str) -> Option<types::Album> {
 	let collection = get_collection();
 	let result: Option<types::BsonAlbum> = database::find_one(&id, &collection);
 	
@@ -38,9 +38,38 @@ pub fn get_all() -> Vec<types::Album> {
 	albums
 }
 
-pub fn delete_one(id: &str) -> Option<()>{
+pub fn delete(id: &str) -> Option<()>{
 	let collection = get_collection();
 	database::delete_one(id, &collection)
+}
+
+pub fn update(album: &types::Album) -> Option<()> {
+	let collection = get_collection();
+	let bson_album = album.to_bson_album();
+	let result = database::create_filter_for_id(&album.id);
+
+	if let Some(filter) = result {
+		let serialized_bson = bson::to_bson(&bson_album).unwrap();
+
+		if let bson::Bson::Document(document) = serialized_bson {
+			let result = collection.replace_one(filter, document, None);
+
+			match result {
+				Ok(update_result) => {
+					if update_result.modified_count == 1 {
+						Some(())
+					} else {
+						None
+					}
+				},
+				Err(_) => None
+			}
+		} else {
+			None
+		}
+	} else {
+		None
+	}
 }
 
 fn get_collection() -> mongodb::Collection {

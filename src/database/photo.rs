@@ -8,7 +8,7 @@ pub fn create(photo: &types::Photo) -> Option<String> {
 	database::insert_item(&collection, &bson_photo)
 }
 
-pub fn get_one(id: &str) -> Option<types::Photo> {
+pub fn get(id: &str) -> Option<types::Photo> {
 	let collection = get_collection();
 	let result: Option<types::BsonPhoto> = database::find_one(&id, &collection);
 
@@ -38,7 +38,7 @@ pub fn get_all() -> Vec<types::Photo> {
 	photos
 }
 
-pub fn delete_one(id: &str) -> Option<()>{
+pub fn delete(id: &str) -> Option<()>{
 	let collection = get_collection();
 	database::delete_one(id, &collection)
 }
