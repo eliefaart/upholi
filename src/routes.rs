@@ -133,17 +133,24 @@ fn serve_photo(path: &str) -> impl Responder {
 
 pub async fn route_upload_photo(payload: Multipart) -> impl Responder {
 	let form_data = get_form_data(payload).await;
-	let mut photo_id = String::new();
 
-	for data in form_data {
-		if data.name == "file" {
-			let photo = create_photo(&data.bytes);
-			photo_id = database::photo::create(&photo).unwrap();
-		}
+	let mut files_iter = form_data.iter().filter(|d| d.name == "file");
+	let file_option = files_iter.next();
+	let remaining_files = files_iter.count();
+
+	if remaining_files > 0 {
+		// HttpResponse::BadRequest() //(StatusCode::BAD_REQUEST)
+		panic!("Request contains more than one file.")
 	}
 
-	//HttpResponse::build(StatusCode::NOT_FOUND)
-	web::Json(CreatedResult{id: photo_id})
+	match file_option {
+		Some(file) => {
+			let photo = create_photo(&file.bytes);
+			let photo_id = database::photo::create(&photo).unwrap();
+			HttpResponse::Ok().json(CreatedResult{id: photo_id})
+		},
+		None => panic!("Request contains no file.")
+	}
 }
 
 pub async fn route_delete_photo(req: HttpRequest) -> impl Responder {
