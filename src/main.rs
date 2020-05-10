@@ -7,7 +7,7 @@ extern crate http;
 extern crate rand;
 
 use std::time::{Instant};
-use actix_web::{web, App, HttpServer};
+use actix_web::{web, App, HttpServer, middleware};
 use actix_service::Service;
 use futures::future::FutureExt;
 
@@ -25,17 +25,21 @@ async fn main() -> std::io::Result<()> {
 			.wrap_fn(|req, srv| {
 				// This is a middleware function
 				let now = Instant::now();
-				println!("> {method} {path}?{query_string}", 
+				println!(">> {method} {path}?{query_string}", 
 					method = req.method(), 
 					path = req.path(), 
 					query_string = req.query_string());
 
 				srv.call(req).map(move |res| {
 					let elapsed_ms = now.elapsed().as_millis();
-					println!("< {}ms", elapsed_ms);
+					println!("<< {}ms\n", elapsed_ms);
 					res
 				})
 			})
+			.wrap(middleware::DefaultHeaders::new()
+				.header("Access-Control-Allow-Origin", "*")
+				.header("Access-Control-Allow-Methods", "*")
+			)
 			.route("/", web::get().to(routes::route_index))
 
 			.route("/albums", web::get().to(routes::route_get_albums))
