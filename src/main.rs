@@ -25,14 +25,16 @@ async fn main() -> std::io::Result<()> {
 			.wrap_fn(|req, srv| {
 				// This is a middleware function
 				let now = Instant::now();
-				println!(">> {method} {path}?{query_string}", 
+				let query_id = format!("{method} {path}?{query_string}", 
 					method = req.method(), 
 					path = req.path(), 
 					query_string = req.query_string());
 
+				println!(">> {}", query_id);
+
 				srv.call(req).map(move |res| {
 					let elapsed_ms = now.elapsed().as_millis();
-					println!("<< {}ms\n", elapsed_ms);
+					println!("<< {} {}ms", query_id, elapsed_ms);
 					res
 				})
 			})
