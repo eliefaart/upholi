@@ -7,6 +7,7 @@ extern crate http;
 extern crate rand;
 
 use std::time::{Instant};
+use actix_cors::Cors;
 use actix_web::{web, App, HttpServer, middleware};
 use actix_service::Service;
 use futures::future::FutureExt;
@@ -22,6 +23,11 @@ async fn main() -> std::io::Result<()> {
 
 	HttpServer::new(|| {
 		App::new()
+			.wrap(
+				// https://docs.rs/actix-cors/0.2.0-alpha.3/actix_cors/struct.Cors.html
+				// Allow everything by not specifying any origin/methods/etc
+				Cors::new().finish()
+			)
 			.wrap_fn(|req, srv| {
 				// This is a middleware function
 				let now = Instant::now();
@@ -38,10 +44,6 @@ async fn main() -> std::io::Result<()> {
 					res
 				})
 			})
-			.wrap(middleware::DefaultHeaders::new()
-				.header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Methods", "*")
-			)
 			.route("/", web::get().to(routes::route_index))
 
 			.route("/albums", web::get().to(routes::route_get_albums))
@@ -51,6 +53,7 @@ async fn main() -> std::io::Result<()> {
 			.route("/album/{album_id}", web::delete().to(routes::route_delete_album))
 
 			.route("/photos", web::get().to(routes::route_get_photos))
+			.route("/photos", web::delete().to(routes::route_delete_photos))
 			.route("/photo", web::post().to(routes::route_upload_photo))
 			.route("/photo/{photo_id}", web::get().to(routes::route_get_photo))
 			.route("/photo/{photo_id}/original", web::get().to(routes::route_download_photo_original))

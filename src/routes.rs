@@ -78,6 +78,11 @@ pub async fn route_get_photos() -> impl Responder {
 	web::Json(database::photo::get_all())
 }
 
+pub async fn route_delete_photos(photo_ids: web::Json<Vec<String>>) -> impl Responder {
+	println!("hello{:?}", photo_ids);
+	web::Json(database::photo::get_all())
+}
+
 pub async fn route_get_photo(req: HttpRequest) -> impl Responder {
 	let photo_id = req.match_info().get("photo_id").unwrap();
 	let result = database::photo::get(photo_id);
