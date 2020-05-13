@@ -8,7 +8,7 @@ extern crate rand;
 
 use std::time::{Instant};
 use actix_cors::Cors;
-use actix_web::{web, App, HttpServer, middleware};
+use actix_web::{web, App, HttpServer};
 use actix_service::Service;
 use futures::future::FutureExt;
 
