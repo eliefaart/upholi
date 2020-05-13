@@ -72,13 +72,18 @@ fn find_one<'de, T: serde::Deserialize<'de>>(id: &str, collection: &mongodb::Col
 }
 
 fn delete_one(id: &str, collection: &mongodb::Collection) -> Option<()> {
-	let result = create_filter_for_id(id);
+	let ids = vec!{ id };
+	delete_many(&ids, &collection)
+}
+
+fn delete_many(ids: &Vec<&str>, collection: &mongodb::Collection) -> Option<()> {
+	let result = create_in_filter_for_ids(ids);
 	if let Some(filter) = result {
-		let result = collection.delete_one(filter, None);
+		let result = collection.delete_many(filter, None);
 
 	match result {
 		Ok(delete_result) => {
-			if delete_result.deleted_count == 1 {
+			if delete_result.deleted_count > 0 {
 				Some(())
 			} else {
 				None
@@ -97,4 +102,16 @@ fn create_filter_for_id(id: &str) -> Option<bson::ordered::OrderedDocument> {
 		Ok(object_id) => Some(doc!{"_id": object_id}),
 		Err(_) => None
 	}
+}
+
+fn create_in_filter_for_ids(ids: &Vec<&str>) -> Option<bson::ordered::OrderedDocument> {
+	let mut object_ids: Vec<bson::oid::ObjectId> = Vec::new();
+
+	for id in ids {
+		let result = bson::oid::ObjectId::with_string(id);
+		let object_id = result.unwrap();
+		object_ids.push(object_id);
+	}
+	
+	Some(doc!{"_id": doc!{"$in": object_ids } })
 }

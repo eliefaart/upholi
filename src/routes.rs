@@ -79,8 +79,18 @@ pub async fn route_get_photos() -> impl Responder {
 }
 
 pub async fn route_delete_photos(photo_ids: web::Json<Vec<String>>) -> impl Responder {
-	println!("hello{:?}", photo_ids);
-	web::Json(database::photo::get_all())
+	let mut ids: Vec<&str> = Vec::new();
+
+	for id in photo_ids.iter() {
+		ids.push(&id[..]);
+	}
+
+	let result = database::photo::delete_many(&ids);
+
+	match result {
+		Some(_) => HttpResponse::build(StatusCode::OK),
+		None => HttpResponse::build(StatusCode::NOT_FOUND)
+	}
 }
 
 pub async fn route_get_photo(req: HttpRequest) -> impl Responder {
@@ -89,7 +99,7 @@ pub async fn route_get_photo(req: HttpRequest) -> impl Responder {
 
 	match result {
 		Some(photo) => web::Json(photo),
-		None => panic!("no photo") // How to return HTTP 404?
+		None => panic!("no photo") // How to return HTTP 404, if 'good' path returns json?
 	}
 }
 

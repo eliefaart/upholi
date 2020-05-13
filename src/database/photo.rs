@@ -43,6 +43,11 @@ pub fn delete(id: &str) -> Option<()>{
 	database::delete_one(id, &collection)
 }
 
+pub fn delete_many(ids: &Vec<&str>) -> Option<()>{
+	let collection = get_collection();
+	database::delete_many(ids, &collection)
+}
+
 fn get_collection() -> mongodb::Collection {
 	let db = database::get_database();
 	db.collection(database::COLLECTION_PHOTOS)
