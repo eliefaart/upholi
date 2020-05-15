@@ -50,22 +50,11 @@ fn insert_item<T: serde::Serialize>(collection: &mongodb::Collection, bson_item:
 }
 
 fn find_one<'de, T: serde::Deserialize<'de>>(id: &str, collection: &mongodb::Collection) -> Option<T> {
-	let result = create_filter_for_id(id);
-	if let Some(filter) = result {
-		let find_result = collection.find_one(filter, None);
 
-		match find_result {
-			Ok(document_option) => {
-				let document = document_option.unwrap();
-				let item = bson::from_bson(bson::Bson::Document(document)).unwrap();
-	
-				Some(item)
-			},
-			Err(e) => {
-				println!("error: {:?}", e);
-				None
-			}
-		}
+	let result = find_many(&vec!{id}, collection);
+
+	if let Some(mut photos) = result {
+		photos.pop()
 	} else {
 		None
 	}
