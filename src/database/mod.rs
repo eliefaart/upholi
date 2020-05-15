@@ -71,6 +71,33 @@ fn find_one<'de, T: serde::Deserialize<'de>>(id: &str, collection: &mongodb::Col
 	}
 }
 
+fn find_many<'de, T: serde::Deserialize<'de>>(ids: &Vec<&str>, collection: &mongodb::Collection) -> Option<Vec<T>> {
+	let result = create_in_filter_for_ids(ids);
+	if let Some(filter) = result {
+		let find_result = collection.find(filter, None);
+
+		match find_result {
+			Ok(cursor) => {
+				let mut items = Vec::new();
+
+				for document_result in cursor {
+					let document = document_result.unwrap();
+					let item = bson::from_bson(bson::Bson::Document(document)).unwrap();
+					items.push(item);
+				}
+	
+				Some(items)
+			},
+			Err(e) => {
+				println!("error: {:?}", e);
+				None
+			}
+		}
+	} else {
+		None
+	}
+}
+
 fn delete_one(id: &str, collection: &mongodb::Collection) -> Option<()> {
 	let ids = vec!{ id };
 	delete_many(&ids, &collection)

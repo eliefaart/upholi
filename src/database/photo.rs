@@ -18,6 +18,22 @@ pub fn get(id: &str) -> Option<types::Photo> {
 	}
 }
 
+pub fn get_many(ids: &Vec<&str>) -> Option<Vec<types::Photo>> {
+	let collection = get_collection();
+	let result: Option<Vec<types::BsonPhoto>> = database::find_many(&ids, &collection);
+
+	match result {
+		Some(bson_photos) => {
+			let mut photos = Vec::new();
+			for bson_photo in bson_photos {
+				photos.push(bson_photo.to_photo());
+			}
+			Some(photos)
+		},
+		None => None
+	}
+}
+
 pub fn get_all() -> Vec<types::Photo> {
 	let collection = get_collection();
 

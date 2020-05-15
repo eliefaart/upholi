@@ -1,6 +1,6 @@
 use serde::{Serialize, Deserialize};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Photo {
     pub id: String,
@@ -43,6 +43,14 @@ pub struct BsonAlbum {
 	pub title: String,
 	pub thumb_photo_id: Option<bson::oid::ObjectId>,
 	pub photos: Vec<bson::oid::ObjectId>
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct GetAlbumResult {
+	pub title: String,
+	pub thumb_photo: Option<Photo>,
+	pub photos: Vec<Photo>
 }
 
 impl Photo {

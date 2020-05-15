@@ -39,8 +39,22 @@ pub async fn route_get_album(req: HttpRequest) -> impl Responder {
 	let result = database::album::get(album_id);
 
 	match result {
-		Some(album) => web::Json(album),
-		None => panic!("no photo") // How to return HTTP 404?
+		Some(album) => {
+			let mut ids: Vec<&str> = Vec::new();
+
+			for id in album.photos.iter() {
+				ids.push(&id[..]);
+			}
+			
+			let photos = database::photo::get_many(&ids);
+			let response = types::GetAlbumResult {
+				title: album.title,
+				thumb_photo: if let Some(thumb_photo_id) = album.thumb_photo_id { database::photo::get(&thumb_photo_id) } else { None },
+				photos: photos.unwrap()
+			};
+			web::Json(response)
+		},
+		None => panic!("no album") // How to return HTTP 404?
 	}
 }
 
