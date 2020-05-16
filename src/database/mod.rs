@@ -50,7 +50,6 @@ fn insert_item<T: serde::Serialize>(collection: &mongodb::Collection, bson_item:
 }
 
 fn find_one<'de, T: serde::Deserialize<'de>>(id: &str, collection: &mongodb::Collection) -> Option<T> {
-
 	let result = find_many(&vec!{id}, collection);
 
 	if let Some(mut photos) = result {

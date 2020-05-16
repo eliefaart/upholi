@@ -49,8 +49,16 @@ pub struct BsonAlbum {
 #[serde(rename_all = "camelCase")]
 pub struct GetAlbumResult {
 	pub title: String,
-	pub thumb_photo: Option<Photo>,
-	pub photos: Vec<Photo>
+	pub thumb_photo: Option<GetAlbumResultPhoto>,
+	pub photos: Vec<GetAlbumResultPhoto>
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct GetAlbumResultPhoto {
+	pub id: String,
+	pub width: u32,
+	pub height: u32
 }
 
 impl Photo {
@@ -63,6 +71,14 @@ impl Photo {
 			path_thumbnail: self.path_thumbnail.to_string(),
 			path_preview: self.path_preview.to_string(),
 			path_original: self.path_original.to_string()
+		}
+	}
+
+	pub fn to_get_album_result_photo(&self) -> GetAlbumResultPhoto {
+		GetAlbumResultPhoto{
+			id: self.id.to_string(),
+			width: self.width,
+			height: self.height
 		}
 	}
 }
