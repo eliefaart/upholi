@@ -46,13 +46,13 @@ pub async fn route_get_album(req: HttpRequest) -> impl Responder {
 				ids.push(&id[..]);
 			}
 			
-			let response = types::GetAlbumResult {
+			let response = types::ClientAlbum {
 				title: album.title,
 				thumb_photo: {
 					if let Some(thumb_photo_id) = album.thumb_photo_id { 
 						let result = database::photo::get(&thumb_photo_id);
 						match result {
-							Some(thumb_photo) => Some(thumb_photo.to_get_album_result_photo()),
+							Some(thumb_photo) => Some(thumb_photo.to_client_photo()),
 							None => None
 						}
 					} else { 
@@ -64,7 +64,7 @@ pub async fn route_get_album(req: HttpRequest) -> impl Responder {
 					if let Some(photos) = result {
 						let mut result_photos = Vec::new();
 						for photo in photos {
-							result_photos.push(photo.to_get_album_result_photo());
+							result_photos.push(photo.to_client_photo());
 						}
 	
 						result_photos
