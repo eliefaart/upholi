@@ -48,9 +48,9 @@ pub struct BsonAlbum {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ClientAlbum {
-	pub title: String,
+	pub title: Option<String>,
 	pub thumb_photo: Option<ClientPhoto>,
-	pub photos: Vec<ClientPhoto>
+	pub photos: Option<Vec<ClientPhoto>>
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -59,6 +59,14 @@ pub struct ClientPhoto {
 	pub id: String,
 	pub width: u32,
 	pub height: u32
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct UpdateAlbum {
+	pub title: Option<String>,
+	pub thumb_photo_id: Option<String>,
+	pub photos: Option<Vec<String>>
 }
 
 impl Photo {

@@ -47,7 +47,7 @@ pub async fn route_get_album(req: HttpRequest) -> impl Responder {
 			}
 			
 			let response = types::ClientAlbum {
-				title: album.title,
+				title: Some(album.title),
 				thumb_photo: {
 					if let Some(thumb_photo_id) = album.thumb_photo_id { 
 						let result = database::photo::get(&thumb_photo_id);
@@ -67,9 +67,9 @@ pub async fn route_get_album(req: HttpRequest) -> impl Responder {
 							result_photos.push(photo.to_client_photo());
 						}
 	
-						result_photos
+						Some(result_photos)
 					} else {
-						vec!{}
+						None
 					}
 				}
 			};
@@ -86,13 +86,12 @@ pub async fn route_create_album(mut album: web::Json<types::Album>) -> impl Resp
 	web::Json(CreatedResult{id: album_id.unwrap()})
 }
 
-pub async fn route_update_album(req: HttpRequest, mut album: web::Json<types::Album>) -> impl Responder {
+pub async fn route_update_album(req: HttpRequest, album: web::Json<types::UpdateAlbum>) -> impl Responder {
 	let album_id = req.match_info().get("album_id").unwrap();
-	album.id = album_id.to_string();
 
 	// TODO: Verify if all photoIds & thumbPhotoId are valid.
 
-	let result = database::album::update(&album);
+	let result = database::album::update(&album_id, &album);
 	match result {
 		Some(_) => HttpResponse::build(StatusCode::OK),
 		None => HttpResponse::build(StatusCode::NOT_FOUND)
