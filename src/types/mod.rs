@@ -140,7 +140,7 @@ impl BsonAlbum {
 }
 
 // Try parse ID as object_id
-fn string_to_object_id(object_id: &String) -> Option<bson::oid::ObjectId> {
+pub fn string_to_object_id(object_id: &String) -> Option<bson::oid::ObjectId> {
 	let object_id_result = bson::oid::ObjectId::with_string(object_id);
 	match object_id_result {
 		Ok(object_id) => Some(object_id),

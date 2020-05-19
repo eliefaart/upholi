@@ -56,12 +56,28 @@ pub fn get_all() -> Vec<types::Photo> {
 
 pub fn delete(id: &str) -> Option<()>{
 	let collection = get_collection();
-	database::delete_one(id, &collection)
+	if let Ok(_) = database::album::remove_photo_from_all_albums(id) {
+		if let Ok(_) = database::album::remove_thumb_from_all_albums(id) {
+			database::delete_one(id, &collection)
+		} else {
+			None
+		}
+	} else {
+		None
+	}
 }
 
 pub fn delete_many(ids: &Vec<&str>) -> Option<()>{
 	let collection = get_collection();
-	database::delete_many(ids, &collection)
+	if let Ok(_) = database::album::remove_photos_from_all_albums(ids) {
+		if let Ok(_) = database::album::remove_thumbs_from_all_albums(ids) {
+			database::delete_many(ids, &collection)
+		} else {
+			None
+		}
+	} else {
+		None
+	}
 }
 
 fn get_collection() -> mongodb::Collection {

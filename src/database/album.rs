@@ -1,3 +1,5 @@
+use bson::{doc};
+
 use crate::database;
 use crate::types;
 
@@ -88,34 +90,78 @@ pub fn update(id: &str, updated_album: &types::UpdateAlbum) -> Option<()> {
 	}
 }
 
-// pub fn update(album: &types::Album) -> Option<()> {
-// 	let collection = get_collection();
-// 	let bson_album = album.to_bson_album();
-// 	let result = database::create_filter_for_id(&album.id);
+pub fn remove_photo_from_all_albums(photo_id: &str) -> Result<(), ()> {
+	let ids = vec!{ photo_id };
+	remove_photos_from_all_albums(&ids)
+}
 
-// 	if let Some(filter) = result {
-// 		let serialized_bson = bson::to_bson(&bson_album).unwrap();
+pub fn remove_photos_from_all_albums(photo_ids: &Vec<&str>) -> Result<(), ()> {
+	let collection = get_collection();
 
-// 		if let bson::Bson::Document(document) = serialized_bson {
-// 			let result = collection.replace_one(filter, document, None);
+	let mut object_ids = Vec::new();
+	for photo_id in photo_ids {
+		let result = types::string_to_object_id(&photo_id.to_string());
+		if let Some(object_id) = result {
+			object_ids.push(object_id);
+		}
+	}
 
-// 			match result {
-// 				Ok(update_result) => {
-// 					if update_result.modified_count == 1 {
-// 						Some(())
-// 					} else {
-// 						None
-// 					}
-// 				},
-// 				Err(_) => None
-// 			}
-// 		} else {
-// 			None
-// 		}
-// 	} else {
-// 		None
-// 	}
-// }
+	let query = doc!{
+		"photos": doc!{
+			"$in": &object_ids
+		}
+	};
+	let update = doc!{
+		"$pull": doc!{
+			"photos": doc!{
+				"$in": &object_ids
+			}
+		}
+	};
+
+	let result = collection.update_many(query, update, None);
+	match result {
+		Ok(_) => Ok(()),
+		Err(_) => Err(())
+	}
+}
+
+/// Unset thumbnail of all album where thumbnail is set to given photo_id
+pub fn remove_thumb_from_all_albums(photo_id: &str) -> Result<(), ()> {
+	let ids = vec!{ photo_id };
+	remove_thumbs_from_all_albums(&ids)
+}
+
+/// Unset thumbnail of all album where thumbnail is set to any of given photo_ids
+pub fn remove_thumbs_from_all_albums(photo_ids: &Vec<&str>) -> Result<(), ()> {
+	let collection = get_collection();
+
+	let mut object_ids = Vec::new();
+	for photo_id in photo_ids {
+		let result = types::string_to_object_id(&photo_id.to_string());
+		if let Some(object_id) = result {
+			object_ids.push(object_id);
+		}
+	}
+
+	let query = doc!{
+		"thumb_photo_id": doc!{
+			"$in": &object_ids
+		}
+	};
+	let update = doc!{
+		"$set": doc!{
+			"thumb_photo_id": ""
+		}
+	};
+
+	let result = collection.update_many(query, update, None);
+	match result {
+		Ok(_) => Ok(()),
+		Err(_) => Err(())
+	}
+}
+
 
 fn get_collection() -> mongodb::Collection {
 	let db = database::get_database();

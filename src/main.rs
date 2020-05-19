@@ -60,6 +60,16 @@ async fn main() -> std::io::Result<()> {
 			.route("/photo/{photo_id}/thumb", web::get().to(routes::route_download_photo_thumbnail))
 			.route("/photo/{photo_id}/preview", web::get().to(routes::route_download_photo_preview))
 			.route("/photo/{photo_id}", web::delete().to(routes::route_delete_photo))
+
+			/*
+				Two new collections:
+				- Collections: {id, photoId[], createdOn}
+				- SharedItems: {id, enum type: album | collection, itemId}
+			*/
+			// .route("/s/a/{sharedAlbumId}", web::get().to(routes::get_shared_album))
+			// .route("/s/c/{sharedCollectionId}", web::get().to(routes::get_shared_collection))
+			// .route("/s/", web::get().to(routes::get_shared_items))
+			// .route("/s/{sharedItemId", web::delete().to(routes::delete_shared_item))
 	})
 	.bind("127.0.0.1:8000")?
 	.run()

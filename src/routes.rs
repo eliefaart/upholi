@@ -119,6 +119,7 @@ pub async fn route_delete_photos(photo_ids: web::Json<Vec<String>>) -> impl Resp
 		ids.push(&id[..]);
 	}
 
+	// TODO: Also delete photos from all albums they are a part of.
 	let result = database::photo::delete_many(&ids);
 
 	match result {
