@@ -151,7 +151,7 @@ pub fn remove_thumbs_from_all_albums(photo_ids: &Vec<&str>) -> Result<(), ()> {
 	};
 	let update = doc!{
 		"$set": doc!{
-			"thumb_photo_id": ""
+			"thumb_photo_id": bson::Bson::Null
 		}
 	};
 
