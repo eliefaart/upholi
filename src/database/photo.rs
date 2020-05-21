@@ -1,3 +1,5 @@
+use bson::{doc};
+
 use crate::database;
 use crate::types;
 
@@ -37,7 +39,10 @@ pub fn get_many(ids: &Vec<&str>) -> Option<Vec<types::Photo>> {
 pub fn get_all() -> Vec<types::Photo> {
 	let collection = get_collection();
 
-	let find_result = collection.find(None, None);
+	let mut find_options: mongodb::options::FindOptions = Default::default();
+	find_options.sort = Some(doc!{ "_id": -1});
+
+	let find_result = collection.find(None, find_options);
 	let cursor = find_result.unwrap();
 	
 	let mut photos: Vec<types::Photo> = Vec::new();
