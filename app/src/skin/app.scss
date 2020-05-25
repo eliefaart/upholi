@@ -1,0 +1,86 @@
+@import "_cssreset";
+@import "_fonts";
+
+$backgroundColor: #000; //#202126;
+$altBackgroundColor: #27282e; //#202126;
+$accentColor: #2f5f89; //#4e18a5;//#20a672;
+$secondaryAccentColor: #1BBFAC ;// #a54e18;
+
+$textColorDark: #333;
+$textColorLight: #ddd; //white;
+$textColorDarkAlt: #333;
+$textColorLightAlt: #ced6ef;
+$sectionBackgroundColor: #eee;
+
+$colorPositive: #30742D;
+$colorNegative : #a4342c;
+$spacing: 3px;
+$transitionSpeed: 0.2s;
+$borderRadius: 2px;
+$headerHeight: 50px;
+
+html {
+	touch-action: manipulation;
+
+	& * {
+		box-sizing: border-box;
+		outline: none;
+	}
+
+	body {
+		font-family: FiraSans;
+		font-size: 0.75em;
+	
+		background: $backgroundColor;
+		color: $textColorLight;
+	
+		.page {
+			min-height: 100vh;
+
+			.content {
+				padding-top: $headerHeight;
+			}
+		}
+	}
+}
+
+// Imports
+@import "app.component.modal";
+@import "app.component.header";
+@import "app.component.overlay";
+@import "app.component.albums";
+@import "app.component.photoGallery";
+@import "app.component.photoDetail";
+
+input, select, button {
+    padding: 0 0 0 5px;
+    margin: 10px 0 10px 0;
+    width: 100%;
+    height: 40px;
+    border-radius: $borderRadius;
+}
+input, select {
+	background-color: $altBackgroundColor;
+	color: $textColorLight;
+	border: 2px solid $accentColor;
+
+	&:focus { 
+		border-color: $secondaryAccentColor; 
+	}
+}
+
+
+button {
+    color: $textColorDark;
+    background-color: $secondaryAccentColor;
+    border: none;
+    cursor: pointer;
+    width: auto;
+    min-width: 100px;
+	margin: 0px 0px 0px 0px;
+	
+	&:hover, &:active { 
+		background: $accentColor; 
+		color: $textColorLight; 
+	}
+}

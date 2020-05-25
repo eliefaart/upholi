@@ -10,8 +10,28 @@
 			"problemMatcher": [],
 			"group": {
 				"kind": "build",
-				"isDefault": true
+				"isDefault": false
 			}
-		}
+		},
+		{
+            "label": "Webpack - watcher",
+            "type": "shell",
+            "command": "npm run build",
+            "group": "build",
+			"problemMatcher": [],
+			"options": {
+				"cwd": "app"
+			}
+		},
+		{
+            "label": "Webpack - watcher [Production]",
+            "type": "shell",
+            "command": "npm run build-prd",
+            "group": "build",
+			"problemMatcher": [],
+			"options": {
+				"cwd": "app"
+			}
+        }
 	]
 }

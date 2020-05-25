@@ -1,0 +1,17 @@
+﻿{
+  "short_name": "hummingbird",
+  "name": "Hummingbird",
+  "start_url": "/",
+
+  "background_color": "#000",
+  "theme_color": "#2f5f89",
+  "display": "standalone",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/images/icon.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    }
+  ]
+}

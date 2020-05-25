@@ -1,0 +1,45 @@
+.photoGallery {
+	* {
+		user-select: none;
+	}
+
+	.photo {
+		cursor: pointer;
+
+		&.selected img{
+			box-sizing: border-box;
+			border: 3px solid $secondaryAccentColor;
+		}
+
+		&:hover, &.any-other-selected {
+			label {
+				display: unset;
+			}
+
+			&.any-other-selected {
+				label {
+					opacity: 100%;
+				}
+			}
+		}
+		
+		input {
+			display: none;
+
+			&:checked+label {
+				background: $secondaryAccentColor;
+			}
+		}
+
+		label {
+			display: none;
+			cursor: pointer;
+			background: white;
+			border: 1px solid white;
+			width: 20px;
+			height: 20px;
+			border-radius: 20px;
+			opacity: 50%;
+		}
+	}
+}
