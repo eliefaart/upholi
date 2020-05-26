@@ -15,7 +15,7 @@ class Header extends React.Component {
 	}
 
 	gotoPhotos() {
-		!!this.context.history && this.context.history.push("/photos");
+		!!this.context.history && this.context.history.push("/");
 	}
 
 	gotoAlbums() {
@@ -30,7 +30,7 @@ class Header extends React.Component {
 		return (
 			<div className="header">
 				<div className="menu">
-					<span onClick={() => this.gotoPhotos()}>Photos</span>
+					<span onClick={() => this.gotoPhotos()}>Home</span>
 					<span onClick={() => this.gotoAlbums()}>Albums</span>
 					<span onClick={() => this.gotoShared()}>Shared</span>
 				</div>

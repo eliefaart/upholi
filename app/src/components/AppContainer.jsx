@@ -32,7 +32,7 @@ class AppContainer extends React.Component {
 				<div id="app">
 					<AppStateContext.Provider value={this.context}>
 						<Route path="/" exact component={PhotosPage} />
-						<Route path="/photos" exact component={PhotosPage} />
+						{/* <Route path="/photos" exact component={PhotosPage} /> */}
 						<Route path="/albums" exact component={AlbumsPage} />
 						<Route path="/shared" exact component={SharedPage} />
 						<Route path="/photo/:photoId" exact component={PhotoPage} />
