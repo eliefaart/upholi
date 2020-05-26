@@ -1,0 +1,23 @@
+.uploadProgressDialog {
+
+	.file {
+		display: flex;
+		width: 100%;
+		height: $headerHeight;
+		align-items: center;
+
+		.thumb {
+			flex: 0 0 $headerHeight;
+			height: $headerHeight;
+			max-width: $headerHeight;
+		}
+
+		.title {
+			flex: 0 1 100%;
+		}
+
+		>* {
+			margin: 0 $spacing * 2;
+		}
+	}
+}

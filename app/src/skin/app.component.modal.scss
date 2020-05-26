@@ -30,6 +30,8 @@ $modalHeaderHeight: 30px;
 			display: flex;
 			flex: 0 1 100%;
 			line-height: $modalHeaderHeight;
+			font-weight: bold;
+			font-size: 1.25em;
 		}
 
 		.button-close {
@@ -46,6 +48,8 @@ $modalHeaderHeight: 30px;
 		align-items: center;
 		min-height: 50px;
 		flex-direction: column;
+		max-height: 80vh;
+		overflow-y: scroll;
 	}
 
 	.modal-footer {

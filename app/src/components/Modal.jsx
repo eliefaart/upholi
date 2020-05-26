@@ -21,7 +21,7 @@ class Modal extends React.Component {
 			<ReactModal
 				isOpen={this.props.isOpen}
 				onRequestClose={this.props.onRequestClose}
-				className="modal"
+				className={this.props.className + " modal"}
 				overlayClassName="overlay"
 			>
 				<div className="modal-header">
@@ -32,7 +32,7 @@ class Modal extends React.Component {
 					{this.props.children}
 				</div>
 				<div className="modal-footer">
-				<button onClick={this.props.onOkButtonClick}>{this.props.okButtonText || "Ok"}</button>
+					{this.props.okButtonText !== null && <button onClick={this.props.onOkButtonClick}>{this.props.okButtonText || "Ok"}</button>}
 				</div>
 			</ReactModal>
 		);

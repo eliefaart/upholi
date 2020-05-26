@@ -19,6 +19,45 @@ class PhotoService {
 		return Promise.all(uploadPromises);
 	}
 
+	static uploadPhotos2(files, fnFileUploadedCallback) {
+		const nConcurrentUploads = 5;
+
+		// Create queue: reverse files array so we can use pop() which is faster than shift()
+		let queue = [];
+		for (let file of files) 
+			queue.push(file);
+
+		return new Promise((ok, err) => {
+			let uploadPromises = [];
+
+			let fnStartNextUpload = () => {
+				if (queue.length > 0) {
+					let file = queue.pop();
+					let uploadPromise = PhotoService.uploadPhoto(file);
+					uploadPromises.push(uploadPromise);
+	
+					uploadPromise.then(() => {
+						uploadPromises.splice(uploadPromises.indexOf(uploadPromise), 1);
+	
+						fnFileUploadedCallback(file, true);
+						fnStartNextUpload();
+	
+						if (queue.length === 0 && uploadPromises.length === 0) {
+							ok();
+						}
+					}).catch((error) => {
+						fnFileUploadedCallback(file, false);
+						err(error);
+					});
+				}
+			}
+	
+			for (let i = 0; i < nConcurrentUploads; i++) {
+				fnStartNextUpload();
+			}
+		});
+	}
+
 	static uploadPhoto(file) {
 		return new Promise((ok, err) => {
 			const xhr = new XMLHttpRequest();

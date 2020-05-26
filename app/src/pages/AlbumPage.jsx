@@ -19,7 +19,9 @@ class AlbumPage extends React.Component {
 			photos: [],
 			selectedPhotos: [],
 			confirmDeleteAlbumOpen: false,
-			confirmRemovePhotosOpen: false
+			confirmRemovePhotosOpen: false,
+			uploadInProgress: false,
+			uploadFiles: []
 		};
 	}
 
@@ -143,7 +145,6 @@ class AlbumPage extends React.Component {
 					photoIds = photoIds.concat(values);
 					PhotoService.updateAlbumPhotos(albumId, photoIds)
 						.then(() => {
-							console.log("??");
 							fnRefreshPhotos();
 						});
 				}

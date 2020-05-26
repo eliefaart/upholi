@@ -8,6 +8,7 @@ import Albums from "../components/Albums.jsx"
 import PhotoService from "../services/PhotoService.js"
 import AppStateContext from '../contexts/AppStateContext.jsx';
 import ConfirmationDialog from '../components/ConfirmationDialog.jsx';
+import UploadProgressDialog from '../components/UploadProgressDialog.jsx';
 
 class PhotosDashboardPage extends React.Component {
 
@@ -20,7 +21,9 @@ class PhotosDashboardPage extends React.Component {
 			newAlbumDialogOpen: false,
 			confirmDeletePhotosOpen: false,
 			addPhotosToAlbumDialogOpen: false,
-			albums: []
+			albums: [],
+			uploadInProgress: false,
+			uploadFiles: []
 		};
 	}
 
@@ -132,13 +135,46 @@ class PhotosDashboardPage extends React.Component {
 	}
 
 	onFilesDropped(event) {
+		/*
+			Refactor this handler to be in a separate file, 
+			 in a way so the albums page can make use of it too.
+		*/
 		event.preventDefault();
 
-		let _refreshPhotos = () => this.refreshPhotos();
-		PhotoService.uploadPhotos(event.dataTransfer.files)
-			.then((values) => {
-				_refreshPhotos();
+		let fnOnUploadFinished = () => {
+			this.setState({
+				uploadInProgress: false,
+				uploadFiles: []
 			});
+			this.refreshPhotos();
+		};
+		let fnUpdateFileUploadState = (file, newState) => {
+			let stateFile = this.state.uploadFiles.find(f => f.name === file.name);
+			stateFile.status = newState;
+
+			this.setState({
+				uploadFiles: this.state.uploadFiles
+			});
+		};
+
+		PhotoService.uploadPhotos2(event.dataTransfer.files, (file, success) => {
+			fnUpdateFileUploadState(file, success ? "Done" : "Failed");
+		}).then((values) => {
+			fnOnUploadFinished();
+		}).catch((error) => {
+			console.log(error);
+		});
+
+		this.setState({
+			uploadInProgress: true,
+			uploadFiles: [...event.dataTransfer.files].map(file => {
+				return {
+					name: file.name,
+					status: "Uploading",
+					objectUrl: URL.createObjectURL(file)
+				};
+			})
+		});
 	}
 
 	onPhotoClicked(event, target) {
@@ -191,6 +227,14 @@ class PhotosDashboardPage extends React.Component {
 						okButtonText="Delete"
 						confirmationText={this.state.selectedPhotos.length + " photos will be deleted."}
 						/>}
+
+				{this.state.uploadInProgress && 
+					<UploadProgressDialog
+						isOpen={this.state.uploadInProgress}
+						onRequestClose={() => this.setState({uploadInProgress: false})}
+						files={this.state.uploadFiles}
+						/>
+					}
 			</PageLayout>
 		);
 	}
