@@ -141,6 +141,14 @@ class PhotosDashboardPage extends React.Component {
 		*/
 		event.preventDefault();
 
+		let files = [...event.dataTransfer.files].map(file => {
+			return {
+				name: file.name,
+				status: "",
+				objectUrl: URL.createObjectURL(file)
+			};
+		});
+
 		let fnOnUploadFinished = () => {
 			this.setState({
 				uploadInProgress: false,
@@ -149,16 +157,16 @@ class PhotosDashboardPage extends React.Component {
 			this.refreshPhotos();
 		};
 		let fnUpdateFileUploadState = (file, newState) => {
-			let stateFile = this.state.uploadFiles.find(f => f.name === file.name);
+			let stateFile = files.find(f => f.name === file.name);
 			stateFile.status = newState;
 
 			this.setState({
-				uploadFiles: this.state.uploadFiles
+				uploadFiles: files
 			});
 		};
 
-		PhotoService.uploadPhotos2(event.dataTransfer.files, (file, success) => {
-			fnUpdateFileUploadState(file, success ? "Done" : "Failed");
+		PhotoService.uploadPhotos2(event.dataTransfer.files, (file, newStatus) => {
+			fnUpdateFileUploadState(file, newStatus);
 		}).then((values) => {
 			fnOnUploadFinished();
 		}).catch((error) => {
@@ -167,13 +175,7 @@ class PhotosDashboardPage extends React.Component {
 
 		this.setState({
 			uploadInProgress: true,
-			uploadFiles: [...event.dataTransfer.files].map(file => {
-				return {
-					name: file.name,
-					status: "Uploading",
-					objectUrl: URL.createObjectURL(file)
-				};
-			})
+			uploadFiles: files
 		});
 	}
 

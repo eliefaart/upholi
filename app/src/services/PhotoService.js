@@ -19,13 +19,15 @@ class PhotoService {
 		return Promise.all(uploadPromises);
 	}
 
-	static uploadPhotos2(files, fnFileUploadedCallback) {
-		const nConcurrentUploads = 5;
+	static uploadPhotos2(files, fnFileStatusUpdatedCallback) {
+		const nConcurrentUploads = 3;
 
 		// Create queue: reverse files array so we can use pop() which is faster than shift()
 		let queue = [];
-		for (let file of files) 
+		for (let file of files) {
 			queue.push(file);
+			fnFileStatusUpdatedCallback(file, "Waiting");
+		}
 
 		return new Promise((ok, err) => {
 			let uploadPromises = [];
@@ -35,18 +37,19 @@ class PhotoService {
 					let file = queue.pop();
 					let uploadPromise = PhotoService.uploadPhoto(file);
 					uploadPromises.push(uploadPromise);
+					fnFileStatusUpdatedCallback(file, "Uploading");
 	
 					uploadPromise.then(() => {
 						uploadPromises.splice(uploadPromises.indexOf(uploadPromise), 1);
 	
-						fnFileUploadedCallback(file, true);
+						fnFileStatusUpdatedCallback(file, "Done");
 						fnStartNextUpload();
 	
 						if (queue.length === 0 && uploadPromises.length === 0) {
 							ok();
 						}
 					}).catch((error) => {
-						fnFileUploadedCallback(file, false);
+						fnFileStatusUpdatedCallback(file, "Failed");
 						err(error);
 					});
 				}
