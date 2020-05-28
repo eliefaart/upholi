@@ -9,25 +9,17 @@ class PhotoService {
 		return "http://127.0.0.1:8000";
 	}
 
-	static uploadPhotos(files) {
-		let uploadPromises = [];
-		for (let file of files) {
-			let uploadPromise = PhotoService.uploadPhoto(file);
-			uploadPromises.push(uploadPromise);
-		}
-
-		return Promise.all(uploadPromises);
-	}
-
-	static uploadPhotos2(files, fnFileStatusUpdatedCallback) {
+	static uploadPhotos(files, fnFileStatusUpdatedCallback) {
 		const nConcurrentUploads = 3;
 
 		// Create queue: reverse files array so we can use pop() which is faster than shift()
 		let queue = [];
 		for (let file of files) {
-			queue.push(file);
+			queue.unshift(file);
 			fnFileStatusUpdatedCallback(file, "Waiting");
 		}
+
+		let photoIdsUploaded = [];
 
 		return new Promise((ok, err) => {
 			let uploadPromises = [];
@@ -39,14 +31,15 @@ class PhotoService {
 					uploadPromises.push(uploadPromise);
 					fnFileStatusUpdatedCallback(file, "Uploading");
 	
-					uploadPromise.then(() => {
+					uploadPromise.then((photoId) => {
 						uploadPromises.splice(uploadPromises.indexOf(uploadPromise), 1);
 	
+						photoIdsUploaded.push(photoId);
 						fnFileStatusUpdatedCallback(file, "Done");
 						fnStartNextUpload();
 	
 						if (queue.length === 0 && uploadPromises.length === 0) {
-							ok();
+							ok(photoIdsUploaded);
 						}
 					}).catch((error) => {
 						fnFileStatusUpdatedCallback(file, "Failed");

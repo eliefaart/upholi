@@ -2,11 +2,13 @@ import React from 'react';
 import PhotoGallerySelectable from '../components/PhotoGallerySelectable.jsx';
 import PhotoDetail from '../components/PhotoDetail.jsx';
 import PageLayout from "../components/PageLayout.jsx"
-
 import AppStateContext from '../contexts/AppStateContext.jsx';
 import PhotoService from '../services/PhotoService';
+import UploadHelper from "../helpers/UploadHelper.js"
 import Overlay from '../components/Overlay.jsx';
 import ConfirmationDialog from '../components/ConfirmationDialog.jsx';
+import UploadProgressDialog from '../components/UploadProgressDialog.jsx';
+
 
 class AlbumPage extends React.Component {
 
@@ -137,18 +139,40 @@ class AlbumPage extends React.Component {
 
 		let albumId = this.state.albumId;
 		let photoIds = this.state.photos.map(p => p.id)
-		let fnRefreshPhotos = () => this.refreshPhotos();
 
-		PhotoService.uploadPhotos(event.dataTransfer.files)
-			.then((values) => {
-				if (values && values.length > 0) {
-					photoIds = photoIds.concat(values);
-					PhotoService.updateAlbumPhotos(albumId, photoIds)
-						.then(() => {
-							fnRefreshPhotos();
-						});
-				}
+		let files = UploadHelper.convertFileListToFileArrayForUploadDialog(event.dataTransfer.files);
+		
+		let fnOnUploadFinished = (uploadedPhotoIds) => {
+			this.setState({
+				uploadInProgress: false,
+				uploadFiles: []
 			});
+
+			let fnRefreshPhotos = () => this.refreshPhotos();
+
+			if (uploadedPhotoIds && uploadedPhotoIds.length > 0) {
+				photoIds = photoIds.concat(uploadedPhotoIds);
+				PhotoService.updateAlbumPhotos(albumId, photoIds)
+					.then(fnRefreshPhotos);
+			}
+		};
+		let fnUpdateFileUploadState = (file, newState) => {
+			let stateFile = files.find(f => f.name === file.name);
+			stateFile.status = newState;
+
+			this.setState({
+				uploadFiles: files
+			});
+		};
+
+		PhotoService.uploadPhotos(event.dataTransfer.files, fnUpdateFileUploadState)
+			.then(fnOnUploadFinished)
+			.catch(console.error);
+
+		this.setState({
+			uploadInProgress: true,
+			uploadFiles: files
+		});
 	}
 
 	render() {
@@ -185,6 +209,14 @@ class AlbumPage extends React.Component {
 					okButtonText="Delete"
 					confirmationText={this.state.selectedPhotos.length + " photos will be removed from album '" + this.state.title + "'."}
 					/>
+
+				{this.state.uploadInProgress && 
+					<UploadProgressDialog
+						isOpen={this.state.uploadInProgress}
+						onRequestClose={() => this.setState({uploadInProgress: false})}
+						files={this.state.uploadFiles}
+						/>
+					}
 			</PageLayout>
 		);
 	}

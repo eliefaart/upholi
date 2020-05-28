@@ -4,8 +4,8 @@ import Modal from '../components/Modal.jsx';
 import PhotoGallerySelectable from '../components/PhotoGallerySelectable.jsx';
 import PageLayout from "../components/PageLayout.jsx"
 import Albums from "../components/Albums.jsx"
-
 import PhotoService from "../services/PhotoService.js"
+import UploadHelper from "../helpers/UploadHelper.js"
 import AppStateContext from '../contexts/AppStateContext.jsx';
 import ConfirmationDialog from '../components/ConfirmationDialog.jsx';
 import UploadProgressDialog from '../components/UploadProgressDialog.jsx';
@@ -135,21 +135,11 @@ class PhotosDashboardPage extends React.Component {
 	}
 
 	onFilesDropped(event) {
-		/*
-			Refactor this handler to be in a separate file, 
-			 in a way so the albums page can make use of it too.
-		*/
 		event.preventDefault();
 
-		let files = [...event.dataTransfer.files].map(file => {
-			return {
-				name: file.name,
-				status: "",
-				objectUrl: URL.createObjectURL(file)
-			};
-		});
+		let files = UploadHelper.convertFileListToFileArrayForUploadDialog(event.dataTransfer.files);
 
-		let fnOnUploadFinished = () => {
+		let fnOnUploadFinished = (uploadedPhotoIds) => {
 			this.setState({
 				uploadInProgress: false,
 				uploadFiles: []
@@ -165,13 +155,9 @@ class PhotosDashboardPage extends React.Component {
 			});
 		};
 
-		PhotoService.uploadPhotos2(event.dataTransfer.files, (file, newStatus) => {
-			fnUpdateFileUploadState(file, newStatus);
-		}).then((values) => {
-			fnOnUploadFinished();
-		}).catch((error) => {
-			console.log(error);
-		});
+		PhotoService.uploadPhotos2(event.dataTransfer.files, fnUpdateFileUploadState)
+			.then(fnOnUploadFinished)
+			.catch(console.error);
 
 		this.setState({
 			uploadInProgress: true,
