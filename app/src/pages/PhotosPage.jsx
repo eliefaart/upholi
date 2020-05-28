@@ -155,7 +155,7 @@ class PhotosDashboardPage extends React.Component {
 			});
 		};
 
-		PhotoService.uploadPhotos2(event.dataTransfer.files, fnUpdateFileUploadState)
+		PhotoService.uploadPhotos(event.dataTransfer.files, fnUpdateFileUploadState)
 			.then(fnOnUploadFinished)
 			.catch(console.error);
 
