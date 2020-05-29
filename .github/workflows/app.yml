@@ -25,5 +25,5 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - run: cd ./app
-    - run: cd npm install
-    - run: cd npm run build-prd
+    - run: npm install
+    - run: npm run build-prd
