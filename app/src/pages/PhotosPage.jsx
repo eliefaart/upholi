@@ -136,6 +136,8 @@ class PhotosDashboardPage extends React.Component {
 
 	onFilesDropped(event) {
 		event.preventDefault();
+		if (!event.dataTransfer.files || event.dataTransfer.files.length === 0)
+			return; // no files
 
 		let files = UploadHelper.convertFileListToFileArrayForUploadDialog(event.dataTransfer.files);
 

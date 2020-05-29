@@ -136,6 +136,8 @@ class AlbumPage extends React.Component {
 
 	onFilesDropped(event) {
 		event.preventDefault();
+		if (!event.dataTransfer.files || event.dataTransfer.files.length === 0)
+			return; // no files
 
 		let albumId = this.state.albumId;
 		let photoIds = this.state.photos.map(p => p.id)
