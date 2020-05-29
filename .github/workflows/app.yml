@@ -24,5 +24,6 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - run: cd ./app && npm install
-    - run: cd ./app && npm run build-prd
+    - run: cd ./app
+    - run: cd npm install
+    - run: cd npm run build-prd
