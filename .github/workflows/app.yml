@@ -13,8 +13,6 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    env:
-      working-directory: ./app
 
     strategy:
       matrix:
@@ -26,7 +24,5 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - run: npm install
-      working-directory: ${{ working-directory }}
-    - run: npm run build-prd
-      working-directory: ${{ working-directory }}
+    - run: cd ./app && npm install
+    - run: cd ./app && npm run build-prd
