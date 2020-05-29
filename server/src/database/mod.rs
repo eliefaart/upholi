@@ -35,17 +35,17 @@ fn init_database(connection_string: &str) -> Result<mongodb::Database, mongodb::
 	Ok(database)
 }
 
-fn insert_item<T: serde::Serialize>(collection: &mongodb::Collection, bson_item: &T) -> Option<String> {
+fn insert_item<T: serde::Serialize>(collection: &mongodb::Collection, bson_item: &T) -> Result<String, String> {
 	let serialized_bson = bson::to_bson(bson_item).unwrap();
 
 	if let bson::Bson::Document(document) = serialized_bson {
 		let result = collection.insert_one(document, None);
 		match result {
-			Ok(insert_result) => Some(insert_result.inserted_id.as_object_id().unwrap().to_hex()),
-			Err(_) => None
+			Ok(insert_result) => Ok(insert_result.inserted_id.as_object_id().unwrap().to_hex()),
+			Err(err) => Err(err.to_string())
 		}
 	} else {
-		None
+		Err("Failed to serialize struct".to_string())
 	}
 }
 
@@ -112,21 +112,9 @@ fn delete_many(ids: &Vec<&str>, collection: &mongodb::Collection) -> Option<()> 
 }
 
 fn create_filter_for_id(id: &str) -> Option<bson::ordered::OrderedDocument> {
-	let result = bson::oid::ObjectId::with_string(id);
-	match result {
-		Ok(object_id) => Some(doc!{"_id": object_id}),
-		Err(_) => None
-	}
+	Some(doc!{"id": id})
 }
 
 fn create_in_filter_for_ids(ids: &Vec<&str>) -> Option<bson::ordered::OrderedDocument> {
-	let mut object_ids: Vec<bson::oid::ObjectId> = Vec::new();
-
-	for id in ids {
-		let result = bson::oid::ObjectId::with_string(id);
-		let object_id = result.unwrap();
-		object_ids.push(object_id);
-	}
-	
-	Some(doc!{"_id": doc!{"$in": object_ids } })
+	Some(doc!{"id": doc!{"$in": ids } })
 }

@@ -21,3 +21,4 @@ bson = "0.14.1"
 rand = "0.7.3"
 bytes = "0.5.4"
 md5 = "0.7.0"
+uuid = { version = "0.8.1", features = ["v4"] }

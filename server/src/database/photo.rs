@@ -1,38 +1,30 @@
 use bson::{doc};
 
 use crate::database;
-use crate::types;
 use crate::photos;
 
-pub fn create(photo: &photos::Photo) -> Option<String> {
-	let collection = get_collection();
-	let bson_photo = photo.to_bson_photo();
+pub fn insert(photo: &photos::Photo) -> Result<String, String> {
+	if photo.id.is_empty() {
+		return Err("Photo ID not set".to_string());
+	}
 
-	database::insert_item(&collection, &bson_photo)
+	let collection = get_collection();
+	database::insert_item(&collection, &photo)
 }
 
 pub fn get(id: &str) -> Option<photos::Photo> {
 	let collection = get_collection();
-	let result: Option<types::BsonPhoto> = database::find_one(&id, &collection);
+	let result: Option<photos::Photo> = database::find_one(&id, &collection);
 
-	match result {
-		Some(bson_photo) => Some(bson_photo.to_photo()),
-		None => None
-	}
+	result
 }
 
 pub fn get_many(ids: &Vec<&str>) -> Option<Vec<photos::Photo>> {
 	let collection = get_collection();
-	let result: Option<Vec<types::BsonPhoto>> = database::find_many(&ids, &collection);
+	let result: Option<Vec<photos::Photo>> = database::find_many(&ids, &collection);
 
 	match result {
-		Some(bson_photos) => {
-			let mut photos = Vec::new();
-			for bson_photo in bson_photos {
-				photos.push(bson_photo.to_photo());
-			}
-			Some(photos)
-		},
+		Some(photos) =>	Some(photos),
 		None => None
 	}
 }
@@ -50,8 +42,8 @@ pub fn get_all() -> Vec<photos::Photo> {
 	for result in cursor {
 		match result {
 			Ok(document) => {
-				let bson_photo: types::BsonPhoto = bson::from_bson(bson::Bson::Document(document)).unwrap();
-				photos.push(bson_photo.to_photo());
+				let photo: photos::Photo = bson::from_bson(bson::Bson::Document(document)).unwrap();
+				photos.push(photo);
 			}
 			Err(e) => println!("Error in cursor: {:?}", e),
 		}
@@ -61,16 +53,7 @@ pub fn get_all() -> Vec<photos::Photo> {
 }
 
 pub fn delete(id: &str) -> Option<()>{
-	let collection = get_collection();
-	if let Ok(_) = database::album::remove_photo_from_all_albums(id) {
-		if let Ok(_) = database::album::remove_thumb_from_all_albums(id) {
-			database::delete_one(id, &collection)
-		} else {
-			None
-		}
-	} else {
-		None
-	}
+	delete_many(&vec!{id})
 }
 
 pub fn delete_many(ids: &Vec<&str>) -> Option<()>{
@@ -100,4 +83,31 @@ pub fn hash_exists(hash: &str) -> Result<bool, String> {
 fn get_collection() -> mongodb::Collection {
 	let db = database::get_database();
 	db.collection(database::COLLECTION_PHOTOS)
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+	#[test]
+	fn insert_empty_id() {
+		let photo = create_dummy_photo_with_id("");
+		let result = insert(&photo);
+
+		assert!(result.is_err());
+	}
+
+	fn create_dummy_photo_with_id(id: &str) -> photos::Photo {
+		photos::Photo {
+			id: id.to_string(),
+			name: "photo name".to_string(),
+			width: 150,
+			height: 2500,
+			hash: "abc123".to_string(),
+			path_thumbnail: "path_thumbnail".to_string(),
+			path_preview: "path_preview".to_string(),
+			path_original: "path_original".to_string(),
+		}
+	}
 }

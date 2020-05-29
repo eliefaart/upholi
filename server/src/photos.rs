@@ -6,6 +6,8 @@ use rand::distributions::Alphanumeric;
 use crate::images;
 use crate::files;
 use crate::database;
+use crate::types;
+use crate::ids;
 
 const DIMENSIONS_THUMB: u32 = 400;
 const DIMENSIONS_PREVIEW: u32 = 1500;
@@ -16,8 +18,8 @@ const DIMENSIONS_PREVIEW: u32 = 1500;
 pub struct Photo {
     pub id: String,
 	pub name: String,
-	pub width: u32,
-	pub height: u32,
+	pub width: i32,
+	pub height: i32,
 	pub hash: String,
 	pub path_thumbnail: String,
 	pub path_preview: String,
@@ -28,7 +30,7 @@ impl Photo {
 
 	/// Create a new photo from bytes
 	pub fn create(photo_bytes: &Vec<u8>) -> Result<Self, String> {
-		// Generate a random filename
+		let id = ids::create_unique_id();
 		let filename = Self::generate_filename(".jpg")?;
 		let hash = Self::compute_md5_hash(photo_bytes);
 
@@ -51,15 +53,24 @@ impl Photo {
 			let (width, height) = images::get_image_dimensions(photo_bytes);
 		
 			Ok(Self {
-				id: String::new(),
+				id,
 				name: filename,
-				width,
-				height,
+				width: width as i32,
+				height: height as i32,
 				hash,
 				path_thumbnail,
 				path_preview,
 				path_original
 			})
+		}
+	}
+
+	/// Convert photo to a smaller struct suitable for exposing to client
+	pub fn to_client_photo(&self) -> types::ClientPhoto {
+		types::ClientPhoto{
+			id: self.id.to_string(),
+			width: self.width,
+			height: self.height
 		}
 	}
 

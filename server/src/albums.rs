@@ -1,6 +1,6 @@
 use serde::{Serialize, Deserialize};
 
-use crate::types;
+use crate::ids;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -15,19 +15,14 @@ pub struct Album {
 }
 
 impl Album {
-	pub fn to_bson_album(&self) -> types::BsonAlbum {
-		let mut photos: Vec<bson::oid::ObjectId> = Vec::new();
-		for photo_id in &self.photos {
-			if photo_id != "" {
-				photos.push(types::string_to_object_id(&photo_id).unwrap());
-			}
-		}
+	pub fn create(title: &str) -> Self {
+		let id = ids::create_unique_id();
 
-		types::BsonAlbum{
-			id: types::string_to_object_id_or_new(&self.id),
-			title: self.title.to_string(),
-			thumb_photo_id: match &self.thumb_photo_id { Some(id) => Some(types::string_to_object_id(id).unwrap()), None => None },
-			photos: photos
+		Self {
+			id,
+			title: title.to_string(),
+			thumb_photo_id: None,
+			photos: vec!{}
 		}
 	}
 }

@@ -4,21 +4,20 @@ use crate::database;
 use crate::types;
 use crate::albums;
 
-pub fn create(album: &albums::Album) -> Option<String> {
-	let collection = get_collection();
-	let bson_album = album.to_bson_album();
+pub fn insert(album: &albums::Album) -> Result<String, String> {
+	if album.id.is_empty() {
+		return Err("Album ID not set".to_string());
+	}
 
-	database::insert_item(&collection, &bson_album)
+	let collection = get_collection();
+	database::insert_item(&collection, &album)
 }
 
 pub fn get(id: &str) -> Option<albums::Album> {
 	let collection = get_collection();
-	let result: Option<types::BsonAlbum> = database::find_one(&id, &collection);
+	let result: Option<albums::Album> = database::find_one(&id, &collection);
 	
-	match result {
-		Some(bson_album) => Some(bson_album.to_album()),
-		None => None
-	}
+	result
 }
 
 pub fn get_all() -> Vec<albums::Album> {
@@ -31,8 +30,8 @@ pub fn get_all() -> Vec<albums::Album> {
 	for result in cursor {
 		match result {
 			Ok(document) => {
-				let bson_album: types::BsonAlbum = bson::from_bson(bson::Bson::Document(document)).unwrap();
-				albums.push(bson_album.to_album());
+				let album: albums::Album = bson::from_bson(bson::Bson::Document(document)).unwrap();
+				albums.push(album);
 			}
 			Err(e) => println!("Error in cursor: {:?}", e),
 		}
@@ -61,11 +60,10 @@ pub fn update(id: &str, updated_album: &types::UpdateAlbum) -> Option<()> {
 			album.thumb_photo_id = Some(updated_album.thumb_photo_id.as_ref().unwrap().to_string());
 		}
 
-		let bson_album = album.to_bson_album();
 		let result = database::create_filter_for_id(&album.id);
 
 		if let Some(filter) = result {
-			let serialized_bson = bson::to_bson(&bson_album).unwrap();
+			let serialized_bson = bson::to_bson(&album).unwrap();
 
 			if let bson::Bson::Document(document) = serialized_bson {
 				let result = collection.replace_one(filter, document, None);
@@ -91,31 +89,19 @@ pub fn update(id: &str, updated_album: &types::UpdateAlbum) -> Option<()> {
 	}
 }
 
-pub fn remove_photo_from_all_albums(photo_id: &str) -> Result<(), ()> {
-	let ids = vec!{ photo_id };
-	remove_photos_from_all_albums(&ids)
-}
-
+/// Remove photos with given photo_ids from all albums containing any of these photos
 pub fn remove_photos_from_all_albums(photo_ids: &Vec<&str>) -> Result<(), ()> {
 	let collection = get_collection();
 
-	let mut object_ids = Vec::new();
-	for photo_id in photo_ids {
-		let result = types::string_to_object_id(&photo_id.to_string());
-		if let Some(object_id) = result {
-			object_ids.push(object_id);
-		}
-	}
-
 	let query = doc!{
 		"photos": doc!{
-			"$in": &object_ids
+			"$in": &photo_ids
 		}
 	};
 	let update = doc!{
 		"$pull": doc!{
 			"photos": doc!{
-				"$in": &object_ids
+				"$in": &photo_ids
 			}
 		}
 	};
@@ -127,38 +113,27 @@ pub fn remove_photos_from_all_albums(photo_ids: &Vec<&str>) -> Result<(), ()> {
 	}
 }
 
-/// Unset thumbnail of all album where thumbnail is set to given photo_id
-pub fn remove_thumb_from_all_albums(photo_id: &str) -> Result<(), ()> {
-	let ids = vec!{ photo_id };
-	remove_thumbs_from_all_albums(&ids)
-}
-
 /// Unset thumbnail of all album where thumbnail is set to any of given photo_ids
 pub fn remove_thumbs_from_all_albums(photo_ids: &Vec<&str>) -> Result<(), ()> {
 	let collection = get_collection();
 
-	let mut object_ids = Vec::new();
-	for photo_id in photo_ids {
-		let result = types::string_to_object_id(&photo_id.to_string());
-		if let Some(object_id) = result {
-			object_ids.push(object_id);
-		}
-	}
-
 	let query = doc!{
-		"thumb_photo_id": doc!{
-			"$in": &object_ids
+		"thumbPhotoId": doc!{
+			"$in": &photo_ids
 		}
 	};
 	let update = doc!{
 		"$set": doc!{
-			"thumb_photo_id": bson::Bson::Null
+			"thumbPhotoId": bson::Bson::Null
 		}
 	};
 
 	let result = collection.update_many(query, update, None);
 	match result {
-		Ok(_) => Ok(()),
+		Ok(res) => {
+			println!("{:?}{:?}", photo_ids, res); 
+			Ok(())
+		},
 		Err(_) => Err(())
 	}
 }
@@ -167,4 +142,32 @@ pub fn remove_thumbs_from_all_albums(photo_ids: &Vec<&str>) -> Result<(), ()> {
 fn get_collection() -> mongodb::Collection {
 	let db = database::get_database();
 	db.collection(database::COLLECTION_ALBUMS)
+}
+
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+	#[test]
+	fn insert_empty_id() {
+		let album = create_dummy_album_with_id("");
+		let result = insert(&album);
+
+		assert!(result.is_err());
+	}
+
+	fn create_dummy_album_with_id(id: &str) -> albums::Album {
+		albums::Album{
+			id: id.to_string(),
+			title: "title".to_string(),
+			thumb_photo_id: Some(bson::oid::ObjectId::new().unwrap().to_hex()),
+			photos: vec!{
+				bson::oid::ObjectId::new().unwrap().to_hex(),
+				bson::oid::ObjectId::new().unwrap().to_hex(),
+				bson::oid::ObjectId::new().unwrap().to_hex()
+			}
+		}
+	}
 }

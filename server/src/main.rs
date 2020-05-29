@@ -6,6 +6,7 @@ extern crate mongodb;
 extern crate http;
 extern crate rand;
 extern crate md5;
+extern crate uuid;
 
 use std::time::{Instant};
 use actix_cors::Cors;
@@ -20,6 +21,7 @@ mod images;
 mod files;
 mod photos;
 mod albums;
+mod ids;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
@@ -47,7 +49,6 @@ async fn main() -> std::io::Result<()> {
 					res
 				})
 			})
-			.route("/", web::get().to(routes::route_index))
 
 			.route("/albums", web::get().to(routes::route_get_albums))
 			.route("/album", web::post().to(routes::route_create_album))
