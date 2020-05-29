@@ -1,4 +1,4 @@
-name: Hummingbird
+name: Server
 
 on:
   push:
