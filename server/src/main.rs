@@ -5,6 +5,7 @@ extern crate serde;
 extern crate mongodb;
 extern crate http;
 extern crate rand;
+extern crate md5;
 
 use std::time::{Instant};
 use actix_cors::Cors;
@@ -17,6 +18,7 @@ mod routes;
 mod database;
 mod images;
 mod files;
+mod photo;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {

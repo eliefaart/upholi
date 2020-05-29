@@ -3,16 +3,11 @@ use actix_web::{web, HttpRequest, HttpResponse, Responder};
 use actix_multipart::{Multipart, Field};
 use serde::{Serialize, Deserialize};
 use futures::{StreamExt, TryStreamExt};
-use rand::{thread_rng, Rng};
-use rand::distributions::Alphanumeric;
 
 use crate::types;
 use crate::database;
-use crate::images;
 use crate::files;
-
-const DIMENSIONS_THUMB: u32 = 400;
-const DIMENSIONS_PREVIEW: u32 = 1500;
+use crate::photo;
 
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -22,7 +17,6 @@ struct CreatedResult {
 
 struct FormData {
 	name: String,
-	//filename: String,
 	bytes: Vec<u8>
 }
 
@@ -189,15 +183,22 @@ pub async fn route_upload_photo(payload: Multipart) -> impl Responder {
 	let remaining_files = files_iter.count();
 
 	if remaining_files > 0 {
-		// HttpResponse::BadRequest() //(StatusCode::BAD_REQUEST)
+		// HttpResponse::BadRequest() //(StatusCode::BAD_REQUEST);
 		panic!("Request contains more than one file.")
 	}
 
 	match file_option {
 		Some(file) => {
-			let photo = create_photo(&file.bytes);
-			let photo_id = database::photo::create(&photo).unwrap();
-			HttpResponse::Ok().json(CreatedResult{id: photo_id})
+
+			let result = photo::Photo::create(&file.bytes);
+			match result {
+				Ok(photo) => {
+					println!("{:?}", photo);
+					let photo_id = database::photo::create(&photo).unwrap();
+					HttpResponse::Ok().json(CreatedResult{id: photo_id})
+				},
+				Err(err) => panic!(err)
+			}
 		},
 		None => panic!("Request contains no file.")
 	}
@@ -222,12 +223,10 @@ async fn get_form_data(mut payload: Multipart) -> Vec<FormData> {
 		let content_disposition = field.content_disposition().unwrap();
 		//let content_type = field.content_type();
 		let key = content_disposition.get_name().unwrap();
-		//let filename = content_disposition.get_filename().unwrap_or_default();
 
 		let field_bytes = get_form_field_bytes(field).await;
 		form_data.push(FormData{
 			name: key.to_string(), 
-			//filename: filename.to_string(),
 			bytes: field_bytes
 		});
 	}
@@ -248,35 +247,4 @@ async fn get_form_field_bytes(mut field: Field) -> Vec<u8> {
 	}
 
 	field_bytes
-}
-
-fn create_photo(photo_bytes: &Vec<u8>) -> types::Photo {
-	// Generate a random filename
-	let mut filename: String = thread_rng()
-		.sample_iter(&Alphanumeric)
-		.take(20)
-		.collect();
-	filename.push_str(&".jpg");
-
-	let thumbnail_file_name = format!("thumb_{}", filename);
-	let preview_file_name = format!("preview_{}", filename);
-
-	let thumbnail_image_bytes = images::resize_image(photo_bytes, DIMENSIONS_THUMB);
-	let preview_image_bytes = images::resize_image(photo_bytes, DIMENSIONS_PREVIEW);
-	
-	let original_path = files::store_photo(&filename.to_string(), photo_bytes);
-	let thumbnail_path = files::store_photo(&thumbnail_file_name.to_string(), &thumbnail_image_bytes);
-	let preview_path = files::store_photo(&preview_file_name.to_string(), &preview_image_bytes);
-
-	let (photo_width, photo_height) = images::get_image_dimensions(photo_bytes);
-
-	types::Photo {
-		id: String::new(),
-		name: filename,
-		width: photo_width,
-		height: photo_height,
-		path_thumbnail: thumbnail_path,
-		path_preview: preview_path,
-		path_original: original_path
-	}
 }

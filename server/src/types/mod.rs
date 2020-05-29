@@ -1,17 +1,5 @@
 use serde::{Serialize, Deserialize};
 
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct Photo {
-    pub id: String,
-	pub name: String,
-	pub width: u32,
-	pub height: u32,
-	pub path_thumbnail: String,
-	pub path_preview: String,
-	pub path_original: String
-}
-
 #[derive(Serialize, Deserialize)]
 pub struct BsonPhoto {
 	#[serde(rename = "_id")]	
@@ -19,9 +7,10 @@ pub struct BsonPhoto {
 	pub name: String,
 	pub width: i32,
 	pub height: i32,
+	pub hash: String,
 	pub path_thumbnail: String,
 	pub path_preview: String,
-	pub path_original: String,
+	pub path_original: String
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -69,13 +58,14 @@ pub struct UpdateAlbum {
 	pub photos: Option<Vec<String>>
 }
 
-impl Photo {
+impl crate::photo::Photo {
 	pub fn to_bson_photo(&self) -> BsonPhoto {
 		BsonPhoto{
 			id: string_to_object_id_or_new(&self.id),
 			name: self.name.to_string(),
 			width: self.width as i32,
 			height: self.height as i32,
+			hash: self.hash.to_string(),
 			path_thumbnail: self.path_thumbnail.to_string(),
 			path_preview: self.path_preview.to_string(),
 			path_original: self.path_original.to_string()
@@ -92,12 +82,13 @@ impl Photo {
 }
 
 impl BsonPhoto {
-	pub fn to_photo(&self) -> Photo {
-		Photo{
+	pub fn to_photo(&self) -> crate::photo::Photo {
+		crate::photo::Photo{
 			id: self.id.to_hex(),
 			name: self.name.to_string(),
 			width: if self.width < 0 { 0u32} else { self.width as u32 },
 			height: if self.height < 0 { 0u32} else { self.height as u32 },
+			hash: self.hash.to_string(),
 			path_thumbnail: self.path_thumbnail.to_string(),
 			path_preview: self.path_preview.to_string(),
 			path_original: self.path_original.to_string()
@@ -251,7 +242,7 @@ mod tests {
 		assert_albums_equal(&album, &bson_album, false);
 	}
 
-	fn assert_photos_equal(photo: &Photo, bson_photo: &BsonPhoto, photo_id_is_empty: bool) {
+	fn assert_photos_equal(photo: &crate::photo::Photo, bson_photo: &BsonPhoto, photo_id_is_empty: bool) {
 		if photo_id_is_empty {
 			assert!(photo.id == "");
 			assert!(bson_photo.id.to_hex() != "");
@@ -279,12 +270,13 @@ mod tests {
 		assert_eq!(album.photos.len(), bson_album.photos.len());
 	}
 
-	fn create_dummy_photo_with_id(id: &str) -> Photo {
-		Photo{
+	fn create_dummy_photo_with_id(id: &str) -> crate::photo::Photo {
+		crate::photo::Photo {
 			id: id.to_string(),
 			name: "photo name".to_string(),
 			width: 150,
 			height: 2500,
+			hash: "abc123".to_string(),
 			path_thumbnail: "path_thumbnail".to_string(),
 			path_preview: "path_preview".to_string(),
 			path_original: "path_original".to_string(),
@@ -297,6 +289,7 @@ mod tests {
 			name: "photo name".to_string(),
 			width: 150,
 			height: 2500,
+			hash: "abc123".to_string(),
 			path_thumbnail: "path_thumbnail".to_string(),
 			path_preview: "path_preview".to_string(),
 			path_original: "path_original".to_string(),

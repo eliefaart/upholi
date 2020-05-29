@@ -2,15 +2,16 @@ use bson::{doc};
 
 use crate::database;
 use crate::types;
+use crate::photo;
 
-pub fn create(photo: &types::Photo) -> Option<String> {
+pub fn create(photo: &photo::Photo) -> Option<String> {
 	let collection = get_collection();
 	let bson_photo = photo.to_bson_photo();
 
 	database::insert_item(&collection, &bson_photo)
 }
 
-pub fn get(id: &str) -> Option<types::Photo> {
+pub fn get(id: &str) -> Option<photo::Photo> {
 	let collection = get_collection();
 	let result: Option<types::BsonPhoto> = database::find_one(&id, &collection);
 
@@ -20,7 +21,7 @@ pub fn get(id: &str) -> Option<types::Photo> {
 	}
 }
 
-pub fn get_many(ids: &Vec<&str>) -> Option<Vec<types::Photo>> {
+pub fn get_many(ids: &Vec<&str>) -> Option<Vec<photo::Photo>> {
 	let collection = get_collection();
 	let result: Option<Vec<types::BsonPhoto>> = database::find_many(&ids, &collection);
 
@@ -36,7 +37,7 @@ pub fn get_many(ids: &Vec<&str>) -> Option<Vec<types::Photo>> {
 	}
 }
 
-pub fn get_all() -> Vec<types::Photo> {
+pub fn get_all() -> Vec<photo::Photo> {
 	let collection = get_collection();
 
 	let mut find_options: mongodb::options::FindOptions = Default::default();
@@ -45,7 +46,7 @@ pub fn get_all() -> Vec<types::Photo> {
 	let find_result = collection.find(None, find_options);
 	let cursor = find_result.unwrap();
 	
-	let mut photos: Vec<types::Photo> = Vec::new();
+	let mut photos: Vec<photo::Photo> = Vec::new();
 	for result in cursor {
 		match result {
 			Ok(document) => {
@@ -82,6 +83,17 @@ pub fn delete_many(ids: &Vec<&str>) -> Option<()>{
 		}
 	} else {
 		None
+	}
+}
+
+pub fn hash_exists(hash: &str) -> Result<bool, String> {
+	let collection = get_collection();
+	let filter = doc! { "hash": hash };
+	let result = collection.count_documents(filter, None);
+
+	match result {
+		Ok(count) => Ok(count > 0),
+		Err(err) => Err(format!("{:?}", err))
 	}
 }
 
