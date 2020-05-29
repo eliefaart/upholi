@@ -2,16 +2,16 @@ use bson::{doc};
 
 use crate::database;
 use crate::types;
-use crate::photo;
+use crate::photos;
 
-pub fn create(photo: &photo::Photo) -> Option<String> {
+pub fn create(photo: &photos::Photo) -> Option<String> {
 	let collection = get_collection();
 	let bson_photo = photo.to_bson_photo();
 
 	database::insert_item(&collection, &bson_photo)
 }
 
-pub fn get(id: &str) -> Option<photo::Photo> {
+pub fn get(id: &str) -> Option<photos::Photo> {
 	let collection = get_collection();
 	let result: Option<types::BsonPhoto> = database::find_one(&id, &collection);
 
@@ -21,7 +21,7 @@ pub fn get(id: &str) -> Option<photo::Photo> {
 	}
 }
 
-pub fn get_many(ids: &Vec<&str>) -> Option<Vec<photo::Photo>> {
+pub fn get_many(ids: &Vec<&str>) -> Option<Vec<photos::Photo>> {
 	let collection = get_collection();
 	let result: Option<Vec<types::BsonPhoto>> = database::find_many(&ids, &collection);
 
@@ -37,7 +37,7 @@ pub fn get_many(ids: &Vec<&str>) -> Option<Vec<photo::Photo>> {
 	}
 }
 
-pub fn get_all() -> Vec<photo::Photo> {
+pub fn get_all() -> Vec<photos::Photo> {
 	let collection = get_collection();
 
 	let mut find_options: mongodb::options::FindOptions = Default::default();
@@ -46,7 +46,7 @@ pub fn get_all() -> Vec<photo::Photo> {
 	let find_result = collection.find(None, find_options);
 	let cursor = find_result.unwrap();
 	
-	let mut photos: Vec<photo::Photo> = Vec::new();
+	let mut photos: Vec<photos::Photo> = Vec::new();
 	for result in cursor {
 		match result {
 			Ok(document) => {

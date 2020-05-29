@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io::prelude::*;
 
+// TODO: From config or something
 const APP_BASE_DIRECTORY: &str = "C:/Development/_TestData/hummingbird";
 
 // Store a photo on file system. Returns the relative path of photo
@@ -21,6 +22,7 @@ pub fn store_photo(file_name: &str, file_bytes: &Vec<u8>) -> String {
 	photo_relative_path
 }
 
+/// Retreive a bytes of a photo from file system
 pub fn get_photo(photo_relative_path: &str) -> Option<Vec<u8>> {
 	let photo_absolute_path = format!("{}/{}", APP_BASE_DIRECTORY, photo_relative_path);
 	let result = File::open(&photo_absolute_path);

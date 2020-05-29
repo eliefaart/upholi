@@ -2,15 +2,16 @@ use bson::{doc};
 
 use crate::database;
 use crate::types;
+use crate::albums;
 
-pub fn create(album: &types::Album) -> Option<String> {
+pub fn create(album: &albums::Album) -> Option<String> {
 	let collection = get_collection();
 	let bson_album = album.to_bson_album();
 
 	database::insert_item(&collection, &bson_album)
 }
 
-pub fn get(id: &str) -> Option<types::Album> {
+pub fn get(id: &str) -> Option<albums::Album> {
 	let collection = get_collection();
 	let result: Option<types::BsonAlbum> = database::find_one(&id, &collection);
 	
@@ -20,13 +21,13 @@ pub fn get(id: &str) -> Option<types::Album> {
 	}
 }
 
-pub fn get_all() -> Vec<types::Album> {
+pub fn get_all() -> Vec<albums::Album> {
 	let collection = get_collection();
 
 	let find_result = collection.find(None, None);
 	let cursor = find_result.unwrap();
 	
-	let mut albums: Vec<types::Album> = Vec::new();
+	let mut albums: Vec<albums::Album> = Vec::new();
 	for result in cursor {
 		match result {
 			Ok(document) => {

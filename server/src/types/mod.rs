@@ -1,5 +1,7 @@
 use serde::{Serialize, Deserialize};
 
+use crate::albums;
+
 #[derive(Serialize, Deserialize)]
 pub struct BsonPhoto {
 	#[serde(rename = "_id")]	
@@ -11,18 +13,6 @@ pub struct BsonPhoto {
 	pub path_thumbnail: String,
 	pub path_preview: String,
 	pub path_original: String
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct Album {
-	#[serde(default)] 
-	pub id: String,
-	pub title: String,
-	#[serde(default)]
-	pub thumb_photo_id: Option<String>,
-	#[serde(default)]
-	pub photos: Vec<String>
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -58,7 +48,7 @@ pub struct UpdateAlbum {
 	pub photos: Option<Vec<String>>
 }
 
-impl crate::photo::Photo {
+impl crate::photos::Photo {
 	pub fn to_bson_photo(&self) -> BsonPhoto {
 		BsonPhoto{
 			id: string_to_object_id_or_new(&self.id),
@@ -82,8 +72,8 @@ impl crate::photo::Photo {
 }
 
 impl BsonPhoto {
-	pub fn to_photo(&self) -> crate::photo::Photo {
-		crate::photo::Photo{
+	pub fn to_photo(&self) -> crate::photos::Photo {
+		crate::photos::Photo{
 			id: self.id.to_hex(),
 			name: self.name.to_string(),
 			width: if self.width < 0 { 0u32} else { self.width as u32 },
@@ -96,32 +86,14 @@ impl BsonPhoto {
 	}
 }
 
-impl Album {
-	pub fn to_bson_album(&self) -> BsonAlbum {
-		let mut photos: Vec<bson::oid::ObjectId> = Vec::new();
-		for photo_id in &self.photos {
-			if photo_id != "" {
-				photos.push(string_to_object_id(&photo_id).unwrap());
-			}
-		}
-
-		BsonAlbum{
-			id: string_to_object_id_or_new(&self.id),
-			title: self.title.to_string(),
-			thumb_photo_id: match &self.thumb_photo_id { Some(id) => Some(string_to_object_id(id).unwrap()), None => None },
-			photos: photos
-		}
-	}
-}
-
 impl BsonAlbum {
-	pub fn to_album(&self) -> Album {
+	pub fn to_album(&self) -> albums::Album {
 		let mut photos: Vec<String> = Vec::new();
 		for photo_id in &self.photos {
 			photos.push((&photo_id.to_hex()).to_string());
 		}
 
-		Album{
+		albums::Album{
 			id: self.id.to_hex(),
 			title: self.title.to_string(),
 			thumb_photo_id: match &self.thumb_photo_id { Some(id) => Some(id.to_hex()), None => None },
@@ -140,7 +112,7 @@ pub fn string_to_object_id(object_id: &String) -> Option<bson::oid::ObjectId> {
 }
 
 // Try parse ID as object_id, otherwise generate new object_id
-fn string_to_object_id_or_new(object_id_str: &String) -> bson::oid::ObjectId {
+pub fn string_to_object_id_or_new(object_id_str: &String) -> bson::oid::ObjectId {
 	let object_id: bson::oid::ObjectId;
 	if object_id_str == "" {
 		object_id = bson::oid::ObjectId::new().unwrap();
@@ -242,7 +214,7 @@ mod tests {
 		assert_albums_equal(&album, &bson_album, false);
 	}
 
-	fn assert_photos_equal(photo: &crate::photo::Photo, bson_photo: &BsonPhoto, photo_id_is_empty: bool) {
+	fn assert_photos_equal(photo: &crate::photos::Photo, bson_photo: &BsonPhoto, photo_id_is_empty: bool) {
 		if photo_id_is_empty {
 			assert!(photo.id == "");
 			assert!(bson_photo.id.to_hex() != "");
@@ -257,7 +229,7 @@ mod tests {
 		assert_eq!(photo.path_original, bson_photo.path_original);
 	}
 
-	fn assert_albums_equal(album: &Album, bson_album: &BsonAlbum, album_id_is_empty: bool) {
+	fn assert_albums_equal(album: &albums::Album, bson_album: &BsonAlbum, album_id_is_empty: bool) {
 		if album_id_is_empty {
 			assert!(album.id == "");
 			assert!(bson_album.id.to_hex() != "");
@@ -270,8 +242,8 @@ mod tests {
 		assert_eq!(album.photos.len(), bson_album.photos.len());
 	}
 
-	fn create_dummy_photo_with_id(id: &str) -> crate::photo::Photo {
-		crate::photo::Photo {
+	fn create_dummy_photo_with_id(id: &str) -> crate::photos::Photo {
+		crate::photos::Photo {
 			id: id.to_string(),
 			name: "photo name".to_string(),
 			width: 150,
@@ -296,8 +268,8 @@ mod tests {
 		}
 	}
 
-	fn create_dummy_album_with_id(id: &str) -> Album {
-		Album{
+	fn create_dummy_album_with_id(id: &str) -> albums::Album {
+		albums::Album{
 			id: id.to_string(),
 			title: "title".to_string(),
 			thumb_photo_id: Some(bson::oid::ObjectId::new().unwrap().to_hex()),

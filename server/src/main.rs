@@ -18,7 +18,8 @@ mod routes;
 mod database;
 mod images;
 mod files;
-mod photo;
+mod photos;
+mod albums;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
