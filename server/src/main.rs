@@ -7,13 +7,14 @@ extern crate http;
 extern crate rand;
 extern crate md5;
 extern crate uuid;
-extern crate lazy_static;
 
-use std::time::{Instant};
+use std::time::Instant;
 use actix_cors::Cors;
 use actix_web::{web, App, HttpServer};
 use actix_service::Service;
 use futures::future::FutureExt;
+use lazy_static::lazy_static;
+use settings::Settings;
 
 mod types;
 mod routes;
@@ -23,9 +24,17 @@ mod files;
 mod photos;
 mod albums;
 mod ids;
+mod settings;
+
+lazy_static! {
+	#[derive(Debug)]
+	pub static ref SETTINGS: Settings = Settings::new();
+}
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
+	
+	println!("{:?}", Settings::new());
 
 	HttpServer::new(|| {
 		App::new()

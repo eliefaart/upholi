@@ -5,22 +5,18 @@ use lazy_static::lazy_static;
 pub mod album;
 pub mod photo;
 
-// TODO: Figure out how to do config file in rust, or another way to get secrets.
-const DATABASE_CONNECTION_STRING: &str = "mongodb://localhost:27017";
-const DATABASE_NAME: &str = "rust";
 const COLLECTION_PHOTOS: &str = "photos";
 const COLLECTION_ALBUMS: &str = "albums";
 
-
 lazy_static!{ 
 	static ref DATABASE: mongodb::Database = {
-		let client_options = ClientOptions::parse(DATABASE_CONNECTION_STRING)
+		let client_options = ClientOptions::parse(&crate::SETTINGS.database.connection_string)
 			.expect("Failed to parse database connection string");
 
 		let client = Client::with_options(client_options)
 			.expect("Failed to initialize database client");
 
-		client.database(DATABASE_NAME)
+		client.database(&crate::SETTINGS.database.name)
 	};
 }
 
