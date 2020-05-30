@@ -81,8 +81,7 @@ pub fn hash_exists(hash: &str) -> Result<bool, String> {
 }
 
 fn get_collection() -> mongodb::Collection {
-	let db = database::get_database();
-	db.collection(database::COLLECTION_PHOTOS)
+	database::DATABASE.collection(database::COLLECTION_PHOTOS)
 }
 
 

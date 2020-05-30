@@ -1,38 +1,27 @@
 use mongodb::{Client, options::ClientOptions};
 use bson::{doc};
+use lazy_static::lazy_static;
 
 pub mod album;
 pub mod photo;
 
-const APP_NAME: &str = "Hummingbird";
-const CONNECTION_STRING: &str = "mongodb://localhost:27017";	// TODO: Figure out how to do config file in rust, or another way to get secrets.
+// TODO: Figure out how to do config file in rust, or another way to get secrets.
+const DATABASE_CONNECTION_STRING: &str = "mongodb://localhost:27017";
+const DATABASE_NAME: &str = "rust";
 const COLLECTION_PHOTOS: &str = "photos";
 const COLLECTION_ALBUMS: &str = "albums";
 
-//static mut DATABASE: Option<mongodb::Database> = None;
 
-fn get_database() -> mongodb::Database {
-	init_database(CONNECTION_STRING).unwrap()
-// 	unsafe {
-// 		match &DATABASE {
-// 			Some(_x) => (),
-// 			None => DATABASE = Some(init_database(CONNECTION_STRING).unwrap())
-// 		}
+lazy_static!{ 
+	static ref DATABASE: mongodb::Database = {
+		let client_options = ClientOptions::parse(DATABASE_CONNECTION_STRING)
+			.expect("Failed to parse database connection string");
 
-// 		DATABASE.unwrap()
-// 	}
-}
+		let client = Client::with_options(client_options)
+			.expect("Failed to initialize database client");
 
-fn init_database(connection_string: &str) -> Result<mongodb::Database, mongodb::error::Error> {
-
-	let mut client_options = ClientOptions::parse(connection_string)?;
-	client_options.app_name = Some(APP_NAME.to_string());
-
-	// Get a handle to the deployment.
-	let client = Client::with_options(client_options)?;
-	let database = client.database("rust");
-
-	Ok(database)
+		client.database(DATABASE_NAME)
+	};
 }
 
 fn insert_item<T: serde::Serialize>(collection: &mongodb::Collection, bson_item: &T) -> Result<String, String> {

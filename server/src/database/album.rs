@@ -140,10 +140,8 @@ pub fn remove_thumbs_from_all_albums(photo_ids: &Vec<&str>) -> Result<(), ()> {
 
 
 fn get_collection() -> mongodb::Collection {
-	let db = database::get_database();
-	db.collection(database::COLLECTION_ALBUMS)
+	database::DATABASE.collection(database::COLLECTION_ALBUMS)
 }
-
 
 
 #[cfg(test)]

@@ -7,6 +7,7 @@ extern crate http;
 extern crate rand;
 extern crate md5;
 extern crate uuid;
+extern crate lazy_static;
 
 use std::time::{Instant};
 use actix_cors::Cors;
