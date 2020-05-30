@@ -1,13 +1,3 @@
-// I only need to include those 'extern' in main file?
-extern crate actix_web;
-extern crate actix_rt;
-extern crate serde;
-extern crate mongodb;
-extern crate http;
-extern crate rand;
-extern crate md5;
-extern crate uuid;
-
 use std::time::Instant;
 use actix_cors::Cors;
 use actix_web::{web, App, HttpServer};
@@ -27,6 +17,7 @@ mod ids;
 mod settings;
 
 lazy_static! {
+	/// Global application settings
 	#[derive(Debug)]
 	pub static ref SETTINGS: Settings = Settings::new();
 }
@@ -34,8 +25,6 @@ lazy_static! {
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
 	
-	println!("{:?}", Settings::new());
-
 	HttpServer::new(|| {
 		App::new()
 			.wrap(
