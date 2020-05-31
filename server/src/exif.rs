@@ -24,6 +24,10 @@ impl Exif {
 		match result {
 			Ok(exif) => {
 
+				// These closures are all very similar, except the handling of &entry.value
+				// Not sure if I can reduplicate it. Possibly using macros but havn't looked into it yet.
+				// I can't make functions instead of closures, because rexif::types is private.
+
 				let closure_get_exif_data_as_string = |tag: rexif::ExifTag| -> Option<String> {
 					let result = exif.entries.iter().find(|entry| entry.tag == tag);
 					if let Some(entry) = result {
