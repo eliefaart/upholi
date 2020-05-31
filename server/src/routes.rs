@@ -193,7 +193,6 @@ pub async fn route_upload_photo(payload: Multipart) -> impl Responder {
 			let result = photos::Photo::create(&file.bytes);
 			match result {
 				Ok(photo) => {
-					println!("{:?}", photo);
 					let result = database::photo::insert(&photo);
 					match result {
 						Ok(_) => HttpResponse::Ok().json(CreatedResult{id: photo.id}),

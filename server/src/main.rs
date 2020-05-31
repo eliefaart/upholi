@@ -15,6 +15,7 @@ mod photos;
 mod albums;
 mod ids;
 mod settings;
+mod exif;
 
 lazy_static! {
 	/// Global application settings
