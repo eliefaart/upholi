@@ -2,7 +2,6 @@ use bson::{doc};
 
 use crate::database;
 use crate::photos;
-use crate::exif::Exif;
 
 pub fn insert(photo: &photos::Photo) -> Result<String, String> {
 	if photo.id.is_empty() {
