@@ -2,6 +2,7 @@ use bson::{doc};
 
 use crate::database;
 use crate::photos;
+use crate::exif::Exif;
 
 pub fn insert(photo: &photos::Photo) -> Result<String, String> {
 	if photo.id.is_empty() {
@@ -107,6 +108,17 @@ mod tests {
 			path_thumbnail: "path_thumbnail".to_string(),
 			path_preview: "path_preview".to_string(),
 			path_original: "path_original".to_string(),
+			exif: Exif {
+				manufactorer: None,
+				model: None,
+				aperture: None,
+				exposure_time: None,
+				iso: None,
+				focal_length: None,
+				focal_length_35mm_equiv: None,
+				orientation: None,
+				date_taken: None
+			}
 		}
 	}
 }

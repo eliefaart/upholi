@@ -8,6 +8,7 @@ use crate::files;
 use crate::database;
 use crate::types;
 use crate::ids;
+use crate::exif::Exif;
 
 const DIMENSIONS_THUMB: u32 = 400;
 const DIMENSIONS_PREVIEW: u32 = 1500;
@@ -23,7 +24,8 @@ pub struct Photo {
 	pub hash: String,
 	pub path_thumbnail: String,
 	pub path_preview: String,
-	pub path_original: String
+	pub path_original: String,
+	pub exif: Exif
 }
 
 impl Photo {
@@ -52,6 +54,10 @@ impl Photo {
 		
 			let (width, height) = images::get_image_dimensions(photo_bytes);
 		
+			let exif = Exif::parse_from_photo_bytes(photo_bytes)?;
+
+			println!("{:?}", exif);
+
 			Ok(Self {
 				id,
 				name: filename,
@@ -60,7 +66,8 @@ impl Photo {
 				hash,
 				path_thumbnail,
 				path_preview,
-				path_original
+				path_original,
+				exif: exif
 			})
 		}
 	}
