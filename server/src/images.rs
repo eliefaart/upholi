@@ -40,11 +40,22 @@ pub fn resize_image(image_bytes: &Vec<u8>, to_size: u32) -> Vec<u8> {
 pub fn rotate_image_upright(image_bytes: &Vec<u8>, cur_exif_orientation: u8) -> Option<Vec<u8>> {
 	let image = get_image_from_bytes(image_bytes);
 
-	if cur_exif_orientation == 8 {
+	if cur_exif_orientation == 2 {
+		Some(get_image_bytes(&image.fliph()))
+	} else if cur_exif_orientation == 3 {
+		Some(get_image_bytes(&image.rotate180()))
+	} else if cur_exif_orientation == 4 {
+		Some(get_image_bytes(&image.flipv()))
+	} else if cur_exif_orientation == 5 {
+		Some(get_image_bytes(&image.rotate90().fliph()))
+	} else if cur_exif_orientation == 6 {
+		Some(get_image_bytes(&image.rotate90()))
+	} else if cur_exif_orientation == 7 {
+		Some(get_image_bytes(&image.rotate90().flipv()))
+	} else if cur_exif_orientation == 8 {
 		Some(get_image_bytes(&image.rotate270()))
 	} else {
-		// Already correct orientation
-		None
+		None	// Orientation is 1 (the desired orientation), or an invalid value
 	}
 }
 
