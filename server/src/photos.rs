@@ -10,8 +10,8 @@ use crate::types;
 use crate::ids;
 use crate::exif::Exif;
 
-const DIMENSIONS_THUMB: u32 = 400;
-const DIMENSIONS_PREVIEW: u32 = 1500;
+const DIMENSIONS_THUMB: u32 = 700;
+const DIMENSIONS_PREVIEW: u32 = 2250;
 
 /// A photo
 #[derive(Serialize, Deserialize, Debug)]
