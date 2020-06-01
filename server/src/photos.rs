@@ -56,7 +56,6 @@ impl Photo {
 			// So the orientation property is also lost.
 			// So rotate them to be in in the default orientation.
 			if let Some(orientation) = exif.orientation {
-				println!("{}", orientation);
 				if let Some(rotated_bytes) = images::rotate_image_upright(&thumbnail_image_bytes, orientation as u8) {
 					thumbnail_image_bytes = rotated_bytes;
 				}

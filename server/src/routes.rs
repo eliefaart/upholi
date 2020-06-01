@@ -111,9 +111,13 @@ pub async fn route_delete_photos(photo_ids: web::Json<Vec<String>>) -> impl Resp
 	let mut ids: Vec<&str> = Vec::new();
 
 	for id in photo_ids.iter() {
-		ids.push(&id[..]);
+		ids.push(&id);
+
+		// Delete physical files for photo
+		delete_photo_files(&id);
 	}
 
+	// Delete everything from database in one batch
 	let result = database::photo::delete_many(&ids);
 
 	match result {
@@ -209,17 +213,27 @@ pub async fn route_upload_photo(payload: Multipart) -> impl Responder {
 
 pub async fn route_delete_photo(req: HttpRequest) -> impl Responder {
 	let photo_id = req.match_info().get("photo_id").unwrap();
-	let result = database::photo::delete(&photo_id);
 
-	// TODO: Delete photo files from file system
-	
+	delete_photo_files(&photo_id);
+
+	let result = database::photo::delete(&photo_id);
 	match result {
 		Some(_) => HttpResponse::build(StatusCode::OK),
 		None => HttpResponse::build(StatusCode::NOT_FOUND)
 	}
 }
 
-// Gets all fields from multipart payload.
+/// Deletes all physical files of a photo from file system
+/// Original, thumbnail and preview images.
+fn delete_photo_files(photo_id: &str) {
+	if let Some(photo) = database::photo::get(&photo_id) {
+		files::delete_photo(&photo.path_original);
+		files::delete_photo(&photo.path_preview);
+		files::delete_photo(&photo.path_thumbnail);
+	}
+}
+
+/// Gets all fields from multipart payload.
 async fn get_form_data(mut payload: Multipart) -> Vec<FormData> {
 	let mut form_data: Vec<FormData> = Vec::new();
 
@@ -239,7 +253,7 @@ async fn get_form_data(mut payload: Multipart) -> Vec<FormData> {
 	form_data
 }
 
-// Gets the bytes of a single multipart field.
+/// Gets the bytes of a single multipart field.
 async fn get_form_field_bytes(mut field: Field) -> Vec<u8> {
 	let mut field_bytes: Vec<u8> = Vec::new();
 				

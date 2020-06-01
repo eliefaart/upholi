@@ -40,12 +40,8 @@ pub fn resize_image(image_bytes: &Vec<u8>, to_size: u32) -> Vec<u8> {
 pub fn rotate_image_upright(image_bytes: &Vec<u8>, cur_exif_orientation: u8) -> Option<Vec<u8>> {
 	let image = get_image_from_bytes(image_bytes);
 
-	println!("{}", cur_exif_orientation);
 	if cur_exif_orientation == 8 {
-		// rotate 270 degrees
-		let image = image.rotate270();
-		println!("rotating...");
-		Some(get_image_bytes(&image))
+		Some(get_image_bytes(&image.rotate270()))
 	} else {
 		// Already correct orientation
 		None
