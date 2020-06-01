@@ -8,7 +8,7 @@ class PhotoPage extends React.Component {
 		super(props);
 
 		this.state = {
-			url: PhotoService.baseUrl() + "/photo/" + props.match.params.photoId + "/original"
+			url: PhotoService.baseUrl() + "/photo/" + props.match.params.photoId + "/preview"
 		};
 	}
 
