@@ -8,7 +8,7 @@ use crate::files;
 use crate::database;
 use crate::types;
 use crate::ids;
-use crate::exif::Exif;
+use crate::exif;
 
 const DIMENSIONS_THUMB: u32 = 700;
 const DIMENSIONS_PREVIEW: u32 = 2250;
@@ -25,7 +25,7 @@ pub struct Photo {
 	pub path_thumbnail: String,
 	pub path_preview: String,
 	pub path_original: String,
-	pub exif: Exif
+	pub exif: exif::Exif
 }
 
 impl Photo {
@@ -42,21 +42,35 @@ impl Photo {
 		if exists {
 			Err("Photo already exists".to_string())
 		} else {
+			// Parse exif data
+			let exif = exif::Exif::parse_from_photo_bytes(photo_bytes)?;
+
+			// Generate the thumbnail and previes images
 			let thumbnail_file_name = format!("thumb_{}", filename);
 			let preview_file_name = format!("preview_{}", filename);
 		
-			let thumbnail_image_bytes = images::resize_image(photo_bytes, DIMENSIONS_THUMB);
-			let preview_image_bytes = images::resize_image(photo_bytes, DIMENSIONS_PREVIEW);
+			let mut thumbnail_image_bytes = images::resize_image(photo_bytes, DIMENSIONS_THUMB);
+			let mut preview_image_bytes = images::resize_image(photo_bytes, DIMENSIONS_PREVIEW);
+
+			// These images will not contain the original exif data.
+			// So the orientation property is also lost.
+			// So rotate them to be in in the default orientation.
+			if let Some(orientation) = exif.orientation {
+				println!("{}", orientation);
+				if let Some(rotated_bytes) = images::rotate_image_upright(&thumbnail_image_bytes, orientation as u8) {
+					thumbnail_image_bytes = rotated_bytes;
+				}
+				if let Some(rotated_bytes) = images::rotate_image_upright(&preview_image_bytes, orientation as u8) {
+					preview_image_bytes = rotated_bytes;
+				}
+			}
+			
 			
 			let path_original = files::store_photo(&filename.to_string(), photo_bytes);
 			let path_thumbnail = files::store_photo(&thumbnail_file_name.to_string(), &thumbnail_image_bytes);
 			let path_preview = files::store_photo(&preview_file_name.to_string(), &preview_image_bytes);
 		
 			let (width, height) = images::get_image_dimensions(photo_bytes);
-		
-			let exif = Exif::parse_from_photo_bytes(photo_bytes)?;
-
-			println!("{:?}", exif);
 
 			Ok(Self {
 				id,

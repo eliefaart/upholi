@@ -18,7 +18,7 @@ pub fn get_image_dimensions(image_bytes: &Vec<u8>) -> (u32, u32) {
 	(photo_width, photo_height)
 }
 
-// Creates a new image with desires size (dimensions)
+/// Creates a new image with desires size (dimensions)
 pub fn resize_image(image_bytes: &Vec<u8>, to_size: u32) -> Vec<u8> {
 	let image = get_image_from_bytes(image_bytes);
 
@@ -37,14 +37,29 @@ pub fn resize_image(image_bytes: &Vec<u8>, to_size: u32) -> Vec<u8> {
 	}
 }
 
-// Convert image bytes to image object
+pub fn rotate_image_upright(image_bytes: &Vec<u8>, cur_exif_orientation: u8) -> Option<Vec<u8>> {
+	let image = get_image_from_bytes(image_bytes);
+
+	println!("{}", cur_exif_orientation);
+	if cur_exif_orientation == 8 {
+		// rotate 270 degrees
+		let image = image.rotate270();
+		println!("rotating...");
+		Some(get_image_bytes(&image))
+	} else {
+		// Already correct orientation
+		None
+	}
+}
+
+/// Convert image bytes to image object
 fn get_image_from_bytes(image_bytes: &Vec<u8>) -> DynamicImage {
 	let image_result = image::load_from_memory(&image_bytes[0..]);
 	let image = image_result.unwrap();
 	image
 }
 
-// Get bytes from image in Jpeg format
+/// Get bytes from image in Jpeg format
 fn get_image_bytes(image: &DynamicImage) -> Vec<u8> {
 	let mut buffer: Vec<u8> = Vec::new();
 	let write_result = image.write_to(&mut buffer, ImageFormat::Jpeg);

@@ -131,7 +131,6 @@ pub fn remove_thumbs_from_all_albums(photo_ids: &Vec<&str>) -> Result<(), ()> {
 	let result = collection.update_many(query, update, None);
 	match result {
 		Ok(res) => {
-			println!("{:?}{:?}", photo_ids, res); 
 			Ok(())
 		},
 		Err(_) => Err(())

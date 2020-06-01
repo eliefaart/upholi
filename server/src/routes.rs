@@ -210,6 +210,8 @@ pub async fn route_upload_photo(payload: Multipart) -> impl Responder {
 pub async fn route_delete_photo(req: HttpRequest) -> impl Responder {
 	let photo_id = req.match_info().get("photo_id").unwrap();
 	let result = database::photo::delete(&photo_id);
+
+	// TODO: Delete photo files from file system
 	
 	match result {
 		Some(_) => HttpResponse::build(StatusCode::OK),
