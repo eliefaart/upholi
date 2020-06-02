@@ -39,13 +39,14 @@ impl Photo {
 		if exists {
 			Err("Photo already exists".to_string())
 		} else {
-
-			let image_info = images::Image::from_buffer(photo_bytes);
-
 			// Parse exif data
 			let exif = exif::Exif::parse_from_photo_bytes(photo_bytes)?;
 
-			// Generate the thumbnail and previes images
+			// Process image
+			let exif_orientation = exif.orientation.unwrap_or(1) as u8;
+			let image_info = images::Image::from_buffer(photo_bytes, exif_orientation);
+
+			// Store files
 			let thumbnail_file_name = format!("thumb_{}", filename);
 			let preview_file_name = format!("preview_{}", filename);
 					

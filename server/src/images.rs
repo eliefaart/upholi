@@ -1,6 +1,5 @@
 extern crate base64;
 
-use crate::exif;
 use image::{GenericImageView, DynamicImage, ImageFormat};
 
 const DIMENSIONS_THUMB: u32 = 700;
@@ -9,7 +8,6 @@ const DIMENSIONS_PREVIEW: u32 = 2250;
 pub struct Image {
 	pub width: u32,
 	pub height: u32,
-	//pub exif: Option<exif::Exif>,
 	pub bytes_original: Vec<u8>,
 	pub bytes_thumbnail: Vec<u8>,
 	pub bytes_preview: Vec<u8>
@@ -18,26 +16,24 @@ pub struct Image {
 impl Image {
 
 	/// Process image from buffer
-	pub fn from_buffer(bytes: &Vec<u8>) -> Self {
+	pub fn from_buffer(bytes: &Vec<u8>, exif_orientation: u8) -> Self {
 		let image = Self::get_image_from_bytes(bytes);
 
 		let (width, height) = Self::get_image_dimensions(&image);
 
-		let mut image_preview = Self::resize_image(&image, DIMENSIONS_PREVIEW).unwrap_or_else(|| Self::copy_image(&image));
-		let mut image_thumbnail = Self::resize_image(&image_preview, DIMENSIONS_THUMB).unwrap_or_else(|| Self::copy_image(&image_preview));
+		// Generate thumbs
+		let mut image_preview = Self::resize_image(&image, DIMENSIONS_PREVIEW).unwrap_or_else(|| Self::clone_image(&image));
+		let mut image_thumbnail = Self::resize_image(&image_preview, DIMENSIONS_THUMB).unwrap_or_else(|| Self::clone_image(&image_preview));
 
-		if let Ok(exif) = exif::Exif::parse_from_photo_bytes(bytes) {
-			if let Some(orientation) = exif.orientation {
-				if let Some(rotated_image) = Self::rotate_image_upright(&image_thumbnail, orientation as u8) {
-					image_thumbnail = rotated_image;
-				}
-				if let Some(rotated_image) = Self::rotate_image_upright(&image_preview, orientation as u8) {
-					image_preview = rotated_image;
-				}
-
-				// TODO: For some orientations, I need to swap the width and height
-			}
+		// Rotate if needed
+		if let Some(rotated_image) = Self::rotate_image_upright(&image_thumbnail, exif_orientation) {
+			image_thumbnail = rotated_image;
 		}
+		if let Some(rotated_image) = Self::rotate_image_upright(&image_preview, exif_orientation) {
+			image_preview = rotated_image;
+		}
+
+		// TODO: For some orientations, I need to swap the width and height
 
 		Self {
 			width,
@@ -48,14 +44,15 @@ impl Image {
 		}
 	}
 
+	/// Get current dimensions
 	fn get_image_dimensions(image: &DynamicImage) -> (u32, u32) {
-		// Get current dimensions
 		let photo_width = image.width();
 		let photo_height = image.height();
 	
 		(photo_width, photo_height)
 	}
 
+	/// Scale this image down to fit within a specific size. The image's aspect ratio is preserved. The image is scaled to the maximum size possible while neither height nor width exceeding specified 'to_size'.
 	fn resize_image(image: &DynamicImage, to_size: u32) -> Option<DynamicImage> {
 		// Get current dimensions
 		let (width, height) = Self::get_image_dimensions(&image);
@@ -69,6 +66,7 @@ impl Image {
 		}
 	}
 
+	/// Rotate image so it is displayed in correct orientation when the oientation exif tag is not present
 	fn rotate_image_upright(image: &DynamicImage, cur_exif_orientation: u8) -> Option<DynamicImage> {
 		if cur_exif_orientation == 2 {
 			Some(image.fliph())
@@ -89,7 +87,8 @@ impl Image {
 		}
 	}
 
-	fn copy_image(image: &DynamicImage) -> DynamicImage {
+	/// Clone an image
+	fn clone_image(image: &DynamicImage) -> DynamicImage {
 		Self::get_image_from_bytes(&Self::get_image_bytes(image))
 	}
 
