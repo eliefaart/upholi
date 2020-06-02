@@ -16,7 +16,7 @@ pub struct Image {
 impl Image {
 
 	/// Process image from buffer
-	pub fn from_buffer(bytes: &Vec<u8>, exif_orientation: u8) -> Self {
+	pub fn from_buffer(bytes: &[u8], exif_orientation: u8) -> Self {
 		let image = Self::get_image_from_bytes(bytes);
 
 		let (mut width, mut height) = Self::get_image_dimensions(&image);
@@ -35,9 +35,7 @@ impl Image {
 
 		// For some orientations, I need to swap the width and height
 		if exif_orientation >= 5 && exif_orientation <= 8 {
-			let t_height = height;
-			height = width;
-			width = t_height;
+			std::mem::swap(&mut height, &mut width)
 		} 
 
 		Self {
@@ -98,10 +96,9 @@ impl Image {
 	}
 
 	/// Convert image bytes to image object
-	fn get_image_from_bytes(image_bytes: &Vec<u8>) -> DynamicImage {
+	fn get_image_from_bytes(image_bytes: &[u8]) -> DynamicImage {
 		let image_result = image::load_from_memory(&image_bytes[0..]);
-		let image = image_result.unwrap();
-		image
+		image_result.unwrap()
 	}
 
 	/// Get bytes from image in Jpeg format

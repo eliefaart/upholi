@@ -1,4 +1,3 @@
-use md5;
 use serde::{Serialize, Deserialize};
 use rand::{thread_rng, Rng};
 use rand::distributions::Alphanumeric;
@@ -28,7 +27,7 @@ pub struct Photo {
 impl Photo {
 
 	/// Create a new photo from bytes
-	pub fn create(photo_bytes: &Vec<u8>) -> Result<Self, String> {
+	pub fn create(photo_bytes: &[u8]) -> Result<Self, String> {
 		let id = ids::create_unique_id();
 		let filename = Self::generate_filename(".jpg")?;
 		let hash = Self::compute_md5_hash(photo_bytes);
@@ -50,9 +49,9 @@ impl Photo {
 			let thumbnail_file_name = format!("thumb_{}", filename);
 			let preview_file_name = format!("preview_{}", filename);
 					
-			let path_original = files::store_photo(&filename.to_string(), photo_bytes);
-			let path_thumbnail = files::store_photo(&thumbnail_file_name.to_string(), &image_info.bytes_thumbnail);
-			let path_preview = files::store_photo(&preview_file_name.to_string(), &image_info.bytes_preview);
+			let path_original = files::store_photo(&filename, photo_bytes);
+			let path_thumbnail = files::store_photo(&thumbnail_file_name, &image_info.bytes_thumbnail);
+			let path_preview = files::store_photo(&preview_file_name, &image_info.bytes_preview);
 
 			Ok(Self {
 				id,
@@ -78,7 +77,7 @@ impl Photo {
 	}
 
 	/// Compute MD5 hash of bytes
-	fn compute_md5_hash(bytes: &Vec<u8>) -> String {
+	fn compute_md5_hash(bytes: &[u8]) -> String {
 		let mut md5_context = md5::Context::new();
 		md5_context.consume(&bytes);
 		let digest = md5_context.compute();
@@ -106,12 +105,12 @@ impl Photo {
 				return Err(format!("Extension '{}' contains invalid characters", extension));
 			}
 
-			if extension.ends_with(".") {
+			if extension.ends_with('.') {
 				return Err("Last extension character cannot be a period".to_string());
 			}
 
 			// Prepend extension with a period if it is missing
-			if !extension.starts_with(".") {
+			if !extension.starts_with('.') {
 				extension.insert(0, '.');
 			}
 		}
@@ -139,7 +138,7 @@ mod tests {
 		let name = Photo::generate_filename("").unwrap_or_default();
 
 		assert!(name.len() > 0, name);
-		assert!(!name.contains("."), name);
+		assert!(!name.contains('.'), name);
 	}
 
 	#[test]
@@ -153,7 +152,7 @@ mod tests {
 
 		assert!(name.ends_with(extension));
 		assert!(!name.starts_with(extension));
-		assert!(name.contains("."));
+		assert!(name.contains('.'));
 		assert!(name.len() > extension.len());
 	}
 

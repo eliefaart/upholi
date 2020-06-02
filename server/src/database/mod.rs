@@ -35,7 +35,7 @@ fn insert_item<T: serde::Serialize>(collection: &mongodb::Collection, bson_item:
 }
 
 fn find_one<'de, T: serde::Deserialize<'de>>(id: &str, collection: &mongodb::Collection) -> Option<T> {
-	let result = find_many(&vec!{id}, collection);
+	let result = find_many(&[id], collection);
 
 	if let Some(mut photos) = result {
 		photos.pop()
@@ -44,7 +44,7 @@ fn find_one<'de, T: serde::Deserialize<'de>>(id: &str, collection: &mongodb::Col
 	}
 }
 
-fn find_many<'de, T: serde::Deserialize<'de>>(ids: &Vec<&str>, collection: &mongodb::Collection) -> Option<Vec<T>> {
+fn find_many<'de, T: serde::Deserialize<'de>>(ids: &[&str], collection: &mongodb::Collection) -> Option<Vec<T>> {
 	let result = create_in_filter_for_ids(ids);
 	if let Some(filter) = result {
 		let find_result = collection.find(filter, None);
@@ -76,7 +76,7 @@ fn delete_one(id: &str, collection: &mongodb::Collection) -> Option<()> {
 	delete_many(&ids, &collection)
 }
 
-fn delete_many(ids: &Vec<&str>, collection: &mongodb::Collection) -> Option<()> {
+fn delete_many(ids: &[&str], collection: &mongodb::Collection) -> Option<()> {
 	let result = create_in_filter_for_ids(ids);
 	if let Some(filter) = result {
 		let result = collection.delete_many(filter, None);
@@ -100,6 +100,6 @@ fn create_filter_for_id(id: &str) -> Option<bson::ordered::OrderedDocument> {
 	Some(doc!{"id": id})
 }
 
-fn create_in_filter_for_ids(ids: &Vec<&str>) -> Option<bson::ordered::OrderedDocument> {
+fn create_in_filter_for_ids(ids: &[&str]) -> Option<bson::ordered::OrderedDocument> {
 	Some(doc!{"id": doc!{"$in": ids } })
 }

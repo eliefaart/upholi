@@ -19,7 +19,7 @@ pub fn get(id: &str) -> Option<photos::Photo> {
 	result
 }
 
-pub fn get_many(ids: &Vec<&str>) -> Option<Vec<photos::Photo>> {
+pub fn get_many(ids: &[&str]) -> Option<Vec<photos::Photo>> {
 	let collection = get_collection();
 	let result: Option<Vec<photos::Photo>> = database::find_many(&ids, &collection);
 
@@ -53,13 +53,13 @@ pub fn get_all() -> Vec<photos::Photo> {
 }
 
 pub fn delete(id: &str) -> Option<()>{
-	delete_many(&vec!{id})
+	delete_many(&[id])
 }
 
-pub fn delete_many(ids: &Vec<&str>) -> Option<()>{
+pub fn delete_many(ids: &[&str]) -> Option<()> {
 	let collection = get_collection();
-	if let Ok(_) = database::album::remove_photos_from_all_albums(ids) {
-		if let Ok(_) = database::album::remove_thumbs_from_all_albums(ids) {
+	if database::album::remove_photos_from_all_albums(ids).is_ok() {
+		if database::album::remove_thumbs_from_all_albums(ids).is_ok() {
 			database::delete_many(ids, &collection)
 		} else {
 			None

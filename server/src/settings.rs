@@ -24,6 +24,12 @@ pub struct Photos {
 	pub base_directory: String
 }
 
+impl Default for Settings {
+    fn default() -> Self {
+		Self::new()
+	}
+}
+
 impl Settings {
 	/// Get all application settings
 	/// It just panics now if something went wrong (eg missing env var)
@@ -41,7 +47,6 @@ impl Settings {
 	
 	fn get_env_var(key: &str) -> String {
 		let result = var(key);
-		let value = result.expect(&format!("Environment variable with key '{}' missing", key));
-		value
+		result.unwrap_or_else(|_| panic!("Environment variable with key '{}' missing", key))
 	}
 }

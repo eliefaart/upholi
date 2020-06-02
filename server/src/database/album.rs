@@ -90,7 +90,7 @@ pub fn update(id: &str, updated_album: &types::UpdateAlbum) -> Option<()> {
 }
 
 /// Remove photos with given photo_ids from all albums containing any of these photos
-pub fn remove_photos_from_all_albums(photo_ids: &Vec<&str>) -> Result<(), ()> {
+pub fn remove_photos_from_all_albums(photo_ids: &[&str]) -> Result<(), ()> {
 	let collection = get_collection();
 
 	let query = doc!{
@@ -114,7 +114,7 @@ pub fn remove_photos_from_all_albums(photo_ids: &Vec<&str>) -> Result<(), ()> {
 }
 
 /// Unset thumbnail of all album where thumbnail is set to any of given photo_ids
-pub fn remove_thumbs_from_all_albums(photo_ids: &Vec<&str>) -> Result<(), ()> {
+pub fn remove_thumbs_from_all_albums(photo_ids: &[&str]) -> Result<(), ()> {
 	let collection = get_collection();
 
 	let query = doc!{

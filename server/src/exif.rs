@@ -1,6 +1,5 @@
 use serde::{Serialize, Deserialize};
 use chrono::prelude::*;
-use chrono::{DateTime};
 use rexif::{TagValue, ExifTag};
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -19,7 +18,7 @@ pub struct Exif {
 
 impl Exif {
 	/// Parse EXIF data from photo bytes. Bytes can represent a .jpg or .tiff file.
-	pub fn parse_from_photo_bytes(photo_bytes: &Vec<u8>) -> Result<Exif, String> {
+	pub fn parse_from_photo_bytes(photo_bytes: &[u8]) -> Result<Exif, String> {
 		let result = rexif::parse_buffer(photo_bytes);
 		match result {
 			Ok(exif) => {
@@ -71,8 +70,7 @@ impl Exif {
 							TagValue::Ascii(val) => {
 								let result = Utc.datetime_from_str(val, "%Y:%m:%d %H:%M:%S");
 								if let Ok(datetime) = result {
-									let dt: DateTime<Utc> = DateTime::from(datetime);
-									Some(dt)
+									Some(datetime)
 								} else {
 									None
 								}

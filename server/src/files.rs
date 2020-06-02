@@ -2,7 +2,7 @@ use std::fs::{File};
 use std::io::prelude::*;
 
 /// Store a photo on file system. Returns the relative path of photo
-pub fn store_photo(file_name: &str, file_bytes: &Vec<u8>) -> String {
+pub fn store_photo(file_name: &str, file_bytes: &[u8]) -> String {
 	let photos_folder_name = "photos";
 	let photo_relative_path = format!("{}/{}", photos_folder_name, file_name);
 	let photo_absolute_path = get_absolute_photo_path(&photo_relative_path);
