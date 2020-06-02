@@ -107,7 +107,7 @@ mod tests {
 			path_thumbnail: "path_thumbnail".to_string(),
 			path_preview: "path_preview".to_string(),
 			path_original: "path_original".to_string(),
-			exif: Exif {
+			exif: crate::exif::Exif {
 				manufactorer: None,
 				model: None,
 				aperture: None,
