@@ -23,8 +23,8 @@ impl Image {
 
 		let (width, height) = Self::get_image_dimensions(&image);
 
-		let mut image_thumbnail = Self::resize_image(&image, DIMENSIONS_THUMB).unwrap_or(Self::copy_image(&image));
-		let mut image_preview = Self::resize_image(&image, DIMENSIONS_PREVIEW).unwrap_or(Self::copy_image(&image));
+		let mut image_preview = Self::resize_image(&image, DIMENSIONS_PREVIEW).unwrap_or_else(|| Self::copy_image(&image));
+		let mut image_thumbnail = Self::resize_image(&image_preview, DIMENSIONS_THUMB).unwrap_or_else(|| Self::copy_image(&image_preview));
 
 		if let Ok(exif) = exif::Exif::parse_from_photo_bytes(bytes) {
 			if let Some(orientation) = exif.orientation {
