@@ -19,7 +19,7 @@ impl Image {
 	pub fn from_buffer(bytes: &Vec<u8>, exif_orientation: u8) -> Self {
 		let image = Self::get_image_from_bytes(bytes);
 
-		let (width, height) = Self::get_image_dimensions(&image);
+		let (mut width, mut height) = Self::get_image_dimensions(&image);
 
 		// Generate thumbs
 		let mut image_preview = Self::resize_image(&image, DIMENSIONS_PREVIEW).unwrap_or_else(|| Self::clone_image(&image));
@@ -33,7 +33,12 @@ impl Image {
 			image_preview = rotated_image;
 		}
 
-		// TODO: For some orientations, I need to swap the width and height
+		// For some orientations, I need to swap the width and height
+		if exif_orientation >= 5 && exif_orientation <= 8 {
+			let t_height = height;
+			height = width;
+			width = t_height;
+		} 
 
 		Self {
 			width,
