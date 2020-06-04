@@ -8,7 +8,7 @@ import UploadHelper from "../helpers/UploadHelper.js"
 import Overlay from '../components/Overlay.jsx';
 import ConfirmationDialog from '../components/ConfirmationDialog.jsx';
 import UploadProgressDialog from '../components/UploadProgressDialog.jsx';
-
+import { toast } from 'react-toastify';
 
 class AlbumPage extends React.Component {
 
@@ -68,8 +68,14 @@ class AlbumPage extends React.Component {
 	}
 
 	deleteAlbum() {
+		let component = this;
+
 		PhotoService.deleteAlbum(this.state.albumId)
-			.then(() => this.context.history.push("/albums"))
+			.then(() => {
+				// Using a timeout because otherwise the navigation interupts the toast
+				setTimeout(() => toast.info("Album deleted."), 100);
+				component.context.history.push("/albums");
+			})
 			.catch((error) => console.log(error));
 	}
 
@@ -91,7 +97,10 @@ class AlbumPage extends React.Component {
 		let photoId = this.state.selectedPhotos[0];
 
 		PhotoService.updateAlbumCover(this.state.albumId, photoId)
-			.then(() => _refreshPhotos())
+			.then(() => {
+				toast.info("Album cover updated.");
+				_refreshPhotos();
+			})
 			.catch(error => console.log(error));
 	}
 
@@ -111,6 +120,7 @@ class AlbumPage extends React.Component {
 
 		PhotoService.updateAlbumPhotos(this.state.albumId, remainingPhotosAfterRemoval)
 			.then(() => {
+				toast.info("Photos removed.");
 				fnCloseConfirmDialog();
 				fnRefreshPhotos();
 			})
@@ -153,6 +163,8 @@ class AlbumPage extends React.Component {
 			let fnRefreshPhotos = () => this.refreshPhotos();
 
 			if (uploadedPhotoIds && uploadedPhotoIds.length > 0) {
+				toast.info("Upload finished.");
+
 				photoIds = photoIds.concat(uploadedPhotoIds);
 				PhotoService.updateAlbumPhotos(albumId, photoIds)
 					.then(fnRefreshPhotos);

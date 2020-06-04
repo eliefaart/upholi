@@ -9,6 +9,7 @@ import UploadHelper from "../helpers/UploadHelper.js"
 import AppStateContext from '../contexts/AppStateContext.jsx';
 import ConfirmationDialog from '../components/ConfirmationDialog.jsx';
 import UploadProgressDialog from '../components/UploadProgressDialog.jsx';
+import { toast } from 'react-toastify';
 
 class PhotosDashboardPage extends React.Component {
 
@@ -65,6 +66,8 @@ class PhotosDashboardPage extends React.Component {
 				selectedPhotos: [],
 				confirmDeletePhotosOpen: false
 			});
+
+			toast.info("Photos deleted.");
 		});
 	}
 
@@ -89,6 +92,7 @@ class PhotosDashboardPage extends React.Component {
 					selectedPhotos: [],
 					addPhotosToAlbumDialogOpen: false
 				})
+				toast.info("Photos added to album.");
 			})
 			.catch(error => console.log(error));
 	}
@@ -128,6 +132,9 @@ class PhotosDashboardPage extends React.Component {
 		let title = form.find("[name=title]").val();
 
 		PhotoService.createAlbum(title, this.state.selectedPhotos, (albumId) => {
+			// Using a timeout because otherwise the navigation interupts the toast
+			setTimeout(() => toast.info("New album '" + title + "' created."), 100);
+			
 			if (history) {
 				history.push("/album/" + albumId);
 			}
@@ -147,6 +154,7 @@ class PhotosDashboardPage extends React.Component {
 				uploadFiles: []
 			});
 			this.refreshPhotos();
+			toast.info("Upload finished.");
 		};
 		let fnUpdateFileUploadState = (file, newState) => {
 			let stateFile = files.find(f => f.name === file.name);
