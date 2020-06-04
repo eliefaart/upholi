@@ -10,7 +10,7 @@ $modalHeaderHeight: 30px;
 
 .modal {
 	position: absolute;
-	background: #704d38;
+	background: $altBackgroundColor;
 	overflow: auto;
 	border-radius: $borderRadius;
 	padding: $spacing * 4;
@@ -23,7 +23,7 @@ $modalHeaderHeight: 30px;
 		display: flex;
 
 		>* {
-			margin: 0 $spacing;
+			//margin: 0 $spacing;
 		}
 
 		.title {
@@ -49,7 +49,8 @@ $modalHeaderHeight: 30px;
 		min-height: 50px;
 		flex-direction: column;
 		max-height: 80vh;
-		overflow-y: scroll;
+		//overflow-y: scroll;
+		margin: $spacing * 4;
 	}
 
 	.modal-footer {

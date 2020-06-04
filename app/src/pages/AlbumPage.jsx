@@ -187,6 +187,7 @@ class AlbumPage extends React.Component {
 		
 		return (
 			<PageLayout headerElementActions={headerActions} onDrop={(event) => this.onFilesDropped(event)}>
+				<h1>{this.state.title}</h1>
 				<PhotoGallerySelectable onClick={(event, target) => this.onPhotoClicked(event, target)} photos={this.state.photos} selectedItems={this.state.selectedPhotos} onPhotoSelectedChange={(photoId, selected) => this.onPhotoSelectedChange(photoId, selected)}/>
 
 				{!!this.state.openedPhotoId && 

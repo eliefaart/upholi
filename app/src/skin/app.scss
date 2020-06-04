@@ -1,20 +1,15 @@
 @import "_cssreset";
 @import "_fonts";
 
-$backgroundColor: #000; //#202126;
-$altBackgroundColor: #27282e; //#202126;
-$accentColor: #2f5f89; //#4e18a5;//#20a672;
-$secondaryAccentColor: #1BBFAC ;// #a54e18;
+$backgroundColor: #000;
+$altBackgroundColor: #222;
+$accentColor: #d3e532;
+$secondaryAccentColor: #664645;
 
-$textColorDark: #333;
-$textColorLight: #ddd; //white;
-$textColorDarkAlt: #333;
-$textColorLightAlt: #ced6ef;
-$sectionBackgroundColor: #eee;
+$textColorDark: #161f21;
+$textColorLight: #dedfe4; //white;
 
-$colorPositive: #30742D;
-$colorNegative : #a4342c;
-$spacing: 3px;
+$spacing: 5px;
 $transitionSpeed: 0.2s;
 $borderRadius: 2px;
 $headerHeight: 50px;
@@ -38,7 +33,7 @@ html {
 			min-height: 100vh;
 
 			.content {
-				padding-top: $headerHeight;
+				padding: $headerHeight +  $spacing * 2 $spacing * 2;
 			}
 		}
 	}
@@ -73,7 +68,7 @@ input, select {
 
 button {
     color: $textColorDark;
-    background-color: $secondaryAccentColor;
+    background-color: $accentColor;
     border: none;
     cursor: pointer;
     width: auto;
@@ -81,7 +76,11 @@ button {
 	margin: 0px 0px 0px 0px;
 	
 	&:hover, &:active { 
-		background: $accentColor; 
+		background: $secondaryAccentColor; 
 		color: $textColorLight; 
 	}
+}
+
+h1 {
+	text-align: center;
 }
