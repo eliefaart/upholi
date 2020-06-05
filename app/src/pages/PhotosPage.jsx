@@ -133,7 +133,7 @@ class PhotosDashboardPage extends React.Component {
 
 		PhotoService.createAlbum(title, this.state.selectedPhotos, (albumId) => {
 			// Using a timeout because otherwise the navigation interupts the toast
-			setTimeout(() => toast.info("New album '" + title + "' created."), 100);
+			toast.info("Album '" + title + "' created.");
 			
 			if (history) {
 				history.push("/album/" + albumId);

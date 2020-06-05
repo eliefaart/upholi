@@ -27,12 +27,28 @@ class Header extends React.Component {
 	}
 	
 	render() {
+		const gotoPage = (path) => {
+			!!this.context.history && this.context.history.push(path);
+		}
+		let menuItems = [
+			{ path: "/", title: "Home" },
+			{ path: "/albums", title: "Albums" },
+			{ path: "/shared", title: "Shared" }
+		];
+
+		let menuItemsElement = menuItems.map((menuItem) => {
+			return (<span key={menuItem.path} onClick={() => gotoPage(menuItem.path)}>{menuItem.title}</span>);
+		});
+
 		return (
 			<div className="header">
 				<div className="menu">
-					<span onClick={() => this.gotoPhotos()}>Home</span>
-					<span onClick={() => this.gotoAlbums()}>Albums</span>
-					<span onClick={() => this.gotoShared()}>Shared</span>
+					{menuItems.map((menuItem) => 
+						(<span key={menuItem.path} 
+							onClick={() => gotoPage(menuItem.path)}
+							className={location.pathname === menuItem.path ? "active" : ""}
+							>{menuItem.title}</span>)
+					)}
 				</div>
 				<span className="title">{this.props.title || ' '}</span>
 				<div className="actions">

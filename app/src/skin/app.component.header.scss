@@ -14,12 +14,16 @@
 		
 		span {
 			cursor: pointer;
-			font-size: 1.3em;
+			font-size: $fontSizeLarge;
 			line-height: $headerHeight;
 			height: $headerHeight;
 			margin: 0 $spacing * 2 0 0;
 			padding-right: $spacing * 5;
 			padding-left: $spacing * 5;
+
+			&.active {
+				border-bottom: 1px solid $accentColor;
+			}
 
 			&:hover {
 				background-color: $secondaryAccentColor;
@@ -30,7 +34,7 @@
 	.title{
 		flex: 0 1 100%;
 		padding-left: $spacing * 10;
-		font-size: 1.3em;
+		font-size: $fontSizeLarge;
 		line-height: $headerHeight;
 		display: flex;
 		justify-content: left;

@@ -1,7 +1,8 @@
 import React from 'react';
 import { Router, Route } from 'react-router-dom'
 import { createBrowserHistory as createHistory } from "history";
-
+import { ToastContainer, Zoom } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import PhotosPage from '../pages/PhotosPage.jsx';
 import AlbumsPage from '../pages/AlbumsPage.jsx';
 import SharedPage from '../pages/SharedPage.jsx';
@@ -38,6 +39,16 @@ class AppContainer extends React.Component {
 						<Route path="/photo/:photoId" exact component={PhotoPage} />
 						<Route path="/album/:albumId" exact component={AlbumPage} />
 					</AppStateContext.Provider>
+
+					<ToastContainer position="bottom-center"
+						autoClose={3000}
+						hideProgressBar
+						newestOnTop
+						closeOnClick
+						rtl={false}
+						draggable
+						pauseOnHover
+						transition={Zoom}/>
 				</div>
 			</Router>
 		);

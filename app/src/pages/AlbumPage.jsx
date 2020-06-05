@@ -69,11 +69,11 @@ class AlbumPage extends React.Component {
 
 	deleteAlbum() {
 		let component = this;
+		let albumTitle = this.state.title;
 
 		PhotoService.deleteAlbum(this.state.albumId)
 			.then(() => {
-				// Using a timeout because otherwise the navigation interupts the toast
-				setTimeout(() => toast.info("Album deleted."), 100);
+				toast.info("Album '" + albumTitle + "' deleted.");
 				component.context.history.push("/albums");
 			})
 			.catch((error) => console.log(error));

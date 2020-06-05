@@ -1,7 +1,5 @@
 import React from 'react';
 import Header from './Header.jsx';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 class PageLayout extends React.Component {
 
@@ -27,15 +25,6 @@ class PageLayout extends React.Component {
 				<div className="content">
 					{this.props.children}
 				</div>
-				<ToastContainer position="bottom-right"
-					autoClose={5000}
-					hideProgressBar
-					newestOnTop
-					closeOnClick
-					rtl={false}
-					pauseOnFocusLoss
-					draggable
-					pauseOnHover/>
 			</div>
 		);
 	}

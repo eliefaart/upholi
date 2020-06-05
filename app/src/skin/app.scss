@@ -13,6 +13,8 @@ $spacing: 5px;
 $transitionSpeed: 0.2s;
 $borderRadius: 2px;
 $headerHeight: 50px;
+$fontSizeNormal: 0.75em;
+$fontSizeLarge: 1.2em;
 
 html {
 	touch-action: manipulation;
@@ -24,16 +26,16 @@ html {
 
 	body {
 		font-family: FiraSans;
-		font-size: 0.75em;
-	
+		font-size: $fontSizeNormal;
+
 		background: $backgroundColor;
 		color: $textColorLight;
-	
+
 		.page {
 			min-height: 100vh;
 
 			.content {
-				padding: $headerHeight +  $spacing * 2 $spacing * 2;
+				padding: $headerHeight + $spacing * 2 $spacing * 2;
 			}
 		}
 	}
@@ -48,39 +50,104 @@ html {
 @import "app.component.photoDetail";
 @import "app.component.uploadProgressDialog";
 
-input, select, button {
-    padding: 0 0 0 5px;
-    margin: 10px 0 10px 0;
-    width: 100%;
-    height: 40px;
-    border-radius: $borderRadius;
+input,
+select,
+button {
+	padding: 0 0 0 5px;
+	margin: 10px 0 10px 0;
+	width: 100%;
+	height: 40px;
+	border-radius: $borderRadius;
 }
-input, select {
+
+input,
+select {
 	background-color: $altBackgroundColor;
 	color: $textColorLight;
 	border: 2px solid $accentColor;
 
-	&:focus { 
-		border-color: $secondaryAccentColor; 
+	&:focus {
+		border-color: $secondaryAccentColor;
 	}
 }
 
-
 button {
-    color: $textColorDark;
-    background-color: $accentColor;
-    border: none;
-    cursor: pointer;
-    width: auto;
-    min-width: 100px;
+	color: $textColorDark;
+	background-color: $accentColor;
+	border: none;
+	cursor: pointer;
+	width: auto;
+	min-width: 100px;
 	margin: 0px 0px 0px 0px;
-	
-	&:hover, &:active { 
-		background: $secondaryAccentColor; 
-		color: $textColorLight; 
+
+	&:hover,
+	&:active {
+		background: $secondaryAccentColor;
+		color: $textColorLight;
 	}
 }
 
 h1 {
 	text-align: center;
 }
+
+
+.Toastify__toast-container {
+
+	.Toastify__toast {
+		background: $accentColor;
+		color: $textColorDark;
+
+		// .Toastify__toast-body {
+		// }
+
+		.Toastify__close-button {
+			all: unset;
+
+			svg {
+				fill: $textColorDark;
+			}
+		}
+	}
+}
+
+
+// .Toastify__toast-container {
+// 	position: fixed;
+// 	bottom: 1em;
+// 	right: 1em;
+
+// 	.Toastify__toast {
+// 		position: relative;
+// 		height: $headerHeight;
+// 		width: 240px;
+// 		background: $accentColor;
+// 		display: flex;
+// 		line-height: $headerHeight;
+// 		color: $textColorDark;
+// 		display: flex;
+// 		align-items: center;
+// 		margin-top: $spacing;
+
+// 		.Toastify__toast-body {
+// 			flex: 1 1 100%;
+// 			padding-left: $spacing;
+// 		}
+
+// 		.Toastify__close-button {
+// 			height: $headerHeight * 0.8;
+// 			flex: 0 1 $headerHeight;
+// 			min-width: unset;
+// 			margin-right: $spacing;
+
+// 			svg {
+// 				height: 100%;
+// 			}
+// 		}
+
+// 		.Toastify__progress-bar {
+// 			display: none;
+// 		}
+// 	}
+// }
+
