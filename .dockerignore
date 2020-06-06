@@ -1,0 +1,5 @@
+*
+!docker
+!target/debug/hummingbird
+!target/release/hummingbird
+!app/wwwroot
