@@ -1,4 +1,4 @@
-$modalHeaderHeight: 30px;
+$modalHeaderHeight: $buttonHeight;
 
 .overlay {
 	// position: fixed;
@@ -13,7 +13,8 @@ $modalHeaderHeight: 30px;
 	background: $altBackgroundColor;
 	overflow: auto;
 	border-radius: $borderRadius;
-	padding: $spacing * 4;
+	border: 1px solid $accentColor;
+	padding: $spacing * 2;
 
 	display: flex;
 	flex-direction: column;
@@ -34,12 +35,12 @@ $modalHeaderHeight: 30px;
 			font-size: $fontSizeLarge;
 		}
 
-		.button-close {
-			padding: 0;
-			width: $modalHeaderHeight;
-			min-width: $modalHeaderHeight;
-			height: $modalHeaderHeight;
-		}
+		// .button-close {
+		// 	padding: 0;
+		// 	width: $modalHeaderHeight;
+		// 	min-width: $modalHeaderHeight;
+		// 	height: $modalHeaderHeight;
+		// }
 	}
 
 	.modal-body {

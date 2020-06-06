@@ -1,5 +1,6 @@
 import React from 'react';
 import { default as ReactModal } from 'react-modal';
+import { IconClose } from "../components/Icons.jsx";
 
 class Modal extends React.Component {
 
@@ -26,7 +27,9 @@ class Modal extends React.Component {
 			>
 				<div className="modal-header">
 					<span className="title">{this.props.title}</span>
-					<button className="button-close" onClick={() => this.props.onRequestClose()}>X</button>
+					<button className="iconOnly" onClick={() => this.props.onRequestClose()}>
+						<IconClose/>
+					</button>
 				</div>
 				<div className="modal-body">
 					{this.props.children}

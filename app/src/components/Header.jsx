@@ -42,14 +42,15 @@ class Header extends React.Component {
 
 		return (
 			<div className="header">
-				<div className="menu">
+				{this.props.renderMenu !== false && <div className="menu">
 					{menuItems.map((menuItem) => 
 						(<span key={menuItem.path} 
 							onClick={() => gotoPage(menuItem.path)}
 							className={location.pathname === menuItem.path ? "active" : ""}
 							>{menuItem.title}</span>)
 					)}
-				</div>
+				</div>}
+
 				<span className="title">{this.props.title || ' '}</span>
 				<div className="actions">
 					{this.props.children}

@@ -5,16 +5,17 @@ $backgroundColor: #000;
 $altBackgroundColor: #222;
 $accentColor: #d3e532;
 $secondaryAccentColor: #664645;
-
 $textColorDark: #161f21;
 $textColorLight: #dedfe4; //white;
 
+$fontSizeNormal: 0.75em;
+$fontSizeLarge: 1.2em;
 $spacing: 5px;
 $transitionSpeed: 0.2s;
 $borderRadius: 2px;
 $headerHeight: 50px;
-$fontSizeNormal: 0.75em;
-$fontSizeLarge: 1.2em;
+$buttonHeight: 40px;
+
 
 html {
 	touch-action: manipulation;
@@ -35,7 +36,7 @@ html {
 			min-height: 100vh;
 
 			.content {
-				padding: $headerHeight + $spacing * 2 $spacing * 2;
+				padding-top: $headerHeight;
 			}
 		}
 	}
@@ -52,11 +53,12 @@ html {
 
 input,
 select,
-button {
-	padding: 0 0 0 5px;
+button,
+a[href] {
 	margin: 10px 0 10px 0;
 	width: 100%;
-	height: 40px;
+	height: $buttonHeight;
+	line-height: $buttonHeight;
 	border-radius: $borderRadius;
 }
 
@@ -71,14 +73,31 @@ select {
 	}
 }
 
-button {
+button, a[href] {
 	color: $textColorDark;
 	background-color: $accentColor;
 	border: none;
 	cursor: pointer;
 	width: auto;
-	min-width: 100px;
 	margin: 0px 0px 0px 0px;
+	text-decoration: none;
+	padding: 0;
+	
+	svg {
+		display: block;
+		width: 60%;
+		height: 60%;
+		margin: auto;
+	}
+
+	&.iconOnly {
+		display: flex;
+		min-width: $buttonHeight;
+		width: $buttonHeight;
+	}
+	&:not(.iconOnly) {
+		min-width: $buttonHeight * 2;
+	}
 
 	&:hover,
 	&:active {
@@ -110,44 +129,3 @@ h1 {
 		}
 	}
 }
-
-
-// .Toastify__toast-container {
-// 	position: fixed;
-// 	bottom: 1em;
-// 	right: 1em;
-
-// 	.Toastify__toast {
-// 		position: relative;
-// 		height: $headerHeight;
-// 		width: 240px;
-// 		background: $accentColor;
-// 		display: flex;
-// 		line-height: $headerHeight;
-// 		color: $textColorDark;
-// 		display: flex;
-// 		align-items: center;
-// 		margin-top: $spacing;
-
-// 		.Toastify__toast-body {
-// 			flex: 1 1 100%;
-// 			padding-left: $spacing;
-// 		}
-
-// 		.Toastify__close-button {
-// 			height: $headerHeight * 0.8;
-// 			flex: 0 1 $headerHeight;
-// 			min-width: unset;
-// 			margin-right: $spacing;
-
-// 			svg {
-// 				height: 100%;
-// 			}
-// 		}
-
-// 		.Toastify__progress-bar {
-// 			display: none;
-// 		}
-// 	}
-// }
-

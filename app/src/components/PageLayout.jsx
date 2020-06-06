@@ -18,7 +18,7 @@ class PageLayout extends React.Component {
 			<div className="page" 
 				onDrop={this.props.onDrop} 
 				onDragOver={this.props.onDragOver || ((event) => event.preventDefault())}>
-				<Header title={this.props.title} >
+				<Header title={this.props.title} renderMenu={this.props.renderMenu} >
 					{this.props.headerElementActions}
 				</Header>
 

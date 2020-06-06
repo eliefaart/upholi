@@ -33,7 +33,7 @@ class Albums extends React.Component {
 			let album = props.album;
 			let thumbUrl = "url('" + PhotoService.baseUrl() + "/photo/" + album.thumbPhotoId + "/thumb')";
 
-			return <div onClick={() => fnOnClick(album)} className={props.className} style={{ backgroundImage: !!album.thumbPhotoId && thumbUrl }}>
+			return <div onClick={() => fnOnClick(album)} className={"album " + (props.className || "")} style={{ backgroundImage: !!album.thumbPhotoId && thumbUrl }}>
 				<span>{album.title}</span>
 			</div>;
 		}
