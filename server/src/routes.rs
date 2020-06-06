@@ -141,7 +141,7 @@ pub async fn route_download_photo_thumbnail(req: HttpRequest) -> impl Responder 
 	let result = database::photo::get(&_photo_id);
 
 	match result {
-		Some(photo_info) => serve_photo(&photo_info.path_thumbnail),
+		Some(photo_info) => serve_photo(&photo_info.path_thumbnail, &photo_info.name),
 		None => panic!("File not found")
 	}
 }
@@ -151,7 +151,7 @@ pub async fn route_download_photo_preview(req: HttpRequest) -> impl Responder {
 	let result = database::photo::get(&_photo_id);
 
 	match result {
-		Some(photo_info) => serve_photo(&photo_info.path_preview),
+		Some(photo_info) => serve_photo(&photo_info.path_preview, &photo_info.name),
 		None => panic!("File not found")
 	}
 }
@@ -161,18 +161,19 @@ pub async fn route_download_photo_original(req: HttpRequest) -> impl Responder {
 	let result = database::photo::get(&_photo_id);
 
 	match result {
-		Some(photo_info) => serve_photo(&photo_info.path_original),
+	Some(photo_info) => serve_photo(&photo_info.path_original, &photo_info.name),
 		None => panic!("File not found")
 	}
 }
 
-fn serve_photo(path: &str) -> impl Responder {
+fn serve_photo(path: &str, filename: &str) -> impl Responder {
 	let result = files::get_photo(path);
 
 	match result {
 		Some(file_bytes) => {
 			HttpResponse::Ok()
 				.content_type("image/jpeg")
+				.header(http::header::CONTENT_DISPOSITION, format!("attachment; filename=\"{}\"", filename))
 				.body(file_bytes)
 		},
 		None => panic!("Error reading file content from disk, or file not found")
