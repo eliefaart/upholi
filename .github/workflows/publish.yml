@@ -23,29 +23,38 @@ jobs:
 
     # Server
     - name: Server - Build
-      run: cd ./server && cargo build --verbose
+      run: |
+        cd ./server
+        cargo build --verbose
     - name: Server - Run tests
-      run: cd ./server && cargo test --verbose
+      run: |
+        cd ./server
+        cargo test --verbose
     
     # Docker
     # - name: Docker - Compose
     #   run: docker-compose up --build -d
 
     - name: Frontend app - Build docker image
-      run: docker build . --file Dockerfile --tag $IMAGE_NAME_FRONTEND_APP
+      run: |
+        cd ./app
+        docker build . --file Dockerfile --tag $IMAGE_NAME_FRONTEND_APP
 
     - name: Server - Build docker image
-      run: docker build . --file Dockerfile --tag $IMAGE_NAME_SERVER
+      run: |
+        cd ./server
+        docker build . --file Dockerfile --tag $IMAGE_NAME_SERVER
 
 
 
     # Publish
-    - name: Log into registry
+    - name: Log into GitHub registry
       run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
 
     # Publish Frontend app
     - name: Frontend app - Push docker image
       run: |
+        cd ./app
         IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/$IMAGE_NAME_FRONTEND_APP
         
         # Change all uppercase to lowercase
@@ -69,6 +78,7 @@ jobs:
     # Publish Server
     - name: Server - Push docker image
       run: |
+        cd ./server
         IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/$IMAGE_NAME_SERVER
         
         # Change all uppercase to lowercase
