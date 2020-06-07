@@ -9,7 +9,7 @@ services:
       CERTBOT_EMAIL: "t1@e10t.nl"
       # variable names are space-separated
       ENVSUBST_VARS: DOMAIN_NAME
-      DOMAIN_NAME: dev.e10t.nl
+      DOMAIN_NAME: photos.e10t.nl
     ports:
       - "80:80"
       - "443:443"
