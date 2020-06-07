@@ -25,6 +25,9 @@ lazy_static! {
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
+
+	let address = "0.0.0.0:8000";
+	println!("Hello server, address: {}", address);
 	
 	HttpServer::new(|| {
 		App::new()
@@ -50,6 +53,7 @@ async fn main() -> std::io::Result<()> {
 				})
 			})
 
+			.route("/", web::get().to(routes::index))
 			.route("/albums", web::get().to(routes::route_get_albums))
 			.route("/album", web::post().to(routes::route_create_album))
 			.route("/album/{album_id}", web::get().to(routes::route_get_album))
@@ -75,7 +79,7 @@ async fn main() -> std::io::Result<()> {
 			// .route("/s/", web::get().to(routes::get_shared_items))
 			// .route("/s/{sharedItemId", web::delete().to(routes::delete_shared_item))
 	})
-	.bind("127.0.0.1:8000")?
+	.bind(address)?
 	.run()
 	.await
 }

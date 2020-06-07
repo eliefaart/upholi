@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+  app:
+    #image: staticfloat/nginx-certbot
+    build: ./app
+    restart: always
+    environment:
+      CERTBOT_EMAIL: "t1@e10t.nl"
+      # variable names are space-separated
+      ENVSUBST_VARS: DOMAIN_NAME
+      DOMAIN_NAME: dev.e10t.nl
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./app/docker/conf.d:/etc/nginx/user.conf.d:ro
+  server:
+    build: ./server
+    restart: always
+    environment:
+      HB_DB_CONNSTRING: "mongodb://localhost:27017/"
+      HB_DB_NAME: "hummingbird-docker"
+      HB_DIR_PHOTOS: "/home/photos"
+    ports:
+      - "8000:8000"

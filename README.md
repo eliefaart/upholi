@@ -1,6 +1,10 @@
 # Hummingbird
 Personal photo library
 
+## Docker
+Configure some environment variables in ```docker-compose.yml```, then run:
+```docker-compose up --build -d```
+
 ## Configuration
 Configuration is done via environment variables
 

@@ -21,6 +21,10 @@ struct FormData {
 	bytes: Vec<u8>
 }
 
+pub async fn index() -> impl Responder {
+	format!("Hello world")
+}
+
 pub async fn route_get_albums() -> impl Responder {
 	web::Json(database::album::get_all())
 }
