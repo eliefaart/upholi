@@ -67,11 +67,6 @@ jobs:
         cd ./app
         docker build . --file Dockerfile --tag $IMAGE_NAME_FRONTEND_APP
 
-    - name: Server - Build docker image
-      run: |
-        cd ./server
-        docker build . --file Dockerfile --tag $IMAGE_NAME_SERVER
-
     - name: Frontend app - Push docker image
       run: |
         cd ./app
