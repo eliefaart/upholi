@@ -3,10 +3,12 @@ name: Server
 on:
   push:
     branches: 
-      - *
+      - master
+      - docker
   pull_request:
     branches: 
-      - *
+      - master
+      - docker
 
 jobs:
   build:
