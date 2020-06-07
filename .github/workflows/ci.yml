@@ -1,0 +1,28 @@
+name: Continuous integration
+
+on:
+  push:
+    branches: [ master, docker ]
+  pull_request:
+    branches: [ master, docker ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    # Frontend App
+    # TODO
+
+    # Server
+    - name: Server - Build
+      run: cd ./server && cargo build --verbose
+    - name: Server - Run tests
+      run: cd ./server && cargo test --verbose
+    
+    # Docker
+    - name: Docker - Compose
+      run: docker-compose up --build -d
