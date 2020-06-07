@@ -19,10 +19,10 @@ jobs:
 
     # Server
     - name: Server - Build
-      run: cd ./server && cargo build --verbose
+      run: |
+        cd ./server
+        cargo build --verbose
     - name: Server - Run tests
-      run: cd ./server && cargo test --verbose
-    
-    # Docker
-    - name: Docker - Compose
-      run: docker-compose up --build -d
+      run: |
+        cd ./server
+        cargo test --verbose
