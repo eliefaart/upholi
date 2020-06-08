@@ -6,8 +6,12 @@ class PhotoService {
 	}
 	
 	static baseUrl() {
-		console.log(process.env);
-		return process.env.REACT_APP_PHOTOS_SERVICE_URL || "http://127.0.0.1:8000";
+		// Relative path to current domain, 
+		// then make reverse proxy inside app-docker container?
+		// So this client does request to /api/*
+		// Then NGINX redirects to actualdomain:00/*
+		// But can NGINX handle env vars?
+		return "http://127.0.0.1:8000";
 	}
 
 	static uploadPhotos(files, fnFileStatusUpdatedCallback) {
