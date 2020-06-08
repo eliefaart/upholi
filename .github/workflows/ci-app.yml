@@ -2,7 +2,7 @@ name: Continuous integration - Frontend app
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, docker ]
     paths:
       - '.github/workflows/ci-app.yml'
       - 'app/*'
@@ -16,6 +16,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: TODO
+    - name: Build
       run: |
-        echo TODO
+        cd ./app
+        npm install
+        npm run build-prd

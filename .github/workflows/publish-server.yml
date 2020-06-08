@@ -7,7 +7,7 @@ on:
       - '.github/workflows/publish-server.yml'
       - 'server/*'
   pull_request:
-    branches: [ master, docker ]
+    branches: [ master ]
 
 env:
   IMAGE_NAME: hummingbird-server
