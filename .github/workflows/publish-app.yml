@@ -3,11 +3,11 @@ name: Publish - Frontend app
 on:
   push:
     branches: [ master, docker ]
+    paths:
+      - '.github/workflows/publish-app.yml'
+      - 'app/*'
   pull_request:
     branches: [ master, docker ]
-  paths:
-    - '.github/workflows/publish-app.yml'
-    - 'app/*'
 
 env:
   IMAGE_NAME: hummingbird-app

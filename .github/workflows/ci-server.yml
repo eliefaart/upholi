@@ -3,11 +3,11 @@ name: Continuous integration - Server
 on:
   push:
     branches: [ master ]
+    paths:
+      - '.github/workflows/ci-server.yml'
+      - 'server/*'
   pull_request:
     branches: [ master ]
-  paths:
-    - '.github/workflows/ci-server.yml'
-    - 'server/*'
 
 jobs:
   build:
@@ -20,7 +20,7 @@ jobs:
       run: |
         cd ./server
         cargo build --verbose
-        
+
     - name: Server - Run tests
       run: |
         cd ./server

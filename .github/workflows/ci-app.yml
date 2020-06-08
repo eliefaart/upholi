@@ -3,12 +3,12 @@ name: Continuous integration - Frontend app
 on:
   push:
     branches: [ master ]
+    paths:
+      - '.github/workflows/ci-app.yml'
+      - 'app/*'
   pull_request:
     branches: [ master ]
-  paths:
-    - '.github/workflows/ci-app.yml'
-    - 'app/*'
-
+  
 jobs:
   build:
     runs-on: ubuntu-latest

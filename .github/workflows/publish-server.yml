@@ -3,11 +3,11 @@ name: Publish - Server
 on:
   push:
     branches: [ master, docker ]
+    paths:
+      - '.github/workflows/publish-server.yml'
+      - 'server/*'
   pull_request:
     branches: [ master, docker ]
-  paths:
-    - '.github/workflows/publish-server.yml'
-    - 'server/*'
 
 env:
   IMAGE_NAME: hummingbird-server
