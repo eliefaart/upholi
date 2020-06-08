@@ -1,0 +1,66 @@
+name: Publish - Server
+
+on:
+  push:
+    branches: [ master, docker ]
+  pull_request:
+    branches: [ master, docker ]
+  paths:
+    - '.github/workflows/publish-server.yml'
+    - 'server/*'
+
+env:
+  IMAGE_NAME: hummingbird-server
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    # Setup
+    - name: Log into GitHub registry
+      run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
+
+    # Build
+    - name: Server - Build
+      run: |
+        cd ./server
+        cargo build --verbose
+
+    # Test
+    - name: Server - Run tests
+      run: |
+        cd ./server
+        cargo test --verbose
+
+    # Build docker
+    - name: Server - Build docker image
+      run: |
+        cd ./server
+        docker build . --file Dockerfile --tag $IMAGE_NAME
+
+    # Publish docker
+    - name: Server - Push docker image
+      run: |
+        cd ./server
+        IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/$IMAGE_NAME
+        
+        # Change all uppercase to lowercase
+        IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+
+        # Strip git ref prefix from version
+        VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+
+        # Strip "v" prefix from tag name
+        [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+
+        # Use Docker `latest` tag convention
+        [ "$VERSION" == "master" ] && VERSION=latest
+
+        echo IMAGE_ID=$IMAGE_ID
+        echo VERSION=$VERSION
+
+        docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
+        docker push $IMAGE_ID:$VERSION

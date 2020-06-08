@@ -19,8 +19,16 @@ services:
   app:
     image: docker.pkg.github.com/eliefaart/hummingbird/hummingbird-app:docker
     restart: always
+    environment:
+      CERTBOT_EMAIL: "t1@e10t.nl"
+      # variable names are space-separated
+      ENVSUBST_VARS: DOMAIN_NAME
+      DOMAIN_NAME: photos.e10t.nl
     ports:
-      - "29701:80"
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./app/docker/conf.d:/etc/nginx/user.conf.d:ro
   server:
     image: docker.pkg.github.com/eliefaart/hummingbird/hummingbird-server:docker
     restart: always
@@ -29,4 +37,4 @@ services:
       HB_DB_NAME: "hummingbird-docker"
       HB_DIR_PHOTOS: "/home/photos"
     ports:
-      - "29702:8000"
+      - "8000:8000"

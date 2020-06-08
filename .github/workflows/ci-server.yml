@@ -1,27 +1,26 @@
-name: Continuous integration
+name: Continuous integration - Server
 
 on:
   push:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  paths:
+    - '.github/workflows/ci-server.yml'
+    - 'server/*'
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
 
-    # Frontend App
-    # TODO
-
-    # Server
     - name: Server - Build
       run: |
         cd ./server
         cargo build --verbose
+        
     - name: Server - Run tests
       run: |
         cd ./server
