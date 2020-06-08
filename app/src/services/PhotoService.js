@@ -6,7 +6,7 @@ class PhotoService {
 	}
 	
 	static baseUrl() {
-		return "http://127.0.0.1:29702";
+		return process.env.REACT_APP_PHOTOS_SERVICE_URL || "http://127.0.0.1:8000";
 	}
 
 	static uploadPhotos(files, fnFileStatusUpdatedCallback) {

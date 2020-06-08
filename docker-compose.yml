@@ -19,13 +19,16 @@ services:
   app:
     image: docker.pkg.github.com/eliefaart/hummingbird/hummingbird-app:docker
     restart: always
+    environment:
+      # Must be prefixed with REACT_APP_ for React apps
+      REACT_APP_PHOTOS_SERVICE_URL: "http://127.0.0.1:29702"
     ports:
       - "29701:80"
   server:
     image: docker.pkg.github.com/eliefaart/hummingbird/hummingbird-server:docker
     restart: always
     environment:
-      HB_DB_CONNSTRING: "mongodb://localhost:27017/"
+      HB_DB_CONNSTRING: "XXX"
       HB_DB_NAME: "hummingbird-docker"
       HB_DIR_PHOTOS: "/home/photos"
     ports:
