@@ -1,5 +1,5 @@
 module.exports = {
-	watch: true,
+	watch: false,
 	entry: './src/index.jsx',
 	output: {
 		filename: '../wwwroot/dist/main.js'
