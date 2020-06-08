@@ -5,7 +5,7 @@ on:
     branches: [ master, docker ]
     paths:
       - '.github/workflows/publish-app.yml'
-      - 'app/*'
+      - 'app/**'
   pull_request:
     branches: [ master ]
 
