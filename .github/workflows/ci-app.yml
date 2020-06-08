@@ -26,5 +26,5 @@ jobs:
       run: |
         cd ./app
         npm run hello-world
+        npm run build-prd
       #npm install
-      #npm run build-prd
