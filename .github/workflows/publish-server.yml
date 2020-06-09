@@ -33,7 +33,7 @@ jobs:
     - name: Server - Run tests
       run: |
         cd ./server
-        cargo test --verbose
+        cargo test --release --verbose
 
     # Build docker
     - name: Server - Build docker image

@@ -20,6 +20,6 @@ services:
     environment:
       HB_DB_CONNSTRING: "XXX"
       HB_DB_NAME: "hummingbird"
-      HB_DIR_PHOTOS: "/srv/hummingbird/photos"
+      HB_DIR_PHOTOS: "/srv/hummingbird"
     ports:
       - "29702:8000"

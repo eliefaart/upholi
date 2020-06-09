@@ -1,12 +1,26 @@
 # Hummingbird
 Personal photo library
 
-## Docker
-Configure some environment variables in ```docker-compose.yml```, then run:
-
+## Useful commands
 ```docker-compose up --build -d```
 
-## Configuration
+```docker build . --file Dockerfile```
+
+```docker pull docker.pkg.github.com/eliefaart/hummingbird/hummingbird-server:docker```
+
+```docker pull docker.pkg.github.com/eliefaart/hummingbird/hummingbird-app:docker```
+
+## Docker
+In docker compose:
+
+Must modify:
+- HB_DB_CONNSTRING
+
+May modify:
+- 'outer' ports
+- HB_DB_NAME
+
+## Server configuration
 Configuration is done via environment variables
 
 | HB_DB_CONNSTRING | Connection string to database server |

@@ -9,6 +9,5 @@ COPY target/release/hummingbird /bin/
 RUN chmod +x /bin/hummingbird
 
 RUN mkdir /srv/hummingbird
-RUN mkdir /srv/hummingbird/photos
 
 CMD ["./bin/hummingbird"]
