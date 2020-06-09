@@ -11,7 +11,7 @@ class PhotoService {
 		// So this client does request to /api/*
 		// Then NGINX redirects to actualdomain:00/*
 		// But can NGINX handle env vars?
-		return "http://127.0.0.1:8000";
+		return "/api";
 	}
 
 	static uploadPhotos(files, fnFileStatusUpdatedCallback) {

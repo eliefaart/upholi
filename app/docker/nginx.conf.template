@@ -9,4 +9,8 @@ server {
 	location ~* ^/(albums|album|photos|photo)$ {
 		try_files /index.html =404;
 	}
+
+	location /api {
+		proxy_pass ${API_URI};
+	}
 }
