@@ -21,6 +21,8 @@ services:
     restart: always
     ports:
       - "29701:80"
+    environment:
+      API_URI: "http://server:8000"
   server:
     image: docker.pkg.github.com/eliefaart/hummingbird/hummingbird-server:docker
     restart: always
