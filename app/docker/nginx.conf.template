@@ -1,6 +1,6 @@
 server {
     listen 80;
-	root /home/app;
+	root /srv/hummingbird;
 	index index.html;
 
 	# These paths are 'virtual' paths, routing is done client side.

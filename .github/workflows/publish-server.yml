@@ -27,7 +27,7 @@ jobs:
     - name: Server - Build
       run: |
         cd ./server
-        cargo build --verbose
+        cargo build --release --verbose
 
     # Test
     - name: Server - Run tests

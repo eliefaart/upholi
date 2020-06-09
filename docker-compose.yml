@@ -1,19 +1,10 @@
 version: '3'
 
-# New plan:
-# Provide two docker containers
-# - App:    listens on post 29101, http only
-# - Server: listens on post 29102, http only
-#
-# Then it all should work nicely on local dev machine too.
-#
-# Then developer must setup his own nginx or whatever, and handle letsencrypt. 
-# I can use staticfloat/docker-nginx-certbot for this, maybe? Would that work with 2 domains?
-# domain:80   /   -> domain:443
-# domain:443  /   -> localhost:29101
-# domain:80   /api   -> domain:443/api
-# domain:443  /api   -> localhost:29101
-
+# Must modify:
+# - HB_DB_CONNSTRING
+# May modify:
+# - 'outer' ports
+# - HB_DB_NAME
 
 services:
   app:
@@ -28,7 +19,7 @@ services:
     restart: always
     environment:
       HB_DB_CONNSTRING: "XXX"
-      HB_DB_NAME: "hummingbird-docker"
-      HB_DIR_PHOTOS: "/home/photos"
+      HB_DB_NAME: "hummingbird"
+      HB_DIR_PHOTOS: "/srv/hummingbird/photos"
     ports:
       - "29702:8000"

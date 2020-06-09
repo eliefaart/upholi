@@ -5,7 +5,10 @@ FROM ubuntu
 EXPOSE 8000
 
 # Copy app folder
-COPY target/debug/hummingbird /bin/
+COPY target/release/hummingbird /bin/
 RUN chmod +x /bin/hummingbird
+
+RUN mkdir /srv/hummingbird
+RUN mkdir /srv/hummingbird/photos
 
 CMD ["./bin/hummingbird"]
