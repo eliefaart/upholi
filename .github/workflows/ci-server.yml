@@ -2,7 +2,6 @@ name: Continuous integration - Server
 
 on:
   push:
-    branches: [ master, docker ]
     paths:
       - '.github/workflows/ci-server.yml'
       - 'server/**'

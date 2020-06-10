@@ -6,8 +6,6 @@ on:
     paths:
       - '.github/workflows/publish-app.yml'
       - 'app/**'
-  pull_request:
-    branches: [ master ]
 
 env:
   IMAGE_NAME: hummingbird-app
