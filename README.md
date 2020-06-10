@@ -2,7 +2,7 @@
 Personal photo library
 
 ## Useful commands
-```docker-compose up --build -d```
+```docker-compose up --build -d --force-recreate```
 
 ```docker build . --file Dockerfile```
 
