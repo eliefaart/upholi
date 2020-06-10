@@ -54,14 +54,14 @@ fn get_absolute_photo_path(photo_relative_path: &str) -> String {
 /// TODO: Can probably make this lazy_static.. path is constant and only need to check+create once
 fn get_photos_base_path() -> String {
 	
-	const photos_folder_name: &str = "photos";
+	const PHOTOS_FOLDER_NAME: &str = "photos";
 
 	let path_info = Path::new(&crate::SETTINGS.photos.base_directory);
 	if !path_info.exists() {
 		panic!("Path {} does not exist", &crate::SETTINGS.photos.base_directory);
 	}
 
-	let photos_path_info = path_info.join(&photos_folder_name);
+	let photos_path_info = path_info.join(&PHOTOS_FOLDER_NAME);
 	if !photos_path_info.exists() {
 		let result = std::fs::create_dir(&photos_path_info);
 		if result.is_err() {
