@@ -2,7 +2,7 @@
 @import "_fonts";
 
 $backgroundColor: #000;
-$altBackgroundColor: #222;
+$altBackgroundColor: #191d25;
 $accentColor: #d3e532;
 $secondaryAccentColor: #664645;
 $textColorDark: #161f21;
@@ -51,6 +51,7 @@ html {
 @import "app.component.photoDetail";
 @import "app.component.uploadProgressDialog";
 @import "app.component.exif";
+@import "app.component.toasts";
 
 input,
 select,
@@ -109,24 +110,4 @@ button, a[href] {
 
 h1 {
 	text-align: center;
-}
-
-
-.Toastify__toast-container {
-
-	.Toastify__toast {
-		background: $accentColor;
-		color: $textColorDark;
-
-		// .Toastify__toast-body {
-		// }
-
-		.Toastify__close-button {
-			all: unset;
-
-			svg {
-				fill: $textColorDark;
-			}
-		}
-	}
 }
