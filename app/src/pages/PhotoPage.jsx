@@ -10,6 +10,8 @@ class PhotoPage extends React.Component {
 	constructor(props) {
 		super(props);
 
+		this.photoId = props.match.params.photoId;
+
 		this.state = {
 			url: PhotoService.baseUrl() + "/photo/" + props.match.params.photoId + "/preview",
 			downloadUrl: PhotoService.baseUrl() + "/photo/" + props.match.params.photoId + "/original"
@@ -17,6 +19,13 @@ class PhotoPage extends React.Component {
 	}
 
 	componentDidMount() {
+		let fnOnPhotoDataReceived = (photo) => {
+			this.setState({ photo });
+		};
+
+		PhotoService.getPhoto(this.photoId)
+			.then(fnOnPhotoDataReceived)
+			.catch(console.error);
 	}
 
 	componentWillUnmount() {
@@ -35,10 +44,7 @@ class PhotoPage extends React.Component {
 
 		return (
 			<PageLayout renderMenu={false} headerElementActions={headerActions}>
-				<div>
-					EXIF BE HERE
-				</div>
-				<PhotoDetail src={this.state.url} />
+				<PhotoDetail src={this.state.url} exif={!!this.state.photo ? this.state.photo.exif : null} />
 			</PageLayout>
 		);
 	}

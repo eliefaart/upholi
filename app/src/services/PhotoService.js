@@ -94,6 +94,14 @@ class PhotoService {
 			.fail((error) => console.log("Get failed", error));
 	}
 
+	static getPhoto(photoId) {
+		let url = PhotoService.baseUrl() + "/photo/" + photoId;
+		
+		return new Promise((ok, err) => {
+			$.get(url).done(ok).fail(err);
+		});
+	}
+
 	static deletePhotos(photoIds, callback) {
 		$.ajax({
 			url: PhotoService.baseUrl() + "/photos",
