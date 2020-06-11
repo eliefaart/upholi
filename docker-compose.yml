@@ -1,0 +1,30 @@
+version: '3'
+
+# Must modify:
+# - HB_DB_CONNSTRING
+# May modify:
+# - 'outer' ports
+# - HB_DB_NAME
+
+volumes:
+  server_data:
+
+services:
+  app:
+    image: docker.pkg.github.com/eliefaart/hummingbird/hummingbird-app:latest
+    restart: always
+    ports:
+      - "29701:80"
+    environment:
+      API_URI: "http://server:8000"
+  server:
+    image: docker.pkg.github.com/eliefaart/hummingbird/hummingbird-server:latest
+    restart: always
+    environment:
+      HB_DB_CONNSTRING: "XXX"
+      HB_DB_NAME: "hummingbird"
+      HB_DIR_PHOTOS: "/srv/hummingbird"
+    volumes:
+      - "server_data:/srv/hummingbird"
+    ports:
+      - "29702:8000"

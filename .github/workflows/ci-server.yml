@@ -1,0 +1,26 @@
+name: Continuous integration - Server
+
+on:
+  push:
+    paths:
+      - '.github/workflows/ci-server.yml'
+      - 'server/**'
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Server - Build
+      run: |
+        cd ./server
+        cargo build --verbose
+
+    - name: Server - Run tests
+      run: |
+        cd ./server
+        cargo test --verbose

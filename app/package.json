@@ -1,14 +1,13 @@
 {
-  "name": "React",
+  "name": "hummingbird",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "webpack-dev-server --open --mode development",
-    "build": "webpack --mode development",
-    "build-prd": "webpack --mode production",
-    "babel-watcher": "npx babel --watch .\\src\\ --out-dir .\\srcCompiled\\ --presets react-app/prod"
+    "build": "webpack --watch --mode development",
+    "build-prd": "webpack --mode production"
   },
   "keywords": [],
   "author": "",

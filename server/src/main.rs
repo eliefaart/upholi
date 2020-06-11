@@ -25,6 +25,9 @@ lazy_static! {
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
+
+	let address = "0.0.0.0:8000";
+	println!("Hello server, address: {}", address);
 	
 	HttpServer::new(|| {
 		App::new()
@@ -50,20 +53,21 @@ async fn main() -> std::io::Result<()> {
 				})
 			})
 
-			.route("/albums", web::get().to(routes::route_get_albums))
-			.route("/album", web::post().to(routes::route_create_album))
-			.route("/album/{album_id}", web::get().to(routes::route_get_album))
-			.route("/album/{album_id}", web::put().to(routes::route_update_album))
-			.route("/album/{album_id}", web::delete().to(routes::route_delete_album))
+			.route("/", web::get().to(routes::index))
+			.route("/api/albums", web::get().to(routes::route_get_albums))
+			.route("/api/album", web::post().to(routes::route_create_album))
+			.route("/api/album/{album_id}", web::get().to(routes::route_get_album))
+			.route("/api/album/{album_id}", web::put().to(routes::route_update_album))
+			.route("/api/album/{album_id}", web::delete().to(routes::route_delete_album))
 
-			.route("/photos", web::get().to(routes::route_get_photos))
-			.route("/photos", web::delete().to(routes::route_delete_photos))
-			.route("/photo", web::post().to(routes::route_upload_photo))
-			.route("/photo/{photo_id}", web::get().to(routes::route_get_photo))
-			.route("/photo/{photo_id}/original", web::get().to(routes::route_download_photo_original))
-			.route("/photo/{photo_id}/thumb", web::get().to(routes::route_download_photo_thumbnail))
-			.route("/photo/{photo_id}/preview", web::get().to(routes::route_download_photo_preview))
-			.route("/photo/{photo_id}", web::delete().to(routes::route_delete_photo))
+			.route("/api/photos", web::get().to(routes::route_get_photos))
+			.route("/api/photos", web::delete().to(routes::route_delete_photos))
+			.route("/api/photo", web::post().to(routes::route_upload_photo))
+			.route("/api/photo/{photo_id}", web::get().to(routes::route_get_photo))
+			.route("/api/photo/{photo_id}/original", web::get().to(routes::route_download_photo_original))
+			.route("/api/photo/{photo_id}/thumb", web::get().to(routes::route_download_photo_thumbnail))
+			.route("/api/photo/{photo_id}/preview", web::get().to(routes::route_download_photo_preview))
+			.route("/api/photo/{photo_id}", web::delete().to(routes::route_delete_photo))
 
 			/*
 				Two new collections:
@@ -75,7 +79,7 @@ async fn main() -> std::io::Result<()> {
 			// .route("/s/", web::get().to(routes::get_shared_items))
 			// .route("/s/{sharedItemId", web::delete().to(routes::delete_shared_item))
 	})
-	.bind("127.0.0.1:8000")?
+	.bind(address)?
 	.run()
 	.await
 }

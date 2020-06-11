@@ -4,16 +4,6 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "Cargo Run",
-			"type": "shell",
-			"command": "cargo run",
-			"problemMatcher": [],
-			"group": {
-				"kind": "build",
-				"isDefault": false
-			}
-		},
-		{
             "label": "Webpack - watcher",
             "type": "shell",
             "command": "npm run build",
@@ -22,16 +12,6 @@
 			"options": {
 				"cwd": "app"
 			}
-		},
-		{
-            "label": "Webpack - watcher [Production]",
-            "type": "shell",
-            "command": "npm run build-prd",
-            "group": "build",
-			"problemMatcher": [],
-			"options": {
-				"cwd": "app"
-			}
-        }
+		}
 	]
 }
