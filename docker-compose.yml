@@ -11,14 +11,14 @@ volumes:
 
 services:
   app:
-    image: docker.pkg.github.com/eliefaart/hummingbird/hummingbird-app:docker
+    image: docker.pkg.github.com/eliefaart/hummingbird/hummingbird-app:latest
     restart: always
     ports:
       - "29701:80"
     environment:
       API_URI: "http://server:8000"
   server:
-    image: docker.pkg.github.com/eliefaart/hummingbird/hummingbird-server:docker
+    image: docker.pkg.github.com/eliefaart/hummingbird/hummingbird-server:latest
     restart: always
     environment:
       HB_DB_CONNSTRING: "XXX"

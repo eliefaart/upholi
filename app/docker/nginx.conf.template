@@ -10,8 +10,11 @@ server {
 		try_files /index.html =404;
 	}
 
-	location /api {
+	location /api/photo {
 		client_max_body_size 20M;
+		proxy_pass ${API_URI};
+	}
+	location /api {
 		proxy_pass ${API_URI};
 	}
 }
