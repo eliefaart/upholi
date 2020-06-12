@@ -8,6 +8,10 @@
 	top: $headerHeight + $spacing;
 	right: $spacing;
 
+	&:empty {
+		display: none;
+	}
+
 	.property {
 		margin: $spacing 0;
 

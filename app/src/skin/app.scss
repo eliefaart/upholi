@@ -56,12 +56,17 @@ html {
 input,
 select,
 button,
-a[href] {
+a[href].asButton {
 	margin: 10px 0 10px 0;
 	width: 100%;
 	height: $buttonHeight;
 	line-height: $buttonHeight;
 	border-radius: $borderRadius;
+}
+
+a[href] {
+	&:link, &:visited, &:hover, &:active { text-decoration: none; color: unset; }
+	&:hover { text-decoration: underline; }
 }
 
 input,
@@ -75,7 +80,7 @@ select {
 	}
 }
 
-button, a[href] {
+button, a[href].asButton {
 	color: $textColorDark;
 	background-color: $accentColor;
 	border: none;

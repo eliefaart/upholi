@@ -33,7 +33,7 @@ class PhotoPage extends React.Component {
 
 	render() {
 		const headerActions = (<div>
-			{<a className="iconOnly" href={this.state.downloadUrl} download>
+			{<a className="iconOnly asButton" href={this.state.downloadUrl} download>
 				<IconDownload/>
 			</a>}
 			{<button className="iconOnly" onClick={() => this.context.history.goBack()}>
