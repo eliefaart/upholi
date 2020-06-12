@@ -23,7 +23,7 @@ class ExifData extends React.Component {
 
 			<div className="property">
 				<span className="name">Exposure</span>
-				<span className="value">{this.props.exif.aperture} {this.props.exif.exposureTime} {this.props.exif.iso} ISO</span>
+				<span className="value">{this.props.exif.aperture} {this.props.exif.exposureTime} {this.props.exif.iso}ISO</span>
 			</div>
 
 			{!!dateTakenPretty && <div className="property">

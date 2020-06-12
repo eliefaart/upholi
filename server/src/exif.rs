@@ -13,7 +13,9 @@ pub struct Exif {
 	pub focal_length: Option<i32>,
 	pub focal_length_35mm_equiv: Option<i32>,
 	pub orientation: Option<i32>,
-	pub date_taken: Option<chrono::DateTime<Utc>>
+	pub date_taken: Option<chrono::DateTime<Utc>>,
+	pub gps_latitude: Option<f32>,
+	pub gps_longitude: Option<f32>
 }
 
 impl Exif {
@@ -63,6 +65,18 @@ impl Exif {
 					}
 				};
 
+				let closure_get_exif_data_as_f32 = |tag: ExifTag| -> Option<f32> {
+					let result = exif.entries.iter().find(|entry| entry.tag == tag);
+					if let Some(entry) = result {
+						match &entry.value {
+							TagValue::URational(rat) => Some(rat[0].numerator as f32 / rat[0].denominator as f32),
+							_ => None
+						}
+					} else {
+						None
+					}
+				};
+
 				let closure_get_exif_data_as_datetime = |tag: ExifTag| -> Option<chrono::DateTime<Utc>> {
 					let result = exif.entries.iter().find(|entry| entry.tag == tag);
 					if let Some(entry) = result {
@@ -86,15 +100,25 @@ impl Exif {
 					manufactorer: closure_get_exif_data_as_string(ExifTag::Make),
 					model: closure_get_exif_data_as_string(ExifTag::Model),
 					aperture: closure_get_exif_data_as_string(ExifTag::FNumber),
-					exposure_time: closure_get_exif_data_as_string(ExifTag::ExposureTime),
+					exposure_time: Self::remove_spaces(&closure_get_exif_data_as_string(ExifTag::ExposureTime)),
 					iso: closure_get_exif_data_as_i32(ExifTag::ISOSpeedRatings),
 					focal_length: closure_get_exif_data_as_i32(ExifTag::FocalLength),
 					focal_length_35mm_equiv: closure_get_exif_data_as_i32(ExifTag::FocalLengthIn35mmFilm),
 					orientation: closure_get_exif_data_as_i32(ExifTag::Orientation),
 					date_taken: closure_get_exif_data_as_datetime(ExifTag::DateTime),
+					gps_latitude: closure_get_exif_data_as_f32(ExifTag::GPSLatitude),
+					gps_longitude: closure_get_exif_data_as_f32(ExifTag::GPSLongitude)
 				})
 			},
 			Err(error) => Err(format!("{:?}", error))
+		}
+	}
+
+	///
+	fn remove_spaces(option: &Option<String>) -> Option<String> {
+		match option {
+			Some(string) => Some(string.replace(" ", "")),
+			None => None
 		}
 	}
 }
