@@ -1,5 +1,6 @@
 use http::{StatusCode};
 use actix_web::{web, HttpRequest, HttpResponse, Responder};
+//use actix_http::Response;
 use actix_multipart::{Multipart, Field};
 use serde::{Serialize, Deserialize};
 use futures::{StreamExt, TryStreamExt};
@@ -14,6 +15,12 @@ use crate::albums;
 #[serde(rename_all = "camelCase")]
 struct CreatedResult {
 	id: String
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ErrorResult {
+	message: String
 }
 
 struct FormData {
@@ -192,27 +199,24 @@ pub async fn route_upload_photo(payload: Multipart) -> impl Responder {
 	let remaining_files = files_iter.count();
 
 	if remaining_files > 0 {
-		// HttpResponse::BadRequest() //(StatusCode::BAD_REQUEST);
-		panic!("Request contains more than one file.")
+		return HttpResponse::BadRequest().json(ErrorResult{message: format!("Request contains more than one file.")});
 	}
 
 	match file_option {
 		Some(file) => {
-
 			let result = photos::Photo::create(&file.bytes);
 			match result {
 				Ok(photo) => {
 					let result = database::photo::insert(&photo);
 					match result {
 						Ok(_) => HttpResponse::Ok().json(CreatedResult{id: photo.id}),
-						Err(error) => panic!(error)
+						Err(error) => HttpResponse::BadRequest().json(ErrorResult{message: error})
 					}
-					
 				},
-				Err(err) => panic!(err)
+				Err(error) => HttpResponse::BadRequest().json(ErrorResult{message: error})
 			}
 		},
-		None => panic!("Request contains no file.")
+		None => HttpResponse::BadRequest().json(ErrorResult{message: format!("Request contains no file.")})
 	}
 }
 
