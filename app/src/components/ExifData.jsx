@@ -10,15 +10,36 @@ class ExifData extends React.Component {
 	}
 
 	render() {
-		let dateTakenPretty = null;
+		// Prepare exposure display text
+		let exposureText = "";
+		if (!!this.props.exif.aperture) 
+			exposureText += this.props.exif.aperture + " ";
+		if (!!this.props.exif.exposureTime) 
+			exposureText += this.props.exif.exposureTime + " ";
+		if (!!this.props.exif.iso) 
+			exposureText += "ISO-" + this.props.exif.iso;
+
+		// Prepare focal length display text
+		let focalLengthText = null;
+		if (!!this.props.exif.focalLength) {
+			focalLengthText = this.props.exif.focalLength + "mm";
+			if (!!this.props.exif.focalLength35mmEquiv) {
+				focalLengthText += " (" + this.props.exif.focalLength35mmEquiv + "mm in 35mm equivalent)";
+			}
+			
+		}
+
+		// Prepare date taken display text
+		let dateTakenText = null;
 		if (!!this.props.exif.dateTaken) {
 			let date = new Date(this.props.exif.dateTaken);
 			// This check verifies if parsing from string was succesfull
 			if (date.getTime() !== NaN) {
-				dateTakenPretty = date.toLocaleString();
+				dateTakenText = date.toLocaleString();
 			}
 		}
 
+		// Prepare location display text
 		let locationText = null, locationUri = null;
 		if (!!this.props.exif.gpsLatitude && !!this.props.exif.gpsLongitude) {
 			locationText = this.props.exif.gpsLatitude + ", " + this.props.exif.gpsLongitude;
@@ -31,14 +52,19 @@ class ExifData extends React.Component {
 				<span className="value">{this.props.exif.manufactorer} {this.props.exif.model}</span>
 			</div>}
 
-			{!!this.props.exif.aperture && <div className="property">
+			{!!exposureText && <div className="property">
 				<span className="name">Exposure</span>
-				<span className="value">{this.props.exif.aperture} {this.props.exif.exposureTime} ISO-{this.props.exif.iso}</span>
+				<span className="value">{exposureText}</span>
 			</div>}
 
-			{!!dateTakenPretty && <div className="property">
+			{!!focalLengthText && <div className="property">
+				<span className="name">Focal length</span>
+				<span className="value">{focalLengthText}</span>
+			</div>}
+
+			{!!dateTakenText && <div className="property">
 				<span className="name">Taken on</span>
-				<span className="value">{dateTakenPretty}</span>
+				<span className="value">{dateTakenText}</span>
 			</div>}
 
 			{!!locationText && <div className="property">
