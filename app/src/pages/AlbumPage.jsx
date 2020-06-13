@@ -6,6 +6,7 @@ import PhotoService from '../services/PhotoService';
 import UploadHelper from "../helpers/UploadHelper.js"
 import ConfirmationDialog from '../components/ConfirmationDialog.jsx';
 import UploadProgressDialog from '../components/UploadProgressDialog.jsx';
+import UploadButton from '../components/UploadButton.jsx';
 import { toast } from 'react-toastify';
 
 class AlbumPage extends React.Component {
@@ -141,10 +142,14 @@ class AlbumPage extends React.Component {
 		if (!event.dataTransfer.files || event.dataTransfer.files.length === 0)
 			return; // no files
 
+		uploadFilesList(event.dataTransfer.files);
+	}
+
+	uploadFilesList (filesList) {
 		let albumId = this.state.albumId;
 		let photoIds = this.state.photos.map(p => p.id)
 
-		let files = UploadHelper.convertFileListToFileArrayForUploadDialog(event.dataTransfer.files);
+		let files = UploadHelper.convertFileListToFileArrayForUploadDialog(filesList);
 		
 		let fnOnUploadFinished = (uploadedPhotoIds) => {
 			this.setState({
@@ -171,7 +176,7 @@ class AlbumPage extends React.Component {
 			});
 		};
 
-		PhotoService.uploadPhotos(event.dataTransfer.files, fnUpdateFileUploadState)
+		PhotoService.uploadPhotos(filesList, fnUpdateFileUploadState)
 			.then(fnOnUploadFinished)
 			.catch(console.error);
 
@@ -187,6 +192,7 @@ class AlbumPage extends React.Component {
 			{this.state.selectedPhotos.length > 0 && <button onClick={(e) => this.onRemovePhotosClick()}>Remove photos</button>}
 			{<button onClick={(e) => this.shareAlbum()}>Share</button>}
 			{<button onClick={(e) => this.onDeleteAlbumClick()}>Delete album</button>}
+			{this.state.selectedPhotos.length === 0 && <UploadButton onSubmit={(files) => this.uploadFilesList(files)}/>}
 		</div>);
 		
 		return (

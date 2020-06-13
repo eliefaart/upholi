@@ -1,5 +1,4 @@
 import React from 'react';
-import $ from 'jquery';
 import Modal from '../components/Modal.jsx';
 import PhotoGallerySelectable from '../components/PhotoGallerySelectable.jsx';
 import PageLayout from "../components/PageLayout.jsx";
@@ -10,6 +9,7 @@ import AppStateContext from '../contexts/AppStateContext.jsx';
 import ConfirmationDialog from '../components/ConfirmationDialog.jsx';
 import UploadProgressDialog from '../components/UploadProgressDialog.jsx';
 import ModalCreateAlbum from '../components/ModalCreateAlbum.jsx';
+import UploadButton from '../components/UploadButton.jsx';
 import { toast } from 'react-toastify';
 
 class PhotosDashboardPage extends React.Component {
@@ -127,14 +127,22 @@ class PhotosDashboardPage extends React.Component {
 		})
 	}
 
+	onPhotoClicked(event, target) {
+		let photo = this.state.photos[target.index];
+		!!this.context.history && this.context.history.push("/photo/" + photo.id);
+	}
+
 	onFilesDropped(event) {
 		event.preventDefault();
 		if (!event.dataTransfer.files || event.dataTransfer.files.length === 0)
 			return; // no files
 
-		let files = UploadHelper.convertFileListToFileArrayForUploadDialog(event.dataTransfer.files);
+		this.uploadFilesList(event.dataTransfer.files);
+	}
 
-		let fnOnUploadFinished = (uploadedPhotoIds) => {
+	uploadFilesList(filesList) {
+		let files = UploadHelper.convertFileListToFileArrayForUploadDialog(filesList);
+		let fnOnUploadFinished = () => {
 			this.setState({
 				uploadInProgress: false,
 				uploadFiles: []
@@ -151,7 +159,7 @@ class PhotosDashboardPage extends React.Component {
 			});
 		};
 
-		PhotoService.uploadPhotos(event.dataTransfer.files, fnUpdateFileUploadState)
+		PhotoService.uploadPhotos(filesList, fnUpdateFileUploadState)
 			.then(fnOnUploadFinished)
 			.catch(console.error);
 
@@ -161,16 +169,12 @@ class PhotosDashboardPage extends React.Component {
 		});
 	}
 
-	onPhotoClicked(event, target) {
-		let photo = this.state.photos[target.index];
-		!!this.context.history && this.context.history.push("/photo/" + photo.id);
-	}
-
 	render() {
 		const headerActions = (<div>
 			{this.state.selectedPhotos.length > 0 && <span>Selected {this.state.selectedPhotos.length} photos</span>}
 			{this.state.selectedPhotos.length > 0 && <button onClick={() => this.onClickDeletePhotos()}>Delete</button>}
 			{this.state.selectedPhotos.length > 0 && <button onClick={() => this.onClickAddSelectedPhotosToAlbum(this.state.selectedPhotos)}>Add to album</button>}
+			{this.state.selectedPhotos.length === 0 && <UploadButton onSubmit={(files) => this.uploadFilesList(files)}/>}
 		</div>);
 
 		return (
