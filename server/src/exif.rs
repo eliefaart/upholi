@@ -74,7 +74,7 @@ impl Exif {
 			TagValue::Ascii(val) => Some(val.to_string()),
 			TagValue::URational(_) => Some(entry.value_more_readable.to_string()),
 			_ => {
-				println!("{:?}", entry.value);
+				println!("convert_exif_to_string: {:?}", entry.value);
 				None
 			}
 		}
@@ -84,8 +84,9 @@ impl Exif {
 	fn convert_exif_to_i32(entry: &rexif::ExifEntry) -> Option<i32> {
 		match &entry.value {
 			TagValue::URational(rat) => Some(rat[0].numerator as i32 / rat[0].denominator as i32),
+			TagValue::U16(val) => Some(val[0] as i32),
 			_ => {
-				println!("{:?}", entry.value);
+				println!("convert_exif_to_i32: {:?}", entry.value);
 				None
 			}
 		}
