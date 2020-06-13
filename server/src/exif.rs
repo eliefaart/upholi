@@ -24,76 +24,20 @@ impl Exif {
 		let result = rexif::parse_buffer(photo_bytes);
 		match result {
 			Ok(exif) => {
-				// These closures are all very similar, except the handling of &entry.value
-				// Not sure if I can reduplicate it. Possibly using macros but havn't looked into it yet.
-				// I can't make functions instead of closures, because rexif::types is private.
-
 				let closure_get_exif_data_as_string = |tag: ExifTag| -> Option<String> {
-					let result = exif.entries.iter().find(|entry| entry.tag == tag);
-					if let Some(entry) = result {
-						match &entry.value {
-							TagValue::Ascii(val) => Some(val.to_string()),
-							TagValue::URational(_) => Some(entry.value_more_readable.to_string()),
-							_ => {
-								println!("{:?}", entry.value);
-								None
-							}
-						}
-					} else {
-						None
-					}
+					Self::get_exif_data(&exif, tag, Self::convert_exif_to_string)
 				};
 
 				let closure_get_exif_data_as_i32 = |tag: ExifTag| -> Option<i32> {
-					let result = exif.entries.iter().find(|entry| entry.tag == tag);
-					if let Some(entry) = result {
-						match &entry.value {
-							TagValue::U32(val) => Some(val[0] as i32),
-							TagValue::U16(val) => Some(val[0] as i32),
-							TagValue::U8(val) => Some(val[0] as i32),
-							TagValue::I32(val) => Some(val[0] as i32),
-							TagValue::I16(val) => Some(val[0] as i32),
-							TagValue::I8(val) => Some(val[0] as i32),
-							TagValue::URational(rat) => Some(rat[0].numerator as i32 / rat[0].denominator as i32),
-							_ => {
-								println!("{:?}", entry.value);
-								None
-							}
-						}
-					} else {
-						None
-					}
-				};
-
-				let closure_get_exif_data_as_f32 = |tag: ExifTag| -> Option<f32> {
-					let result = exif.entries.iter().find(|entry| entry.tag == tag);
-					if let Some(entry) = result {
-						match &entry.value {
-							TagValue::URational(rat) => Some(rat[0].numerator as f32 / rat[0].denominator as f32),
-							_ => None
-						}
-					} else {
-						None
-					}
+					Self::get_exif_data(&exif, tag, Self::convert_exif_to_i32)
 				};
 
 				let closure_get_exif_data_as_datetime = |tag: ExifTag| -> Option<chrono::DateTime<Utc>> {
-					let result = exif.entries.iter().find(|entry| entry.tag == tag);
-					if let Some(entry) = result {
-						match &entry.value {
-							TagValue::Ascii(val) => {
-								let result = Utc.datetime_from_str(val, "%Y:%m:%d %H:%M:%S");
-								if let Ok(datetime) = result {
-									Some(datetime)
-								} else {
-									None
-								}
-							},
-							_ => None
-						}
-					} else {
-						None
-					}
+					Self::get_exif_data(&exif, tag, Self::convert_exif_to_datetime)
+				};
+
+				let closure_get_exif_data_as_coord = |tag: ExifTag| -> Option<f32> {
+					Self::get_exif_data(&exif, tag, Self::convert_exif_to_gps_coord)
 				};
 
 				Ok(Self {
@@ -106,11 +50,79 @@ impl Exif {
 					focal_length_35mm_equiv: closure_get_exif_data_as_i32(ExifTag::FocalLengthIn35mmFilm),
 					orientation: closure_get_exif_data_as_i32(ExifTag::Orientation),
 					date_taken: closure_get_exif_data_as_datetime(ExifTag::DateTime),
-					gps_latitude: closure_get_exif_data_as_f32(ExifTag::GPSLatitude),
-					gps_longitude: closure_get_exif_data_as_f32(ExifTag::GPSLongitude)
+					gps_latitude: closure_get_exif_data_as_coord(ExifTag::GPSLatitude),
+					gps_longitude: closure_get_exif_data_as_coord(ExifTag::GPSLongitude)
 				})
 			},
 			Err(error) => Err(format!("{:?}", error))
+		}
+	}
+
+	/// Gets the value of given exif field
+	fn get_exif_data<T>(exif: &rexif::ExifData, tag: ExifTag, convert_value: fn(&rexif::ExifEntry) -> Option<T>) -> Option<T> {
+		let result = exif.entries.iter().find(|entry| entry.tag == tag);
+		if let Some(entry) = result {
+			convert_value(entry)
+		} else {
+			None
+		}
+	}
+
+	/// Convert exif field to String
+	fn convert_exif_to_string(entry: &rexif::ExifEntry) -> Option<String> {
+		match &entry.value {
+			TagValue::Ascii(val) => Some(val.to_string()),
+			TagValue::URational(_) => Some(entry.value_more_readable.to_string()),
+			_ => {
+				println!("{:?}", entry.value);
+				None
+			}
+		}
+	}
+
+	/// Convert exif field to i32
+	fn convert_exif_to_i32(entry: &rexif::ExifEntry) -> Option<i32> {
+		match &entry.value {
+			TagValue::URational(rat) => Some(rat[0].numerator as i32 / rat[0].denominator as i32),
+			_ => {
+				println!("{:?}", entry.value);
+				None
+			}
+		}
+	}
+	
+	/// Convert exif field to chrono::DateTime<Utc>
+	fn convert_exif_to_datetime(entry: &rexif::ExifEntry) -> Option<chrono::DateTime<Utc>> {
+		match &entry.value {
+			TagValue::Ascii(val) => {
+				let result = Utc.datetime_from_str(val, "%Y:%m:%d %H:%M:%S");
+				if let Ok(datetime) = result {
+					Some(datetime)
+				} else {
+					None
+				}
+			},
+			_ => None
+		}
+	}
+
+	/// Convert exif field to f32 representing a coordinate
+	fn convert_exif_to_gps_coord(entry: &rexif::ExifEntry) -> Option<f32> {
+		match &entry.value {
+			TagValue::URational(rat) => {
+				// rat should have 3 entries; degrees, minutes, seconds
+				if rat.len() != 3 {
+					None
+				} else {
+					let degrees = rat[0].numerator as f32 / rat[0].denominator as f32;
+					let minutes = rat[1].numerator as f32 / rat[1].denominator as f32;
+					let seconds = rat[2].numerator as f32 / rat[2].denominator as f32;
+
+					let coord = degrees + (minutes / 60f32) + (seconds / 3600f32);
+					Some(coord)
+				}
+			},
+			_ => None
 		}
 	}
 

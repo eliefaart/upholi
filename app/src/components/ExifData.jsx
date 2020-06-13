@@ -6,7 +6,7 @@ class ExifData extends React.Component {
 	}
 
 	createLocationUri(lat, lon) {
-		return "https://www.openstreetmap.org/#map=16/" + lat + "/" + lon;
+		return "https://www.openstreetmap.org/#map=18/" + lat + "/" + lon;
 	}
 
 	render() {
@@ -33,7 +33,7 @@ class ExifData extends React.Component {
 
 			{!!this.props.exif.aperture && <div className="property">
 				<span className="name">Exposure</span>
-				<span className="value">{this.props.exif.aperture} {this.props.exif.exposureTime} {this.props.exif.iso}ISO</span>
+				<span className="value">{this.props.exif.aperture} {this.props.exif.exposureTime} ISO-{this.props.exif.iso}</span>
 			</div>}
 
 			{!!dateTakenPretty && <div className="property">
