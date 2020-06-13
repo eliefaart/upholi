@@ -1,11 +1,9 @@
 import React from 'react';
 import PhotoGallerySelectable from '../components/PhotoGallerySelectable.jsx';
-import PhotoDetail from '../components/PhotoDetail.jsx';
 import PageLayout from "../components/PageLayout.jsx"
 import AppStateContext from '../contexts/AppStateContext.jsx';
 import PhotoService from '../services/PhotoService';
 import UploadHelper from "../helpers/UploadHelper.js"
-import Overlay from '../components/Overlay.jsx';
 import ConfirmationDialog from '../components/ConfirmationDialog.jsx';
 import UploadProgressDialog from '../components/UploadProgressDialog.jsx';
 import { toast } from 'react-toastify';
@@ -83,12 +81,6 @@ class AlbumPage extends React.Component {
 		let photo = this.state.photos[target.index];
 
 		!!this.context.history && this.context.history.push("/photo/" + photo.id);
-	}
-
-	closePhoto() {
-		this.setState({
-			openedPhotoId: null
-		});
 	}
 
 	setSelectedPhotoAsAlbumCover() {
@@ -200,12 +192,16 @@ class AlbumPage extends React.Component {
 		return (
 			<PageLayout headerElementActions={headerActions} onDrop={(event) => this.onFilesDropped(event)}>
 				<h1>{this.state.title}</h1>
-				<PhotoGallerySelectable onClick={(event, target) => this.onPhotoClicked(event, target)} photos={this.state.photos} selectedItems={this.state.selectedPhotos} onPhotoSelectedChange={(photoId, selected) => this.onPhotoSelectedChange(photoId, selected)}/>
 
-				{!!this.state.openedPhotoId && 
-					<Overlay onClick={() => this.closePhoto()}>
-						{!!this.state.openedPhotoId  && <PhotoDetail src={PhotoService.baseUrl() + "/photo/" + this.state.openedPhotoId + "/original"}/>}
-					</Overlay>
+				{!!this.state.title && this.state.photos.length === 0 && 
+					<span className="centerText">This album has no photos.</span>
+				}
+
+				{this.state.photos.length > 0 && <PhotoGallerySelectable 
+					onClick={(event, target) => this.onPhotoClicked(event, target)} 
+					photos={this.state.photos} 
+					selectedItems={this.state.selectedPhotos} 
+					onPhotoSelectedChange={(photoId, selected) => this.onPhotoSelectedChange(photoId, selected)}/>
 				}
 
 				<ConfirmationDialog

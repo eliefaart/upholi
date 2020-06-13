@@ -43,6 +43,7 @@ html {
 }
 
 // Imports
+@import "app.misc";
 @import "app.component.modal";
 @import "app.component.header";
 @import "app.component.overlay";
@@ -73,10 +74,10 @@ input,
 select {
 	background-color: $altBackgroundColor;
 	color: $textColorLight;
-	border: 2px solid $accentColor;
+	border: 2px solid $secondaryAccentColor;
 
 	&:focus {
-		border-color: $secondaryAccentColor;
+		border-color: $accentColor;
 	}
 }
 
