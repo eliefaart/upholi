@@ -94,6 +94,14 @@ class PhotoService {
 			.fail((error) => console.log("Get failed", error));
 	}
 
+	static getPhoto(photoId) {
+		let url = PhotoService.baseUrl() + "/photo/" + photoId;
+		
+		return new Promise((ok, err) => {
+			$.get(url).done(ok).fail(err);
+		});
+	}
+
 	static deletePhotos(photoIds, callback) {
 		$.ajax({
 			url: PhotoService.baseUrl() + "/photos",
@@ -124,14 +132,19 @@ class PhotoService {
 			// TODO: allow setting photos and thumb in initial create call
 			let albumId = response.id;
 
-			requestData.thumbPhotoId = photoIds[0];
-			requestData.photos = photoIds;
+			if (!!photoIds) {
+				requestData.thumbPhotoId = photoIds[0];
+				requestData.photos = photoIds;
 
-			PhotoService.updateAlbum(albumId, requestData)
-				.then(() => {
-					if (callback)
-						callback(albumId);
-				});
+				PhotoService.updateAlbum(albumId, requestData)
+					.then(() => {
+						if (callback)
+							callback(albumId);
+					});
+			} else {
+				if (callback)
+					callback(albumId);
+			}
 		});
 	}
 

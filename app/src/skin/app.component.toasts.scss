@@ -1,0 +1,17 @@
+.Toastify__toast-container {
+
+	.Toastify__toast {
+		background: $altBackgroundColor;
+		color: $textColorLight;
+		border: 1px solid $accentColor;
+		min-height: $headerHeight;
+
+		.Toastify__close-button {
+			all: unset;
+
+			svg {
+				fill: $textColorLight;
+			}
+		}
+	}
+}

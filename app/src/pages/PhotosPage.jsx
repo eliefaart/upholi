@@ -2,13 +2,14 @@ import React from 'react';
 import $ from 'jquery';
 import Modal from '../components/Modal.jsx';
 import PhotoGallerySelectable from '../components/PhotoGallerySelectable.jsx';
-import PageLayout from "../components/PageLayout.jsx"
-import Albums from "../components/Albums.jsx"
-import PhotoService from "../services/PhotoService.js"
-import UploadHelper from "../helpers/UploadHelper.js"
+import PageLayout from "../components/PageLayout.jsx";
+import Albums from "../components/Albums.jsx";
+import PhotoService from "../services/PhotoService.js";
+import UploadHelper from "../helpers/UploadHelper.js";
 import AppStateContext from '../contexts/AppStateContext.jsx';
 import ConfirmationDialog from '../components/ConfirmationDialog.jsx';
 import UploadProgressDialog from '../components/UploadProgressDialog.jsx';
+import ModalCreateAlbum from '../components/ModalCreateAlbum.jsx';
 import { toast } from 'react-toastify';
 
 class PhotosDashboardPage extends React.Component {
@@ -126,21 +127,6 @@ class PhotosDashboardPage extends React.Component {
 		})
 	}
 
-	submitCreateAlbum() {
-		let history = this.context.history;
-		let form = $("#form-create-album");
-		let title = form.find("[name=title]").val();
-
-		PhotoService.createAlbum(title, this.state.selectedPhotos, (albumId) => {
-			// Using a timeout because otherwise the navigation interupts the toast
-			toast.info("Album '" + title + "' created.");
-			
-			if (history) {
-				history.push("/album/" + albumId);
-			}
-		});
-	}
-
 	onFilesDropped(event) {
 		event.preventDefault();
 		if (!event.dataTransfer.files || event.dataTransfer.files.length === 0)
@@ -191,18 +177,11 @@ class PhotosDashboardPage extends React.Component {
 			<PageLayout headerElementActions={headerActions} onDrop={(event) => this.onFilesDropped(event)}>
 				<PhotoGallerySelectable photos={this.state.photos} onClick={(event, target) => this.onPhotoClicked(event, target)} selectedItems={this.state.selectedPhotos} onPhotoSelectedChange={(photoId, selected) => this.onPhotoSelectedChange(photoId, selected)} />
 
-				{this.state.newAlbumDialogOpen && 
-					<Modal
-						title="Create album"
-						isOpen={this.state.newAlbumDialogOpen}
-						onRequestClose={() => this.setState({newAlbumDialogOpen: false})}
-						onOkButtonClick={() => this.submitCreateAlbum()}
-						okButtonText="Create"
-						>
-							<form id="form-create-album">
-								<input name="title" placeholder="Title"/>
-							</form>
-					</Modal>}
+				{this.state.newAlbumDialogOpen && <ModalCreateAlbum
+					isOpen={this.state.newAlbumDialogOpen}
+					onRequestClose={() => this.setState({newAlbumDialogOpen: false})}
+					createWithPhotos={this.state.selectedPhotos}
+					/>}
 
 				{this.state.addPhotosToAlbumDialogOpen && 
 					<Modal

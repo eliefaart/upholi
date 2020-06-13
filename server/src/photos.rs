@@ -43,7 +43,7 @@ impl Photo {
 
 			// Process image
 			let exif_orientation = exif.orientation.unwrap_or(1) as u8;
-			let image_info = images::Image::from_buffer(photo_bytes, exif_orientation);
+			let image_info = images::Image::from_buffer(photo_bytes, exif_orientation)?;
 
 			// Store files
 			let thumbnail_file_name = format!("thumb_{}", filename);

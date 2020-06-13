@@ -1,4 +1,5 @@
 import React from 'react';
+import ExifData from '../components/ExifData.jsx';
 
 class PhotoDetail extends React.Component {
 	constructor(props) {
@@ -17,6 +18,7 @@ class PhotoDetail extends React.Component {
 		};
 
 		return <div style={containerStyle} className="photoDetail">
+			{this.props.exif && <ExifData exif={this.props.exif}/>}
 			<img src={this.props.src} />
 		</div>;
 	}

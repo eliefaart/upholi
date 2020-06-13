@@ -15,6 +15,7 @@ $modalHeaderHeight: $buttonHeight;
 	border-radius: $borderRadius;
 	border: 1px solid $accentColor;
 	padding: $spacing * 2;
+	min-width: 250px;
 
 	display: flex;
 	flex-direction: column;
@@ -23,10 +24,6 @@ $modalHeaderHeight: $buttonHeight;
 		flex: 0 0 100%;
 		display: flex;
 
-		>* {
-			//margin: 0 $spacing;
-		}
-
 		.title {
 			display: flex;
 			flex: 0 1 100%;
@@ -34,13 +31,6 @@ $modalHeaderHeight: $buttonHeight;
 			font-weight: bold;
 			font-size: $fontSizeLarge;
 		}
-
-		// .button-close {
-		// 	padding: 0;
-		// 	width: $modalHeaderHeight;
-		// 	min-width: $modalHeaderHeight;
-		// 	height: $modalHeaderHeight;
-		// }
 	}
 
 	.modal-body {

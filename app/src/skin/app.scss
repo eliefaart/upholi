@@ -2,7 +2,7 @@
 @import "_fonts";
 
 $backgroundColor: #000;
-$altBackgroundColor: #222;
+$altBackgroundColor: #191d25;
 $accentColor: #d3e532;
 $secondaryAccentColor: #664645;
 $textColorDark: #161f21;
@@ -43,6 +43,7 @@ html {
 }
 
 // Imports
+@import "app.misc";
 @import "app.component.modal";
 @import "app.component.header";
 @import "app.component.overlay";
@@ -50,11 +51,13 @@ html {
 @import "app.component.photoGallery";
 @import "app.component.photoDetail";
 @import "app.component.uploadProgressDialog";
+@import "app.component.exif";
+@import "app.component.toasts";
 
 input,
 select,
 button,
-a[href] {
+a[href].asButton {
 	margin: 10px 0 10px 0;
 	width: 100%;
 	height: $buttonHeight;
@@ -62,18 +65,23 @@ a[href] {
 	border-radius: $borderRadius;
 }
 
+a[href] {
+	&:link, &:visited, &:hover, &:active { text-decoration: none; color: unset; }
+	&:hover { text-decoration: underline; }
+}
+
 input,
 select {
 	background-color: $altBackgroundColor;
 	color: $textColorLight;
-	border: 2px solid $accentColor;
+	border: 2px solid $secondaryAccentColor;
 
 	&:focus {
-		border-color: $secondaryAccentColor;
+		border-color: $accentColor;
 	}
 }
 
-button, a[href] {
+button, a[href].asButton {
 	color: $textColorDark;
 	background-color: $accentColor;
 	border: none;
@@ -108,24 +116,4 @@ button, a[href] {
 
 h1 {
 	text-align: center;
-}
-
-
-.Toastify__toast-container {
-
-	.Toastify__toast {
-		background: $accentColor;
-		color: $textColorDark;
-
-		// .Toastify__toast-body {
-		// }
-
-		.Toastify__close-button {
-			all: unset;
-
-			svg {
-				fill: $textColorDark;
-			}
-		}
-	}
 }

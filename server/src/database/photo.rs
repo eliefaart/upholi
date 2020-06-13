@@ -52,20 +52,19 @@ pub fn get_all() -> Vec<photos::Photo> {
 	photos
 }
 
-pub fn delete(id: &str) -> Option<()>{
-	delete_many(&[id])
-}
-
-pub fn delete_many(ids: &[&str]) -> Option<()> {
+pub fn delete_many(ids: &[&str]) -> Result<(), String> {
 	let collection = get_collection();
 	if database::album::remove_photos_from_all_albums(ids).is_ok() {
 		if database::album::remove_thumbs_from_all_albums(ids).is_ok() {
-			database::delete_many(ids, &collection)
+			match database::delete_many(ids, &collection) {
+				Some(_) => Ok(()),
+				None => Err(format!("Failed to delete photos from database"))
+			}
 		} else {
-			None
+			Err(format!("Failed to unset cover photos from albums"))
 		}
 	} else {
-		None
+		Err(format!("Failed to remove photos from albums"))
 	}
 }
 
@@ -116,7 +115,9 @@ mod tests {
 				focal_length: None,
 				focal_length_35mm_equiv: None,
 				orientation: None,
-				date_taken: None
+				date_taken: None,
+				gps_latitude: None,
+				gps_longitude: None
 			}
 		}
 	}

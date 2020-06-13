@@ -6,15 +6,13 @@ class Modal extends React.Component {
 
 	constructor(props) {
 		super(props);
-		
-		ReactModal.setAppElement('#app');
 
 		this.state = {
 		};
 	}
 	
 	componentDidMount() {
-		
+		ReactModal.setAppElement("#app");
 	}
 
 	render() {

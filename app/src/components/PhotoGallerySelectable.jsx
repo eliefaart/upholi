@@ -105,9 +105,9 @@ class PhotoGallerySelectable extends React.Component {
 			const onPhotoClick = event => {
 				// If the click-start event did not fire during current lifespan of this component, 
 				// then we do not need to handle the click event,
-				// because the user's interactionw as handled by the timeout event handler
-				if (clickStartEventOccuredDuringCurrentComponentLifespan !== true)
-					return;
+				// because the user's interaction was handled by the timeout event handler
+				// if (clickStartEventOccuredDuringCurrentComponentLifespan !== true)
+				// 	return;
 
 				cancelLongPress();
 
@@ -129,6 +129,11 @@ class PhotoGallerySelectable extends React.Component {
 				}
 			};
 
+			const onContextMenu = event => {
+				event.preventDefault();
+				galleryComponent.props.onPhotoSelectedChange(photo.id, !isSelected)
+			}
+
 			return (
 				<div key={key} style={containerStyle} className={cssClass}>
 					<input type="checkbox" id={checkboxId} name={checkboxId} 
@@ -139,11 +144,12 @@ class PhotoGallerySelectable extends React.Component {
 						{...photo}
 						style={imgStyle}
 						onClick={onPhotoClick}
-						onMouseDown={onPhotoClickStart}
-						onTouchStart={onPhotoClickStart}
-						onMouseLeave={cancelLongPress}
-						onDragStart={cancelLongPress}
-						onTouchMove={onTouchMove}
+						onContextMenu={onContextMenu}
+						// onMouseDown={onPhotoClickStart}
+						// onTouchStart={onPhotoClickStart}
+						// onMouseLeave={cancelLongPress}
+						// onDragStart={cancelLongPress}
+						// onTouchMove={onTouchMove}
 					/>
 				</div>
 			);
