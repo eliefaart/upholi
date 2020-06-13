@@ -75,8 +75,6 @@ impl Image {
 
 	/// Rotate image so it is displayed in correct orientation when the oientation exif tag is not present
 	fn rotate_image_upright(image: &DynamicImage, cur_exif_orientation: u8) -> Option<DynamicImage> {
-		println!("{}", cur_exif_orientation);
-
 		if cur_exif_orientation == 2 {
 			Some(image.fliph())
 		} else if cur_exif_orientation == 3 {

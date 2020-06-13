@@ -6,9 +6,9 @@ Personal photo library
 
 ```docker build . --file Dockerfile```
 
-```docker pull docker.pkg.github.com/eliefaart/hummingbird/hummingbird-server:docker```
+```docker pull docker.pkg.github.com/eliefaart/hummingbird/hummingbird-server:latest```
 
-```docker pull docker.pkg.github.com/eliefaart/hummingbird/hummingbird-app:docker```
+```docker pull docker.pkg.github.com/eliefaart/hummingbird/hummingbird-app:latest```
 
 ## Docker
 In docker compose:

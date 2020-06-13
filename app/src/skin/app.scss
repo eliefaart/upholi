@@ -54,10 +54,7 @@ html {
 @import "app.component.exif";
 @import "app.component.toasts";
 
-input,
-select,
-button,
-a[href].asButton {
+input, select, button, .asButton {
 	margin: 10px 0 10px 0;
 	width: 100%;
 	height: $buttonHeight;
@@ -65,13 +62,12 @@ a[href].asButton {
 	border-radius: $borderRadius;
 }
 
-a[href] {
+a[href]:not(.asButton) {
 	&:link, &:visited, &:hover, &:active { text-decoration: none; color: unset; }
 	&:hover { text-decoration: underline; }
 }
 
-input,
-select {
+input, select {
 	background-color: $altBackgroundColor;
 	color: $textColorLight;
 	border: 2px solid $secondaryAccentColor;
@@ -81,7 +77,19 @@ select {
 	}
 }
 
-button, a[href].asButton {
+.selectFiles {
+	background: $secondaryAccentColor;
+	cursor: pointer;
+	height: $buttonHeight;
+	line-height: $buttonHeight;
+	display: inline-block;
+	padding: 0 $buttonHeight;
+}
+input[type=file] {
+	display: none;
+}
+
+button, .asButton {
 	color: $textColorDark;
 	background-color: $accentColor;
 	border: none;
@@ -90,6 +98,8 @@ button, a[href].asButton {
 	margin: 0px 0px 0px 0px;
 	text-decoration: none;
 	padding: 0;
+	display: inline-block;
+	text-align: center;
 	
 	svg {
 		display: block;
