@@ -201,43 +201,57 @@ pub async fn route_upload_photo(payload: Multipart) -> impl Responder {
 	}
 }
 
-/// OAuth test; this route should now initate login at an identity provider
+/// OAuth: start login flow with an identity provider
 pub async fn oauth_start_login() -> impl Responder {
 	let redirect_uri = oauth2::get_auth_url();
 
+	let session = database::session::Session::new();
+
+	// Create a new cookie for session
+	// TODO: Make this expire after some amount of time, not permanent
+	let mut cookie = Cookie::new(SESSION_COOKIE_NAME, session.id);
+	cookie.set_secure(true);
+	cookie.set_http_only(true);
+	cookie.set_path("/");
+	cookie.make_permanent();
+
 	HttpResponse::Found()
+		.cookie(cookie)
 		.header(http::header::LOCATION, redirect_uri)
 		.finish()
 }
 
 /// OAuth callback
-pub async fn oauth_callback(oauth_info: web::Query<OauthCallbackRequest>) -> impl Responder {
+pub async fn oauth_callback(req: HttpRequest, oauth_info: web::Query<OauthCallbackRequest>) -> impl Responder {
 	match oauth2::get_access_token(&oauth_info.code) {
 		Ok(access_token) => {
 			match oauth2::get_user_info(&access_token).await {
 				Ok(user_info) => {
-					println!("{:?}", user_info);
-					// Set cookie for user
-					// TODO: Make this expire after some amount of time, not permanent
-					let mut cookie = Cookie::new(SESSION_COOKIE_NAME, user_info.id.to_string());
-					cookie.set_secure(true);
-					cookie.set_http_only(true);
-					cookie.set_path("/");
-					cookie.make_permanent();
 
-					// then redirect to home page
-					HttpResponse::Found()
-						.cookie(cookie)
-						.header(http::header::LOCATION, "/")
-						.finish()
+					match get_session_cookie(req.headers()) {
+						Some(session_cookie) => {
+							let session_id = session_cookie.value();
+							match database::session::Session::get(&session_id) {
+								Some(mut session) => {
+									session.set_user(user_info.id);
+
+									// then redirect to home page
+									HttpResponse::Found()
+										.header(http::header::LOCATION, "/")
+										.finish()
+								},
+								None => create_unauthorized_response()
+							}
+						},
+						None => create_unauthorized_response()
+					}
 				},
 				Err(error) => {
-					println!("{:?}", error);
 					create_internal_server_error_response(&format!("{:?}", error))
 				}
 			}
 		},
-		Err(_) => create_ok_response()
+		Err(_) => create_unauthorized_response()
 	}
 }
 

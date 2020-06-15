@@ -38,15 +38,8 @@ pub fn get_access_token(auth_code: &str) -> Result<String, String> {
 		.exchange_code(AuthorizationCode::new(auth_code.to_string()))
 		.request(http_client);
 
-	println!("token_result: {:?}", token_result);
-
 	match token_result {
 		Ok(token) => {
-			println!("token: {:?}", token);
-			println!("access_token: {:?}", token.access_token());
-			println!("access_token_secret: {:?}", token.access_token().secret());
-			println!("extra_fields: {:?}", token.extra_fields());
-			
 			Ok(token.access_token().secret().to_string())
 		},
 		Err(_) => Err("Failed to get access token for auth code".to_string())

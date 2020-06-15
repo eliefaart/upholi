@@ -4,6 +4,7 @@ use lazy_static::lazy_static;
 
 pub mod album;
 pub mod photo;
+pub mod session;
 
 const COLLECTION_PHOTOS: &str = "photos";
 const COLLECTION_ALBUMS: &str = "albums";

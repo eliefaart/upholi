@@ -69,12 +69,10 @@ pub fn get_session_cookie(req: &actix_web::http::header::HeaderMap) -> Option<Co
 /// Extract user_id from the HTTP request
 fn get_user_id(req: &HttpRequest) -> Option<u64> {
 	let session_cookie = get_session_cookie(req.headers())?;
-
-	// TODO: In future session_cookie won't have user_id directly, 
-	// instead it will have a session id of some kind, with which I need to check in DB what user_id is
-	match session_cookie.value().parse::<u64>() {
-		Ok(user_id) => Some(user_id),
-		Err(_) => None
+	let session_id = session_cookie.value();
+	match crate::database::session::Session::get(&session_id) {
+		Some(session) => session.user_id,
+		None => None
 	}
 }
 
