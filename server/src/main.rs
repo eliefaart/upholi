@@ -57,6 +57,7 @@ async fn main() -> std::io::Result<()> {
 			.service(
 				web::scope("/oauth")
 					.route("/start", web::get().to(handlers::oauth_start_login))
+					.route("/user/info", web::get().to(handlers::oauth_user_info))
 					.route("/login", web::get().to(handlers::oauth_callback))
 			)
 			.service(

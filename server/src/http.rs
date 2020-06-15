@@ -31,7 +31,7 @@ struct ErrorResult {
 }
 
 /// Data associated with a session
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Session {
 	user_id: u64
 }

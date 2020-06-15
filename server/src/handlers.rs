@@ -205,7 +205,7 @@ pub async fn route_upload_photo(payload: Multipart) -> impl Responder {
 pub async fn oauth_start_login() -> impl Responder {
 	let redirect_uri = oauth2::get_auth_url();
 
-	HttpResponse::TemporaryRedirect()
+	HttpResponse::Found()
 		.header(http::header::LOCATION, redirect_uri)
 		.finish()
 }
@@ -217,15 +217,16 @@ pub async fn oauth_callback(oauth_info: web::Query<OauthCallbackRequest>) -> imp
 			match oauth2::get_user_info(&access_token).await {
 				Ok(user_info) => {
 					println!("{:?}", user_info);
-					// Set cookie for user, then redirect to home page
-
-					let mut cookie = Cookie::new(SESSION_COOKIE_NAME, "12345");
+					// Set cookie for user
+					// TODO: Make this expire after some amount of time, not permanent
+					let mut cookie = Cookie::new(SESSION_COOKIE_NAME, user_info.id.to_string());
 					cookie.set_secure(true);
 					cookie.set_http_only(true);
 					cookie.set_path("/");
 					cookie.make_permanent();
 
-					HttpResponse::TemporaryRedirect()
+					// then redirect to home page
+					HttpResponse::Found()
 						.cookie(cookie)
 						.header(http::header::LOCATION, "/")
 						.finish()
@@ -238,4 +239,9 @@ pub async fn oauth_callback(oauth_info: web::Query<OauthCallbackRequest>) -> imp
 		},
 		Err(_) => create_ok_response()
 	}
+}
+
+/// OAuth get info of current user
+pub async fn oauth_user_info(session: Session) -> impl Responder {
+	HttpResponse::Ok().json(session)
 }

@@ -11,7 +11,6 @@ use lazy_static::lazy_static;
 //	For this I need to store PKCE verification code for some state
 
 const USER_AGENT: &str = "localhost";
-const CONFIG_GET_USERINFO_URI: &str = "https://api.github.com/user";
 
 lazy_static! {
 	#[derive(Debug)]
@@ -20,7 +19,7 @@ lazy_static! {
 
 #[derive(Deserialize, Debug)]
 pub struct UserInfo {
-	id: u64
+	pub id: u64
 }
 
 /// Generate a full authorization URL to redirect the user to
@@ -58,7 +57,7 @@ pub fn get_access_token(auth_code: &str) -> Result<String, String> {
 pub async fn get_user_info(access_token: &str) -> Result<UserInfo, Box<dyn std::error::Error>> {
 	let client = reqwest::Client::new();
 	let request = client
-		.get(CONFIG_GET_USERINFO_URI)
+		.get(&crate::SETTINGS.oauth.userinfo_url)
 		.header(reqwest::header::AUTHORIZATION, format!("Bearer {}", access_token))
 		.header(reqwest::header::USER_AGENT, USER_AGENT);
 	let response = request.send().await?;
@@ -69,16 +68,11 @@ pub async fn get_user_info(access_token: &str) -> Result<UserInfo, Box<dyn std::
 
 /// Create an oauth2 client
 fn create_client() -> oauth2::basic::BasicClient {
-	let config_client_id = "c07b616bdf23782d7ba6";
-	let config_client_secret = "970ba9fd011ce9020f05eeb1db2f0ad5b09f3e4f";	// They're localhost secrets..
-	let config_auth_url = "https://github.com/login/oauth/authorize";
-	let config_token_url = "https://github.com/login/oauth/access_token";
+	let client_id = ClientId::new(crate::SETTINGS.oauth.client_id.to_string());
+	let client_secret = ClientSecret::new(crate::SETTINGS.oauth.client_secret.to_string());
 
-	let client_id = ClientId::new(config_client_id.to_string());
-	let client_secret = ClientSecret::new(config_client_secret.to_string());
-
-	let auth_url = AuthUrl::new(config_auth_url.to_string()).expect("Invalid authorization endpoint URL");
-	let token_url = TokenUrl::new(config_token_url.to_string()).expect("Invalid token endpoint URL");
+	let auth_url = AuthUrl::new(crate::SETTINGS.oauth.auth_url.to_string()).expect("Invalid authorization endpoint URL");
+	let token_url = TokenUrl::new(crate::SETTINGS.oauth.token_url.to_string()).expect("Invalid token endpoint URL");
 	
 	BasicClient::new(
 		client_id,
