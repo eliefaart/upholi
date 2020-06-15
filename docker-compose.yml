@@ -2,9 +2,8 @@ version: '3'
 
 # Must modify:
 # - HB_DB_CONNSTRING
-# May modify:
-# - 'outer' ports
-# - HB_DB_NAME
+# - HB_OAUTH_CLIENTID
+# - HB_OAUTH_CLIENTSECRET
 
 volumes:
   server_data:
@@ -24,6 +23,8 @@ services:
       HB_DB_CONNSTRING: "XXX"
       HB_DB_NAME: "hummingbird"
       HB_DIR_PHOTOS: "/srv/hummingbird"
+      HB_OAUTH_CLIENTID: "XXX"
+      HB_OAUTH_CLIENTSECRET: "XXX"
     volumes:
       - "server_data:/srv/hummingbird"
     ports:

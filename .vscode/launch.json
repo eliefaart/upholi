@@ -8,7 +8,7 @@
 			"name": "(Windows) Launch",
 			"type": "cppvsdbg",
 			"request": "launch",
-			"program": "${workspaceFolder}/target/debug/hummingbird.exe",
+			"program": "${workspaceFolder}/server/target/debug/hummingbird.exe",
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}",
 			"sourceFileMap": {
