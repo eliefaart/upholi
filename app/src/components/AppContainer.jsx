@@ -15,15 +15,26 @@ class AppContainer extends React.Component {
 
 	constructor(props) {
 		super(props);
+
+		this.state = {
+			authorized: false
+		};
 	}
 
 	componentDidMount() {
-		let _this = this;
+		let setAuthorized = () => this.setState({authorized: true});
+
+		// TODO: Call server to find out if user is authorized
+		setTimeout(() => {
+			setAuthorized();
+		}, 1000);
 	}
 
 	render() {
-		const history = createHistory();
+		if (!this.state.authorized)
+			return null;
 
+		const history = createHistory();
 		this.context = {
 			history: history
 		}
