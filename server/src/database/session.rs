@@ -77,14 +77,14 @@ mod tests {
 		assert!(session.id.len() != 0);
 	}
 
-	#[test]
-	fn set_user() {
-		const USER_ID: i64 = 999555i64;
+	// #[test]
+	// fn set_user() {
+	// 	const USER_ID: i64 = 999555i64;
 
-		let mut session = Session::new();
-		session.set_user(USER_ID).unwrap();
+	// 	let mut session = Session::new();
+	// 	session.set_user(USER_ID).unwrap();
 
-		assert!(session.user_id.is_some());
-		assert_eq!(session.user_id.unwrap(), USER_ID);
-	}
+	// 	assert!(session.user_id.is_some());
+	// 	assert_eq!(session.user_id.unwrap(), USER_ID);
+	// }
 }
