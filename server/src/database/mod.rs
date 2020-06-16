@@ -68,29 +68,25 @@ fn find_one<'de, T: serde::Deserialize<'de>>(id: &str, collection: &mongodb::Col
 
 /// Get multiple items from a collection
 fn find_many<'de, T: serde::Deserialize<'de>>(ids: &[&str], collection: &mongodb::Collection) -> Option<Vec<T>> {
-	let result = create_in_filter_for_ids(ids);
-	if let Some(filter) = result {
-		let find_result = collection.find(filter, None);
+	let filter = create_in_filter_for_ids(ids)?;
+	let find_result = collection.find(filter, None);
 
-		match find_result {
-			Ok(cursor) => {
-				let mut items = Vec::new();
+	match find_result {
+		Ok(cursor) => {
+			let mut items = Vec::new();
 
-				for document_result in cursor {
-					let document = document_result.unwrap();
-					let item = bson::from_bson(bson::Bson::Document(document)).unwrap();
-					items.push(item);
-				}
-	
-				Some(items)
-			},
-			Err(e) => {
-				println!("error: {:?}", e);
-				None
+			for document_result in cursor {
+				let document = document_result.unwrap();
+				let item = bson::from_bson(bson::Bson::Document(document)).unwrap();
+				items.push(item);
 			}
+
+			Some(items)
+		},
+		Err(e) => {
+			println!("error: {:?}", e);
+			None
 		}
-	} else {
-		None
 	}
 }
 
@@ -125,9 +121,8 @@ fn delete_one(id: &str, collection: &mongodb::Collection) -> Option<()> {
 
 /// Delete multiple items from a collection
 fn delete_many(ids: &[&str], collection: &mongodb::Collection) -> Option<()> {
-	let result = create_in_filter_for_ids(ids);
-	if let Some(filter) = result {
-		let result = collection.delete_many(filter, None);
+	let filter = create_in_filter_for_ids(ids)?;
+	let result = collection.delete_many(filter, None);
 
 	match result {
 		Ok(delete_result) => {
@@ -138,9 +133,6 @@ fn delete_many(ids: &[&str], collection: &mongodb::Collection) -> Option<()> {
 			}
 		},
 		Err(_) => None
-	}
-	} else {
-		None
 	}
 }
 
