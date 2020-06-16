@@ -19,7 +19,7 @@ lazy_static! {
 
 #[derive(Deserialize, Debug)]
 pub struct UserInfo {
-	pub id: u64
+	pub id: i64
 }
 
 /// Generate a full authorization URL to redirect the user to

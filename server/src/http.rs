@@ -7,6 +7,7 @@ use futures::{StreamExt, TryStreamExt};
 use futures::future::{ok, err, Ready};
 
 use crate::database;
+use crate::database::DatabaseOperations;
 use crate::files;
 
 pub const SESSION_COOKIE_NAME: &str = "session";
@@ -33,7 +34,7 @@ struct ErrorResult {
 /// Data associated with a session
 #[derive(Debug, Serialize)]
 pub struct Session {
-	user_id: u64
+	user_id: i64
 }
 
 /// Allow Session to be used as function parameter for request handlers
@@ -67,7 +68,7 @@ pub fn get_session_cookie(req: &actix_web::http::header::HeaderMap) -> Option<Co
 }
 
 /// Extract user_id from the HTTP request
-fn get_user_id(req: &HttpRequest) -> Option<u64> {
+fn get_user_id(req: &HttpRequest) -> Option<i64> {
 	let session_cookie = get_session_cookie(req.headers())?;
 	let session_id = session_cookie.value();
 	match crate::database::session::Session::get(&session_id) {
@@ -122,7 +123,7 @@ pub fn serve_photo(path: &str, filename: &str) -> actix_http::Response {
 				.header(http::header::CONTENT_DISPOSITION, format!("attachment; filename=\"{}\"", filename))
 				.body(file_bytes)
 		},
-		None => create_internal_server_error_response("Error reading file content from disk, or file not found")
+		None => create_internal_server_error_response(Some("Error reading file content from disk, or file not found"))
 	}
 }
 
@@ -170,8 +171,13 @@ pub fn create_bad_request_response(message: &str) -> actix_http::Response {
 }
 
 /// Create a HTTP 500 Internal Server Error response
-pub fn create_internal_server_error_response(message: &str) -> actix_http::Response {
-	HttpResponse::InternalServerError().json(ErrorResult{message: message.to_string()})
+pub fn create_internal_server_error_response(message: Option<&str>) -> actix_http::Response {
+	let mut response = HttpResponse::InternalServerError();
+	
+	match message {
+		Some(msg) => response.json(ErrorResult{message: msg.to_string()}),
+		None => response.finish()
+	}
 }
 
 /// Create a HTTP 501 Unauthorized response

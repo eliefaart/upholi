@@ -5,6 +5,7 @@ use serde::{Deserialize};
 
 use crate::types;
 use crate::database;
+use crate::database::DatabaseOperations;
 use crate::photos;
 use crate::albums;
 use crate::oauth2;
@@ -18,8 +19,7 @@ pub struct OauthCallbackRequest {
 }
 
 /// Get all albums
-pub async fn route_get_albums(session: Session) -> impl Responder {
-	println!("{:?}", session);
+pub async fn route_get_albums(_session: Session) -> impl Responder {
 	HttpResponse::Ok().json(database::album::get_all())
 }
 
@@ -77,7 +77,7 @@ pub async fn route_create_album(album: web::Json<albums::Album>) -> impl Respond
 
 	match result {
 		Ok(_) => create_created_response(&album.id),
-		Err(error) => create_internal_server_error_response(&error)
+		Err(error) => create_internal_server_error_response(Some(&error))
 	}
 }
 
@@ -205,20 +205,23 @@ pub async fn route_upload_photo(payload: Multipart) -> impl Responder {
 pub async fn oauth_start_login() -> impl Responder {
 	let redirect_uri = oauth2::get_auth_url();
 
-	let session = database::session::Session::new();
+	match database::session::Session::create() {
+		Ok(session) => {
+			// Create a new cookie for session
+			// TODO: Make this expire after some amount of time, not permanent
+			let mut cookie = Cookie::new(SESSION_COOKIE_NAME, session.id);
+			cookie.set_secure(true);
+			cookie.set_http_only(true);
+			cookie.set_path("/");
+			cookie.make_permanent();
 
-	// Create a new cookie for session
-	// TODO: Make this expire after some amount of time, not permanent
-	let mut cookie = Cookie::new(SESSION_COOKIE_NAME, session.id);
-	cookie.set_secure(true);
-	cookie.set_http_only(true);
-	cookie.set_path("/");
-	cookie.make_permanent();
-
-	HttpResponse::Found()
-		.cookie(cookie)
-		.header(http::header::LOCATION, redirect_uri)
-		.finish()
+			HttpResponse::Found()
+				.cookie(cookie)
+				.header(http::header::LOCATION, redirect_uri)
+				.finish()
+		},
+		Err(_) => create_internal_server_error_response(None)
+	}
 }
 
 /// OAuth callback
@@ -227,18 +230,20 @@ pub async fn oauth_callback(req: HttpRequest, oauth_info: web::Query<OauthCallba
 		Ok(access_token) => {
 			match oauth2::get_user_info(&access_token).await {
 				Ok(user_info) => {
-
 					match get_session_cookie(req.headers()) {
 						Some(session_cookie) => {
 							let session_id = session_cookie.value();
 							match database::session::Session::get(&session_id) {
 								Some(mut session) => {
-									session.set_user(user_info.id);
-
-									// then redirect to home page
-									HttpResponse::Found()
-										.header(http::header::LOCATION, "/")
-										.finish()
+									match session.set_user(user_info.id) {
+										Ok(_) => {
+											// Redirect to home page
+											HttpResponse::Found()
+												.header(http::header::LOCATION, "/")
+												.finish()
+										},
+										Err(error) => create_internal_server_error_response(Some(&format!("{}", error)))
+									}
 								},
 								None => create_unauthorized_response()
 							}
@@ -247,7 +252,7 @@ pub async fn oauth_callback(req: HttpRequest, oauth_info: web::Query<OauthCallba
 					}
 				},
 				Err(error) => {
-					create_internal_server_error_response(&format!("{:?}", error))
+					create_internal_server_error_response(Some(&format!("{}", error)))
 				}
 			}
 		},
