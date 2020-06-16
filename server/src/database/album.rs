@@ -48,41 +48,33 @@ pub fn delete(id: &str) -> Option<()>{
 pub fn update(id: &str, updated_album: &types::UpdateAlbum) -> Option<()> {
 	let collection = get_collection();
 
-	if let Some(mut album) = get(id) {
+	let mut album = get(id)?;
 		
-		if updated_album.title.is_some() {
-			album.title = updated_album.title.as_ref().unwrap().to_string();
-		}
-		if updated_album.photos.is_some() {
-			album.photos = updated_album.photos.as_ref().unwrap().to_vec();
-		}
-		if updated_album.thumb_photo_id.is_some() {
-			album.thumb_photo_id = Some(updated_album.thumb_photo_id.as_ref().unwrap().to_string());
-		}
+	if updated_album.title.is_some() {
+		album.title = updated_album.title.as_ref().unwrap().to_string();
+	}
+	if updated_album.photos.is_some() {
+		album.photos = updated_album.photos.as_ref().unwrap().to_vec();
+	}
+	if updated_album.thumb_photo_id.is_some() {
+		album.thumb_photo_id = Some(updated_album.thumb_photo_id.as_ref().unwrap().to_string());
+	}
 
-		let result = database::create_filter_for_id(&album.id);
+	let filter = database::create_filter_for_id(&album.id)?;
+	let serialized_bson = bson::to_bson(&album).unwrap();
 
-		if let Some(filter) = result {
-			let serialized_bson = bson::to_bson(&album).unwrap();
+	if let bson::Bson::Document(document) = serialized_bson {
+		let result = collection.replace_one(filter, document, None);
 
-			if let bson::Bson::Document(document) = serialized_bson {
-				let result = collection.replace_one(filter, document, None);
-
-				match result {
-					Ok(update_result) => {
-						if update_result.modified_count == 1 {
-							Some(())
-						} else {
-							None
-						}
-					},
-					Err(_) => None
+		match result {
+			Ok(update_result) => {
+				if update_result.modified_count == 1 {
+					Some(())
+				} else {
+					None
 				}
-			} else {
-				None
-			}
-		} else {
-			None
+			},
+			Err(_) => None
 		}
 	} else {
 		None
