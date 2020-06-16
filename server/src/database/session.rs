@@ -18,7 +18,14 @@ pub struct Session {
 	/// Contains data related to an oauth login attempt
 	/// Such as: state id, PKCE tokens. 
 	/// The value of this field will be None if login has completed
-	pub _oauth: Option<()>
+	pub oauth: Option<OauthData>
+}
+
+/// Contains data related to an oauth login attempt
+#[derive(Serialize, Deserialize)]
+pub struct OauthData {
+	pub state: String,
+	pub pkce_verifier: String
 }
 
 impl Session {
@@ -27,13 +34,19 @@ impl Session {
 			id: ids::create_unique_id(),
 			user_id: None,
 			created_on: Utc::now(),
-			_oauth: None
+			oauth: None
 		}
 	}
 
-	pub fn set_user(&mut self, user_id: i64) -> Result<(), String> {
+	pub fn set_user(&mut self, user_id: i64) {
 		self.user_id = Some(user_id);
-		Self::update(self)
+	}
+
+	pub fn set_oauth_data(&mut self, state: &str, pkce_verifier: &str) {
+		self.oauth = Some(OauthData{
+			state: state.to_string(),
+			pkce_verifier: pkce_verifier.to_string()
+		});
 	}
 }
 
@@ -75,16 +88,32 @@ mod tests {
 		let session = Session::new();
 
 		assert!(session.id.len() != 0);
+		assert!(session.user_id.is_none());
 	}
 
-	// #[test]
-	// fn set_user() {
-	// 	const USER_ID: i64 = 999555i64;
+	#[test]
+	fn set_user() {
+		const USER_ID: i64 = 999555i64;
 
-	// 	let mut session = Session::new();
-	// 	session.set_user(USER_ID).unwrap();
+		let mut session = Session::new();
+		session.set_user(USER_ID);
 
-	// 	assert!(session.user_id.is_some());
-	// 	assert_eq!(session.user_id.unwrap(), USER_ID);
-	// }
+		assert!(session.user_id.is_some());
+		assert_eq!(session.user_id.unwrap(), USER_ID);
+	}
+
+	#[test]
+	fn set_oauth_data() {
+		const STATE: &str = "aaabbbccc";
+		const PKCE_VERIFIER: &str = "abcdef123456";
+
+		let mut session = Session::new();
+		session.set_oauth_data(STATE, PKCE_VERIFIER);
+
+		assert!(session.oauth.is_some());
+
+		let oauth = session.oauth.unwrap();
+		assert_eq!(oauth.state, STATE);
+		assert_eq!(oauth.pkce_verifier, PKCE_VERIFIER);
+	}
 }

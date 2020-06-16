@@ -7,6 +7,7 @@ use futures::{StreamExt, TryStreamExt};
 use futures::future::{ok, err, Ready};
 
 use crate::database;
+use crate::database::session::{Session};
 use crate::database::DatabaseOperations;
 use crate::files;
 
@@ -33,8 +34,23 @@ struct ErrorResult {
 
 /// Data associated with a session
 #[derive(Debug, Serialize)]
-pub struct Session {
+pub struct User {
 	user_id: i64
+}
+
+/// Allow User to be used as function parameter for request handlers
+impl FromRequest for User {
+	type Error = Error;
+	type Future = Ready<Result<User, Error>>;
+	type Config = ();
+
+	#[inline]
+	fn from_request(request: &HttpRequest, _: &mut Payload) -> Self::Future {
+		match get_user_id(request) {
+			Some(user_id) => ok(User{user_id: user_id}),
+			None => err(Error::from(HttpResponse::Unauthorized()))
+		}
+	}
 }
 
 /// Allow Session to be used as function parameter for request handlers
@@ -45,8 +61,8 @@ impl FromRequest for Session {
 
 	#[inline]
 	fn from_request(request: &HttpRequest, _: &mut Payload) -> Self::Future {
-		match get_user_id(request) {
-			Some(user_id) => ok(Session{user_id: user_id}),
+		match get_session(request) {
+			Some(session) => ok(session),
 			None => err(Error::from(HttpResponse::Unauthorized()))
 		}
 	}
@@ -67,11 +83,16 @@ pub fn get_session_cookie(req: &actix_web::http::header::HeaderMap) -> Option<Co
 	}
 }
 
-/// Extract user_id from the HTTP request
-fn get_user_id(req: &HttpRequest) -> Option<i64> {
+/// Extract Session from the HTTP request
+fn get_session(req: &HttpRequest) -> Option<Session> {
 	let session_cookie = get_session_cookie(req.headers())?;
 	let session_id = session_cookie.value();
-	match crate::database::session::Session::get(&session_id) {
+	crate::database::session::Session::get(&session_id)
+}
+
+/// Extract user_id from the HTTP request
+fn get_user_id(req: &HttpRequest) -> Option<i64> {
+	match get_session(req) {
 		Some(session) => session.user_id,
 		None => None
 	}

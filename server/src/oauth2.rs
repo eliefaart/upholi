@@ -1,5 +1,5 @@
 //use oauth2::prelude::*;
-use oauth2::{AuthUrl, ClientId, ClientSecret, CsrfToken, TokenUrl, TokenResponse, AuthorizationCode};
+use oauth2::{AuthUrl, ClientId, ClientSecret, CsrfToken, TokenUrl, TokenResponse, AuthorizationCode, PkceCodeChallenge};
 use oauth2::basic::BasicClient;
 use oauth2::reqwest::http_client;
 use reqwest;
@@ -7,8 +7,6 @@ use serde::{Deserialize};
 use lazy_static::lazy_static;
 
 // https://docs.rs/oauth2/3.0.0-alpha.10/oauth2/index.html
-// TODO: Add PKCE challenge
-//	For this I need to store PKCE verification code for some state
 
 const USER_AGENT: &str = "localhost";
 
@@ -23,19 +21,26 @@ pub struct UserInfo {
 }
 
 /// Generate a full authorization URL to redirect the user to
-pub fn get_auth_url() -> String {
+/// Return-type tuple is (auth url, state token, pkce verifier)
+/// TODO: Refactor this to return a proper type instead of a 3-string-tuple.
+pub fn get_auth_url() -> (String, String, String) {
+	// Generate a PKCE challenge.
+	let (pkce_challenge, pkce_verifier) = PkceCodeChallenge::new_random_sha256();
+
 	// Generate the full authorization URL
-	let (auth_url, _csrf_token) = OAUTH_CLIENT
+	let (auth_url, csrf_token) = OAUTH_CLIENT
 		.authorize_url(CsrfToken::new_random)
+		.set_pkce_challenge(pkce_challenge)
 		.url();
 
-	auth_url.to_string()
+	(auth_url.to_string(), csrf_token.secret().to_string(), pkce_verifier.secret().to_string())
 }
 
 /// Get access token for the authorization code received from oauth provider 
-pub fn get_access_token(auth_code: &str) -> Result<String, String> {
+pub fn get_access_token(auth_code: &str, pkce_verifier: &str) -> Result<String, String> {
 	let token_result = OAUTH_CLIENT
 		.exchange_code(AuthorizationCode::new(auth_code.to_string()))
+		.set_pkce_verifier(oauth2::PkceCodeVerifier::new(pkce_verifier.to_string()))
 		.request(http_client);
 
 	match token_result {

@@ -5,6 +5,7 @@ use serde::{Deserialize};
 
 use crate::types;
 use crate::database;
+use crate::database::session::{Session};
 use crate::database::DatabaseOperations;
 use crate::photos;
 use crate::albums;
@@ -14,12 +15,12 @@ use crate::http::*;
 /// Data send to oauth callback handler by oauth provider
 #[derive(Deserialize)]
 pub struct OauthCallbackRequest {
-	code: String
-	//state: String
+	code: String,
+	state: String
 }
 
 /// Get all albums
-pub async fn route_get_albums(_session: Session) -> impl Responder {
+pub async fn route_get_albums(_user: User) -> impl Responder {
 	HttpResponse::Ok().json(database::album::get_all())
 }
 
@@ -203,60 +204,71 @@ pub async fn route_upload_photo(payload: Multipart) -> impl Responder {
 
 /// OAuth: start login flow with an identity provider
 pub async fn oauth_start_login() -> impl Responder {
-	let redirect_uri = oauth2::get_auth_url();
+	let (redirect_uri, state, pkce_verifier) = oauth2::get_auth_url();
 
 	match database::session::Session::create() {
-		Ok(session) => {
-			// Create a new cookie for session
-			// TODO: Make this expire after some amount of time, not permanent
-			let mut cookie = Cookie::new(SESSION_COOKIE_NAME, session.id);
-			cookie.set_secure(true);
-			cookie.set_http_only(true);
-			cookie.set_path("/");
-			cookie.make_permanent();
+		Ok(mut session) => {
+			session.set_oauth_data(&state, &pkce_verifier);
+			match session.update() {
+				Ok(_) => {
+					// Create a new cookie for session
+					// TODO: Make this expire after some amount of time, not permanent
+					let mut cookie = Cookie::new(SESSION_COOKIE_NAME, session.id);
+					cookie.set_secure(true);
+					cookie.set_http_only(true);
+					cookie.set_path("/");
+					cookie.make_permanent();
 
-			HttpResponse::Found()
-				.cookie(cookie)
-				.header(http::header::LOCATION, redirect_uri)
-				.finish()
+					HttpResponse::Found()
+						.cookie(cookie)
+						.header(http::header::LOCATION, redirect_uri)
+						.finish()
+				},
+				Err(error) => create_internal_server_error_response(Some(&error))
+			}
 		},
-		Err(_) => create_internal_server_error_response(None)
+		Err(error) => create_internal_server_error_response(Some(&error))
 	}
 }
 
 /// OAuth callback
-pub async fn oauth_callback(req: HttpRequest, oauth_info: web::Query<OauthCallbackRequest>) -> impl Responder {
-	match oauth2::get_access_token(&oauth_info.code) {
-		Ok(access_token) => {
-			match oauth2::get_user_info(&access_token).await {
-				Ok(user_info) => {
-					match get_session_cookie(req.headers()) {
-						Some(session_cookie) => {
-							let session_id = session_cookie.value();
-							match database::session::Session::get(&session_id) {
-								Some(mut session) => {
-									match session.set_user(user_info.id) {
-										Ok(_) => {
-											// Redirect to home page
-											HttpResponse::Found()
-												.header(http::header::LOCATION, "/")
-												.finish()
-										},
-										Err(error) => create_internal_server_error_response(Some(&format!("{}", error)))
-									}
+pub async fn oauth_callback(mut session: Session, oauth_info: web::Query<OauthCallbackRequest>) -> impl Responder {
+	match &session.oauth {
+		Some(oauth_data) => {
+			// Verify state value
+			println!("{}, {}", oauth_data.state, oauth_info.state);
+			if oauth_data.state != oauth_info.state {
+				return create_unauthorized_response();
+			}
+
+			// Verify code externally
+			match oauth2::get_access_token(&oauth_info.code, &oauth_data.pkce_verifier) {
+				Ok(access_token) => {
+					match oauth2::get_user_info(&access_token).await {
+						Ok(user_info) => {
+							// Assign the user to the session, and clear oauth login data/tokens
+							session.set_user(user_info.id);
+							session.oauth = None;
+
+							match session.update() {
+								Ok(_) => {
+									// Redirect to home page
+									HttpResponse::Found()
+										.header(http::header::LOCATION, "/")
+										.finish()
 								},
-								None => create_unauthorized_response()
+								Err(error) => create_internal_server_error_response(Some(&format!("{}", error)))
 							}
 						},
-						None => create_unauthorized_response()
+						Err(error) => {
+							create_internal_server_error_response(Some(&format!("{}", error)))
+						}
 					}
 				},
-				Err(error) => {
-					create_internal_server_error_response(Some(&format!("{}", error)))
-				}
+				Err(_) => create_unauthorized_response()
 			}
 		},
-		Err(_) => create_unauthorized_response()
+		None => create_unauthorized_response()
 	}
 }
 
