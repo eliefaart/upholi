@@ -37,7 +37,7 @@ pub fn get_all() -> Vec<photos::Photo> {
 
 	let find_result = collection.find(None, find_options);
 	let cursor = find_result.unwrap();
-	
+
 	let mut photos: Vec<photos::Photo> = Vec::new();
 	for result in cursor {
 		match result {
@@ -58,13 +58,13 @@ pub fn delete_many(ids: &[&str]) -> Result<(), String> {
 		if database::album::remove_thumbs_from_all_albums(ids).is_ok() {
 			match database::delete_many(ids, &collection) {
 				Some(_) => Ok(()),
-				None => Err(format!("Failed to delete photos from database"))
+				None => Err("Failed to delete photos from database".to_string())
 			}
 		} else {
-			Err(format!("Failed to unset cover photos from albums"))
+			Err("Failed to unset cover photos from albums".to_string())
 		}
 	} else {
-		Err(format!("Failed to remove photos from albums"))
+		Err("Failed to remove photos from albums".to_string())
 	}
 }
 

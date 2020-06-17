@@ -36,18 +36,18 @@ pub async fn route_get_album(req: HttpRequest) -> impl Responder {
 			for id in album.photos.iter() {
 				ids.push(&id[..]);
 			}
-			
+
 			let response = types::ClientAlbum {
 				title: Some(album.title),
 				thumb_photo: {
-					if let Some(thumb_photo_id) = album.thumb_photo_id { 
+					if let Some(thumb_photo_id) = album.thumb_photo_id {
 						let result = database::photo::get(&thumb_photo_id);
 						match result {
 							Some(thumb_photo) => Some(thumb_photo.to_client_photo()),
 							None => None
 						}
-					} else { 
-						None 
+					} else {
+						None
 					}
 				},
 				photos: {
@@ -57,7 +57,7 @@ pub async fn route_get_album(req: HttpRequest) -> impl Responder {
 						for photo in photos {
 							result_photos.push(photo.to_client_photo());
 						}
-	
+
 						Some(result_photos)
 					} else {
 						None
@@ -257,11 +257,11 @@ pub async fn oauth_callback(mut session: Session, oauth_info: web::Query<OauthCa
 										.header(http::header::LOCATION, "/")
 										.finish()
 								},
-								Err(error) => create_internal_server_error_response(Some(&format!("{}", error)))
+								Err(error) => create_internal_server_error_response(Some(&format!("Error: {}", error)))
 							}
 						},
 						Err(error) => {
-							create_internal_server_error_response(Some(&format!("{}", error)))
+							create_internal_server_error_response(Some(&format!("Error: {}", error)))
 						}
 					}
 				},

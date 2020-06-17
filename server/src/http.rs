@@ -47,7 +47,7 @@ impl FromRequest for User {
 	#[inline]
 	fn from_request(request: &HttpRequest, _: &mut Payload) -> Self::Future {
 		match get_user_id(request) {
-			Some(user_id) => ok(User{user_id: user_id}),
+			Some(user_id) => ok(User{user_id}),
 			None => err(Error::from(HttpResponse::Unauthorized()))
 		}
 	}
@@ -103,14 +103,14 @@ pub async fn get_form_data(mut payload: Multipart) -> Vec<FormData> {
 	let mut form_data: Vec<FormData> = Vec::new();
 
 	while let Ok(Some(field)) = payload.try_next().await {
-		
+
 		let content_disposition = field.content_disposition().unwrap();
 		//let content_type = field.content_type();
 		let key = content_disposition.get_name().unwrap();
 
 		let field_bytes = get_form_field_bytes(field).await;
 		form_data.push(FormData{
-			name: key.to_string(), 
+			name: key.to_string(),
 			bytes: field_bytes
 		});
 	}
@@ -121,7 +121,7 @@ pub async fn get_form_data(mut payload: Multipart) -> Vec<FormData> {
 /// Gets the bytes of a single multipart field.
 async fn get_form_field_bytes(mut field: Field) -> Vec<u8> {
 	let mut field_bytes: Vec<u8> = Vec::new();
-				
+
 	while let Some(chunk) = field.next().await {
 		let chunk_bytes = chunk.unwrap();
 
@@ -154,7 +154,7 @@ pub fn delete_photos(ids: &[&str]) -> impl Responder {
 	for id in ids {
 		delete_photo_files(&id);
 	}
-	
+
 	match database::photo::delete_many(ids) {
 		Ok(_) => create_ok_response(),
 		Err(_) => create_not_found_response()
@@ -194,7 +194,7 @@ pub fn create_bad_request_response(message: &str) -> actix_http::Response {
 /// Create a HTTP 500 Internal Server Error response
 pub fn create_internal_server_error_response(message: Option<&str>) -> actix_http::Response {
 	let mut response = HttpResponse::InternalServerError();
-	
+
 	match message {
 		Some(msg) => response.json(ErrorResult{message: msg.to_string()}),
 		None => response.finish()

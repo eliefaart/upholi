@@ -30,7 +30,7 @@ async fn main() -> std::io::Result<()> {
 
 	let address = "0.0.0.0:8000";
 	println!("Hello server, address: {}", address);
-	
+
 	HttpServer::new(|| {
 		App::new()
 			.wrap(
@@ -41,9 +41,9 @@ async fn main() -> std::io::Result<()> {
 			.wrap_fn(|req, srv| {
 				// This is a middleware function
 				let now = Instant::now();
-				let query_id = format!("{method} {path}?{query_string}", 
-					method = req.method(), 
-					path = req.path(), 
+				let query_id = format!("{method} {path}?{query_string}",
+					method = req.method(),
+					path = req.path(),
 					query_string = req.query_string());
 
 				println!(">> {}", query_id);
@@ -100,7 +100,7 @@ async fn main() -> std::io::Result<()> {
 			)
 	})
 	.bind(address)
-	.expect(&format!("Failed to bind to {}, perhaps the port is in use?", address))
+	.unwrap_or_else(|_| panic!(format!("Failed to bind to {}, perhaps the port is in use?", address)))
 	.run()
 	.await
 }

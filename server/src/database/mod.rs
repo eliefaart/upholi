@@ -26,7 +26,7 @@ lazy_static!{
 /// Add standard CRUD operations to a struct
 pub trait DatabaseOperations {
 	/// Get an existing item
-	fn get(id: &str) -> Option<Self> 
+	fn get(id: &str) -> Option<Self>
 		where Self: std::marker::Sized;
 
 	/// Create a new item
@@ -99,14 +99,14 @@ fn replace_one<T: serde::Serialize>(id: &str, replacement: &T, collection: &mong
 					if let bson::Bson::Document(document) = serialized_bson {
 						match collection.replace_one(filter, document, None) {
 							Ok(_) => Ok(()),
-							Err(error) => Err(format!("{}", error))
+							Err(error) => Err(error.to_string())
 						}
 					}
 					else {
 						Err("Invalid bson document".to_string())
 					}
 				},
-				Err(error) => Err(format!("{}", error))
+				Err(error) => Err(error.to_string())
 			}
 		},
 		None => Err("Failed to create filter for id".to_string())
