@@ -29,7 +29,7 @@ pub struct OauthData {
 }
 
 impl Session {
-	fn new() -> Self {
+	pub fn new() -> Self {
 		Self {
 			id: ids::create_unique_id(),
 			user_id: None,
@@ -56,13 +56,11 @@ impl DatabaseOperations for Session {
 		database::find_one(id, &collection)
 	}
 
-	fn create() -> Result<Self, String> {
-		let session = Self::new();
-
+	fn insert(&self) -> Result<(), String> {
 		let collection = get_collection();
-		database::insert_item(&collection, &session)?;
+		database::insert_item(&collection, &self)?;
 
-		Ok(session)
+		Ok(())
 	}
 
 	fn update(&self)  -> Result<(), String> {

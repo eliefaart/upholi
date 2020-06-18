@@ -10,6 +10,8 @@ use crate::database;
 use crate::database::session::{Session};
 use crate::database::DatabaseOperations;
 use crate::files;
+use crate::photos;
+use crate::photos::Photo;
 
 pub const SESSION_COOKIE_NAME: &str = "session";
 
@@ -35,7 +37,7 @@ struct ErrorResult {
 /// Data associated with a session
 #[derive(Debug, Serialize)]
 pub struct User {
-	user_id: i64
+	pub user_id: i64
 }
 
 /// Allow User to be used as function parameter for request handlers
@@ -149,12 +151,26 @@ pub fn serve_photo(path: &str, filename: &str) -> actix_http::Response {
 }
 
 /// Delete multiple photos from database and disk
-pub fn delete_photos(ids: &[&str]) -> impl Responder {
+pub fn delete_photos(user_id: i64, ids: &[&str]) -> impl Responder {
+
+	// Check if all ids to be deleted are owned by user_id
+	for id in ids {
+		match Photo::get(id) {
+			Some(photo) => {
+				if photo.user_id != user_id {
+					return create_unauthorized_response();
+				}
+			},
+			None => {}
+		}
+	}
+
 	// Delete physical files for photo
 	for id in ids {
 		delete_photo_files(&id);
 	}
 
+	// Delete all photos from database
 	match database::photo::delete_many(ids) {
 		Ok(_) => create_ok_response(),
 		Err(_) => create_not_found_response()
@@ -164,7 +180,7 @@ pub fn delete_photos(ids: &[&str]) -> impl Responder {
 /// Deletes all physical files of a photo from file system
 /// Original, thumbnail and preview images.
 fn delete_photo_files(photo_id: &str) {
-	if let Some(photo) = database::photo::get(&photo_id) {
+	if let Some(photo) = photos::Photo::get(&photo_id) {
 		files::delete_photo(&photo.path_original);
 		files::delete_photo(&photo.path_preview);
 		files::delete_photo(&photo.path_thumbnail);

@@ -8,12 +8,13 @@ use crate::database;
 use crate::types;
 use crate::ids;
 use crate::exif;
+use crate::database::{DatabaseOperations, DatabaseUserOperations};
 
-/// A photo
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Photo {
-    pub id: String,
+	pub id: String,
+	pub user_id: i64,
 	pub name: String,
 	pub width: i32,
 	pub height: i32,
@@ -25,9 +26,8 @@ pub struct Photo {
 }
 
 impl Photo {
-
 	/// Create a new photo from bytes
-	pub fn create(photo_bytes: &[u8]) -> Result<Self, String> {
+	pub fn new(user_id: i64, photo_bytes: &[u8]) -> Result<Self, String> {
 		let id = ids::create_unique_id();
 		let filename = Self::generate_filename(".jpg")?;
 		let hash = Self::compute_md5_hash(photo_bytes);
@@ -55,6 +55,7 @@ impl Photo {
 
 			Ok(Self {
 				id,
+				user_id,
 				name: filename,
 				width: image_info.width as i32,
 				height: image_info.height as i32,
@@ -68,6 +69,7 @@ impl Photo {
 	}
 
 	/// Convert photo to a smaller struct suitable for exposing to client
+	/// TODO: Remove this and look into From and Into traits
 	pub fn to_client_photo(&self) -> types::ClientPhoto {
 		types::ClientPhoto{
 			id: self.id.to_string(),
@@ -120,6 +122,53 @@ impl Photo {
 	}
 }
 
+impl DatabaseOperations for Photo {
+	fn get(id: &str) -> Option<Self> {
+		let collection = database::photo::get_collection();
+		database::find_one(&id, &collection)
+	}
+
+	fn insert(&self) -> Result<(), String> {
+		if self.id.is_empty() {
+			return Err("Photo ID not set".to_string());
+		}
+
+		let collection = database::photo::get_collection();
+		
+		match Self::get(&self.id) {
+			Some(_) => Err(format!("A photo with id {} already exists", &self.id)),
+			None => {
+				let _ = database::insert_item(&collection, &self)?;
+				Ok(())
+			}
+		}
+	}
+
+	fn update(&self) -> Result<(), String> {
+		let collection = database::photo::get_collection();
+		database::replace_one(&self.id, self, &collection)
+	}
+
+	fn delete(&self) -> Result<(), String> {
+		let collection = database::photo::get_collection();
+		match database::delete_one(&self.id, &collection) {
+			Some(_) => Ok(()),
+			None => Err("Failed to delete album".to_string())
+		}
+	}
+}
+
+impl DatabaseUserOperations for Photo {
+	fn get_all(user_id: i64) -> Result<Vec<Self>, String> {
+		let collection = database::photo::get_collection();
+		database::find_many_new(Some(user_id), None, &collection) 
+	}
+
+	fn get_all_with_ids(user_id: i64, ids: &[&str]) -> Result<Vec<Self>, String> {
+		let collection = database::photo::get_collection();
+		database::find_many_new(Some(user_id), Some(ids), &collection) 
+	}
+}
 
 #[cfg(test)]
 mod tests {
@@ -159,5 +208,52 @@ mod tests {
 	fn test_generate_filename_bad_extension(extension: &str) {
 		let result = Photo::generate_filename(extension);
 		assert!(result.is_err());
+	}
+
+	// #[test]
+	// fn new() {
+	// 	const TITLE: &str = "Hello world";
+	// 	const USER_ID: i64 = 100i64;
+
+	// 	let photo = Photo::new(USER_ID, TITLE);
+
+	// 	assert!(!photo.id.is_empty());
+	// 	assert_eq!(photo.title, TITLE);
+	// 	assert_eq!(photo.user_id, USER_ID);
+	// }
+
+	#[test]
+	fn insert_empty_id() {
+		let album = create_dummy_photo_with_id("");
+		let result = album.insert();
+
+		assert!(result.is_err());
+	}
+
+	fn create_dummy_photo_with_id(id: &str) -> Photo {
+		Photo {
+			id: id.to_string(),
+			user_id: 0i64,
+			name: "photo name".to_string(),
+			width: 150,
+			height: 2500,
+			hash: "abc123".to_string(),
+			path_thumbnail: "path_thumbnail".to_string(),
+			path_preview: "path_preview".to_string(),
+			path_original: "path_original".to_string(),
+			exif: crate::exif::Exif {
+				manufactorer: None,
+				model: None,
+				aperture: None,
+				exposure_time: None,
+				iso: None,
+				focal_length: None,
+				focal_length_35mm_equiv: None,
+				orientation: None,
+				date_taken: None,
+				gps_latitude: None,
+				gps_longitude: None
+			}
+		}
 	}
 }

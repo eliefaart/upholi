@@ -23,15 +23,27 @@ lazy_static!{
 	};
 }
 
+// /// TODO, Consider this to foce some kind of base structure for database items
+// pub trait Item {
+// 	fn get_id(&self) -> String;
+// 	fn set_user_id(&self, user_id: i64);
+// 	fn get_user_id(&self) -> i64;
+// }
+
+// // TODO: Consider this as interface for actual database, so I can mock something and have better tests
+// pub trait Database {
+// 	fn find_one<T: Item>(id: &str) -> Option<T>;
+// 	// etc..
+// }
+
 /// Add standard CRUD operations to a struct
 pub trait DatabaseOperations {
 	/// Get an existing item
 	fn get(id: &str) -> Option<Self>
 		where Self: std::marker::Sized;
 
-	/// Create a new item
-	fn create() -> Result<Self, String>
-		where Self: std::marker::Sized;
+	/// Insert item as new record
+	fn insert(&self) -> Result<(), String>;
 
 	/// Store this instance in its current state
 	fn update(&self) -> Result<(), String>;
@@ -40,8 +52,18 @@ pub trait DatabaseOperations {
 	fn delete(&self) -> Result<(), String>;
 }
 
+/// Add database operations to a struct, which are targetted only to entries owned by given user
+pub trait DatabaseUserOperations: DatabaseOperations {
+	fn get_all(user_id: i64) -> Result<Vec<Self>, String>
+		where Self: std::marker::Sized;
+
+	fn get_all_with_ids(_user_id: i64, ids: &[&str]) -> Result<Vec<Self>, String>
+		where Self: std::marker::Sized;
+}
+
+
 /// Insert a single item into a collection
-fn insert_item<T: serde::Serialize>(collection: &mongodb::Collection, bson_item: &T) -> Result<String, String> {
+pub fn insert_item<T: serde::Serialize>(collection: &mongodb::Collection, bson_item: &T) -> Result<String, String> {
 	let serialized_bson = bson::to_bson(bson_item).unwrap();
 
 	if let bson::Bson::Document(document) = serialized_bson {
@@ -56,20 +78,48 @@ fn insert_item<T: serde::Serialize>(collection: &mongodb::Collection, bson_item:
 }
 
 /// Get a single item from a collection
-fn find_one<'de, T: serde::Deserialize<'de>>(id: &str, collection: &mongodb::Collection) -> Option<T> {
-	let result = find_many(&[id], collection);
-
-	if let Some(mut photos) = result {
-		photos.pop()
-	} else {
-		None
+pub fn find_one<'de, T: serde::Deserialize<'de>>(id: &str, collection: &mongodb::Collection) -> Option<T> {
+	match find_many_new(None, Some(&[id]), collection) {
+		Ok(mut items) => items.pop(),
+		Err(_) => None
 	}
 }
 
 /// Get multiple items from a collection
-fn find_many<'de, T: serde::Deserialize<'de>>(ids: &[&str], collection: &mongodb::Collection) -> Option<Vec<T>> {
-	let filter = create_in_filter_for_ids(ids)?;
-	let find_result = collection.find(filter, None);
+// pub fn find_many<'de, T: serde::Deserialize<'de>>(ids: &[&str], collection: &mongodb::Collection) -> Option<Vec<T>> {
+// 	let filter = create_in_filter_for_ids(ids);
+// 	match find_many_with_filter(filter, collection) {
+// 		Ok(res) => Some(res),
+// 		Err(error) => {
+// 			println!("error: {:?}", error);
+// 			None
+// 		}
+// 	}
+// }
+
+/// Get multiple items from a collection
+pub fn find_many_new<'de, T: serde::Deserialize<'de>>(user_id: Option<i64>, ids: Option<&[&str]>, collection: &mongodb::Collection) -> Result<Vec<T>, String> {
+	let filter = {
+		if user_id.is_some() && ids.is_some() {
+			create_filter_for_user_and_ids(user_id.unwrap(), ids.unwrap())
+		}
+		else if user_id.is_some() && ids.is_none() {
+			create_filter_for_user(user_id.unwrap())
+		}
+		else if user_id.is_none() && ids.is_some() {
+			create_in_filter_for_ids(ids.unwrap())
+		}
+		else {
+			doc!{}
+		}
+	};
+	
+	find_many_with_filter(filter, collection)
+}
+
+/// Get multiple items from a collection using given filter
+fn find_many_with_filter<'de, T: serde::Deserialize<'de>>(filter: bson::ordered::OrderedDocument, collection: &mongodb::Collection) -> Result<Vec<T>, String> {
+	let find_result = collection.find(Some(filter), None);
 
 	match find_result {
 		Ok(cursor) => {
@@ -81,47 +131,40 @@ fn find_many<'de, T: serde::Deserialize<'de>>(ids: &[&str], collection: &mongodb
 				items.push(item);
 			}
 
-			Some(items)
+			Ok(items)
 		},
-		Err(e) => {
-			println!("error: {:?}", e);
-			None
-		}
+		Err(error) => Err(format!("error: {:?}", error))
 	}
 }
 
 /// Replace a single existing item with a new version in its entirety
-fn replace_one<T: serde::Serialize>(id: &str, replacement: &T, collection: &mongodb::Collection) -> Result<(), String> {
-	match create_filter_for_id(id) {
-		Some(filter) => {
-			match bson::to_bson(&replacement) {
-				Ok(serialized_bson) => {
-					if let bson::Bson::Document(document) = serialized_bson {
-						match collection.replace_one(filter, document, None) {
-							Ok(_) => Ok(()),
-							Err(error) => Err(error.to_string())
-						}
-					}
-					else {
-						Err("Invalid bson document".to_string())
-					}
-				},
-				Err(error) => Err(error.to_string())
+pub fn replace_one<T: serde::Serialize>(id: &str, replacement: &T, collection: &mongodb::Collection) -> Result<(), String> {
+	let filter = create_filter_for_id(id);
+	match bson::to_bson(&replacement) {
+		Ok(serialized_bson) => {
+			if let bson::Bson::Document(document) = serialized_bson {
+				match collection.replace_one(filter, document, None) {
+					Ok(_) => Ok(()),
+					Err(error) => Err(error.to_string())
+				}
+			}
+			else {
+				Err("Invalid bson document".to_string())
 			}
 		},
-		None => Err("Failed to create filter for id".to_string())
+		Err(error) => Err(error.to_string())
 	}
 }
 
 /// Delete an item from a collection
-fn delete_one(id: &str, collection: &mongodb::Collection) -> Option<()> {
+pub fn delete_one(id: &str, collection: &mongodb::Collection) -> Option<()> {
 	let ids = vec!{ id };
 	delete_many(&ids, &collection)
 }
 
 /// Delete multiple items from a collection
 fn delete_many(ids: &[&str], collection: &mongodb::Collection) -> Option<()> {
-	let filter = create_in_filter_for_ids(ids)?;
+	let filter = create_in_filter_for_ids(ids);
 	let result = collection.delete_many(filter, None);
 
 	match result {
@@ -137,11 +180,24 @@ fn delete_many(ids: &[&str], collection: &mongodb::Collection) -> Option<()> {
 }
 
 /// Create a filter definition to be used in queries that matches an item with given id
-fn create_filter_for_id(id: &str) -> Option<bson::ordered::OrderedDocument> {
-	Some(doc!{"id": id})
+fn create_filter_for_id(id: &str) -> bson::ordered::OrderedDocument {
+	doc!{"id": id}
 }
 
 /// Create a filter definition to be used in queries that matches all items with given ids
-fn create_in_filter_for_ids(ids: &[&str]) -> Option<bson::ordered::OrderedDocument> {
-	Some(doc!{"id": doc!{"$in": ids } })
+fn create_in_filter_for_ids(ids: &[&str]) -> bson::ordered::OrderedDocument {
+	doc!{"id": doc!{"$in": ids } }
+}
+
+/// Create a filter definition to be used in queries that matches all item for a user
+pub fn create_filter_for_user(user_id: i64) -> bson::ordered::OrderedDocument {
+	doc!{"userId": user_id}
+}
+
+/// Create a filter definition to be used in queries that matches all item for a user and certian item ids
+pub fn create_filter_for_user_and_ids(user_id: i64, ids: &[&str]) -> bson::ordered::OrderedDocument {
+	doc!{
+		"id": doc!{"$in": ids },
+		"userId": user_id
+	}
 }
