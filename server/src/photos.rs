@@ -33,7 +33,7 @@ impl Photo {
 		let hash = Self::compute_md5_hash(photo_bytes);
 
 		// Verify if this photo doesn't already exist by checking hash in database
-		let exists = database::photo::hash_exists(&hash)?;
+		let exists = database::photo::exists_for_user(user_id, &hash)?;
 		
 		if exists {
 			Err("Photo already exists".to_string())

@@ -18,12 +18,14 @@ pub fn delete_many(ids: &[&str]) -> Result<(), String> {
 	}
 }
 
-pub fn hash_exists(hash: &str) -> Result<bool, String> {
+pub fn exists_for_user(user_id: i64, hash: &str) -> Result<bool, String> {
 	let collection = get_collection();
-	let filter = doc! { "hash": hash };
-	let result = collection.count_documents(filter, None);
+	let filter = doc!{ 
+		"user_id": user_id,
+		"hash": hash 
+	};
 
-	match result {
+	match collection.count_documents(filter, None) {
 		Ok(count) => Ok(count > 0),
 		Err(err) => Err(format!("{:?}", err))
 	}

@@ -48,7 +48,6 @@ pub fn remove_thumbs_from_all_albums(photo_ids: &[&str]) -> Result<(), ()> {
 	}
 }
 
-
 pub fn get_collection() -> mongodb::Collection {
 	database::DATABASE.collection(database::COLLECTION_ALBUMS)
 }

@@ -23,19 +23,6 @@ lazy_static!{
 	};
 }
 
-// /// TODO, Consider this to foce some kind of base structure for database items
-// pub trait Item {
-// 	fn get_id(&self) -> String;
-// 	fn set_user_id(&self, user_id: i64);
-// 	fn get_user_id(&self) -> i64;
-// }
-
-// // TODO: Consider this as interface for actual database, so I can mock something and have better tests
-// pub trait Database {
-// 	fn find_one<T: Item>(id: &str) -> Option<T>;
-// 	// etc..
-// }
-
 /// Add standard CRUD operations to a struct
 pub trait DatabaseOperations {
 	/// Get an existing item
@@ -84,18 +71,6 @@ pub fn find_one<'de, T: serde::Deserialize<'de>>(id: &str, collection: &mongodb:
 		Err(_) => None
 	}
 }
-
-/// Get multiple items from a collection
-// pub fn find_many<'de, T: serde::Deserialize<'de>>(ids: &[&str], collection: &mongodb::Collection) -> Option<Vec<T>> {
-// 	let filter = create_in_filter_for_ids(ids);
-// 	match find_many_with_filter(filter, collection) {
-// 		Ok(res) => Some(res),
-// 		Err(error) => {
-// 			println!("error: {:?}", error);
-// 			None
-// 		}
-// 	}
-// }
 
 /// Get multiple items from a collection
 pub fn find_many_new<'de, T: serde::Deserialize<'de>>(user_id: Option<i64>, ids: Option<&[&str]>, collection: &mongodb::Collection) -> Result<Vec<T>, String> {
