@@ -18,6 +18,7 @@ mod ids;
 mod settings;
 mod exif;
 mod oauth2;
+mod session;
 
 lazy_static! {
 	/// Global application settings

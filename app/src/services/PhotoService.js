@@ -62,10 +62,10 @@ class PhotoService {
 	
 			xhr.open("POST", PhotoService.baseUrl() + "/photo", true);
 			xhr.onreadystatechange = function (event) {
-				if (xhr.readyState == 4 && xhr.status === 200) {
+				if (xhr.readyState == 4 && (xhr.status === 201)) {
 					let response = JSON.parse(xhr.responseText);
 					ok(response.id);
-				} else if (xhr.readyState == 4 && xhr.status !== 200) {
+				} else if (xhr.readyState == 4 && xhr.status !== 201) {
 					err();
 				}
 			};

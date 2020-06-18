@@ -4,10 +4,6 @@ use crate::ids;
 use serde::{Serialize, Deserialize};
 use chrono::prelude::*;
 
-fn get_collection() -> mongodb::Collection {
-	database::DATABASE.collection(database::COLLECTION_SESSIONS)
-}
-
 /// A client session
 #[derive(Serialize, Deserialize)]
 pub struct Session {
@@ -29,7 +25,7 @@ pub struct OauthData {
 }
 
 impl Session {
-	fn new() -> Self {
+	pub fn new() -> Self {
 		Self {
 			id: ids::create_unique_id(),
 			user_id: None,
@@ -52,26 +48,24 @@ impl Session {
 
 impl DatabaseOperations for Session {
 	fn get(id: &str) -> Option<Self> {
-		let collection = get_collection();
+		let collection = database::get_collection_sessions();
 		database::find_one(id, &collection)
 	}
 
-	fn create() -> Result<Self, String> {
-		let session = Self::new();
+	fn insert(&self) -> Result<(), String> {
+		let collection = database::get_collection_sessions();
+		database::insert_item(&collection, &self)?;
 
-		let collection = get_collection();
-		database::insert_item(&collection, &session)?;
-
-		Ok(session)
+		Ok(())
 	}
 
 	fn update(&self)  -> Result<(), String> {
-		let collection = get_collection();
+		let collection = database::get_collection_sessions();
 		database::replace_one(&self.id, &self, &collection)
 	}
 
 	fn delete(&self)  -> Result<(), String> {
-		let collection = get_collection();
+		let collection = database::get_collection_sessions();
 		match database::delete_one(&self.id, &collection) {
 			Some(_) => Ok(()),
 			None => Err("Failed to delete session".to_string())

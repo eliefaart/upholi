@@ -4,11 +4,12 @@ use actix_http::cookie::Cookie;
 use serde::{Deserialize};
 
 use crate::types;
-use crate::database;
-use crate::database::session::{Session};
-use crate::database::DatabaseOperations;
+use crate::session::{Session};
+use crate::database::{DatabaseOperations, DatabaseUserOperations};
 use crate::photos;
+use crate::photos::Photo;
 use crate::albums;
+use crate::albums::Album;
 use crate::oauth2;
 use crate::http::*;
 
@@ -19,17 +20,27 @@ pub struct OauthCallbackRequest {
 	state: String
 }
 
+#[derive(Deserialize)]
+pub struct CreateAlbumRequest {
+	title: String
+}
+
 /// Get all albums
-pub async fn route_get_albums(_user: User) -> impl Responder {
-	HttpResponse::Ok().json(database::album::get_all())
+pub async fn route_get_albums(user: User) -> impl Responder {
+	match Album::get_all(user.user_id) {
+		Ok(albums) => HttpResponse::Ok().json(albums),
+		Err(error) => {
+			println!("{}", error);
+			create_internal_server_error_response(Some(&error))
+		}
+	}
 }
 
 /// Get extended information of an album
-pub async fn route_get_album(req: HttpRequest) -> impl Responder {
+pub async fn route_get_album(user: User, req: HttpRequest) -> impl Responder {
 	let album_id = req.match_info().get("album_id").unwrap();
-	let result = database::album::get(album_id);
 
-	match result {
+	match Album::get(album_id) {
 		Some(album) => {
 			let mut ids: Vec<&str> = Vec::new();
 
@@ -41,7 +52,7 @@ pub async fn route_get_album(req: HttpRequest) -> impl Responder {
 				title: Some(album.title),
 				thumb_photo: {
 					if let Some(thumb_photo_id) = album.thumb_photo_id {
-						let result = database::photo::get(&thumb_photo_id);
+						let result = Photo::get(&thumb_photo_id);
 						match result {
 							Some(thumb_photo) => Some(thumb_photo.to_client_photo()),
 							None => None
@@ -51,16 +62,16 @@ pub async fn route_get_album(req: HttpRequest) -> impl Responder {
 					}
 				},
 				photos: {
-					let result = database::photo::get_many(&ids);
-					if let Some(photos) = result {
-						let mut result_photos = Vec::new();
-						for photo in photos {
-							result_photos.push(photo.to_client_photo());
-						}
+					match Photo::get_all_with_ids(user.user_id, &ids) {
+						Ok(photos) => {
+							let mut result_photos = Vec::new();
+							for photo in photos {
+								result_photos.push(photo.to_client_photo());
+							}
 
-						Some(result_photos)
-					} else {
-						None
+							Some(result_photos)
+						}
+						Err(_) => None
 					}
 				}
 			};
@@ -71,69 +82,98 @@ pub async fn route_get_album(req: HttpRequest) -> impl Responder {
 }
 
 /// Create a new album
-pub async fn route_create_album(album: web::Json<albums::Album>) -> impl Responder {
-	// TODO: Create different struct for request input. Should only have title, maybe other, but definetly not ID.
-	let album = albums::Album::create(&album.title);
-	let result = database::album::insert(&album);
+pub async fn route_create_album(user: User, album: web::Json<CreateAlbumRequest>) -> impl Responder {
+	let album = albums::Album::new(user.user_id, &album.title);
 
-	match result {
+	match album.insert() {
 		Ok(_) => create_created_response(&album.id),
 		Err(error) => create_internal_server_error_response(Some(&error))
 	}
 }
 
 /// Update an album
-pub async fn route_update_album(req: HttpRequest, album: web::Json<types::UpdateAlbum>) -> impl Responder {
+pub async fn route_update_album(user: User, req: HttpRequest, updated_album: web::Json<types::UpdateAlbum>) -> impl Responder {
 	let album_id = req.match_info().get("album_id").unwrap();
 
-	// TODO: Verify if all photoIds & thumbPhotoId are valid.
+	match Album::get(&album_id) {
+		Some(mut album) => {
+			if album.user_id != user.user_id {
+				return create_unauthorized_response();
+			}
 
-	let result = database::album::update(&album_id, &album);
-	match result {
-		Some(_) => create_ok_response(),
+			// TODO: Verify if all photoIds & thumbPhotoId are valid.
+
+			if updated_album.title.is_some() {
+				album.title = updated_album.title.as_ref().unwrap().to_string();
+			}
+			if updated_album.photos.is_some() {
+				album.photos = updated_album.photos.as_ref().unwrap().to_vec();
+			}
+			if updated_album.thumb_photo_id.is_some() {
+				album.thumb_photo_id = Some(updated_album.thumb_photo_id.as_ref().unwrap().to_string());
+			}
+
+			match album.update() {
+				Ok(_) => create_ok_response(),
+				Err(error) => create_internal_server_error_response(Some(&error))
+			}
+		},
 		None => create_not_found_response()
 	}
 }
 
 /// Delete an album
-pub async fn route_delete_album(req: HttpRequest) -> impl Responder {
+pub async fn route_delete_album(user: User, req: HttpRequest) -> impl Responder {
 	let album_id = req.match_info().get("album_id").unwrap();
-	let result = database::album::delete(&album_id);
 
-	match result {
-		Some(_) => create_ok_response(),
+	match Album::get(&album_id) {
+		Some(album) => {
+			if album.user_id != user.user_id {
+				return create_unauthorized_response();
+			}
+
+			match album.delete() {
+				Ok(_) => create_ok_response(),
+				Err(error) => create_internal_server_error_response(Some(&error))
+			}
+		},
 		None => create_not_found_response()
 	}
 }
 
 /// Get all photos
-pub async fn route_get_photos() -> impl Responder {
-	web::Json(database::photo::get_all())
+pub async fn route_get_photos(user: User) -> impl Responder {
+	match Photo::get_all(user.user_id) {
+		Ok(photos) => HttpResponse::Ok().json(photos),
+		Err(error) => {
+			println!("{}", error);
+			create_internal_server_error_response(Some(&error))
+		}
+	}
 }
 
 /// Delete a single photo
-pub async fn route_delete_photo(req: HttpRequest) -> impl Responder {
+pub async fn route_delete_photo(user: User, req: HttpRequest) -> impl Responder {
 	let photo_id = req.match_info().get("photo_id").unwrap();
 
-	delete_photos(&[photo_id])
+	delete_photos(user.user_id, &[photo_id])
 }
 
 /// Delete multiple photos
-pub async fn route_delete_photos(photo_ids: web::Json<Vec<String>>) -> impl Responder {
+pub async fn route_delete_photos(user: User, photo_ids: web::Json<Vec<String>>) -> impl Responder {
 	let mut ids: Vec<&str> = Vec::new();
 	for id in photo_ids.iter() {
 		ids.push(&id);
 	}
 
-	delete_photos(&ids)
+	delete_photos(user.user_id, &ids)
 }
 
 /// Get info about a photo
 pub async fn route_get_photo(req: HttpRequest) -> impl Responder {
 	let photo_id = req.match_info().get("photo_id").unwrap();
-	let result = database::photo::get(photo_id);
 
-	match result {
+	match Photo::get(photo_id) {
 		Some(photo) => HttpResponse::Ok().json(photo),
 		None => create_not_found_response()
 	}
@@ -141,10 +181,9 @@ pub async fn route_get_photo(req: HttpRequest) -> impl Responder {
 
 /// Get the thumbnail of a photo as file
 pub async fn route_download_photo_thumbnail(req: HttpRequest) -> impl Responder {
-	let _photo_id = req.match_info().get("photo_id").unwrap();
-	let result = database::photo::get(&_photo_id);
+	let photo_id = req.match_info().get("photo_id").unwrap();
 
-	match result {
+	match Photo::get(&photo_id) {
 		Some(photo_info) => serve_photo(&photo_info.path_thumbnail, &photo_info.name),
 		None => create_not_found_response()
 	}
@@ -152,10 +191,9 @@ pub async fn route_download_photo_thumbnail(req: HttpRequest) -> impl Responder 
 
 /// Get the preview (large thumbnail) of a photo as file
 pub async fn route_download_photo_preview(req: HttpRequest) -> impl Responder {
-	let _photo_id = req.match_info().get("photo_id").unwrap();
-	let result = database::photo::get(&_photo_id);
-
-	match result {
+	let photo_id = req.match_info().get("photo_id").unwrap();
+	
+	match Photo::get(&photo_id) {
 		Some(photo_info) => serve_photo(&photo_info.path_preview, &photo_info.name),
 		None => create_not_found_response()
 	}
@@ -163,17 +201,16 @@ pub async fn route_download_photo_preview(req: HttpRequest) -> impl Responder {
 
 /// Get the original of a photo as file
 pub async fn route_download_photo_original(req: HttpRequest) -> impl Responder {
-	let _photo_id = req.match_info().get("photo_id").unwrap();
-	let result = database::photo::get(&_photo_id);
-
-	match result {
-	Some(photo_info) => serve_photo(&photo_info.path_original, &photo_info.name),
+	let photo_id = req.match_info().get("photo_id").unwrap();
+	
+	match Photo::get(&photo_id) {
+		Some(photo_info) => serve_photo(&photo_info.path_original, &photo_info.name),
 		None => create_not_found_response()
 	}
 }
 
 /// Upload a photo
-pub async fn route_upload_photo(payload: Multipart) -> impl Responder {
+pub async fn route_upload_photo(user: User, payload: Multipart) -> impl Responder {
 	let form_data = get_form_data(payload).await;
 
 	let mut files_iter = form_data.iter().filter(|d| d.name == "file");
@@ -186,11 +223,9 @@ pub async fn route_upload_photo(payload: Multipart) -> impl Responder {
 
 	match file_option {
 		Some(file) => {
-			let result = photos::Photo::create(&file.bytes);
-			match result {
+			match photos::Photo::new(user.user_id, &file.bytes) {
 				Ok(photo) => {
-					let result = database::photo::insert(&photo);
-					match result {
+					match photo.insert() {
 						Ok(_) => create_created_response(&photo.id),
 						Err(error) => create_bad_request_response(&error)
 					}
@@ -206,8 +241,9 @@ pub async fn route_upload_photo(payload: Multipart) -> impl Responder {
 pub async fn oauth_start_login() -> impl Responder {
 	let (redirect_uri, state, pkce_verifier) = oauth2::get_auth_url();
 
-	match database::session::Session::create() {
-		Ok(mut session) => {
+	let mut session = Session::new();
+	match session.insert() {
+		Ok(_) => {
 			session.set_oauth_data(&state, &pkce_verifier);
 			match session.update() {
 				Ok(_) => {
