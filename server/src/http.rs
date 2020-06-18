@@ -7,7 +7,7 @@ use futures::{StreamExt, TryStreamExt};
 use futures::future::{ok, err, Ready};
 
 use crate::database;
-use crate::database::session::{Session};
+use crate::session::{Session};
 use crate::database::DatabaseOperations;
 use crate::files;
 use crate::photos;
@@ -89,7 +89,7 @@ pub fn get_session_cookie(req: &actix_web::http::header::HeaderMap) -> Option<Co
 fn get_session(req: &HttpRequest) -> Option<Session> {
 	let session_cookie = get_session_cookie(req.headers())?;
 	let session_id = session_cookie.value();
-	crate::database::session::Session::get(&session_id)
+	Session::get(&session_id)
 }
 
 /// Extract user_id from the HTTP request

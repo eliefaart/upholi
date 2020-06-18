@@ -4,7 +4,6 @@ use lazy_static::lazy_static;
 
 pub mod album;
 pub mod photo;
-pub mod session;
 
 const COLLECTION_SESSIONS: &str = "sessions";
 const COLLECTION_PHOTOS: &str = "photos";
@@ -21,6 +20,19 @@ lazy_static!{
 
 		client.database(&crate::SETTINGS.database.name)
 	};
+}
+
+
+pub fn get_collection_photos() -> mongodb::Collection {
+	DATABASE.collection(COLLECTION_PHOTOS)
+}
+
+pub fn get_collection_albums() -> mongodb::Collection {
+	DATABASE.collection(COLLECTION_ALBUMS)
+}
+
+pub fn get_collection_sessions() -> mongodb::Collection {
+	DATABASE.collection(COLLECTION_SESSIONS)
 }
 
 /// Add standard CRUD operations to a struct

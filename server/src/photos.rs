@@ -124,7 +124,7 @@ impl Photo {
 
 impl DatabaseOperations for Photo {
 	fn get(id: &str) -> Option<Self> {
-		let collection = database::photo::get_collection();
+		let collection = database::get_collection_photos();
 		database::find_one(&id, &collection)
 	}
 
@@ -133,7 +133,7 @@ impl DatabaseOperations for Photo {
 			return Err("Photo ID not set".to_string());
 		}
 
-		let collection = database::photo::get_collection();
+		let collection = database::get_collection_photos();
 		
 		match Self::get(&self.id) {
 			Some(_) => Err(format!("A photo with id {} already exists", &self.id)),
@@ -145,12 +145,12 @@ impl DatabaseOperations for Photo {
 	}
 
 	fn update(&self) -> Result<(), String> {
-		let collection = database::photo::get_collection();
+		let collection = database::get_collection_photos();
 		database::replace_one(&self.id, self, &collection)
 	}
 
 	fn delete(&self) -> Result<(), String> {
-		let collection = database::photo::get_collection();
+		let collection = database::get_collection_photos();
 		match database::delete_one(&self.id, &collection) {
 			Some(_) => Ok(()),
 			None => Err("Failed to delete album".to_string())
@@ -160,12 +160,12 @@ impl DatabaseOperations for Photo {
 
 impl DatabaseUserOperations for Photo {
 	fn get_all(user_id: i64) -> Result<Vec<Self>, String> {
-		let collection = database::photo::get_collection();
+		let collection = database::get_collection_photos();
 		database::find_many_new(Some(user_id), None, &collection) 
 	}
 
 	fn get_all_with_ids(user_id: i64, ids: &[&str]) -> Result<Vec<Self>, String> {
-		let collection = database::photo::get_collection();
+		let collection = database::get_collection_photos();
 		database::find_many_new(Some(user_id), Some(ids), &collection) 
 	}
 }

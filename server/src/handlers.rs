@@ -4,8 +4,7 @@ use actix_http::cookie::Cookie;
 use serde::{Deserialize};
 
 use crate::types;
-use crate::database;
-use crate::database::session::{Session};
+use crate::session::{Session};
 use crate::database::{DatabaseOperations, DatabaseUserOperations};
 use crate::photos;
 use crate::photos::Photo;
@@ -242,7 +241,7 @@ pub async fn route_upload_photo(user: User, payload: Multipart) -> impl Responde
 pub async fn oauth_start_login() -> impl Responder {
 	let (redirect_uri, state, pkce_verifier) = oauth2::get_auth_url();
 
-	let mut session = database::session::Session::new();
+	let mut session = Session::new();
 	match session.insert() {
 		Ok(_) => {
 			session.set_oauth_data(&state, &pkce_verifier);

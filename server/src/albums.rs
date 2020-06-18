@@ -33,7 +33,7 @@ impl Album {
 
 impl DatabaseOperations for Album {
 	fn get(id: &str) -> Option<Self> {
-		let collection = database::album::get_collection();
+		let collection = database::get_collection_albums();
 		database::find_one(&id, &collection)
 	}
 
@@ -42,7 +42,7 @@ impl DatabaseOperations for Album {
 			return Err("Album ID not set".to_string());
 		}
 
-		let collection = database::album::get_collection();
+		let collection = database::get_collection_albums();
 		
 		match Self::get(&self.id) {
 			Some(_) => Err(format!("An album with id {} already exists", &self.id)),
@@ -54,12 +54,12 @@ impl DatabaseOperations for Album {
 	}
 
 	fn update(&self) -> Result<(), String> {
-		let collection = database::album::get_collection();
+		let collection = database::get_collection_albums();
 		database::replace_one(&self.id, self, &collection)
 	}
 
 	fn delete(&self) -> Result<(), String> {
-		let collection = database::album::get_collection();
+		let collection = database::get_collection_albums();
 		match database::delete_one(&self.id, &collection) {
 			Some(_) => Ok(()),
 			None => Err("Failed to delete album".to_string())
@@ -69,12 +69,12 @@ impl DatabaseOperations for Album {
 
 impl DatabaseUserOperations for Album {
 	fn get_all(user_id: i64) -> Result<Vec<Self>, String> {
-		let collection = database::album::get_collection();
+		let collection = database::get_collection_albums();
 		database::find_many_new(Some(user_id), None, &collection) 
 	}
 
 	fn get_all_with_ids(user_id: i64, ids: &[&str]) -> Result<Vec<Self>, String> {
-		let collection = database::album::get_collection();
+		let collection = database::get_collection_albums();
 		database::find_many_new(Some(user_id), Some(ids), &collection) 
 	}
 }

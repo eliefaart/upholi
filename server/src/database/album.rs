@@ -4,7 +4,7 @@ use crate::database;
 
 /// Remove photos with given photo_ids from all albums containing any of these photos
 pub fn remove_photos_from_all_albums(photo_ids: &[&str]) -> Result<(), ()> {
-	let collection = get_collection();
+	let collection = database::get_collection_photos();
 
 	let query = doc!{
 		"photos": doc!{
@@ -28,7 +28,7 @@ pub fn remove_photos_from_all_albums(photo_ids: &[&str]) -> Result<(), ()> {
 
 /// Unset thumbnail of all album where thumbnail is set to any of given photo_ids
 pub fn remove_thumbs_from_all_albums(photo_ids: &[&str]) -> Result<(), ()> {
-	let collection = get_collection();
+	let collection = database::get_collection_photos();
 
 	let query = doc!{
 		"thumbPhotoId": doc!{
@@ -46,8 +46,4 @@ pub fn remove_thumbs_from_all_albums(photo_ids: &[&str]) -> Result<(), ()> {
 		Ok(_) => Ok(()),
 		Err(_) => Err(())
 	}
-}
-
-pub fn get_collection() -> mongodb::Collection {
-	database::DATABASE.collection(database::COLLECTION_ALBUMS)
 }

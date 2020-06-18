@@ -3,7 +3,7 @@ use bson::{doc};
 use crate::database;
 
 pub fn delete_many(ids: &[&str]) -> Result<(), String> {
-	let collection = get_collection();
+	let collection = database::get_collection_photos();
 	if database::album::remove_photos_from_all_albums(ids).is_ok() {
 		if database::album::remove_thumbs_from_all_albums(ids).is_ok() {
 			match database::delete_many(ids, &collection) {
@@ -19,7 +19,7 @@ pub fn delete_many(ids: &[&str]) -> Result<(), String> {
 }
 
 pub fn exists_for_user(user_id: i64, hash: &str) -> Result<bool, String> {
-	let collection = get_collection();
+	let collection = database::get_collection_photos();
 	let filter = doc!{ 
 		"user_id": user_id,
 		"hash": hash 
@@ -29,8 +29,4 @@ pub fn exists_for_user(user_id: i64, hash: &str) -> Result<bool, String> {
 		Ok(count) => Ok(count > 0),
 		Err(err) => Err(format!("{:?}", err))
 	}
-}
-
-pub fn get_collection() -> mongodb::Collection {
-	database::DATABASE.collection(database::COLLECTION_PHOTOS)
 }
