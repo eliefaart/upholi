@@ -2,7 +2,7 @@ use serde::{Serialize, Deserialize};
 use chrono::prelude::*;
 use rexif::{TagValue, ExifTag};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct Exif {
 	pub manufactorer: Option<String>,
@@ -54,7 +54,16 @@ impl Exif {
 					gps_longitude: closure_get_exif_data_as_coord(ExifTag::GPSLongitude)
 				})
 			},
-			Err(error) => Err(format!("{:?}", error))
+			Err(error) => {
+				match error {
+					// Some errors are fine, we just return default Exif for these cases,
+					// For others we still return error
+					rexif::ExifError::JpegWithoutExif(_) => Ok(Self::default()),
+					rexif::ExifError::FileTypeUnknown => Ok(Self::default()),
+					rexif::ExifError::UnsupportedNamespace => Ok(Self::default()),
+					_ => Err(format!("{:?}", error))
+				}
+			}
 		}
 	}
 
