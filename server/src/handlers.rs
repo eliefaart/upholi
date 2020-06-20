@@ -313,6 +313,6 @@ pub async fn oauth_callback(mut session: Session, oauth_info: web::Query<OauthCa
 }
 
 /// OAuth get info of current user
-pub async fn oauth_user_info(session: Session) -> impl Responder {
-	HttpResponse::Ok().json(session)
+pub async fn oauth_user_info(user: User) -> impl Responder {
+	HttpResponse::Ok().json(user)
 }
