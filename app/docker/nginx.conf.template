@@ -17,4 +17,7 @@ server {
 	location /api {
 		proxy_pass ${API_URI};
 	}
+	location /oauth {
+		proxy_pass ${API_URI};
+	}
 }
