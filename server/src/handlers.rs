@@ -274,6 +274,7 @@ pub async fn oauth_callback(mut session: Session, oauth_info: web::Query<OauthCa
 			// Verify state value
 			println!("{}, {}", oauth_data.state, oauth_info.state);
 			if oauth_data.state != oauth_info.state {
+				println!("Invalid oauth state provided");
 				return create_unauthorized_response();
 			}
 
@@ -301,7 +302,10 @@ pub async fn oauth_callback(mut session: Session, oauth_info: web::Query<OauthCa
 						}
 					}
 				},
-				Err(_) => create_unauthorized_response()
+				Err(error) => {
+					println!("{}", error);
+					create_unauthorized_response()
+				}
 			}
 		},
 		None => create_unauthorized_response()
