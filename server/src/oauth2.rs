@@ -30,7 +30,7 @@ pub fn get_auth_url() -> (String, String, String) {
 	// Generate the full authorization URL
 	let (auth_url, csrf_token) = OAUTH_CLIENT
 		.authorize_url(CsrfToken::new_random)
-		.set_pkce_challenge(pkce_challenge)
+		//.set_pkce_challenge(pkce_challenge)
 		.url();
 
 	(auth_url.to_string(), csrf_token.secret().to_string(), pkce_verifier.secret().to_string())
@@ -40,7 +40,7 @@ pub fn get_auth_url() -> (String, String, String) {
 pub fn get_access_token(auth_code: &str, pkce_verifier: &str) -> Result<String, String> {
 	let token_result = OAUTH_CLIENT
 		.exchange_code(AuthorizationCode::new(auth_code.to_string()))
-		.set_pkce_verifier(oauth2::PkceCodeVerifier::new(pkce_verifier.to_string()))
+		//.set_pkce_verifier(oauth2::PkceCodeVerifier::new(pkce_verifier.to_string()))
 		.request(http_client);
 
 	match token_result {
