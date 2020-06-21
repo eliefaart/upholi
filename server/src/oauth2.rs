@@ -37,53 +37,53 @@ pub fn get_auth_url() -> (String, String, String) {
 }
 
 /// Get access token for the authorization code received from oauth provider 
-pub async fn get_access_token(auth_code: &str, pkce_verifier: &str) -> Result<String, String> {
+pub fn get_access_token(auth_code: &str, pkce_verifier: &str) -> Result<String, String> {
 
 	//https://github.com/login/oauth/access_token
 
-	let url = format!("{}?client_id={}&client_secret={}&code={}", crate::SETTINGS.oauth.token_url, crate::SETTINGS.oauth.client_id, crate::SETTINGS.oauth.client_secret, auth_code);
+	// let url = format!("{}?client_id={}&client_secret={}&code={}", crate::SETTINGS.oauth.token_url, crate::SETTINGS.oauth.client_id, crate::SETTINGS.oauth.client_secret, auth_code);
 
-	let client = reqwest::Client::new();
-	let request = client
-		.post(&url)
-		.header(reqwest::header::USER_AGENT, USER_AGENT);
-	match request.send().await {
-		Ok(response) => {
-			println!("response {:?}", response);
-			match response.text().await {
-				Ok(text) => println!("response:text {}", text),
-				Err(error) => println!("response:error {}", error)
-			}
+	// let client = reqwest::Client::new();
+	// let request = client
+	// 	.post(&url)
+	// 	.header(reqwest::header::USER_AGENT, USER_AGENT);
+	// match request.send().await {
+	// 	Ok(response) => {
+	// 		println!("response {:?}", response);
+	// 		match response.text().await {
+	// 			Ok(text) => println!("response:text {}", text),
+	// 			Err(error) => println!("response:error {}", error)
+	// 		}
 			
-			Ok("".to_string())
-		},
-		Err(error) => {
-			println!("error {}", error);
-			Ok("".to_string())
-		}
-	}
-
-
-
-	// let token_result = OAUTH_CLIENT
-	// 	.exchange_code(AuthorizationCode::new(auth_code.to_string()))
-	// 	//.set_pkce_verifier(oauth2::PkceCodeVerifier::new(pkce_verifier.to_string()))
-	// 	.request(http_client);
-
-	// match token_result {
-	// 	Ok(token) => {
-	// 		Ok(token.access_token().secret().to_string())
+	// 		Ok("".to_string())
 	// 	},
 	// 	Err(error) => {
-	// 		match error {
-	// 			oauth2::RequestTokenError::ServerResponse(sr) => println!("ServerResponse {}", sr),
-	// 			oauth2::RequestTokenError::Request(re) => println!("Request {}", re),
-	// 			oauth2::RequestTokenError::Parse(error, bytes) => println!("Parse {}, {:?}", error, bytes),
-	// 			oauth2::RequestTokenError::Other(string) => println!("Other {}", string)
-	// 		}
-	// 		Err("Failed to get access token for auth code".to_string())
+	// 		println!("error {}", error);
+	// 		Ok("".to_string())
 	// 	}
 	// }
+
+
+
+	let token_result = OAUTH_CLIENT
+		.exchange_code(AuthorizationCode::new(auth_code.to_string()))
+		//.set_pkce_verifier(oauth2::PkceCodeVerifier::new(pkce_verifier.to_string()))
+		.request(http_client);
+
+	match token_result {
+		Ok(token) => {
+			Ok(token.access_token().secret().to_string())
+		},
+		Err(error) => {
+			match error {
+				oauth2::RequestTokenError::ServerResponse(sr) => println!("ServerResponse {}", sr),
+				oauth2::RequestTokenError::Request(re) => println!("Request {}", re),
+				oauth2::RequestTokenError::Parse(error, bytes) => println!("Parse {}, {:?}", error, bytes),
+				oauth2::RequestTokenError::Other(string) => println!("Other {}", string)
+			}
+			Err("Failed to get access token for auth code".to_string())
+		}
+	}
 }
 
 /// Get user info for access_token

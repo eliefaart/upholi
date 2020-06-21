@@ -279,7 +279,7 @@ pub async fn oauth_callback(mut session: Session, oauth_info: web::Query<OauthCa
 			}
 
 			// Verify code externally
-			match oauth2::get_access_token(&oauth_info.code, &oauth_data.pkce_verifier).await {
+			match oauth2::get_access_token(&oauth_info.code, &oauth_data.pkce_verifier) {
 				Ok(access_token) => {
 					match oauth2::get_user_info(&access_token).await {
 						Ok(user_info) => {
