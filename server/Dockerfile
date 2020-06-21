@@ -9,8 +9,6 @@ ARG DEBIAN_FRONTEND=noninteractive
 # and ca-certificates; otherwise oauth requests to identity provider (at least to github.com) get rejected due to untrusted certificates
 RUN apt-get update &&\
 	apt-get -y install openssl &&\
-	apt-get -y install pkg-config &&\
-	apt-get -y install libssl-dev &&\
 	apt-get -y install ca-certificates
 
 # Copy app folder
