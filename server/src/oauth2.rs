@@ -48,12 +48,7 @@ pub fn get_access_token(auth_code: &str, pkce_verifier: &str) -> Result<String, 
 			Ok(token.access_token().secret().to_string())
 		},
 		Err(error) => {
-			match error {
-				oauth2::RequestTokenError::ServerResponse(sr) => println!("ServerResponse {}", sr),
-				oauth2::RequestTokenError::Request(re) => println!("Request {}", re),
-				oauth2::RequestTokenError::Parse(error, bytes) => println!("Parse {}, {:?}", error, bytes),
-				oauth2::RequestTokenError::Other(string) => println!("Other {}", string)
-			}
+			println!("{}", error);
 			Err("Failed to get access token for auth code".to_string())
 		}
 	}
