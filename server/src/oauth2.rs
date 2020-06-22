@@ -47,7 +47,10 @@ pub fn get_access_token(auth_code: &str, pkce_verifier: &str) -> Result<String, 
 		Ok(token) => {
 			Ok(token.access_token().secret().to_string())
 		},
-		Err(_) => Err("Failed to get access token for auth code".to_string())
+		Err(error) => {
+			println!("{}", error);
+			Err("Failed to get access token for auth code".to_string())
+		}
 	}
 }
 
