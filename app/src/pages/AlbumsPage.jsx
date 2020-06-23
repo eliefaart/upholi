@@ -31,7 +31,7 @@ class AlbumsPage extends React.Component {
 		</div>);
 
 		return (
-			<PageLayout headerElementActions={headerActions}>
+			<PageLayout headerContextMenuActions={headerActions}>
 				<Albums/>
 
 				<ModalCreateAlbum

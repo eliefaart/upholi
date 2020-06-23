@@ -1,11 +1,16 @@
 import React from 'react';
 
 import AppStateContext from '../contexts/AppStateContext.jsx';
+import { IconContextMenu } from '../components/Icons.jsx';
 
 class Header extends React.Component {
 
 	constructor(props) {
 		super(props);
+
+		this.state = {
+			contextMenuOpen: false
+		};
 	}
 	
 	componentDidMount() {
@@ -33,7 +38,7 @@ class Header extends React.Component {
 		let menuItems = [
 			{ path: "/", title: "Home" },
 			{ path: "/albums", title: "Albums" },
-			{ path: "/shared", title: "Shared" }
+			//{ path: "/shared", title: "Shared" }
 		];
 
 		let menuItemsElement = menuItems.map((menuItem) => {
@@ -52,9 +57,20 @@ class Header extends React.Component {
 				</div>}
 
 				<span className="title">{this.props.title || ' '}</span>
-				<div className="actions">
-					{this.props.children}
-				</div>
+
+				{!!this.props.actionsElement && <div className="actions">
+					{this.props.actionsElement}
+				</div>}
+
+				{!!this.props.contextMenuElement && this.state.contextMenuOpen && <div className="contextMenu" onClick={() => this.setState({contextMenuOpen: false})}>
+					<div className="items">
+						{this.props.contextMenuElement}
+					</div>
+				</div>}
+				
+				{!!this.props.contextMenuElement && <button className="contextMenuToggle" onClick={() => this.setState({contextMenuOpen: !this.state.contextMenuOpen})}>
+					<IconContextMenu/>
+				</button>}
 			</div>
 		);
 	}
