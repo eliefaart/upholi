@@ -22,6 +22,7 @@
 			padding-left: $spacing * 5;
 
 			&.active {
+				color: $accentColor;
 				border-bottom: 1px solid $accentColor;
 			}
 
@@ -38,6 +39,14 @@
 		line-height: $headerHeight;
 		display: flex;
 		justify-content: left;
+	}
+
+	.contextMenuToggle {
+		height: $headerHeight;
+		width: $headerHeight;
+		min-width: $headerHeight;
+		background-color: transparent;
+		color: $textColorLight;
 	}
 
 	.actions {
@@ -60,11 +69,53 @@
 			}
 		}
 	}
-}
-@media only screen and (max-width: 768px) {
-	.header .actions {
+
+	.contextMenu {
 		position: fixed;
 		width: 100%;
-		bottom: 0;
+		height: 100%;
+		background: rgba(0, 0, 0, 0);
+		cursor: pointer;
+
+		.items {
+			background-color: transparent;
+	
+			position: fixed;
+			top: $headerHeight;
+			right: 0;
+			
+			span {
+				line-height: $headerHeight;
+				white-space: nowrap;
+			}
+	
+			&>div{
+	
+				display: flex;
+				flex-direction: column;
+				justify-content: right;
+				align-items: center;
+				background-color: $altBackgroundColor;
+				
+				> button, .asButton {
+					padding: 0 $spacing * 3;
+				}
+				
+				button, .asButton, :not(div) {
+					border-radius: unset;
+					color: $textColorLight;
+					background-color: $altBackgroundColor;
+					width: 100%;
+					margin: 0;
+
+					&:hover {
+						&, * {
+							background-color: $accentColor;
+							color: $textColorDark;
+						}
+					}
+				}
+			}
+		}
 	}
 }

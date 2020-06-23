@@ -188,15 +188,15 @@ class AlbumPage extends React.Component {
 
 	render() {
 		const headerActions = (<div>
-			{this.state.selectedPhotos.length === 1 && <button onClick={(e) => this.setSelectedPhotoAsAlbumCover()}>Set as cover</button>}
-			{this.state.selectedPhotos.length > 0 && <button onClick={(e) => this.onRemovePhotosClick()}>Remove photos</button>}
-			{<button onClick={(e) => this.shareAlbum()}>Share</button>}
-			{<button onClick={(e) => this.onDeleteAlbumClick()}>Delete album</button>}
 			{this.state.selectedPhotos.length === 0 && <UploadButton onSubmit={(files) => this.uploadFilesList(files)}/>}
+			{this.state.selectedPhotos.length === 1 && <button onClick={(e) => this.setSelectedPhotoAsAlbumCover()}>Set as cover</button>}
+			{<button onClick={(e) => this.shareAlbum()}>Share</button>}
+			{this.state.selectedPhotos.length > 0 && <button onClick={(e) => this.onRemovePhotosClick()}>Remove photos</button>}
+			{<button onClick={(e) => this.onDeleteAlbumClick()}>Delete album</button>}
 		</div>);
 		
 		return (
-			<PageLayout headerElementActions={headerActions} onDrop={(event) => this.onFilesDropped(event)}>
+			<PageLayout headerContextMenuActions={headerActions} onDrop={(event) => this.onFilesDropped(event)}>
 				<h1>{this.state.title}</h1>
 
 				{!!this.state.title && this.state.photos.length === 0 && 

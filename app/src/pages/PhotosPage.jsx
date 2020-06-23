@@ -171,14 +171,13 @@ class PhotosDashboardPage extends React.Component {
 
 	render() {
 		const headerActions = (<div>
-			{this.state.selectedPhotos.length > 0 && <span>Selected {this.state.selectedPhotos.length} photos</span>}
-			{this.state.selectedPhotos.length > 0 && <button onClick={() => this.onClickDeletePhotos()}>Delete</button>}
-			{this.state.selectedPhotos.length > 0 && <button onClick={() => this.onClickAddSelectedPhotosToAlbum(this.state.selectedPhotos)}>Add to album</button>}
 			{this.state.selectedPhotos.length === 0 && <UploadButton onSubmit={(files) => this.uploadFilesList(files)}/>}
+			{this.state.selectedPhotos.length > 0 && <button onClick={() => this.onClickAddSelectedPhotosToAlbum(this.state.selectedPhotos)}>Add to album</button>}
+			{this.state.selectedPhotos.length > 0 && <button onClick={() => this.onClickDeletePhotos()}>Delete</button>}
 		</div>);
 
 		return (
-			<PageLayout headerElementActions={headerActions} onDrop={(event) => this.onFilesDropped(event)}>
+			<PageLayout headerContextMenuActions={headerActions} onDrop={(event) => this.onFilesDropped(event)}>
 				<PhotoGallerySelectable photos={this.state.photos} onClick={(event, target) => this.onPhotoClicked(event, target)} selectedItems={this.state.selectedPhotos} onPhotoSelectedChange={(photoId, selected) => this.onPhotoSelectedChange(photoId, selected)} />
 
 				{this.state.newAlbumDialogOpen && <ModalCreateAlbum
