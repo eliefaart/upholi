@@ -13,7 +13,7 @@ class UploadButton extends React.Component {
 	}
 
 	render() {
-		return <form id="form-select-photos">
+		return <form id="form-select-photos" className={this.props.className}>
 			<label htmlFor="select-photos" className="asButton">Upload</label>
 			<input id="select-photos" type="file" name="photos" accept=".jpg,.jpeg" onChange={(event) => this.onSubmitButtonClick(event)} multiple/>
 		</form>;

@@ -1,5 +1,4 @@
 import React from 'react';
-import $ from 'jquery';
 import { Router, Route } from 'react-router-dom'
 import { createBrowserHistory as createHistory } from "history";
 import { ToastContainer, Zoom } from 'react-toastify';

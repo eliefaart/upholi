@@ -3,3 +3,10 @@
 	width: 100%;
 	text-align: center;
 }
+
+.hidden {
+	width: 0px;
+	height: 0px;
+	overflow: hidden;
+	visibility: hidden;
+}
