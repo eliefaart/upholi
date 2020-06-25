@@ -8,7 +8,6 @@ class PageLayout extends React.Component {
 	}
 
 	componentDidMount() {
-		
 	}
 
 	componentWillUnmount() {

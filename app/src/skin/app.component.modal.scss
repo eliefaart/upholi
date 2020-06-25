@@ -21,7 +21,7 @@ $modalHeaderHeight: $buttonHeight;
 	flex-direction: column;
 
 	.modal-header {
-		flex: 0 0 100%;
+		flex: 0 0 modalHeaderHeight;
 		display: flex;
 
 		.title {
@@ -35,18 +35,35 @@ $modalHeaderHeight: $buttonHeight;
 
 	.modal-body {
 		display: flex;
-		flex: 0 1 auto;
+		flex: 0 1 100%;
 		align-items: center;
 		min-height: 50px;
 		flex-direction: column;
 		max-height: 80vh;
 		//overflow-y: scroll;
-		margin: $spacing * 4;
+		margin: $spacing * 4 0px;
 	}
 
 	.modal-footer {
 		flex: 0 0 auto;
 		display: flex;
 		justify-content: right;
+	}
+}
+
+@media only screen and (max-width: $breakpointMobile) {
+	.modal {
+		top: 3%;
+		bottom: 3%;
+		right: 3%;
+		left: 3%;
+
+		.photoAlbums {
+			.album {
+				max-width: 25vw;
+				max-height: 25vw;
+				margin: $spacing * 2;
+			}
+		}
 	}
 }

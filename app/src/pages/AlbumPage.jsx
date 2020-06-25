@@ -8,6 +8,7 @@ import ConfirmationDialog from '../components/ConfirmationDialog.jsx';
 import UploadProgressDialog from '../components/UploadProgressDialog.jsx';
 import UploadButton from '../components/UploadButton.jsx';
 import { toast } from 'react-toastify';
+import $ from 'jquery';
 
 class AlbumPage extends React.Component {
 
@@ -187,8 +188,8 @@ class AlbumPage extends React.Component {
 	}
 
 	render() {
-		const headerActions = (<div>
-			{this.state.selectedPhotos.length === 0 && <UploadButton onSubmit={(files) => this.uploadFilesList(files)}/>}
+		const headerContextMenuActions = (<div>
+			{this.state.selectedPhotos.length === 0 && <button onClick={() => $("#select-photos").click()}>Upload</button>}
 			{this.state.selectedPhotos.length === 1 && <button onClick={(e) => this.setSelectedPhotoAsAlbumCover()}>Set as cover</button>}
 			{<button onClick={(e) => this.shareAlbum()}>Share</button>}
 			{this.state.selectedPhotos.length > 0 && <button onClick={(e) => this.onRemovePhotosClick()}>Remove photos</button>}
@@ -196,7 +197,7 @@ class AlbumPage extends React.Component {
 		</div>);
 		
 		return (
-			<PageLayout headerContextMenuActions={headerActions} onDrop={(event) => this.onFilesDropped(event)}>
+			<PageLayout headerContextMenuActions={headerContextMenuActions} onDrop={(event) => this.onFilesDropped(event)}>
 				<h1>{this.state.title}</h1>
 
 				{!!this.state.title && this.state.photos.length === 0 && 
@@ -234,6 +235,9 @@ class AlbumPage extends React.Component {
 						files={this.state.uploadFiles}
 						/>
 					}
+
+				{/* Hidden upload button triggered by the button context menu. This is because browsers prevent file select functionality if input element is no visible */}
+				<UploadButton className="hidden" onSubmit={(files) => this.uploadFilesList(files)}/>
 			</PageLayout>
 		);
 	}

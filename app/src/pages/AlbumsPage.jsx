@@ -26,12 +26,12 @@ class AlbumsPage extends React.Component {
 	}
 
 	render() {
-		const headerActions = (<div>
+		const headerContextMenuActions = (<div>
 			{<button onClick={(e) => this.onCreateAlbumClick()}>Create album</button>}
 		</div>);
 
 		return (
-			<PageLayout headerContextMenuActions={headerActions}>
+			<PageLayout headerContextMenuActions={headerContextMenuActions}>
 				<Albums/>
 
 				<ModalCreateAlbum

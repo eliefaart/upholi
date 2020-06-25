@@ -11,6 +11,7 @@ import UploadProgressDialog from '../components/UploadProgressDialog.jsx';
 import ModalCreateAlbum from '../components/ModalCreateAlbum.jsx';
 import UploadButton from '../components/UploadButton.jsx';
 import { toast } from 'react-toastify';
+import $ from 'jquery';
 
 class PhotosDashboardPage extends React.Component {
 
@@ -170,14 +171,14 @@ class PhotosDashboardPage extends React.Component {
 	}
 
 	render() {
-		const headerActions = (<div>
-			{this.state.selectedPhotos.length === 0 && <UploadButton onSubmit={(files) => this.uploadFilesList(files)}/>}
+		const headerContextMenuActions = (<div>
+			{this.state.selectedPhotos.length === 0 && <button onClick={() => $("#select-photos").click()}>Upload</button>}
 			{this.state.selectedPhotos.length > 0 && <button onClick={() => this.onClickAddSelectedPhotosToAlbum(this.state.selectedPhotos)}>Add to album</button>}
 			{this.state.selectedPhotos.length > 0 && <button onClick={() => this.onClickDeletePhotos()}>Delete</button>}
 		</div>);
 
 		return (
-			<PageLayout headerContextMenuActions={headerActions} onDrop={(event) => this.onFilesDropped(event)}>
+			<PageLayout headerContextMenuActions={headerContextMenuActions} onDrop={(event) => this.onFilesDropped(event)}>
 				<PhotoGallerySelectable photos={this.state.photos} onClick={(event, target) => this.onPhotoClicked(event, target)} selectedItems={this.state.selectedPhotos} onPhotoSelectedChange={(photoId, selected) => this.onPhotoSelectedChange(photoId, selected)} />
 
 				{this.state.newAlbumDialogOpen && <ModalCreateAlbum
@@ -215,6 +216,8 @@ class PhotosDashboardPage extends React.Component {
 						files={this.state.uploadFiles}
 						/>
 					}
+				{/* Hidden upload button triggered by the button context menu. This is because browsers prevent file select functionality if input element is no visible */}
+				<UploadButton className="hidden" onSubmit={(files) => this.uploadFilesList(files)}/>
 			</PageLayout>
 		);
 	}
