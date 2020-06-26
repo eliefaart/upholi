@@ -144,7 +144,7 @@ class PhotoService {
 				if (callback)
 					callback(albumId);
 			}
-		});
+		}).fail((response) => console.error(response.responseJSON));
 	}
 
 	static addPhotosToAlbum(albumId, photoIds) {

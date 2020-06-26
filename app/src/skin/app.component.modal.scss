@@ -42,6 +42,10 @@ $modalHeaderHeight: $buttonHeight;
 		max-height: 80vh;
 		//overflow-y: scroll;
 		margin: $spacing * 4 0px;
+
+		#form-create-album input[name=title] {
+			min-width: 275px;
+		}
 	}
 
 	.modal-footer {

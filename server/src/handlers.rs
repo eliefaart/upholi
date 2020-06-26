@@ -83,11 +83,15 @@ pub async fn route_get_album(user: User, req: HttpRequest) -> impl Responder {
 
 /// Create a new album
 pub async fn route_create_album(user: User, album: web::Json<CreateAlbumRequest>) -> impl Responder {
-	let album = albums::Album::new(user.user_id, &album.title);
+	if album.title.len() > crate::constants::ALBUM_TITLE_MAX_LENGTH {
+		create_bad_request_response(&format!("Maximum length for album title is {}.", crate::constants::ALBUM_TITLE_MAX_LENGTH))
+	} else {
+		let album = albums::Album::new(user.user_id, &album.title);
 
-	match album.insert() {
-		Ok(_) => create_created_response(&album.id),
-		Err(error) => create_internal_server_error_response(Some(&error))
+		match album.insert() {
+			Ok(_) => create_created_response(&album.id),
+			Err(error) => create_internal_server_error_response(Some(&error))
+		}
 	}
 }
 

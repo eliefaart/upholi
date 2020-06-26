@@ -6,6 +6,7 @@ use lazy_static::lazy_static;
 use settings::Settings;
 use futures::future::{ok, Either, FutureExt};
 
+mod constants;
 mod types;
 mod http;
 mod handlers;

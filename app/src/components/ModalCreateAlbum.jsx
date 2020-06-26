@@ -34,7 +34,7 @@ class ModalCreateAlbum extends React.Component {
 			okButtonText="Create"
 			>
 				<form id="form-create-album">
-					<input name="title" placeholder="Title"/>
+					<input name="title" placeholder="Title" maxLength={40}/>
 				</form>
 		</Modal>;
 	}
