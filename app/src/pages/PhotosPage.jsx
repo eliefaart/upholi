@@ -1,14 +1,13 @@
 import React from 'react';
-import Modal from '../components/Modal.jsx';
 import PhotoGallerySelectable from '../components/PhotoGallerySelectable.jsx';
 import PageLayout from "../components/PageLayout.jsx";
-import Albums from "../components/Albums.jsx";
 import PhotoService from "../services/PhotoService.js";
 import UploadHelper from "../helpers/UploadHelper.js";
 import AppStateContext from '../contexts/AppStateContext.jsx';
 import ModalConfirmation from '../components/ModalConfirmation.jsx';
 import ModalUploadProgress from '../components/ModalUploadProgress.jsx';
 import ModalCreateAlbum from '../components/ModalCreateAlbum.jsx';
+import ModalAddToAlbum from '../components/ModalAddToAlbum.jsx';
 import UploadButton from '../components/UploadButton.jsx';
 import { toast } from 'react-toastify';
 import $ from 'jquery';
@@ -145,8 +144,8 @@ class PhotosDashboardPage extends React.Component {
 		let files = UploadHelper.convertFileListToFileArrayForUploadDialog(filesList);
 		let fnOnUploadFinished = () => {
 			this.setState({
-				uploadInProgress: false,
-				uploadFiles: []
+			 	uploadInProgress: false,
+			 	uploadFiles: []
 			});
 			this.refreshPhotos();
 			toast.info("Upload finished.");
@@ -186,17 +185,13 @@ class PhotosDashboardPage extends React.Component {
 					onRequestClose={() => this.setState({newAlbumDialogOpen: false})}
 					createWithPhotos={this.state.selectedPhotos}
 					/>
-
-				<Modal
-					title="Choose album"
+					
+				<ModalAddToAlbum
 					isOpen={this.state.addPhotosToAlbumDialogOpen}
 					onRequestClose={() => this.setState({addPhotosToAlbumDialogOpen: false})}
-					onOkButtonClick={null}
-					okButtonText={null}
-					>
-						<button onClick={() => this.createNewAlbum()}>New album</button>
-						<Albums onClick={(album) => this.addSelectedPhotosToAlbum(album.id)}/>
-				</Modal>
+					onClickNewAlbum={() => this.createNewAlbum()}
+					onClickExistingAlbum={(album) => this.addSelectedPhotosToAlbum(album.id)}
+					/>
 
 				<ModalConfirmation
 					title="Delete?"

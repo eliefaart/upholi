@@ -16,7 +16,7 @@ class ModalUploadProgress extends React.Component {
 				title="Upload progress"
 				isOpen={this.props.isOpen}
 				onRequestClose={this.props.onRequestClose}
-				className={this.props.className + " ModalUploadProgress"}
+				className={this.props.className + " modalUploadProgress"}
 				okButtonText={null}
 			>
 				{this.props.files.map(file => (

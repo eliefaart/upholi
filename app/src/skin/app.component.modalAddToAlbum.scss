@@ -1,0 +1,12 @@
+
+@media only screen and (max-width: $breakpointMobile) {
+	.modalAddToAlbum {
+		.photoAlbums {
+			.album {
+				max-width: 25vw;
+				max-height: 25vw;
+				margin: $spacing * 2;
+			}
+		}
+	}
+}

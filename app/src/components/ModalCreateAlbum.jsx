@@ -28,6 +28,7 @@ class ModalCreateAlbum extends React.Component {
 	render() {
 		return <Modal
 			title="Create album"
+			className={this.props.className + " modalCreateAlbum"}
 			isOpen={this.props.isOpen}
 			onRequestClose={this.props.onRequestClose}
 			onOkButtonClick={() => this.submitCreateAlbum()}
