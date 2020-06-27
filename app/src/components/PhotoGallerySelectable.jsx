@@ -21,11 +21,21 @@ class PhotoGallerySelectable extends React.Component {
 
 		// Inline-component representing one photo tile.
 		const imageRenderer = ({ index, onClick, photo, margin, direction, top, left, key }) => {
-			const imgStyle = { margin: margin, display: 'block' };
-			if (direction === 'column') {
-			  imgStyle.position = 'absolute';
-			  imgStyle.left = left;
-			  imgStyle.top = top;
+			const imgStyle = { 
+				margin: margin, 
+				display: "block",
+
+				backgroundImage: "url(\"" + photo.src + "\")",
+				backgroundSize: "cover",
+				backgroundPosition: "center center",
+				backgroundRepeat: "no-repeat",
+				width: photo.width,
+				height: photo.height,
+			};
+			if (direction === "column") {
+				imgStyle.position = "absolute";
+				imgStyle.left = left;
+				imgStyle.top = top;
 			}
 		  
 			const containerStyle = {
@@ -75,8 +85,10 @@ class PhotoGallerySelectable extends React.Component {
 						checked={isSelected} 
 						onChange={onPhotoSelectedChanged}/>
 					<label htmlFor={checkboxId} style={checkboxLabelStyle}></label>
-					<img
-						{...photo}
+					{/* Render a div instead of an img element. This is solely to prevent the default (longpress) context menu to appear in mobile browsers */}
+					<div
+						id={photo.id}
+						className="photoImg"
 						style={imgStyle}
 						onClick={onPhotoClick}
 						onContextMenu={onContextMenu}
