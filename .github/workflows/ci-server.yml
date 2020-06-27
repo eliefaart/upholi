@@ -5,6 +5,8 @@ on:
     paths:
       - '.github/workflows/ci-server.yml'
       - 'server/**'
+    branches-ignore:
+      - master
   pull_request:
     branches: [ master ]
 
