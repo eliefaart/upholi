@@ -4,8 +4,8 @@ import PageLayout from "../components/PageLayout.jsx"
 import AppStateContext from '../contexts/AppStateContext.jsx';
 import PhotoService from '../services/PhotoService';
 import UploadHelper from "../helpers/UploadHelper.js"
-import ConfirmationDialog from '../components/ConfirmationDialog.jsx';
-import UploadProgressDialog from '../components/UploadProgressDialog.jsx';
+import ModalConfirmation from '../components/ModalConfirmation.jsx';
+import ModalUploadProgress from '../components/ModalUploadProgress.jsx';
 import UploadButton from '../components/UploadButton.jsx';
 import { toast } from 'react-toastify';
 import $ from 'jquery';
@@ -211,7 +211,7 @@ class AlbumPage extends React.Component {
 					onPhotoSelectedChange={(photoId, selected) => this.onPhotoSelectedChange(photoId, selected)}/>
 				}
 
-				<ConfirmationDialog
+				<ModalConfirmation
 					title="Delete?"
 					isOpen={this.state.confirmDeleteAlbumOpen}
 					onRequestClose={() => this.setState({confirmDeleteAlbumOpen: false})}
@@ -219,7 +219,8 @@ class AlbumPage extends React.Component {
 					okButtonText="Delete"
 					confirmationText={"Album '" + this.state.title + "' will be deleted."}
 					/>
-				<ConfirmationDialog
+
+				<ModalConfirmation
 					title="Delete?"
 					isOpen={this.state.confirmRemovePhotosOpen}
 					onRequestClose={() => this.setState({confirmRemovePhotosOpen: false})}
@@ -228,13 +229,12 @@ class AlbumPage extends React.Component {
 					confirmationText={this.state.selectedPhotos.length + " photos will be removed from album '" + this.state.title + "'."}
 					/>
 
-				{this.state.uploadInProgress && 
-					<UploadProgressDialog
-						isOpen={this.state.uploadInProgress}
-						onRequestClose={() => this.setState({uploadInProgress: false})}
-						files={this.state.uploadFiles}
-						/>
-					}
+				<ModalUploadProgress
+					isOpen={this.state.uploadInProgress}
+					onRequestClose={() => this.setState({uploadInProgress: false})}
+					files={this.state.uploadFiles}
+					/>
+					
 
 				{/* Hidden upload button triggered by the button context menu. This is because browsers prevent file select functionality if input element is no visible */}
 				<UploadButton className="hidden" onSubmit={(files) => this.uploadFilesList(files)}/>

@@ -1,7 +1,7 @@
 import React from 'react';
 import Modal from './Modal.jsx';
 
-class UploadProgressDialog extends React.Component {
+class ModalUploadProgress extends React.Component {
 
 	constructor(props) {
 		super(props);
@@ -16,7 +16,7 @@ class UploadProgressDialog extends React.Component {
 				title="Upload progress"
 				isOpen={this.props.isOpen}
 				onRequestClose={this.props.onRequestClose}
-				className={this.props.className + " uploadProgressDialog"}
+				className={this.props.className + " ModalUploadProgress"}
 				okButtonText={null}
 			>
 				{this.props.files.map(file => (
@@ -32,4 +32,4 @@ class UploadProgressDialog extends React.Component {
 	}
 }
 
-export default UploadProgressDialog;
+export default ModalUploadProgress;

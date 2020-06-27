@@ -6,19 +6,10 @@ class Modal extends React.Component {
 
 	constructor(props) {
 		super(props);
-
-		ReactModal.setAppElement("#app");
-
-		this.state = {
-		};
-	}
-	
-	componentDidMount() {
-		//ReactModal.setAppElement("#app");
 	}
 
 	render() {
-		return (
+		return !this.props.isOpen ? null : (
 			<ReactModal
 				isOpen={this.props.isOpen}
 				onRequestClose={this.props.onRequestClose}

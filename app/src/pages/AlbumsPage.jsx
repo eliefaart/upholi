@@ -37,18 +37,6 @@ class AlbumsPage extends React.Component {
 				<ModalCreateAlbum
 					isOpen={this.state.newAlbumDialogOpen}
 					onRequestClose={() => this.setState({newAlbumDialogOpen: false})}/>
-				{/* {this.state.newAlbumDialogOpen && 
-					<Modal
-						title="Create album"
-						isOpen={this.state.newAlbumDialogOpen}
-						onRequestClose={() => this.setState({newAlbumDialogOpen: false})}
-						onOkButtonClick={() => this.submitCreateAlbum()}
-						okButtonText="Create"
-						>
-							<form id="form-create-album">
-								<input name="title" placeholder="Title"/>
-							</form>
-					</Modal>} */}
 			</PageLayout>
 		);
 	}

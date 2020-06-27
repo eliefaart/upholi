@@ -1,5 +1,5 @@
 import React from 'react';
-import { Router, Route } from 'react-router-dom'
+import { Router, Route } from 'react-router-dom';
 import { createBrowserHistory as createHistory } from "history";
 import { ToastContainer, Zoom } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -8,6 +8,7 @@ import AlbumsPage from '../pages/AlbumsPage.jsx';
 import SharedPage from '../pages/SharedPage.jsx';
 import AlbumPage from '../pages/AlbumPage.jsx';
 import PhotoPage from '../pages/PhotoPage.jsx';
+
 
 import AppStateContext from '../contexts/AppStateContext.jsx';
 

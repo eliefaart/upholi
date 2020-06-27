@@ -6,8 +6,8 @@ import Albums from "../components/Albums.jsx";
 import PhotoService from "../services/PhotoService.js";
 import UploadHelper from "../helpers/UploadHelper.js";
 import AppStateContext from '../contexts/AppStateContext.jsx';
-import ConfirmationDialog from '../components/ConfirmationDialog.jsx';
-import UploadProgressDialog from '../components/UploadProgressDialog.jsx';
+import ModalConfirmation from '../components/ModalConfirmation.jsx';
+import ModalUploadProgress from '../components/ModalUploadProgress.jsx';
 import ModalCreateAlbum from '../components/ModalCreateAlbum.jsx';
 import UploadButton from '../components/UploadButton.jsx';
 import { toast } from 'react-toastify';
@@ -181,41 +181,38 @@ class PhotosDashboardPage extends React.Component {
 			<PageLayout headerContextMenuActions={headerContextMenuActions} onDrop={(event) => this.onFilesDropped(event)}>
 				<PhotoGallerySelectable photos={this.state.photos} onClick={(event, target) => this.onPhotoClicked(event, target)} selectedItems={this.state.selectedPhotos} onPhotoSelectedChange={(photoId, selected) => this.onPhotoSelectedChange(photoId, selected)} />
 
-				{this.state.newAlbumDialogOpen && <ModalCreateAlbum
+				<ModalCreateAlbum
 					isOpen={this.state.newAlbumDialogOpen}
 					onRequestClose={() => this.setState({newAlbumDialogOpen: false})}
 					createWithPhotos={this.state.selectedPhotos}
-					/>}
+					/>
 
-				{this.state.addPhotosToAlbumDialogOpen && 
-					<Modal
-						title="Choose album"
-						isOpen={this.state.addPhotosToAlbumDialogOpen}
-						onRequestClose={() => this.setState({addPhotosToAlbumDialogOpen: false})}
-						onOkButtonClick={null}
-						okButtonText={null}
-						>
-							<button onClick={() => this.createNewAlbum()}>New album</button>
-							<Albums onClick={(album) => this.addSelectedPhotosToAlbum(album.id)}/>
-					</Modal>}
+				<Modal
+					title="Choose album"
+					isOpen={this.state.addPhotosToAlbumDialogOpen}
+					onRequestClose={() => this.setState({addPhotosToAlbumDialogOpen: false})}
+					onOkButtonClick={null}
+					okButtonText={null}
+					>
+						<button onClick={() => this.createNewAlbum()}>New album</button>
+						<Albums onClick={(album) => this.addSelectedPhotosToAlbum(album.id)}/>
+				</Modal>
 
-				{this.state.confirmDeletePhotosOpen && 
-					<ConfirmationDialog
-						title="Delete?"
-						isOpen={this.state.confirmDeletePhotosOpen}
-						onRequestClose={() => this.setState({confirmDeletePhotosOpen: false})}
-						onOkButtonClick={() => this.deleteSelectedPhotos(this.state.selectedPhotos)}
-						okButtonText="Delete"
-						confirmationText={this.state.selectedPhotos.length + " photos will be deleted."}
-						/>}
+				<ModalConfirmation
+					title="Delete?"
+					isOpen={this.state.confirmDeletePhotosOpen}
+					onRequestClose={() => this.setState({confirmDeletePhotosOpen: false})}
+					onOkButtonClick={() => this.deleteSelectedPhotos(this.state.selectedPhotos)}
+					okButtonText="Delete"
+					confirmationText={this.state.selectedPhotos.length + " photos will be deleted."}
+					/>
 
-				{this.state.uploadInProgress && 
-					<UploadProgressDialog
-						isOpen={this.state.uploadInProgress}
-						onRequestClose={() => this.setState({uploadInProgress: false})}
-						files={this.state.uploadFiles}
-						/>
-					}
+				<ModalUploadProgress
+					isOpen={this.state.uploadInProgress}
+					onRequestClose={() => this.setState({uploadInProgress: false})}
+					files={this.state.uploadFiles}
+					/>
+
 				{/* Hidden upload button triggered by the button context menu. This is because browsers prevent file select functionality if input element is no visible */}
 				<UploadButton className="hidden" onSubmit={(files) => this.uploadFilesList(files)}/>
 			</PageLayout>

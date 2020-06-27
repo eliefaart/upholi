@@ -1,7 +1,7 @@
 import React from 'react';
-import Modal from '../components/Modal.jsx';
+import Modal from './Modal.jsx';
 
-class ConfirmationDialog extends React.Component {
+class ModalConfirmation extends React.Component {
 
 	constructor(props) {
 		super(props);
@@ -25,4 +25,4 @@ class ConfirmationDialog extends React.Component {
 	}
 }
 
-export default ConfirmationDialog;
+export default ModalConfirmation;

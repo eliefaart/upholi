@@ -1,4 +1,5 @@
 import React from 'react';
+import { default as ReactModal } from 'react-modal';
 import Header from './Header.jsx';
 
 class PageLayout extends React.Component {
@@ -8,9 +9,7 @@ class PageLayout extends React.Component {
 	}
 
 	componentDidMount() {
-	}
-
-	componentWillUnmount() {
+		ReactModal.setAppElement("#app");
 	}
 
 	render() {
