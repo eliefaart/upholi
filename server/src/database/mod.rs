@@ -78,14 +78,14 @@ pub fn insert_item<T: serde::Serialize>(collection: &mongodb::Collection, bson_i
 
 /// Get a single item from a collection
 pub fn find_one<'de, T: serde::Deserialize<'de>>(id: &str, collection: &mongodb::Collection) -> Option<T> {
-	match find_many_new(None, Some(&[id]), collection) {
+	match find_many(None, Some(&[id]), collection) {
 		Ok(mut items) => items.pop(),
 		Err(_) => None
 	}
 }
 
 /// Get multiple items from a collection
-pub fn find_many_new<'de, T: serde::Deserialize<'de>>(user_id: Option<i64>, ids: Option<&[&str]>, collection: &mongodb::Collection) -> Result<Vec<T>, String> {
+pub fn find_many<'de, T: serde::Deserialize<'de>>(user_id: Option<i64>, ids: Option<&[&str]>, collection: &mongodb::Collection) -> Result<Vec<T>, String> {
 	let filter = {
 		if user_id.is_some() && ids.is_some() {
 			create_filter_for_user_and_ids(user_id.unwrap(), ids.unwrap())

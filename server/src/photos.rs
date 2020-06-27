@@ -161,12 +161,12 @@ impl DatabaseOperations for Photo {
 impl DatabaseUserOperations for Photo {
 	fn get_all(user_id: i64) -> Result<Vec<Self>, String> {
 		let collection = database::get_collection_photos();
-		database::find_many_new(Some(user_id), None, &collection) 
+		database::find_many(Some(user_id), None, &collection) 
 	}
 
 	fn get_all_with_ids(user_id: i64, ids: &[&str]) -> Result<Vec<Self>, String> {
 		let collection = database::get_collection_photos();
-		database::find_many_new(Some(user_id), Some(ids), &collection) 
+		database::find_many(Some(user_id), Some(ids), &collection) 
 	}
 }
 
