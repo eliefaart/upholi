@@ -11,28 +11,21 @@ class PhotoGallery extends React.Component {
 		}
 	}
 
-	componentDidMount() {
-	}
-
-	componentWillUnmount() {
-	}
-	
-	onPhotoDetailClicked() {
-	}
-
 	render() {
 
 		// Todo: handle resize event to update column count
 		const width = $("body").width();
-		let galleryColumns = 2;
+		let galleryColumns = 3;
 		if (width >= 900)
-			galleryColumns = 3;
-		if (width >= 1200)
 			galleryColumns = 4;
-		if (width >= 1500)
+		if (width >= 1200)
 			galleryColumns = 5;
-		if (width >= 1800)
+		if (width >= 1500)
 			galleryColumns = 6;
+		if (width >= 1800)
+			galleryColumns = 7;
+
+		console.log(this.props.photos);
 
 		return (
 			<div className="photoGallery">
