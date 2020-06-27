@@ -142,8 +142,6 @@ pub async fn download_photo(photo_id: &str, user_id: i64, select_path: fn(&Photo
 		Ok(photo_opt) => {
 			match photo_opt {
 				Some(photo_info) => {
-					//serve_file(select_path(&photo_info), &photo_info.name),
-
 					match files::get_photo(select_path(&photo_info)) {
 						Some(file_bytes) => {
 							HttpResponse::Ok()
@@ -166,13 +164,10 @@ pub fn delete_photos(user_id: i64, ids: &[&str]) -> impl Responder {
 
 	// Check if all ids to be deleted are owned by user_id
 	for id in ids {
-		match Photo::get(id) {
-			Some(photo) => {
-				if photo.user_id != user_id {
-					return create_unauthorized_response();
-				}
-			},
-			None => {}
+		if let Some(photo) = Photo::get(id) {
+			if photo.user_id != user_id {
+				return create_unauthorized_response();
+			}
 		}
 	}
 

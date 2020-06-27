@@ -2,7 +2,6 @@
 use oauth2::{AuthUrl, ClientId, ClientSecret, CsrfToken, TokenUrl, TokenResponse, AuthorizationCode, PkceCodeChallenge};
 use oauth2::basic::BasicClient;
 use oauth2::reqwest::http_client;
-use reqwest;
 use serde::{Deserialize};
 use lazy_static::lazy_static;
 
