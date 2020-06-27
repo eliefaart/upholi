@@ -10,7 +10,7 @@ class PhotoGallerySelectable extends React.Component {
 		this.state = {
 		};
 	}
-	
+
 	render() {
 		let galleryComponent = this;
 
@@ -66,7 +66,6 @@ class PhotoGallerySelectable extends React.Component {
 
 			const onContextMenu = event => {
 				event.preventDefault();
-				event.stopImmediatePropagation();
 				galleryComponent.props.onPhotoSelectedChange(photo.id, !isSelected)
 			}
 
