@@ -10,27 +10,14 @@ class PhotoGallerySelectable extends React.Component {
 		this.state = {
 		};
 	}
-
-	componentDidMount() {
-	}
-
-	componentWillUnmount() {
-	}
 	
 	render() {
 		let galleryComponent = this;
 
 		// Todo: handle resize event to update column count
 		const width = $("body").width();
-		let galleryColumns = 3;
-		if (width >= 900)
-			galleryColumns = 4;
-		if (width >= 1200)
-			galleryColumns = 5;
-		if (width >= 1500)
-			galleryColumns = 6;
-		if (width >= 1800)
-			galleryColumns = 7;
+		const roughWidthPerPhoto = 300;		// How width each photo should be, roughly (in pixels)
+		const galleryColumns = Math.ceil(width / roughWidthPerPhoto);
 
 		// Inline-component representing one photo tile.
 		const imageRenderer = ({ index, onClick, photo, margin, direction, top, left, key }) => {
@@ -57,12 +44,6 @@ class PhotoGallerySelectable extends React.Component {
 			const cssClass = "photo"
 				+ " " + (isSelected ? "selected" : "")
 				+ " " + (anySelected ? "any-other-selected" : "");
-
-			const fnSelectPhoto = () => {
-				if (!isSelected && galleryComponent.props.onPhotoSelectedChange) {
-					galleryComponent.props.onPhotoSelectedChange(photo.id, true);
-				}
-			}
 
 			const onPhotoClick = event => {
 				if (anySelected) {
