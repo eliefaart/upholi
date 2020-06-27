@@ -8,7 +8,7 @@ use futures::future::{ok, err, Ready};
 
 use crate::database;
 use crate::session::{Session};
-use crate::database::DatabaseOperations;
+use crate::database::{DatabaseOperations, DatabaseUserOperations};
 use crate::files;
 use crate::photos;
 use crate::photos::Photo;
@@ -135,18 +135,29 @@ async fn get_form_field_bytes(mut field: Field) -> Vec<u8> {
 	field_bytes
 }
 
-/// Create an HTTP response that returns a file from disk
-pub fn serve_photo(path: &str, filename: &str) -> actix_http::Response {
-	let result = files::get_photo(path);
+/// Get the HTTP response that returns a photo from disk by its id.
+/// As long as given user has access to it.
+pub async fn download_photo(photo_id: &str, user_id: i64, select_path: fn(&Photo) -> &str) -> impl Responder {
+	match Photo::get_as_user(photo_id, user_id) {
+		Ok(photo_opt) => {
+			match photo_opt {
+				Some(photo_info) => {
+					//serve_file(select_path(&photo_info), &photo_info.name),
 
-	match result {
-		Some(file_bytes) => {
-			HttpResponse::Ok()
-				.content_type("image/jpeg")
-				.header(http::header::CONTENT_DISPOSITION, format!("attachment; filename=\"{}\"", filename))
-				.body(file_bytes)
+					match files::get_photo(select_path(&photo_info)) {
+						Some(file_bytes) => {
+							HttpResponse::Ok()
+								.content_type("image/jpeg")
+								.header(http::header::CONTENT_DISPOSITION, format!("attachment; filename=\"{}\"", &photo_info.name))
+								.body(file_bytes)
+						},
+						None => create_internal_server_error_response(Some("Error reading file content from disk, or file not found"))
+					}
+				},
+				None => create_not_found_response()
+			}
 		},
-		None => create_internal_server_error_response(Some("Error reading file content from disk, or file not found"))
+		Err(_) => create_unauthorized_response()
 	}
 }
 

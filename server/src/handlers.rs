@@ -27,7 +27,7 @@ pub struct CreateAlbumRequest {
 
 /// Get all albums
 pub async fn route_get_albums(user: User) -> impl Responder {
-	match Album::get_all(user.user_id) {
+	match Album::get_all_as_user(user.user_id) {
 		Ok(albums) => HttpResponse::Ok().json(albums),
 		Err(error) => {
 			println!("{}", error);
@@ -40,44 +40,53 @@ pub async fn route_get_albums(user: User) -> impl Responder {
 pub async fn route_get_album(user: User, req: HttpRequest) -> impl Responder {
 	let album_id = req.match_info().get("album_id").unwrap();
 
-	match Album::get(album_id) {
-		Some(album) => {
-			let mut ids: Vec<&str> = Vec::new();
-
-			for id in album.photos.iter() {
-				ids.push(&id[..]);
-			}
-
-			let response = types::ClientAlbum {
-				title: Some(album.title),
-				thumb_photo: {
-					if let Some(thumb_photo_id) = album.thumb_photo_id {
-						let result = Photo::get(&thumb_photo_id);
-						match result {
-							Some(thumb_photo) => Some(thumb_photo.to_client_photo()),
-							None => None
-						}
-					} else {
-						None
+	match Album::get_as_user(album_id, user.user_id) {
+		Ok(album_opt) => {
+			match album_opt {
+				Some(album) => {
+					let mut ids: Vec<&str> = Vec::new();
+		
+					for id in album.photos.iter() {
+						ids.push(&id[..]);
 					}
-				},
-				photos: {
-					match Photo::get_all_with_ids(user.user_id, &ids) {
-						Ok(photos) => {
-							let mut result_photos = Vec::new();
-							for photo in photos {
-								result_photos.push(photo.to_client_photo());
+		
+					let response = types::ClientAlbum {
+						title: Some(album.title),
+						thumb_photo: {
+							if let Some(thumb_photo_id) = album.thumb_photo_id {
+								match Photo::get_as_user(&thumb_photo_id, user.user_id) {
+									Ok(photo_opt) => {
+										match photo_opt {
+											Some(thumb_photo) => Some(thumb_photo.to_client_photo()),
+											None => None
+										}
+									},
+									Err(_) => None
+								}
+							} else {
+								None
 							}
-
-							Some(result_photos)
+						},
+						photos: {
+							match Photo::get_all_with_ids_as_user(&ids, user.user_id) {
+								Ok(photos) => {
+									let mut result_photos = Vec::new();
+									for photo in photos {
+										result_photos.push(photo.to_client_photo());
+									}
+		
+									Some(result_photos)
+								}
+								Err(_) => None
+							}
 						}
-						Err(_) => None
-					}
-				}
-			};
-			HttpResponse::Ok().json(response)
+					};
+					HttpResponse::Ok().json(response)
+				},
+				None => create_not_found_response()
+			}
 		},
-		None => create_not_found_response()
+		Err(_) => create_unauthorized_response()
 	}
 }
 
@@ -99,30 +108,35 @@ pub async fn route_create_album(user: User, album: web::Json<CreateAlbumRequest>
 pub async fn route_update_album(user: User, req: HttpRequest, updated_album: web::Json<types::UpdateAlbum>) -> impl Responder {
 	let album_id = req.match_info().get("album_id").unwrap();
 
-	match Album::get(&album_id) {
-		Some(mut album) => {
-			if album.user_id != user.user_id {
-				return create_unauthorized_response();
-			}
-
-			// TODO: Verify if all photoIds & thumbPhotoId are valid.
-
-			if updated_album.title.is_some() {
-				album.title = updated_album.title.as_ref().unwrap().to_string();
-			}
-			if updated_album.photos.is_some() {
-				album.photos = updated_album.photos.as_ref().unwrap().to_vec();
-			}
-			if updated_album.thumb_photo_id.is_some() {
-				album.thumb_photo_id = Some(updated_album.thumb_photo_id.as_ref().unwrap().to_string());
-			}
-
-			match album.update() {
-				Ok(_) => create_ok_response(),
-				Err(error) => create_internal_server_error_response(Some(&error))
+	match Album::get_as_user(&album_id, user.user_id) {
+		Ok(album_opt) => {
+			match album_opt {
+				Some(mut album) => {
+					if album.user_id != user.user_id {
+						return create_unauthorized_response();
+					}
+		
+					// TODO: Verify if all photoIds & thumbPhotoId are valid.
+		
+					if updated_album.title.is_some() {
+						album.title = updated_album.title.as_ref().unwrap().to_string();
+					}
+					if updated_album.photos.is_some() {
+						album.photos = updated_album.photos.as_ref().unwrap().to_vec();
+					}
+					if updated_album.thumb_photo_id.is_some() {
+						album.thumb_photo_id = Some(updated_album.thumb_photo_id.as_ref().unwrap().to_string());
+					}
+		
+					match album.update() {
+						Ok(_) => create_ok_response(),
+						Err(error) => create_internal_server_error_response(Some(&error))
+					}
+				},
+				None => create_not_found_response()
 			}
 		},
-		None => create_not_found_response()
+		Err(_) => create_unauthorized_response()
 	}
 }
 
@@ -130,24 +144,25 @@ pub async fn route_update_album(user: User, req: HttpRequest, updated_album: web
 pub async fn route_delete_album(user: User, req: HttpRequest) -> impl Responder {
 	let album_id = req.match_info().get("album_id").unwrap();
 
-	match Album::get(&album_id) {
-		Some(album) => {
-			if album.user_id != user.user_id {
-				return create_unauthorized_response();
-			}
-
-			match album.delete() {
-				Ok(_) => create_ok_response(),
-				Err(error) => create_internal_server_error_response(Some(&error))
+	match Album::get_as_user(&album_id, user.user_id) {
+		Ok(album_opt) => {
+			match album_opt {
+				Some(album) => {
+					match album.delete() {
+						Ok(_) => create_ok_response(),
+						Err(error) => create_internal_server_error_response(Some(&error))
+					}
+				},
+				None => create_not_found_response()
 			}
 		},
-		None => create_not_found_response()
+		Err(_) => create_unauthorized_response()
 	}
 }
 
 /// Get all photos
 pub async fn route_get_photos(user: User) -> impl Responder {
-	match Photo::get_all(user.user_id) {
+	match Photo::get_all_as_user(user.user_id) {
 		Ok(photos) => HttpResponse::Ok().json(photos),
 		Err(error) => {
 			println!("{}", error);
@@ -174,43 +189,39 @@ pub async fn route_delete_photos(user: User, photo_ids: web::Json<Vec<String>>) 
 }
 
 /// Get info about a photo
-pub async fn route_get_photo(req: HttpRequest) -> impl Responder {
+pub async fn route_get_photo(user: User, req: HttpRequest) -> impl Responder {
 	let photo_id = req.match_info().get("photo_id").unwrap();
 
-	match Photo::get(photo_id) {
-		Some(photo) => HttpResponse::Ok().json(photo),
-		None => create_not_found_response()
+	match Photo::get_as_user(photo_id, user.user_id) {
+		Ok(photo_opt) => {
+			match photo_opt {
+				Some(photo) => HttpResponse::Ok().json(photo),
+				None => create_not_found_response()
+			}
+		},
+		Err(_) => create_unauthorized_response()
 	}
 }
 
 /// Get the thumbnail of a photo as file
-pub async fn route_download_photo_thumbnail(req: HttpRequest) -> impl Responder {
+pub async fn route_download_photo_thumbnail(user: User, req: HttpRequest) -> impl Responder {
 	let photo_id = req.match_info().get("photo_id").unwrap();
 
-	match Photo::get(&photo_id) {
-		Some(photo_info) => serve_photo(&photo_info.path_thumbnail, &photo_info.name),
-		None => create_not_found_response()
-	}
+	download_photo(photo_id, user.user_id, |photo| &photo.path_thumbnail).await
 }
 
 /// Get the preview (large thumbnail) of a photo as file
-pub async fn route_download_photo_preview(req: HttpRequest) -> impl Responder {
+pub async fn route_download_photo_preview(user: User, req: HttpRequest) -> impl Responder {
 	let photo_id = req.match_info().get("photo_id").unwrap();
 	
-	match Photo::get(&photo_id) {
-		Some(photo_info) => serve_photo(&photo_info.path_preview, &photo_info.name),
-		None => create_not_found_response()
-	}
+	download_photo(photo_id, user.user_id, |photo| &photo.path_preview).await
 }
 
 /// Get the original of a photo as file
-pub async fn route_download_photo_original(req: HttpRequest) -> impl Responder {
+pub async fn route_download_photo_original(user: User, req: HttpRequest) -> impl Responder {
 	let photo_id = req.match_info().get("photo_id").unwrap();
 	
-	match Photo::get(&photo_id) {
-		Some(photo_info) => serve_photo(&photo_info.path_original, &photo_info.name),
-		None => create_not_found_response()
-	}
+	download_photo(photo_id, user.user_id, |photo| &photo.path_original).await
 }
 
 /// Upload a photo

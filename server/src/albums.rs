@@ -68,12 +68,25 @@ impl DatabaseOperations for Album {
 }
 
 impl DatabaseUserOperations for Album {
-	fn get_all(user_id: i64) -> Result<Vec<Self>, String> {
+	fn get_as_user(id: &str, user_id: i64) -> Result<Option<Self>, String>{
+		match Self::get(id) {
+			Some(album) => {
+				if album.user_id != user_id {
+					Err(format!("User {} does not have access to album {}", user_id, album.id))
+				} else {
+					Ok(Some(album))
+				}
+			}
+			None => Ok(None)
+		}
+	}
+
+	fn get_all_as_user(user_id: i64) -> Result<Vec<Self>, String> {
 		let collection = database::get_collection_albums();
 		database::find_many(Some(user_id), None, &collection) 
 	}
 
-	fn get_all_with_ids(user_id: i64, ids: &[&str]) -> Result<Vec<Self>, String> {
+	fn get_all_with_ids_as_user(ids: &[&str], user_id: i64) -> Result<Vec<Self>, String> {
 		let collection = database::get_collection_albums();
 		database::find_many(Some(user_id), Some(ids), &collection) 
 	}

@@ -53,10 +53,13 @@ pub trait DatabaseOperations {
 
 /// Add database operations to a struct, which are targetted only to entries owned by given user
 pub trait DatabaseUserOperations: DatabaseOperations {
-	fn get_all(user_id: i64) -> Result<Vec<Self>, String>
+	fn get_as_user(id: &str, user_id: i64) -> Result<Option<Self>, String>
 		where Self: std::marker::Sized;
 
-	fn get_all_with_ids(_user_id: i64, ids: &[&str]) -> Result<Vec<Self>, String>
+	fn get_all_as_user(user_id: i64) -> Result<Vec<Self>, String>
+		where Self: std::marker::Sized;
+
+	fn get_all_with_ids_as_user(ids: &[&str], user_id: i64) -> Result<Vec<Self>, String>
 		where Self: std::marker::Sized;
 }
 
