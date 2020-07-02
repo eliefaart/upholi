@@ -32,18 +32,19 @@ class Header extends React.Component {
 	}
 	
 	render() {
+		const headerEmpty = !this.props.renderMenu && !this.props.title && !this.props.actionsElement && !this.props.contextMenuElement;
+		if (headerEmpty)
+			return null;
+
 		const gotoPage = (path) => {
 			!!this.context.history && this.context.history.push(path);
 		}
-		let menuItems = [
+		const menuItems = [
 			{ path: "/", title: "Home" },
 			{ path: "/albums", title: "Albums" },
 			//{ path: "/shared", title: "Shared" }
 		];
 
-		let menuItemsElement = menuItems.map((menuItem) => {
-			return (<span key={menuItem.path} onClick={() => gotoPage(menuItem.path)}>{menuItem.title}</span>);
-		});
 
 		return (
 			<div className="header">
@@ -56,7 +57,7 @@ class Header extends React.Component {
 					)}
 				</div>}
 
-				<span className="title">{this.props.title || ' '}</span>
+				<span className="title">{this.props.title || " "}</span>
 
 				{!!this.props.actionsElement && <div className="actions">
 					{this.props.actionsElement}

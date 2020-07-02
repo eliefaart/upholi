@@ -174,13 +174,7 @@ class PhotoService {
 	}
 
 	static getAlbum(albumId) {
-		return new Promise((ok, err) => {
-			$.get(PhotoService.baseUrl() + "/album/" + albumId)
-				.done((response) => {
-					ok(response);
-				})
-				.fail((error) => err(error));
-		});
+		return PhotoService.getAlbumInfo(PhotoService.baseUrl() + "/album/" + albumId);
 	}
 
 	static deleteAlbum(albumId) {
@@ -216,6 +210,28 @@ class PhotoService {
 			})
 			.done(() => ok())
 			.fail((error) => err(error));
+		});
+	}
+
+	static getSharedCollection(collectionId) {
+		return PhotoService.getAlbumInfo(PhotoService.baseUrl() + "/pub/collection/" + collectionId);
+	}
+
+	static getSharedCollectionPhoto(collectionId, photoId) {
+		let url = PhotoService.baseUrl() + "/pub/collection/" + collectionId + "/photo/" + photoId;
+		
+		return new Promise((ok, err) => {
+			$.get(url).done(ok).fail(err);
+		});
+	}
+
+	static getAlbumInfo(url) {
+		return new Promise((ok, err) => {
+			$.get(url)
+				.done((response) => {
+					ok(response);
+				})
+				.fail((error) => err(error));
 		});
 	}
 }
