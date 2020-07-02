@@ -135,64 +135,6 @@ async fn get_form_field_bytes(mut field: Field) -> Vec<u8> {
 	field_bytes
 }
 
-/// Get the HTTP response that returns a photo from disk by its id.
-/// As long as given user has access to it.
-pub async fn download_photo(photo_id: &str, user_id: i64, select_path: fn(&Photo) -> &str) -> impl Responder {
-	match Photo::get_as_user(photo_id, user_id) {
-		Ok(photo_opt) => {
-			match photo_opt {
-				Some(photo_info) => {
-					match files::get_photo(select_path(&photo_info)) {
-						Some(file_bytes) => {
-							HttpResponse::Ok()
-								.content_type("image/jpeg")
-								.header(http::header::CONTENT_DISPOSITION, format!("attachment; filename=\"{}\"", &photo_info.name))
-								.body(file_bytes)
-						},
-						None => create_internal_server_error_response(Some("Error reading file content from disk, or file not found"))
-					}
-				},
-				None => create_not_found_response()
-			}
-		},
-		Err(_) => create_unauthorized_response()
-	}
-}
-
-/// Delete multiple photos from database and disk
-pub fn delete_photos(user_id: i64, ids: &[&str]) -> impl Responder {
-
-	// Check if all ids to be deleted are owned by user_id
-	for id in ids {
-		if let Some(photo) = Photo::get(id) {
-			if photo.user_id != user_id {
-				return create_unauthorized_response();
-			}
-		}
-	}
-
-	// Delete physical files for photo
-	for id in ids {
-		delete_photo_files(&id);
-	}
-
-	// Delete all photos from database
-	match database::photo::delete_many(ids) {
-		Ok(_) => create_ok_response(),
-		Err(_) => create_not_found_response()
-	}
-}
-
-/// Deletes all physical files of a photo from file system
-/// Original, thumbnail and preview images.
-fn delete_photo_files(photo_id: &str) {
-	if let Some(photo) = photos::Photo::get(&photo_id) {
-		files::delete_photo(&photo.path_original);
-		files::delete_photo(&photo.path_preview);
-		files::delete_photo(&photo.path_thumbnail);
-	}
-}
-
 /// Create a HTTP 200 OK response
 pub fn create_ok_response() -> actix_http::Response {
 	HttpResponse::Ok().finish()
