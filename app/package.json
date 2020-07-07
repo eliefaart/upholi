@@ -24,6 +24,7 @@
     "react-modal": "^3.11.2",
     "react-photo-gallery": "^8.0.0",
     "react-router-dom": "^5.1.2",
+    "react-switch": "^5.0.1",
     "react-toastify": "^6.0.5",
     "style-loader": "^0.23.1"
   },

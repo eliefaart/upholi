@@ -7,9 +7,10 @@ $accentColor: #d3e532;
 $secondaryAccentColor: #664645;
 $textColorDark: #161f21;
 $textColorLight: #dedfe4; //white;
+$disabledColor: gray;
 
-$fontSizeNormal: 0.75em;
-$fontSizeLarge: 1.2em;
+$fontSizeNormal: 0.85em;
+$fontSizeLarge: 1.3em;
 $spacing: 5px;
 $transitionSpeed: 0.2s;
 $borderRadius: 2px;
@@ -54,8 +55,10 @@ html {
 @import "app.component.modalUploadProgress";
 @import "app.component.modalCreateAlbum";
 @import "app.component.modalAddToAlbum";
+@import "app.component.modalShareAlbum";
 @import "app.component.exif";
 @import "app.component.toasts";
+@import "app.component.switch";
 
 input, select, button, .asButton {
 	margin: 10px 0 10px 0;
@@ -63,6 +66,10 @@ input, select, button, .asButton {
 	height: $buttonHeight;
 	line-height: $buttonHeight;
 	border-radius: $borderRadius;
+
+	&:disabled {
+		background-color: $disabledColor;
+	}
 }
 
 a[href]:not(.asButton) {

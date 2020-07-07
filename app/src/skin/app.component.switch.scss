@@ -1,0 +1,8 @@
+.switch {
+	display: flex;
+
+	span {
+		align-self: center;
+		padding-right: $spacing * 2;
+	}
+}

@@ -6,6 +6,7 @@ import PhotoService from '../services/PhotoService';
 import UploadHelper from "../helpers/UploadHelper.js"
 import ModalConfirmation from '../components/ModalConfirmation.jsx';
 import ModalUploadProgress from '../components/ModalUploadProgress.jsx';
+import ModalShareAlbum from '../components/ModalShareAlbum.jsx';
 import UploadButton from '../components/UploadButton.jsx';
 import { toast } from 'react-toastify';
 import $ from 'jquery';
@@ -18,8 +19,10 @@ class AlbumPage extends React.Component {
 		this.state = {
 			albumId: props.match.params.albumId,
 			title: "",
+			public: false,
 			photos: [],
 			selectedPhotos: [],
+			shareModalOpen: false,
 			confirmDeleteAlbumOpen: false,
 			confirmRemovePhotosOpen: false,
 			uploadInProgress: false,
@@ -40,6 +43,7 @@ class AlbumPage extends React.Component {
 			.then((response) => {
 				_this.setState({
 					title: response.title,
+					public: response.public,
 					photos: response.photos.map((photo) => {
 						return {
 							id: photo.id,
@@ -54,11 +58,9 @@ class AlbumPage extends React.Component {
 	}
 
 	shareAlbum() {
-		// Open dialog, dialog contains checkbox/toggle button.
-		// On enabled:
-		//  - Generate a public link to album.
-		// On disabled:
-		//	- Delete generated public link.
+		this.setState({
+			shareModalOpen: true
+		});
 	}
 	
 	onDeleteAlbumClick() {
@@ -227,6 +229,21 @@ class AlbumPage extends React.Component {
 					onOkButtonClick={() => this.removeSelectedPhotosFromAlbum()}
 					okButtonText="Delete"
 					confirmationText={this.state.selectedPhotos.length + " photos will be removed from album '" + this.state.title + "'."}
+					/>
+
+				<ModalShareAlbum
+					title="Delete?"
+					isOpen={this.state.shareModalOpen}
+					onRequestClose={() => this.setState({shareModalOpen: false})}
+					onOkButtonClick={() => this.setState({shareModalOpen: false})}
+					isPublic={this.state.public}
+					publicUrl={location.origin + "/shared/collection/" + this.state.albumId}
+					onPublicChanged={(bPublic) => {
+						PhotoService.updateAlbumPublic(this.state.albumId, bPublic);
+						this.setState({
+							public: bPublic
+						});
+					}}
 					/>
 
 				<ModalUploadProgress

@@ -10,7 +10,8 @@ use crate::database::{DatabaseOperations, DatabaseBatchOperations};
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ClientAlbum {
-	pub title: Option<String>,
+	pub title: String,
+	pub public: bool,
 	pub thumb_photo: Option<ClientPhoto>,
 	pub photos: Option<Vec<ClientPhoto>>
 }
@@ -27,6 +28,7 @@ pub struct ClientPhoto {
 #[serde(rename_all = "camelCase")]
 pub struct UpdateAlbum {
 	pub title: Option<String>,
+	pub public: Option<bool>,
 	pub thumb_photo_id: Option<String>,
 	pub photos: Option<Vec<String>>
 }
@@ -40,7 +42,8 @@ impl From<Album> for ClientAlbum {
 		}
 
 		Self {
-			title: Some(album.title),
+			title: album.title,
+			public: album.public,
 			thumb_photo: {
 				if let Some(thumb_photo_id) = album.thumb_photo_id {
 					match Photo::get(&thumb_photo_id) {

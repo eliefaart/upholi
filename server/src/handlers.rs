@@ -95,6 +95,9 @@ pub async fn route_update_album(user: User, req: HttpRequest, updated_album: web
 					if updated_album.title.is_some() {
 						album.title = updated_album.title.as_ref().unwrap().to_string();
 					}
+					if updated_album.public.is_some() {
+						album.public = updated_album.public.unwrap();
+					}
 					if updated_album.photos.is_some() {
 						album.photos = updated_album.photos.as_ref().unwrap().to_vec();
 					}

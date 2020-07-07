@@ -1,0 +1,11 @@
+.copyUrl {
+	display: flex;
+
+	> * {
+		margin: $spacing * 2 0;
+
+		&:not(:last-child) {
+			margin-right: $spacing * 2;
+		}
+	}
+}

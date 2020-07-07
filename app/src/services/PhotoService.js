@@ -200,6 +200,12 @@ class PhotoService {
 		});
 	}
 
+	static updateAlbumPublic(albumId, bPublic) {
+		return PhotoService.updateAlbum(albumId, {
+			public: bPublic
+		});
+	}
+
 	static updateAlbum(albumId, albumObjectWithModifiedProperties) {
 		return new Promise((ok, err) => {
 			$.ajax({
