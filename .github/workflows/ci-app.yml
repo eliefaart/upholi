@@ -1,4 +1,4 @@
-name: Continuous integration - Frontend app
+name: CI - Frontend app
 
 on:
   push:
