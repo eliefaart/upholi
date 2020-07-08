@@ -11,6 +11,7 @@ pub struct Album {
 	pub id: String,
 	pub user_id: i64,
 	pub title: String,
+	pub public: bool,
 	#[serde(default)]
 	pub thumb_photo_id: Option<String>,
 	#[serde(default)]
@@ -24,6 +25,7 @@ impl Album {
 		Self {
 			id,
 			user_id,
+			public: false,
 			title: title.to_string(),
 			thumb_photo_id: None,
 			photos: vec!{}
@@ -120,6 +122,7 @@ mod tests {
 		Album{
 			id: id.to_string(),
 			user_id: 0i64,
+			public: false,
 			title: "title".to_string(),
 			thumb_photo_id: Some(bson::oid::ObjectId::new().unwrap().to_hex()),
 			photos: vec!{

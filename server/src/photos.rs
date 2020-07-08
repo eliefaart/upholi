@@ -8,7 +8,7 @@ use crate::database;
 use crate::types;
 use crate::ids;
 use crate::exif;
-use crate::database::{DatabaseOperations, DatabaseUserOperations};
+use crate::database::{DatabaseOperations, DatabaseBatchOperations, DatabaseUserOperations};
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -69,7 +69,7 @@ impl Photo {
 	}
 
 	/// Convert photo to a smaller struct suitable for exposing to client
-	/// TODO: Remove this and look into From and Into traits
+	/// TODO: Remove this and implement From trait for it
 	pub fn to_client_photo(&self) -> types::ClientPhoto {
 		types::ClientPhoto{
 			id: self.id.to_string(),
@@ -155,6 +155,13 @@ impl DatabaseOperations for Photo {
 			Some(_) => Ok(()),
 			None => Err("Failed to delete album".to_string())
 		}
+	}
+}
+
+impl DatabaseBatchOperations for Photo {
+	fn get_with_ids(ids: &[&str]) -> Result<Vec<Self>, String> {
+		let collection = database::get_collection_photos();
+		database::find_many(None, Some(ids), &collection)
 	}
 }
 

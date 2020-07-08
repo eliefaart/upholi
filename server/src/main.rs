@@ -57,12 +57,30 @@ async fn main() -> std::io::Result<()> {
 				})
 			})
 			.service(
+				// OAuth related routes
 				web::scope("/oauth")
 					.route("/start", web::get().to(handlers::oauth_start_login))
 					.route("/user/info", web::get().to(handlers::oauth_user_info))
 					.route("/login", web::get().to(handlers::oauth_callback))
+					//TODO:
+					// .route("/logout", web::get().to(handlers::logout))
+			)
+			// .service(
+			// 	// Routes related to information of a user
+			// 	web::scope("/api/user/{user_id}")
+			// 		.route("/pub/collections", web::get().to(handlers::route_download_photo_preview_for_shared_collection))
+			// )
+			.service(
+				// Public API routes that do not require a session cookie
+				web::scope("/api/pub/collection/{shared_collection_id}")
+					.route("", web::get().to(handlers::route_get_shared_collection))
+					.route("/photo/{photo_id}", web::get().to(handlers::route_get_photo_for_shared_collection))
+					.route("/photo/{photo_id}/original", web::get().to(handlers::route_download_photo_original_for_shared_collection))
+					.route("/photo/{photo_id}/thumb", web::get().to(handlers::route_download_photo_thumb_for_shared_collection))
+					.route("/photo/{photo_id}/preview", web::get().to(handlers::route_download_photo_preview_for_shared_collection))
 			)
 			.service(
+				// Protected user-specific API routes that require a session cookie
 				web::scope("/api")
 					.wrap_fn(|req, srv| {
 						// If session cookie exists, then continue
@@ -89,16 +107,6 @@ async fn main() -> std::io::Result<()> {
 					.route("/photo/{photo_id}/thumb", web::get().to(handlers::route_download_photo_thumbnail))
 					.route("/photo/{photo_id}/preview", web::get().to(handlers::route_download_photo_preview))
 					.route("/photo/{photo_id}", web::delete().to(handlers::route_delete_photo))
-
-					/*
-						Two new collections:
-						- Collections: {id, photoId[], createdOn}
-						- SharedItems: {id, enum type: album | collection, itemId}
-					*/
-					// .route("/s/a/{sharedAlbumId}", web::get().to(handlers::get_shared_album))
-					// .route("/s/c/{sharedCollectionId}", web::get().to(handlers::get_shared_collection))
-					// .route("/s/", web::get().to(handlers::get_shared_items))
-					// .route("/s/{sharedItemId", web::delete().to(handlers::delete_shared_item))
 			)
 	})
 	.bind(address)

@@ -3,9 +3,11 @@ use actix_multipart::{Multipart};
 use actix_http::cookie::Cookie;
 use serde::{Deserialize};
 
-use crate::types;
+use crate::types::{ClientAlbum, UpdateAlbum};
 use crate::session::{Session};
-use crate::database::{DatabaseOperations, DatabaseUserOperations};
+use crate::database;
+use crate::database::{DatabaseOperations, DatabaseBatchOperations, DatabaseUserOperations};
+use crate::files;
 use crate::photos;
 use crate::photos::Photo;
 use crate::albums;
@@ -23,6 +25,17 @@ pub struct OauthCallbackRequest {
 #[derive(Deserialize)]
 pub struct CreateAlbumRequest {
 	title: String
+}
+
+#[derive(Deserialize)]
+pub struct GetSharedCollectionRequest {
+	shared_collection_id: String
+}
+
+#[derive(Deserialize)]
+pub struct GetPhotoOfSharedCollectionRequest {
+	shared_collection_id: String,
+	photo_id: String
 }
 
 /// Get all albums
@@ -43,46 +56,7 @@ pub async fn route_get_album(user: User, req: HttpRequest) -> impl Responder {
 	match Album::get_as_user(album_id, user.user_id) {
 		Ok(album_opt) => {
 			match album_opt {
-				Some(album) => {
-					let mut ids: Vec<&str> = Vec::new();
-		
-					for id in album.photos.iter() {
-						ids.push(&id[..]);
-					}
-		
-					let response = types::ClientAlbum {
-						title: Some(album.title),
-						thumb_photo: {
-							if let Some(thumb_photo_id) = album.thumb_photo_id {
-								match Photo::get_as_user(&thumb_photo_id, user.user_id) {
-									Ok(photo_opt) => {
-										match photo_opt {
-											Some(thumb_photo) => Some(thumb_photo.to_client_photo()),
-											None => None
-										}
-									},
-									Err(_) => None
-								}
-							} else {
-								None
-							}
-						},
-						photos: {
-							match Photo::get_all_with_ids_as_user(&ids, user.user_id) {
-								Ok(photos) => {
-									let mut result_photos = Vec::new();
-									for photo in photos {
-										result_photos.push(photo.to_client_photo());
-									}
-		
-									Some(result_photos)
-								}
-								Err(_) => None
-							}
-						}
-					};
-					HttpResponse::Ok().json(response)
-				},
+				Some(album) => HttpResponse::Ok().json(ClientAlbum::from(album)),
 				None => create_not_found_response()
 			}
 		},
@@ -105,7 +79,7 @@ pub async fn route_create_album(user: User, album: web::Json<CreateAlbumRequest>
 }
 
 /// Update an album
-pub async fn route_update_album(user: User, req: HttpRequest, updated_album: web::Json<types::UpdateAlbum>) -> impl Responder {
+pub async fn route_update_album(user: User, req: HttpRequest, updated_album: web::Json<UpdateAlbum>) -> impl Responder {
 	let album_id = req.match_info().get("album_id").unwrap();
 
 	match Album::get_as_user(&album_id, user.user_id) {
@@ -120,6 +94,9 @@ pub async fn route_update_album(user: User, req: HttpRequest, updated_album: web
 		
 					if updated_album.title.is_some() {
 						album.title = updated_album.title.as_ref().unwrap().to_string();
+					}
+					if updated_album.public.is_some() {
+						album.public = updated_album.public.unwrap();
 					}
 					if updated_album.photos.is_some() {
 						album.photos = updated_album.photos.as_ref().unwrap().to_vec();
@@ -205,23 +182,26 @@ pub async fn route_get_photo(user: User, req: HttpRequest) -> impl Responder {
 
 /// Get the thumbnail of a photo as file
 pub async fn route_download_photo_thumbnail(user: User, req: HttpRequest) -> impl Responder {
-	let photo_id = req.match_info().get("photo_id").unwrap();
-
-	download_photo(photo_id, user.user_id, |photo| &photo.path_thumbnail).await
+	match req.match_info().get("photo_id") {
+		Some(photo_id) => create_download_response_for_photo(photo_id, user.user_id, |photo| &photo.path_thumbnail),
+		None => create_not_found_response()
+	}
 }
 
 /// Get the preview (large thumbnail) of a photo as file
 pub async fn route_download_photo_preview(user: User, req: HttpRequest) -> impl Responder {
-	let photo_id = req.match_info().get("photo_id").unwrap();
-	
-	download_photo(photo_id, user.user_id, |photo| &photo.path_preview).await
+	match req.match_info().get("photo_id") {
+		Some(photo_id) => create_download_response_for_photo(photo_id, user.user_id, |photo| &photo.path_preview),
+		None => create_not_found_response()
+	}
 }
 
 /// Get the original of a photo as file
 pub async fn route_download_photo_original(user: User, req: HttpRequest) -> impl Responder {
-	let photo_id = req.match_info().get("photo_id").unwrap();
-	
-	download_photo(photo_id, user.user_id, |photo| &photo.path_original).await
+	match req.match_info().get("photo_id") {
+		Some(photo_id) => create_download_response_for_photo(photo_id, user.user_id, |photo| &photo.path_original),
+		None => create_not_found_response()
+	}
 }
 
 /// Upload a photo
@@ -329,4 +309,130 @@ pub async fn oauth_callback(mut session: Session, oauth_info: web::Query<OauthCa
 /// OAuth get info of current user
 pub async fn oauth_user_info(user: User) -> impl Responder {
 	HttpResponse::Ok().json(user)
+}
+
+/// Get shared collection
+pub async fn route_get_shared_collection(info: web::Path<GetSharedCollectionRequest>) -> impl Responder {
+	match Album::get(&info.shared_collection_id) {
+		Some(album) => {
+			if album.public {
+				HttpResponse::Ok().json(ClientAlbum::from(album))
+			} else {
+				create_unauthorized_response()
+			}
+		},
+		None => create_not_found_response()
+	}
+}
+
+/// Get info about a photo of a shared collection
+pub async fn route_get_photo_for_shared_collection(info: web::Path<GetPhotoOfSharedCollectionRequest>) -> impl Responder {
+	match Album::get(&info.shared_collection_id) {
+		Some(album) => {
+			if album.public && album.photos.contains(&info.photo_id) {
+				match Photo::get(&info.photo_id) {
+					Some(photo) => HttpResponse::Ok().json(photo),
+					None => create_not_found_response()
+				}
+			} else {
+				create_unauthorized_response()
+			}
+		},
+		None => create_not_found_response()
+	}
+}
+
+/// Download original photo of a shared collection
+pub async fn route_download_photo_original_for_shared_collection(info: web::Path<GetPhotoOfSharedCollectionRequest>) -> impl Responder {
+	create_response_for_public_album_photo(&info.shared_collection_id, &info.photo_id, |photo| serve_photo(&photo.path_original, &photo.name))
+}
+
+/// Download thumb photo of a shared collection
+pub async fn route_download_photo_thumb_for_shared_collection(info: web::Path<GetPhotoOfSharedCollectionRequest>) -> impl Responder {
+	create_response_for_public_album_photo(&info.shared_collection_id, &info.photo_id, |photo| serve_photo(&photo.path_thumbnail, &photo.name))
+}
+
+/// Download preview photo of a shared collection
+pub async fn route_download_photo_preview_for_shared_collection(info: web::Path<GetPhotoOfSharedCollectionRequest>) -> impl Responder {
+	create_response_for_public_album_photo(&info.shared_collection_id, &info.photo_id, |photo| serve_photo(&photo.path_preview, &photo.name))
+}
+
+/// Create an HTTP response for a photo within a public album based on given 'photo handler' function
+fn create_response_for_public_album_photo(album_id: &str, photo_id: &str, photo_action: fn(photo: Photo) -> actix_http::Response) -> impl Responder {
+	match Album::get(album_id) {
+		Some(album) => {
+			if album.public && album.photos.contains(&photo_id.to_string()) {
+				match Photo::get(photo_id) {
+					Some(photo) => {
+						// Let the fn provided in params do the rest:
+						photo_action(photo)
+					},
+					None => create_not_found_response()
+				}
+			} else {
+				create_unauthorized_response()
+			}
+		},
+		None => create_not_found_response()
+	}
+}
+
+/// Get the HTTP response that returns a photo from disk by its id.
+/// Given user must have access to it.
+fn create_download_response_for_photo(photo_id: &str, user_id: i64, select_path: fn(&Photo) -> &str) -> actix_http::Response {
+	match Photo::get_as_user(photo_id, user_id) {
+		Ok(photo_opt) => {
+			match photo_opt {
+				Some(photo_info) => serve_photo(&select_path(&photo_info), &photo_info.name),
+				None => create_not_found_response()
+			}
+		},
+		Err(_) => create_unauthorized_response()
+	}
+}
+
+/// Create an HTTP response that offers photo file at given path as download
+fn serve_photo(path: &str, file_name: &str) -> actix_http::Response {
+	match crate::files::get_photo(path) {
+		Some(file_bytes) => {
+			HttpResponse::Ok()
+				.content_type("image/jpeg")
+				.header(http::header::CONTENT_DISPOSITION, format!("attachment; filename=\"{}\"", file_name))
+				.body(file_bytes)
+		},
+		None => create_internal_server_error_response(Some("Error reading file content from disk, or file not found"))
+	}
+}
+
+/// Delete multiple photos from database and disk
+pub fn delete_photos(user_id: i64, ids: &[&str]) -> impl Responder {
+	// Check if all ids to be deleted are owned by user_id
+	for id in ids {
+		if let Some(photo) = Photo::get(id) {
+			if photo.user_id != user_id {
+				return create_unauthorized_response();
+			}
+		}
+	}
+
+	// Delete physical files for photo
+	for id in ids {
+		delete_photo_files(&id);
+	}
+
+	// Delete all photos from database
+	match database::photo::delete_many(ids) {
+		Ok(_) => create_ok_response(),
+		Err(_) => create_not_found_response()
+	}
+}
+
+/// Deletes all physical files of a photo from file system
+/// Original, thumbnail and preview images.
+fn delete_photo_files(photo_id: &str) {
+	if let Some(photo) = photos::Photo::get(&photo_id) {
+		files::delete_photo(&photo.path_original);
+		files::delete_photo(&photo.path_preview);
+		files::delete_photo(&photo.path_thumbnail);
+	}
 }

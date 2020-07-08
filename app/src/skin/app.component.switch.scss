@@ -1,0 +1,27 @@
+.switch {
+	display: flex;
+
+	span {
+		align-self: center;
+		padding-right: $spacing * 2;
+	}
+	>div {
+		align-self: center;
+	}
+
+	.checkedIcon, .uncheckedIcon {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		height: 100%;
+	}
+
+	.checkedIcon {
+		padding-left: $spacing * 4;
+		color: $textColorDark;
+	}
+	.uncheckedIcon {
+		padding-right: $spacing * 3;
+		color: $textColorLight;
+	}
+}

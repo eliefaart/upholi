@@ -51,6 +51,13 @@ pub trait DatabaseOperations {
 	fn delete(&self) -> Result<(), String>;
 }
 
+/// Adds CRUD operations to a struct that targets multiple items
+pub trait DatabaseBatchOperations {
+	/// Get all items with an id contained within given array
+	fn get_with_ids(ids: &[&str]) -> Result<Vec<Self>, String>
+		where Self: std::marker::Sized;
+}
+
 /// Add database operations to a struct, which are targetted only to entries owned by given user
 pub trait DatabaseUserOperations: DatabaseOperations {
 	fn get_as_user(id: &str, user_id: i64) -> Result<Option<Self>, String>

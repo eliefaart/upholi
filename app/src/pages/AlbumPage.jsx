@@ -6,8 +6,11 @@ import PhotoService from '../services/PhotoService';
 import UploadHelper from "../helpers/UploadHelper.js"
 import ModalConfirmation from '../components/ModalConfirmation.jsx';
 import ModalUploadProgress from '../components/ModalUploadProgress.jsx';
+import ModalCopyUrl from '../components/ModalCopyUrl.jsx';
 import UploadButton from '../components/UploadButton.jsx';
+import { IconLink } from '../components/Icons.jsx';
 import { toast } from 'react-toastify';
+import Switch from "react-switch";
 import $ from 'jquery';
 
 class AlbumPage extends React.Component {
@@ -18,8 +21,10 @@ class AlbumPage extends React.Component {
 		this.state = {
 			albumId: props.match.params.albumId,
 			title: "",
+			public: false,
 			photos: [],
 			selectedPhotos: [],
+			copyPublicAlbumUrlModalOpen: false,
 			confirmDeleteAlbumOpen: false,
 			confirmRemovePhotosOpen: false,
 			uploadInProgress: false,
@@ -40,6 +45,7 @@ class AlbumPage extends React.Component {
 			.then((response) => {
 				_this.setState({
 					title: response.title,
+					public: response.public,
 					photos: response.photos.map((photo) => {
 						return {
 							id: photo.id,
@@ -54,11 +60,9 @@ class AlbumPage extends React.Component {
 	}
 
 	shareAlbum() {
-		// Open dialog, dialog contains checkbox/toggle button.
-		// On enabled:
-		//  - Generate a public link to album.
-		// On disabled:
-		//	- Delete generated public link.
+		this.setState({
+			copyPublicAlbumUrlModalOpen: true
+		});
 	}
 	
 	onDeleteAlbumClick() {
@@ -191,14 +195,33 @@ class AlbumPage extends React.Component {
 		const headerContextMenuActions = (<div>
 			{this.state.selectedPhotos.length === 0 && <button onClick={() => $("#select-photos").click()}>Upload</button>}
 			{this.state.selectedPhotos.length === 1 && <button onClick={(e) => this.setSelectedPhotoAsAlbumCover()}>Set as cover</button>}
-			{<button onClick={(e) => this.shareAlbum()}>Share</button>}
 			{this.state.selectedPhotos.length > 0 && <button onClick={(e) => this.onRemovePhotosClick()}>Remove photos</button>}
 			{<button onClick={(e) => this.onDeleteAlbumClick()}>Delete album</button>}
 		</div>);
 		
 		return (
 			<PageLayout headerContextMenuActions={headerContextMenuActions} onDrop={(event) => this.onFilesDropped(event)}>
-				<h1>{this.state.title}</h1>
+				<div className="topBar">
+					<h1>{this.state.title}</h1>
+
+					{this.state.public && <button className="shareUrl iconOnly" onClick={() => this.setState({copyPublicAlbumUrlModalOpen: true})}>
+						<IconLink/>
+					</button>}
+
+					<label className="switch">
+						<Switch checked={this.state.public}
+							width={80}
+							onColor="#d3e532"
+							checkedIcon={<span className="checkedIcon">Public</span>}
+							uncheckedIcon={<span className="uncheckedIcon">Private</span>}
+							onChange={(bPublic) => {
+								PhotoService.updateAlbumPublic(this.state.albumId, bPublic);
+								this.setState({
+									public: bPublic
+								});
+							}}/>
+					</label>
+				</div>
 
 				{!!this.state.title && this.state.photos.length === 0 && 
 					<span className="centerText">This album has no photos.</span>
@@ -227,6 +250,12 @@ class AlbumPage extends React.Component {
 					onOkButtonClick={() => this.removeSelectedPhotosFromAlbum()}
 					okButtonText="Delete"
 					confirmationText={this.state.selectedPhotos.length + " photos will be removed from album '" + this.state.title + "'."}
+					/>
+
+				<ModalCopyUrl
+					isOpen={this.state.copyPublicAlbumUrlModalOpen}
+					onRequestClose={() => this.setState({copyPublicAlbumUrlModalOpen: false})}
+					url={location.origin + "/shared/collection/" + this.state.albumId}
 					/>
 
 				<ModalUploadProgress
