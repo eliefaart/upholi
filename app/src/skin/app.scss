@@ -55,7 +55,7 @@ html {
 @import "app.component.modalUploadProgress";
 @import "app.component.modalCreateAlbum";
 @import "app.component.modalAddToAlbum";
-@import "app.component.modalShareAlbum";
+@import "app.component.modalCopyUrl";
 @import "app.component.exif";
 @import "app.component.toasts";
 @import "app.component.switch";
@@ -135,5 +135,5 @@ button, .asButton {
 }
 
 h1 {
-	text-align: center;
+	margin: 0;
 }

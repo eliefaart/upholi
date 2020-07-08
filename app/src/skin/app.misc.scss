@@ -10,3 +10,17 @@
 	overflow: hidden;
 	visibility: hidden;
 }
+
+.topBar {
+	display: flex;
+	margin: $spacing * 3;
+	min-height: $buttonHeight;
+
+	h1 {
+		flex: 1 1 auto;
+	}
+
+	> *:not(:last-child) {
+		margin-right: $spacing * 2;
+	}
+}

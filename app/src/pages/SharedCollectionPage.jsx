@@ -52,7 +52,9 @@ class SharedCollectionPage extends React.Component {
 	render() {
 		return (
 			<PageLayout onDrop={(event) => this.onFilesDropped(event)} renderMenu={false}>
-				<h1>{this.state.title}</h1>
+				<div className="topBar">
+					<h1>{this.state.title}</h1>
+				</div>
 
 				{!!this.state.title && this.state.photos.length === 0 && 
 					<span className="centerText">This album has no photos.</span>
