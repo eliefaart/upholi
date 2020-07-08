@@ -1,4 +1,4 @@
-name: Continuous integration - Server
+name: CI - Server
 
 on:
   push:
