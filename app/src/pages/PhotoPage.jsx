@@ -3,7 +3,6 @@ import PhotoService from '../services/PhotoService';
 import AppStateContext from '../contexts/AppStateContext.jsx';
 import PhotoBasePage from "./PhotoBasePage.jsx"
 
-/// Displays a photo that belongs to the current user
 class PhotoPage extends React.Component {
 
 	constructor(props) {

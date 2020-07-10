@@ -3,7 +3,7 @@
 
 $backgroundColor: #000;
 $altBackgroundColor: #191d25;
-$accentColor: #d3e532;
+$accentColor: #d3e532; //28c98d; //#d3e532;
 $secondaryAccentColor: #664645;
 $textColorDark: #161f21;
 $textColorLight: #dedfe4; //white;
@@ -100,8 +100,9 @@ input[type=file] {
 }
 
 button, .asButton {
-	color: $textColorDark;
-	background-color: $accentColor;
+	color: $accentColor;
+	background-color: transparent;
+	text-transform: uppercase;
 	border: none;
 	cursor: pointer;
 	width: auto;
@@ -111,13 +112,6 @@ button, .asButton {
 	display: inline-block;
 	text-align: center;
 	
-	svg {
-		display: block;
-		width: 60%;
-		height: 60%;
-		margin: auto;
-	}
-
 	&.iconOnly {
 		display: flex;
 		min-width: $buttonHeight;
@@ -131,6 +125,13 @@ button, .asButton {
 	&:active {
 		background: $secondaryAccentColor;
 		color: $textColorLight;
+	}
+
+	svg {
+		display: block;
+		width: 80%;
+		height: 80%;
+		margin: auto;
 	}
 }
 

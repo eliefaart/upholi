@@ -21,13 +21,14 @@
 			padding-right: $spacing * 5;
 			padding-left: $spacing * 5;
 
-			&.active {
+			&:hover {
 				color: $accentColor;
-				border-bottom: 2px solid $accentColor;
+				//background-color: $secondaryAccentColor;
 			}
 
-			&:hover {
-				background-color: $secondaryAccentColor;
+			&.active {
+				color: $accentColor;
+				border-bottom: 4px solid $accentColor;
 			}
 		}
 	}
@@ -107,6 +108,7 @@
 					background-color: $altBackgroundColor;
 					width: 100%;
 					margin: 0;
+					text-transform: unset;
 
 					&:hover {
 						&, * {
