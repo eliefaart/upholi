@@ -44,7 +44,7 @@ class SharedCollectionPhotoPage extends React.Component {
 		</div>);
 
 		return (
-			<PageLayout renderMenu={false} headerActions={headerActions}>
+			<PageLayout requiresAuthentication={false} renderMenu={false} headerActions={headerActions}>
 				<PhotoDetail src={this.state.url} exif={!!this.state.photo ? this.state.photo.exif : null} />
 			</PageLayout>
 		);

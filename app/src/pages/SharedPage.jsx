@@ -17,8 +17,8 @@ class SharedPage extends React.Component {
 
 	render() {
 		return (
-			<PageLayout>
-				TODO; do this when everything else works great.
+			<PageLayout requiresAuthentication={true}>
+				TODO; This should display which albums and which collections are shared for user
 			</PageLayout>
 		);
 	}

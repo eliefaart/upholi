@@ -17,32 +17,9 @@ class AppContainer extends React.Component {
 
 	constructor(props) {
 		super(props);
-
-		this.state = {
-			authorized: false
-		};
 	}
-
-	componentDidMount() {
-		let setAuthorized = () => this.setState({authorized: true});
-		let startLogin = () => document.location = "/oauth/start";
-
-		// Call server to find out if user is authorized
-		// TODO: This is a temporary implementation, should redirect to a Welcome component or something, 
-		// which would have a login button that starts the login flow
-		fetch("/oauth/user/info").then((response) => {
-			if (response.status == 200) {
-				setAuthorized();
-			} else {
-				startLogin();
-			}
-		}).catch(console.error)
-	}
-
+	
 	render() {
-		if (!this.state.authorized)
-			return null;
-
 		// Create a new browser history object
 		// Store this in a context, that any component can access to add navigate
 		const history = createHistory();

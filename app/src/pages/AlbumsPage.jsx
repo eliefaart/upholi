@@ -31,7 +31,7 @@ class AlbumsPage extends React.Component {
 		</div>);
 
 		return (
-			<PageLayout headerContextMenuActions={headerContextMenuActions}>
+			<PageLayout requiresAuthentication={true} headerContextMenuActions={headerContextMenuActions}>
 				<Albums/>
 
 				<ModalCreateAlbum

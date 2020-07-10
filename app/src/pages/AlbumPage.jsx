@@ -200,7 +200,7 @@ class AlbumPage extends React.Component {
 		</div>);
 		
 		return (
-			<PageLayout headerContextMenuActions={headerContextMenuActions} onDrop={(event) => this.onFilesDropped(event)}>
+			<PageLayout requiresAuthentication={true} headerContextMenuActions={headerContextMenuActions} onDrop={(event) => this.onFilesDropped(event)}>
 				<div className="topBar">
 					<h1>{this.state.title}</h1>
 

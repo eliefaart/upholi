@@ -177,7 +177,7 @@ class PhotosDashboardPage extends React.Component {
 		</div>);
 
 		return (
-			<PageLayout headerContextMenuActions={headerContextMenuActions} onDrop={(event) => this.onFilesDropped(event)}>
+			<PageLayout requiresAuthentication={true} headerContextMenuActions={headerContextMenuActions} onDrop={(event) => this.onFilesDropped(event)}>
 				<PhotoGallerySelectable photos={this.state.photos} onClick={(event, target) => this.onPhotoClicked(event, target)} selectedItems={this.state.selectedPhotos} onPhotoSelectedChange={(photoId, selected) => this.onPhotoSelectedChange(photoId, selected)} />
 
 				<ModalCreateAlbum
