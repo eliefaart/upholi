@@ -93,14 +93,6 @@ class PhotoService {
 			.fail((error) => console.log("Get failed", error));
 	}
 
-	static getPhoto(photoId) {
-		let url = PhotoService.baseUrl() + "/photo/" + photoId;
-		
-		return new Promise((ok, err) => {
-			$.get(url).done(ok).fail(err);
-		});
-	}
-
 	static deletePhotos(photoIds, callback) {
 		$.ajax({
 			url: PhotoService.baseUrl() + "/photos",
@@ -223,9 +215,7 @@ class PhotoService {
 		return PhotoService.getAlbumInfo(PhotoService.baseUrl() + "/pub/collection/" + collectionId);
 	}
 
-	static getSharedCollectionPhoto(collectionId, photoId) {
-		let url = PhotoService.baseUrl() + "/pub/collection/" + collectionId + "/photo/" + photoId;
-		
+	static getPhotoInfo(url) {
 		return new Promise((ok, err) => {
 			$.get(url).done(ok).fail(err);
 		});
