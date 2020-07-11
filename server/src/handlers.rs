@@ -6,7 +6,7 @@ use serde::{Deserialize};
 use crate::types::{ClientAlbum, UpdateAlbum};
 use crate::session::{Session};
 use crate::database;
-use crate::database::{DatabaseOperations, DatabaseBatchOperations, DatabaseUserOperations};
+use crate::database::{DatabaseOperations, DatabaseUserOperations};
 use crate::files;
 use crate::photos;
 use crate::photos::Photo;
@@ -183,7 +183,7 @@ pub async fn route_get_photo(user: User, req: HttpRequest) -> impl Responder {
 /// Get the thumbnail of a photo as file
 pub async fn route_download_photo_thumbnail(user: User, req: HttpRequest) -> impl Responder {
 	match req.match_info().get("photo_id") {
-		Some(photo_id) => create_download_response_for_photo(photo_id, user.user_id, |photo| &photo.path_thumbnail),
+		Some(photo_id) => create_response_for_photo(photo_id, user.user_id, false, |photo| &photo.path_thumbnail),
 		None => create_not_found_response()
 	}
 }
@@ -191,7 +191,7 @@ pub async fn route_download_photo_thumbnail(user: User, req: HttpRequest) -> imp
 /// Get the preview (large thumbnail) of a photo as file
 pub async fn route_download_photo_preview(user: User, req: HttpRequest) -> impl Responder {
 	match req.match_info().get("photo_id") {
-		Some(photo_id) => create_download_response_for_photo(photo_id, user.user_id, |photo| &photo.path_preview),
+		Some(photo_id) => create_response_for_photo(photo_id, user.user_id, false, |photo| &photo.path_preview),
 		None => create_not_found_response()
 	}
 }
@@ -199,7 +199,7 @@ pub async fn route_download_photo_preview(user: User, req: HttpRequest) -> impl 
 /// Get the original of a photo as file
 pub async fn route_download_photo_original(user: User, req: HttpRequest) -> impl Responder {
 	match req.match_info().get("photo_id") {
-		Some(photo_id) => create_download_response_for_photo(photo_id, user.user_id, |photo| &photo.path_original),
+		Some(photo_id) => create_response_for_photo(photo_id, user.user_id, true, |photo| &photo.path_original),
 		None => create_not_found_response()
 	}
 }
@@ -344,17 +344,17 @@ pub async fn route_get_photo_for_shared_collection(info: web::Path<GetPhotoOfSha
 
 /// Download original photo of a shared collection
 pub async fn route_download_photo_original_for_shared_collection(info: web::Path<GetPhotoOfSharedCollectionRequest>) -> impl Responder {
-	create_response_for_public_album_photo(&info.shared_collection_id, &info.photo_id, |photo| serve_photo(&photo.path_original, &photo.name))
+	create_response_for_public_album_photo(&info.shared_collection_id, &info.photo_id, |photo| serve_photo(&photo.path_original, &photo.name, true))
 }
 
 /// Download thumb photo of a shared collection
 pub async fn route_download_photo_thumb_for_shared_collection(info: web::Path<GetPhotoOfSharedCollectionRequest>) -> impl Responder {
-	create_response_for_public_album_photo(&info.shared_collection_id, &info.photo_id, |photo| serve_photo(&photo.path_thumbnail, &photo.name))
+	create_response_for_public_album_photo(&info.shared_collection_id, &info.photo_id, |photo| serve_photo(&photo.path_thumbnail, &photo.name, false))
 }
 
 /// Download preview photo of a shared collection
 pub async fn route_download_photo_preview_for_shared_collection(info: web::Path<GetPhotoOfSharedCollectionRequest>) -> impl Responder {
-	create_response_for_public_album_photo(&info.shared_collection_id, &info.photo_id, |photo| serve_photo(&photo.path_preview, &photo.name))
+	create_response_for_public_album_photo(&info.shared_collection_id, &info.photo_id, |photo| serve_photo(&photo.path_preview, &photo.name, false))
 }
 
 /// Create an HTTP response for a photo within a public album based on given 'photo handler' function
@@ -379,11 +379,11 @@ fn create_response_for_public_album_photo(album_id: &str, photo_id: &str, photo_
 
 /// Get the HTTP response that returns a photo from disk by its id.
 /// Given user must have access to it.
-fn create_download_response_for_photo(photo_id: &str, user_id: i64, select_path: fn(&Photo) -> &str) -> actix_http::Response {
+fn create_response_for_photo(photo_id: &str, user_id: i64, offer_as_download: bool, select_path: fn(&Photo) -> &str) -> actix_http::Response {
 	match Photo::get_as_user(photo_id, user_id) {
 		Ok(photo_opt) => {
 			match photo_opt {
-				Some(photo_info) => serve_photo(&select_path(&photo_info), &photo_info.name),
+				Some(photo_info) => serve_photo(&select_path(&photo_info), &photo_info.name, offer_as_download),
 				None => create_not_found_response()
 			}
 		},
@@ -392,12 +392,17 @@ fn create_download_response_for_photo(photo_id: &str, user_id: i64, select_path:
 }
 
 /// Create an HTTP response that offers photo file at given path as download
-fn serve_photo(path: &str, file_name: &str) -> actix_http::Response {
+fn serve_photo(path: &str, file_name: &str, offer_as_download: bool) -> actix_http::Response {
 	match crate::files::get_photo(path) {
 		Some(file_bytes) => {
 			HttpResponse::Ok()
 				.content_type("image/jpeg")
-				.header(http::header::CONTENT_DISPOSITION, format!("attachment; filename=\"{}\"", file_name))
+				.header(http::header::CONTENT_DISPOSITION, 
+					if offer_as_download {
+						format!("attachment; filename=\"{}\"", file_name) 
+					} else {  
+						"inline;".to_string()
+					})
 				.body(file_bytes)
 		},
 		None => create_internal_server_error_response(Some("Error reading file content from disk, or file not found"))

@@ -5,7 +5,8 @@
 	background: rgba(black ,0.7);
 	border-radius: $borderRadius;
 	padding: $spacing;
-	top: $headerHeight + $spacing;
+	//top: $headerHeight + $spacing;
+	bottom: $spacing;
 	right: $spacing;
 
 	&:empty {

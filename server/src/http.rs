@@ -1,4 +1,4 @@
-use actix_web::{Error, HttpRequest, HttpResponse, Responder, FromRequest};
+use actix_web::{Error, HttpRequest, HttpResponse, FromRequest};
 use actix_web::dev::Payload;
 use actix_multipart::{Multipart, Field};
 use actix_http::cookie::Cookie;
@@ -6,12 +6,8 @@ use serde::{Serialize, Deserialize};
 use futures::{StreamExt, TryStreamExt};
 use futures::future::{ok, err, Ready};
 
-use crate::database;
 use crate::session::{Session};
-use crate::database::{DatabaseOperations, DatabaseUserOperations};
-use crate::files;
-use crate::photos;
-use crate::photos::Photo;
+use crate::database::{DatabaseOperations};
 
 pub const SESSION_COOKIE_NAME: &str = "session";
 

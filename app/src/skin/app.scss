@@ -61,6 +61,10 @@ html {
 @import "app.component.toasts";
 @import "app.component.switch";
 
+iframe {
+	border: none;
+}
+
 input, select, button, .asButton {
 	margin: 10px 0 10px 0;
 	width: 100%;

@@ -20,6 +20,7 @@ class ModalCopyUrl extends React.Component {
 		// Copy to clipboard
 		document.execCommand("copy");
 
+		// Deselect text
 		publicUrlElement.blur();
 
 		toast.info("URL copied to clipboard.");
