@@ -201,7 +201,7 @@ class PhotosDashboardPage extends React.Component {
 					/>
 
 				<ModalConfirmation
-					title="Delete?"
+					title="Delete photos"
 					isOpen={this.state.confirmDeletePhotosOpen}
 					onRequestClose={() => this.setState({confirmDeletePhotosOpen: false})}
 					onOkButtonClick={() => this.deleteSelectedPhotos(this.state.selectedPhotos)}

@@ -14,7 +14,7 @@ class ModalAddToAlbum extends React.Component {
 
 	render() {
 		return <Modal
-			title="Choose album"
+			title="Add to album"
 			isOpen={this.props.isOpen}
 			onRequestClose={this.props.onRequestClose}
 			onOkButtonClick={null}

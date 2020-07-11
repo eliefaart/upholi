@@ -244,7 +244,7 @@ class AlbumPage extends React.Component {
 				}
 
 				<ModalConfirmation
-					title="Delete?"
+					title="Delete album"
 					isOpen={this.state.confirmDeleteAlbumOpen}
 					onRequestClose={() => this.setState({confirmDeleteAlbumOpen: false})}
 					onOkButtonClick={() => this.deleteAlbum()}
@@ -253,11 +253,11 @@ class AlbumPage extends React.Component {
 					/>
 
 				<ModalConfirmation
-					title="Delete?"
+					title="Remove photos"
 					isOpen={this.state.confirmRemovePhotosOpen}
 					onRequestClose={() => this.setState({confirmRemovePhotosOpen: false})}
 					onOkButtonClick={() => this.removeSelectedPhotosFromAlbum()}
-					okButtonText="Delete"
+					okButtonText="Remove"
 					confirmationText={this.state.selectedPhotos.length + " photos will be removed from album '" + this.state.title + "'."}
 					/>
 

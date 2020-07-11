@@ -4,13 +4,15 @@
 		background: $altBackgroundColor;
 		color: $textColorLight;
 		border: 1px solid $accentColor;
+		border-radius: $borderRadius;
 		min-height: $headerHeight;
+		font-family: unset;
 
 		.Toastify__close-button {
 			all: unset;
 
 			svg {
-				fill: $textColorLight;
+				fill: $accentColor;
 			}
 		}
 	}
