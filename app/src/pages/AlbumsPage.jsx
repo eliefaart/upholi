@@ -2,6 +2,7 @@ import React from 'react';
 import Albums from '../components/Albums.jsx';
 import PageLayout from "../components/PageLayout.jsx"
 import ModalCreateAlbum from "../components/ModalCreateAlbum.jsx"
+import { IconCreate } from "../components/Icons.jsx";
 
 class AlbumsPage extends React.Component {
 
@@ -27,11 +28,13 @@ class AlbumsPage extends React.Component {
 
 	render() {
 		const headerContextMenuActions = (<div>
-			{<button onClick={(e) => this.onCreateAlbumClick()}>Create album</button>}
+			{<button className="iconOnly" onClick={(e) => this.onCreateAlbumClick()} title="Create album">
+				<IconCreate/>
+			</button>}
 		</div>);
 
 		return (
-			<PageLayout requiresAuthentication={true} headerContextMenuActions={headerContextMenuActions}>
+			<PageLayout requiresAuthentication={true} headerActions={headerContextMenuActions}>
 				<Albums/>
 
 				<ModalCreateAlbum

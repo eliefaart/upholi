@@ -1,4 +1,5 @@
 import React from 'react';
+import { IconUpload } from "../components/Icons.jsx";
 
 class UploadButton extends React.Component {
 
@@ -14,7 +15,7 @@ class UploadButton extends React.Component {
 
 	render() {
 		return <form id="form-select-photos" className={this.props.className}>
-			<label htmlFor="select-photos" className="asButton">Upload</label>
+			<label htmlFor="select-photos" className="asButton"><IconUpload/></label>
 			<input id="select-photos" type="file" name="photos" accept=".jpg,.jpeg" onChange={(event) => this.onSubmitButtonClick(event)} multiple/>
 		</form>;
 	}

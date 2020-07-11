@@ -9,6 +9,7 @@ import ModalUploadProgress from '../components/ModalUploadProgress.jsx';
 import ModalCreateAlbum from '../components/ModalCreateAlbum.jsx';
 import ModalAddToAlbum from '../components/ModalAddToAlbum.jsx';
 import UploadButton from '../components/UploadButton.jsx';
+import { IconUpload, IconDelete, IconAddToAlbum } from "../components/Icons.jsx";
 import { toast } from 'react-toastify';
 import $ from 'jquery';
 
@@ -170,14 +171,20 @@ class PhotosDashboardPage extends React.Component {
 	}
 
 	render() {
-		const headerContextMenuActions = (<div>
-			{this.state.selectedPhotos.length === 0 && <button onClick={() => $("#select-photos").click()}>Upload</button>}
-			{this.state.selectedPhotos.length > 0 && <button onClick={() => this.onClickAddSelectedPhotosToAlbum(this.state.selectedPhotos)}>Add to album</button>}
-			{this.state.selectedPhotos.length > 0 && <button onClick={() => this.onClickDeletePhotos()}>Delete</button>}
+		const headerActions = (<div>
+			{this.state.selectedPhotos.length === 0 && <button className="iconOnly" onClick={() => $("#select-photos").click()} title="Upload photos">
+				<IconUpload/>
+			</button>}
+			{this.state.selectedPhotos.length > 0 && <button className="iconOnly" onClick={() => this.onClickAddSelectedPhotosToAlbum(this.state.selectedPhotos)} title="Add to album">
+				<IconAddToAlbum/>
+			</button>}
+			{this.state.selectedPhotos.length > 0 && <button className="iconOnly" onClick={() => this.onClickDeletePhotos()} title="Delete photos">
+				<IconDelete/>
+			</button>}
 		</div>);
 
 		return (
-			<PageLayout requiresAuthentication={true} headerContextMenuActions={headerContextMenuActions} onDrop={(event) => this.onFilesDropped(event)}>
+			<PageLayout requiresAuthentication={true} headerActions={headerActions} onDrop={(event) => this.onFilesDropped(event)}>
 				<PhotoGallerySelectable photos={this.state.photos} onClick={(event, target) => this.onPhotoClicked(event, target)} selectedItems={this.state.selectedPhotos} onPhotoSelectedChange={(photoId, selected) => this.onPhotoSelectedChange(photoId, selected)} />
 
 				<ModalCreateAlbum
@@ -208,7 +215,7 @@ class PhotosDashboardPage extends React.Component {
 					files={this.state.uploadFiles}
 					/>
 
-				{/* Hidden upload button triggered by the button context menu. This is because browsers prevent file select functionality if input element is no visible */}
+				{/* Hidden upload button triggered by the button in action bar. This allos me to write simpler CSS to style the action buttons. */}
 				<UploadButton className="hidden" onSubmit={(files) => this.uploadFilesList(files)}/>
 			</PageLayout>
 		);

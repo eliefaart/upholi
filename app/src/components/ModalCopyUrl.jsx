@@ -1,6 +1,7 @@
 import React from 'react';
 import Modal from './Modal.jsx';
 import AppStateContext from '../contexts/AppStateContext.jsx';
+import { IconCopy } from "../components/Icons.jsx";
 
 class ModalCopyUrl extends React.Component {
 
@@ -32,7 +33,9 @@ class ModalCopyUrl extends React.Component {
 						// Prevent changes to the value of this input by resetting value in onchange event.
 						// I cannot make it 'disabled', because then I cannot copy the text using JS
 						onChange={(event) => event.target.value = this.props.url}/>
-					<button onClick={() => this.copyUrlToClipboard()}>Copy URL</button>
+					<button className="iconOnly" onClick={() => this.copyUrlToClipboard()} title="Copy URL">
+						<IconCopy/>
+					</button>
 				</div>
 		</Modal>;
 	}

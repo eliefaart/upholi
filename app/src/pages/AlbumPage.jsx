@@ -8,7 +8,7 @@ import ModalConfirmation from '../components/ModalConfirmation.jsx';
 import ModalUploadProgress from '../components/ModalUploadProgress.jsx';
 import ModalCopyUrl from '../components/ModalCopyUrl.jsx';
 import UploadButton from '../components/UploadButton.jsx';
-import { IconLink } from '../components/Icons.jsx';
+import { IconLink, IconUpload, IconRemove, IconImage } from "../components/Icons.jsx";
 import { toast } from 'react-toastify';
 import Switch from "react-switch";
 import $ from 'jquery';
@@ -192,15 +192,24 @@ class AlbumPage extends React.Component {
 	}
 
 	render() {
+		const headerActions = (<div>
+			{this.state.selectedPhotos.length === 1 && <button className="iconOnly" onClick={(e) => this.setSelectedPhotoAsAlbumCover()} title="Set album cover">
+				<IconImage/>
+			</button>}
+			{this.state.selectedPhotos.length > 0 && <button className="iconOnly" onClick={(e) => this.onRemovePhotosClick()} title="Remove from album">
+				<IconRemove/>
+			</button>}
+			{this.state.selectedPhotos.length === 0 && <button className="iconOnly" onClick={() => $("#select-photos").click()} title="Upload photos">
+				<IconUpload/>
+			</button>}
+		</div>);
+
 		const headerContextMenuActions = (<div>
-			{this.state.selectedPhotos.length === 0 && <button onClick={() => $("#select-photos").click()}>Upload</button>}
-			{this.state.selectedPhotos.length === 1 && <button onClick={(e) => this.setSelectedPhotoAsAlbumCover()}>Set as cover</button>}
-			{this.state.selectedPhotos.length > 0 && <button onClick={(e) => this.onRemovePhotosClick()}>Remove photos</button>}
 			{<button onClick={(e) => this.onDeleteAlbumClick()}>Delete album</button>}
 		</div>);
 		
 		return (
-			<PageLayout requiresAuthentication={true} headerContextMenuActions={headerContextMenuActions} onDrop={(event) => this.onFilesDropped(event)}>
+			<PageLayout requiresAuthentication={true} headerActions={headerActions} headerContextMenuActions={headerContextMenuActions} onDrop={(event) => this.onFilesDropped(event)}>
 				<div className="topBar">
 					<h1>{this.state.title}</h1>
 
@@ -265,7 +274,7 @@ class AlbumPage extends React.Component {
 					/>
 					
 
-				{/* Hidden upload button triggered by the button context menu. This is because browsers prevent file select functionality if input element is no visible */}
+				{/* Hidden upload button triggered by the button in action bar. This allos me to write simpler CSS to style the action buttons. */}
 				<UploadButton className="hidden" onSubmit={(files) => this.uploadFilesList(files)}/>
 			</PageLayout>
 		);

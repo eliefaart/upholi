@@ -28,13 +28,12 @@ class PhotoBasePage extends React.Component {
 
 	render() {
 		const headerActions = (<div>
-			{<a className="iconOnly asButton" href={this.state.downloadUrl} download>
+			{<a className="iconOnly asButton" href={this.state.downloadUrl} download title="Download">
 				<IconDownload/>
 			</a>}
-			{<button className="iconOnly" onClick={() => this.context.history.goBack()}>
+			{<button className="iconOnly" onClick={() => this.context.history.goBack()} title="Close">
 				<IconClose/>
 			</button>}
-			
 		</div>);
 
 		return (

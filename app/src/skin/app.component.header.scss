@@ -55,7 +55,6 @@
 		padding-right: $spacing;
 		
 		span {
-			line-height: $headerHeight;
 			white-space: nowrap;
 		}
 
@@ -67,6 +66,11 @@
 			button, .asButton {
 				margin: 0 0 0 $spacing * 2;
 				padding: unset;
+
+				span {
+					margin-right: $spacing * 2;
+					color: $textColorLight;
+				}
 			}
 		}
 	}
@@ -80,6 +84,7 @@
 
 		.items {
 			background-color: transparent;
+			min-width: 150px;
 	
 			position: fixed;
 			top: $headerHeight;
@@ -91,23 +96,20 @@
 			}
 	
 			&>div{
-	
 				display: flex;
 				flex-direction: column;
 				justify-content: right;
 				align-items: center;
 				background-color: $altBackgroundColor;
 				
-				> button, .asButton {
-					padding: 0 $spacing * 3;
-				}
-				
-				button, .asButton, :not(div) {
+				button {
 					border-radius: unset;
+					padding: 0 $spacing * 3;
 					color: $textColorLight;
 					background-color: $altBackgroundColor;
 					width: 100%;
 					margin: 0;
+					justify-content: left;
 					text-transform: unset;
 
 					&:hover {

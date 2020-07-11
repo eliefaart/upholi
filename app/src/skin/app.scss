@@ -3,14 +3,14 @@
 
 $backgroundColor: #000;
 $altBackgroundColor: #191d25;
-$accentColor: #d3e532; //28c98d; //#d3e532;
-$secondaryAccentColor: #664645;
+$accentColor: #d3e532;
+$secondaryAccentColor: #4398b9;
 $textColorDark: #161f21;
 $textColorLight: #dedfe4; //white;
 $disabledColor: gray;
 
 $fontSizeNormal: 0.8em;
-$fontSizeLarge: 1.15em;
+$fontSizeLarge: 1.2em;
 $spacing: 5px;
 $transitionSpeed: 0.2s;
 $borderRadius: 2px;
@@ -30,6 +30,7 @@ html {
 	body {
 		font-family: FiraSans;
 		font-size: $fontSizeNormal;
+		font-weight: 500;
 
 		background: $backgroundColor;
 		color: $textColorLight;
@@ -111,6 +112,9 @@ button, .asButton {
 	padding: 0;
 	display: inline-block;
 	text-align: center;
+
+	display: flex;
+	justify-content: center;
 	
 	&.iconOnly {
 		display: flex;
@@ -133,6 +137,12 @@ button, .asButton {
 		height: 80%;
 		margin: auto;
 	}
+}
+
+// Icons
+svg {
+	min-width: 24px;
+	max-width: 24px;
 }
 
 h1 {

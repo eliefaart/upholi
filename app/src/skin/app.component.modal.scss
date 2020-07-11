@@ -53,8 +53,8 @@ $modalHeaderHeight: $buttonHeight;
 
 @media only screen and (max-width: $breakpointMobile) {
 	.modal {
-		top: 3%;
-		bottom: 3%;
+		//top: 3%;
+		//bottom: 3%;
 		right: 3%;
 		left: 3%;
 	}
