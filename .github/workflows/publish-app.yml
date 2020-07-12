@@ -2,7 +2,7 @@ name: Publish - Frontend app
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, dev ]
     paths:
       - '.github/workflows/publish-app.yml'
       - 'app/**'
