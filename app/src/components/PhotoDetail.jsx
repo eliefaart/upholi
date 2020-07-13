@@ -1,9 +1,18 @@
 import React from 'react';
 import ExifData from '../components/ExifData.jsx';
 
+const ZoomStyleEnum = {
+	// Using delta in pixels
+	BY_DELTA: 0,
+	// Using fixed step, some percentage
+	FIXED_STEPS: 1
+};
+
 class PhotoDetail extends React.Component {
 	constructor(props) {
 		super(props);
+
+		
 
 		this.state = {
 			isPanning: false
@@ -15,7 +24,7 @@ class PhotoDetail extends React.Component {
 
 		// Zoom on mousewheel
 		imgElement.onwheel = (event) => {
-			this.zoomPhoto(imgElement, event.deltaY);
+			this.zoomPhoto(imgElement, event.deltaY, ZoomStyleEnum.FIXED_STEPS);
 		};
 
 		// Pan photo on mouse or touch move
@@ -58,7 +67,7 @@ class PhotoDetail extends React.Component {
 
 		const fnTouchZoom = (event) => {
 			const touches = event.touches;
-			if (!!touches && touches.length >= 1) {
+			if (!!touches && touches.length >= 2) {
 
 				// Only take the first two touches into account for now
 				const fingerDistance = Math.sqrt(
@@ -70,7 +79,7 @@ class PhotoDetail extends React.Component {
 				// Otherwise do nothing until next touch event.
 				if (isTouchZooming) {
 					const delta = fingerDistanceLast - fingerDistance;
-					this.zoomPhoto(imgElement, delta);
+					this.zoomPhoto(imgElement, delta, ZoomStyleEnum.BY_DELTA);
 				}
 
 				isTouchZooming = true;
@@ -120,11 +129,11 @@ class PhotoDetail extends React.Component {
 	}
 
 	// Zoom the image by given number of units
-	zoomPhoto(imgElement, zoomDelta) {
+	zoomPhoto(imgElement, zoomDelta, zoomStyle) {
 		if (!zoomDelta || zoomDelta === 0)
 			return;
 
-		const zoomStepPercentage = 10;
+		let zoomStepPercentage = 15;	// Default step
 		const zoomingIn = zoomDelta < 0;
 
 		// Find current scale factor
@@ -132,6 +141,10 @@ class PhotoDetail extends React.Component {
 		const currentScaleFactor = matches && matches.length >= 2
 			? parseFloat(matches[1])
 			: 1;
+		
+		if (zoomStyle == ZoomStyleEnum.BY_DELTA) {
+			zoomStepPercentage = Math.abs((zoomDelta / imgElement.width) * 100);
+		}
 
 		// Calculate new scale factor
 		const zoomStep = (currentScaleFactor / 100) * zoomStepPercentage;
