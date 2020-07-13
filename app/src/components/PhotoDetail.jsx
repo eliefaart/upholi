@@ -22,14 +22,17 @@ class PhotoDetail extends React.Component {
 		let panLastX, panLastY;
 		const fnStartPanning = (event) => {
 			this.setState({isPanning: true });
-			panLastX = event.clientX;
-			panLastY = event.clientY;
+
+			const coords = this.getClickCoordinatesFromEvent(event);
+			panLastX = coords.x;
+			panLastY = coords.y;
 		};
 		const fnStopPanning = () => this.setState({isPanning: false });
 		const fnOnMouseMove = (event) => {
 			if (this.state.isPanning) {
-				const currentX = event.clientX;
-				const currentY = event.clientY;
+				const coords = this.getClickCoordinatesFromEvent(event);
+				let currentX = coords.x;
+				let currentY = coords.y;
 
 				let deltaX = currentX - panLastX;
 				let deltaY = currentY - panLastY;
@@ -47,6 +50,37 @@ class PhotoDetail extends React.Component {
 		imgElement.onmouseleave = fnStopPanning;
 		imgElement.ontouchend = fnStopPanning;
 		imgElement.onmousemove = fnOnMouseMove;
+		imgElement.ontouchmove = fnOnMouseMove;
+	}
+
+	getClickCoordinatesFromEvent(event) {
+		let x = event.clientX;
+		let y = event.clientY;
+
+		// If this event is a touch event, get X and Y in a different way.
+		const touches = event.touches;
+		
+		const fnTouchListToArray = (touchList) => {
+			let array = [];
+			for (let i = 0; i < touchList.length; i++) {
+				array.push(touchList[i]);
+			}
+			return array;
+		}
+		const fnAverage = (numbers) => {
+			let total = 0;
+			for (let number of numbers) {
+				total += number;
+			}
+			return total / numbers.length;
+		}
+
+		if (!!touches && touches.length > 0) {
+			x = fnAverage(fnTouchListToArray(touches).map(t => t.clientX));
+			y = fnAverage(fnTouchListToArray(touches).map(t => t.clientY));
+		}
+
+		return { x, y };
 	}
 
 	// Zoom the image by given number of units
@@ -144,7 +178,7 @@ class PhotoDetail extends React.Component {
 		}
 
 		// Image larger than container, Y-axis
-		if (!imgFitsInContainerX && deltaY !== 0) {
+		if (!imgFitsInContainerY && deltaY !== 0) {
 			let movingDown = deltaY > 0;
 			let movingUp = !movingDown;
 
