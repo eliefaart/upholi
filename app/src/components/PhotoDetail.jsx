@@ -29,11 +29,17 @@ class PhotoDetail extends React.Component {
 			panLastX = coords.x;
 			panLastY = coords.y;
 		};
-		const fnStopPanning = () => this.setState({isPanning: false });
+
+		const fnStopPanning = () => {
+			this.setState({isPanning: false });
+			isTouchZooming = false;
+		};
+
 		const fnOnTouchMove = (event) => {
 			fnOnPan(event);
 			fnTouchZoom(event);
-		}
+		};
+
 		const fnOnPan = (event) => {
 			if (this.state.isPanning) {
 				const coords = this.getClickCoordinatesFromEvent(event);
@@ -49,9 +55,10 @@ class PhotoDetail extends React.Component {
 				panLastY = currentY;
 			}
 		};
+
 		const fnTouchZoom = (event) => {
 			const touches = event.touches;
-			if (!!touches && touches.length >= 2) {
+			if (!!touches && touches.length >= 1) {
 
 				// Only take the first two touches into account for now
 				const fingerDistance = Math.sqrt(
@@ -66,9 +73,10 @@ class PhotoDetail extends React.Component {
 					this.zoomPhoto(imgElement, delta);
 				}
 
+				isTouchZooming = true;
 				fingerDistanceLast = fingerDistance;
 			}
-		}
+		};
 
 		imgElement.onmousedown = fnStartPanning;
 		imgElement.ontouchstart = fnStartPanning;
@@ -113,6 +121,9 @@ class PhotoDetail extends React.Component {
 
 	// Zoom the image by given number of units
 	zoomPhoto(imgElement, zoomDelta) {
+		if (!zoomDelta || zoomDelta === 0)
+			return;
+
 		const zoomStepPercentage = 10;
 		const zoomingIn = zoomDelta < 0;
 
