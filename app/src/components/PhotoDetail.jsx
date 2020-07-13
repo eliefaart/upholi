@@ -12,8 +12,6 @@ class PhotoDetail extends React.Component {
 	constructor(props) {
 		super(props);
 
-		
-
 		this.state = {
 			isPanning: false
 		};
@@ -29,8 +27,6 @@ class PhotoDetail extends React.Component {
 
 		// Pan photo on mouse or touch move
 		let panLastX, panLastY;
-		let fingerDistanceLast;
-		let isTouchZooming = false;
 		const fnStartPanning = (event) => {
 			this.setState({isPanning: true });
 
@@ -45,11 +41,12 @@ class PhotoDetail extends React.Component {
 		};
 
 		const fnOnTouchMove = (event) => {
-			fnOnPan(event);
-			fnTouchZoom(event);
+			fnHandlePanning(event);
+			fnHandlePinching(event);
 		};
 
-		const fnOnPan = (event) => {
+		// Handle panning, moving image along x and y axis
+		const fnHandlePanning = (event) => {
 			if (this.state.isPanning) {
 				const coords = this.getClickCoordinatesFromEvent(event);
 				let currentX = coords.x;
@@ -65,7 +62,10 @@ class PhotoDetail extends React.Component {
 			}
 		};
 
-		const fnTouchZoom = (event) => {
+		// Handle touch pinching: zooming
+		let fingerDistanceLast;
+		let isTouchZooming = false;
+		const fnHandlePinching = (event) => {
 			const touches = event.touches;
 			if (!!touches && touches.length >= 2) {
 
@@ -94,10 +94,12 @@ class PhotoDetail extends React.Component {
 		imgElement.onmouseleave = fnStopPanning;
 		imgElement.ontouchend = fnStopPanning;
 
-		imgElement.onmousemove = fnOnPan;
+		imgElement.onmousemove = fnHandlePanning;
 		imgElement.ontouchmove = fnOnTouchMove;
 	}
 
+	// Get the X and Y click coordinates for event,
+	// wether it is from a mouse or touch event
 	getClickCoordinatesFromEvent(event) {
 		let x = event.clientX;
 		let y = event.clientY;
@@ -121,6 +123,7 @@ class PhotoDetail extends React.Component {
 		}
 
 		if (!!touches && touches.length > 0) {
+			// Calculate the average of all touch points
 			x = fnAverage(fnTouchListToArray(touches).map(t => t.clientX));
 			y = fnAverage(fnTouchListToArray(touches).map(t => t.clientY));
 		}
