@@ -2,7 +2,7 @@ name: Publish - Server
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, dev ]
     paths:
       - '.github/workflows/publish-server.yml'
       - 'server/**'
