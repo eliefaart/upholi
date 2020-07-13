@@ -20,6 +20,8 @@ class PhotoDetail extends React.Component {
 
 		// Pan photo on mouse or touch move
 		let panLastX, panLastY;
+		let fingerDistanceLast;
+		let isTouchZooming = false;
 		const fnStartPanning = (event) => {
 			this.setState({isPanning: true });
 
@@ -28,7 +30,11 @@ class PhotoDetail extends React.Component {
 			panLastY = coords.y;
 		};
 		const fnStopPanning = () => this.setState({isPanning: false });
-		const fnOnMouseMove = (event) => {
+		const fnOnTouchMove = (event) => {
+			fnOnPan(event);
+			fnTouchZoom(event);
+		}
+		const fnOnPan = (event) => {
 			if (this.state.isPanning) {
 				const coords = this.getClickCoordinatesFromEvent(event);
 				let currentX = coords.x;
@@ -43,14 +49,36 @@ class PhotoDetail extends React.Component {
 				panLastY = currentY;
 			}
 		};
+		const fnTouchZoom = (event) => {
+			const touches = event.touches;
+			if (!!touches && touches.length >= 2) {
+
+				// Only take the first two touches into account for now
+				const fingerDistance = Math.sqrt(
+					Math.pow(touches[1].clientX - touches[0].clientX, 2) +
+					Math.pow(touches[1].clientY - touches[0].clientY, 2)
+				);
+				
+				// If user was already touch-zooming, then handle zoom
+				// Otherwise do nothing until next touch event.
+				if (isTouchZooming) {
+					const delta = fingerDistanceLast - fingerDistance;
+					this.zoomPhoto(imgElement, delta);
+				}
+
+				fingerDistanceLast = fingerDistance;
+			}
+		}
 
 		imgElement.onmousedown = fnStartPanning;
 		imgElement.ontouchstart = fnStartPanning;
+
 		imgElement.onmouseup = fnStopPanning;
 		imgElement.onmouseleave = fnStopPanning;
 		imgElement.ontouchend = fnStopPanning;
-		imgElement.onmousemove = fnOnMouseMove;
-		imgElement.ontouchmove = fnOnMouseMove;
+
+		imgElement.onmousemove = fnOnPan;
+		imgElement.ontouchmove = fnOnTouchMove;
 	}
 
 	getClickCoordinatesFromEvent(event) {
