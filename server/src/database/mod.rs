@@ -35,6 +35,11 @@ pub fn get_collection_sessions() -> mongodb::Collection {
 	DATABASE.collection(COLLECTION_SESSIONS)
 }
 
+pub struct SortField<'a> {
+	pub field: &'a str,
+	pub ascending: bool,
+}
+
 /// Add standard CRUD operations to a struct
 pub trait DatabaseOperations {
 	/// Get an existing item
@@ -88,50 +93,62 @@ pub fn insert_item<T: serde::Serialize>(collection: &mongodb::Collection, bson_i
 
 /// Get a single item from a collection
 pub fn find_one<'de, T: serde::Deserialize<'de>>(id: &str, collection: &mongodb::Collection) -> Option<T> {
-	match find_many(None, Some(&[id]), collection) {
+	match find_many(collection, None, Some(&[id]), None) {
 		Ok(mut items) => items.pop(),
 		Err(_) => None
 	}
 }
 
 /// Get multiple items from a collection
-pub fn find_many<'de, T: serde::Deserialize<'de>>(user_id: Option<i64>, ids: Option<&[&str]>, collection: &mongodb::Collection) -> Result<Vec<T>, String> {
-	let filter = {
-		if user_id.is_some() && ids.is_some() {
-			create_filter_for_user_and_ids(user_id.unwrap(), ids.unwrap())
-		}
-		else if user_id.is_some() && ids.is_none() {
-			create_filter_for_user(user_id.unwrap())
-		}
-		else if user_id.is_none() && ids.is_some() {
-			create_in_filter_for_ids(ids.unwrap())
-		}
-		else {
-			doc!{}
+pub fn find_many<'de, T: serde::Deserialize<'de>>(collection: &mongodb::Collection, user_id: Option<i64>, ids: Option<&[&str]>, sort_field: Option<&SortField>) -> Result<Vec<T>, String> {
+	let mut pipeline = vec!{
+		doc!{
+			"$match": create_filter_for_user_and_ids_options(&user_id, &ids)
 		}
 	};
-	
-	find_many_with_filter(filter, collection)
-}
 
-/// Get multiple items from a collection using given filter
-fn find_many_with_filter<'de, T: serde::Deserialize<'de>>(filter: bson::ordered::OrderedDocument, collection: &mongodb::Collection) -> Result<Vec<T>, String> {
-	let find_result = collection.find(Some(filter), None);
-
-	match find_result {
-		Ok(cursor) => {
-			let mut items = Vec::new();
-
-			for document_result in cursor {
-				let document = document_result.unwrap();
-				let item = bson::from_bson(bson::Bson::Document(document)).unwrap();
-				items.push(item);
+	// Add $sort stage to pipeline
+	if let Some(sort) = sort_field {
+		pipeline.push(doc!{
+			"$sort": {
+				sort.field: if sort.ascending { 1 } else { -1 }
 			}
+		});
+	}
 
-			Ok(items)
-		},
+	// Since id is unique, we can optimize the query a bit by adding a $limit stage
+	if let Some(ids_info) = ids {
+		pipeline.push(doc!{
+			"$limit": ids_info.len() as u32
+		});
+	}
+
+	// Run query and collect results
+	match collection.aggregate(pipeline, None) {
+		Ok(cursor) => Ok(get_items_from_cursor(cursor)?),
 		Err(error) => Err(format!("error: {:?}", error))
 	}
+}
+
+/// Take all items available in given cursor
+fn get_items_from_cursor<'de, T: serde::Deserialize<'de>>(cursor: mongodb::Cursor) -> Result<Vec<T>, String> {
+	let mut items = Vec::new();
+
+	for document_result in cursor {
+		if let Ok(document) = document_result {
+			if let Ok(item) = bson::from_bson(bson::Bson::Document(document)) {
+				items.push(item);
+			}
+			else {
+				return Err("Failed to deserialize a bson document".to_string());
+			}
+		}
+		else {
+			return Err("Failed to get item from cursor".to_string());
+		}
+	}
+
+	Ok(items)
 }
 
 /// Replace a single existing item with a new version in its entirety
@@ -196,5 +213,21 @@ pub fn create_filter_for_user_and_ids(user_id: i64, ids: &[&str]) -> bson::order
 	doc!{
 		"id": doc!{"$in": ids },
 		"userId": user_id
+	}
+}
+
+/// Create a filter definition to be used in queries that matches all item for a user and certian item ids
+fn create_filter_for_user_and_ids_options(user_id: &Option<i64>, ids: &Option<&[&str]>) -> bson::ordered::OrderedDocument {
+	if user_id.is_some() && ids.is_some() {
+		create_filter_for_user_and_ids(user_id.unwrap(), ids.unwrap())
+	}
+	else if user_id.is_some() && ids.is_none() {
+		create_filter_for_user(user_id.unwrap())
+	}
+	else if user_id.is_none() && ids.is_some() {
+		create_in_filter_for_ids(ids.unwrap())
+	}
+	else {
+		doc!{}
 	}
 }

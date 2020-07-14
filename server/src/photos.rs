@@ -161,7 +161,7 @@ impl DatabaseOperations for Photo {
 impl DatabaseBatchOperations for Photo {
 	fn get_with_ids(ids: &[&str]) -> Result<Vec<Self>, String> {
 		let collection = database::get_collection_photos();
-		database::find_many(None, Some(ids), &collection)
+		database::find_many(&collection, None, Some(ids), None)
 	}
 }
 
@@ -181,18 +181,26 @@ impl DatabaseUserOperations for Photo {
 
 	fn get_all_as_user(user_id: i64) -> Result<Vec<Self>, String> {
 		let collection = database::get_collection_photos();
-		database::find_many(Some(user_id), None, &collection) 
+		let sort = database::SortField{
+			field: "_id", 
+			ascending: false
+		};
+		database::find_many(&collection, Some(user_id), None, Some(&sort))
 	}
 
 	fn get_all_with_ids_as_user(ids: &[&str], user_id: i64) -> Result<Vec<Self>, String> {
 		let collection = database::get_collection_photos();
-		database::find_many(Some(user_id), Some(ids), &collection) 
+		let sort = database::SortField{
+			field: "_id", 
+			ascending: false
+		};
+		database::find_many(&collection, Some(user_id), Some(ids), Some(&sort))
 	}
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+	use super::*;
 
 	#[test]
 	fn generate_filename() {
