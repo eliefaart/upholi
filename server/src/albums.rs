@@ -85,12 +85,12 @@ impl DatabaseUserOperations for Album {
 
 	fn get_all_as_user(user_id: i64) -> Result<Vec<Self>, String> {
 		let collection = database::get_collection_albums();
-		database::find_many(Some(user_id), None, &collection) 
+		database::find_many(&collection, Some(user_id), None, None) 
 	}
 
 	fn get_all_with_ids_as_user(ids: &[&str], user_id: i64) -> Result<Vec<Self>, String> {
 		let collection = database::get_collection_albums();
-		database::find_many(Some(user_id), Some(ids), &collection) 
+		database::find_many(&collection, Some(user_id), Some(ids), None) 
 	}
 }
 
