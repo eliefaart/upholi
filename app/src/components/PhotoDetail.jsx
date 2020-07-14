@@ -18,17 +18,19 @@ class PhotoDetail extends React.Component {
 	}
 
 	componentDidMount() {
+		const containerElement = document.getElementsByClassName("photoDetail")[0];
 		const imgElement = document.getElementsByClassName("photoDetailImg")[0];
 
 		// Zoom on mousewheel
-		imgElement.onwheel = (event) => {
+		containerElement.onwheel = (event) => {
 			this.zoomPhoto(imgElement, event.deltaY, ZoomStyleEnum.FIXED_STEPS);
 		};
 
 		// Pan photo on mouse or touch move
 		let panLastX, panLastY;
+		let isPanning = false;
 		const fnStartPanning = (event) => {
-			this.setState({isPanning: true });
+			isPanning = true;
 
 			const coords = this.getClickCoordinatesFromEvent(event);
 			panLastX = coords.x;
@@ -36,7 +38,7 @@ class PhotoDetail extends React.Component {
 		};
 
 		const fnStopPanning = () => {
-			this.setState({isPanning: false });
+			isPanning = false;
 			isTouchZooming = false;
 		};
 
@@ -47,7 +49,7 @@ class PhotoDetail extends React.Component {
 
 		// Handle panning, moving image along x and y axis
 		const fnHandlePanning = (event) => {
-			if (this.state.isPanning) {
+			if (isPanning) {
 				const coords = this.getClickCoordinatesFromEvent(event);
 				let currentX = coords.x;
 				let currentY = coords.y;
@@ -87,15 +89,25 @@ class PhotoDetail extends React.Component {
 			}
 		};
 
-		imgElement.onmousedown = fnStartPanning;
-		imgElement.ontouchstart = fnStartPanning;
+		// Handle double click - reset zoom
+		const fnOnDoubleClick = (event) => {
+			this.resetView(imgElement);
+		}
 
-		imgElement.onmouseup = fnStopPanning;
-		imgElement.onmouseleave = fnStopPanning;
-		imgElement.ontouchend = fnStopPanning;
+		imgElement.ondragstart = () => false;
+		imgElement.ondrop = () => false;
 
-		imgElement.onmousemove = fnHandlePanning;
-		imgElement.ontouchmove = fnOnTouchMove;
+		containerElement.onmousedown = fnStartPanning;
+		containerElement.ontouchstart = fnStartPanning;
+
+		containerElement.onmouseup = fnStopPanning;
+		containerElement.onmouseleave = fnStopPanning;
+		containerElement.ontouchend = fnStopPanning;
+
+		containerElement.onmousemove = fnHandlePanning;
+		containerElement.ontouchmove = fnOnTouchMove;
+
+		containerElement.ondblclick = fnOnDoubleClick;
 	}
 
 	// Get the X and Y click coordinates for event,
@@ -157,6 +169,13 @@ class PhotoDetail extends React.Component {
 
 		// Set new scale factor
 		imgElement.style.transform = "scale(" + newScaleFactor + ")";
+	}
+
+	// reset the photo to its default position and zoom level
+	resetView (imgElement) {
+		imgElement.style.transform = "scale(1)";
+		imgElement.style.left = "0px";
+		imgElement.style.top = "0px";
 	}
 
 	// Move/pan the image by given number of units.
@@ -264,8 +283,9 @@ class PhotoDetail extends React.Component {
 
 	render() {
 		return <div className="photoDetail">
-			{this.props.exif && !this.state.isPanning && <ExifData exif={this.props.exif}/>}
-			<img className="photoDetailImg" src={this.props.src} draggable={false}
+			{this.props.exif && <ExifData exif={this.props.exif}/>}
+			<img className="photoDetailImg" src={this.props.src} 
+				draggable={false}
 				style={{top: "0px", left: "0px"}}/>
 		</div>;
 	}
