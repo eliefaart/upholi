@@ -1,6 +1,6 @@
-import React from 'react';
+import React from "react";
 import PageLayout from "../components/PageLayout.jsx"
-import AppStateContext from '../contexts/AppStateContext.jsx';
+import AppStateContext from "../contexts/AppStateContext.jsx";
 
 
 class SharedPage extends React.Component {

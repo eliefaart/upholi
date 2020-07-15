@@ -1,7 +1,7 @@
-import React from 'react';
+import React from "react";
 
-import AppStateContext from '../contexts/AppStateContext.jsx';
-import { IconContextMenu } from '../components/Icons.jsx';
+import AppStateContext from "../contexts/AppStateContext.jsx";
+import { IconContextMenu } from "../components/Icons.jsx";
 
 class Header extends React.Component {
 

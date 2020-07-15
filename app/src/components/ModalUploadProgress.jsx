@@ -1,5 +1,5 @@
-import React from 'react';
-import Modal from './Modal.jsx';
+import React from "react";
+import Modal from "./Modal.jsx";
 
 class ModalUploadProgress extends React.Component {
 

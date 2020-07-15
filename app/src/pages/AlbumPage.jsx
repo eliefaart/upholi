@@ -1,17 +1,16 @@
-import React from 'react';
-import PhotoGallerySelectable from '../components/PhotoGallerySelectable.jsx';
+import React from "react";
+import PhotoGallerySelectable from "../components/PhotoGallerySelectable.jsx";
 import PageLayout from "../components/PageLayout.jsx"
-import AppStateContext from '../contexts/AppStateContext.jsx';
-import PhotoService from '../services/PhotoService';
+import AppStateContext from "../contexts/AppStateContext.jsx";
+import PhotoService from "../services/PhotoService";
 import UploadHelper from "../helpers/UploadHelper.js"
-import ModalConfirmation from '../components/ModalConfirmation.jsx';
-import ModalUploadProgress from '../components/ModalUploadProgress.jsx';
-import ModalCopyUrl from '../components/ModalCopyUrl.jsx';
-import UploadButton from '../components/UploadButton.jsx';
+import ModalConfirmation from "../components/ModalConfirmation.jsx";
+import ModalUploadProgress from "../components/ModalUploadProgress.jsx";
+import ModalCopyUrl from "../components/ModalCopyUrl.jsx";
+import UploadButton from "../components/UploadButton.jsx";
 import { IconLink, IconUpload, IconRemove, IconImage } from "../components/Icons.jsx";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 import Switch from "react-switch";
-import $ from 'jquery';
 
 class AlbumPage extends React.Component {
 
@@ -199,7 +198,7 @@ class AlbumPage extends React.Component {
 			{this.state.selectedPhotos.length > 0 && <button className="iconOnly" onClick={(e) => this.onRemovePhotosClick()} title="Remove from album">
 				<IconRemove/>
 			</button>}
-			{this.state.selectedPhotos.length === 0 && <button className="iconOnly" onClick={() => $("#select-photos").click()} title="Upload photos">
+			{this.state.selectedPhotos.length === 0 && <button className="iconOnly" onClick={() => document.getElementById("select-photos").click()} title="Upload photos">
 				<IconUpload/>
 			</button>}
 		</div>);

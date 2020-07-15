@@ -1,6 +1,6 @@
-import React from 'react';
-import PhotoService from '../services/PhotoService';
-import AppStateContext from '../contexts/AppStateContext.jsx';
+import React from "react";
+import PhotoService from "../services/PhotoService";
+import AppStateContext from "../contexts/AppStateContext.jsx";
 import PhotoBasePage from "./PhotoBasePage.jsx"
 
 /// Displays a photo that is part of a shared collection

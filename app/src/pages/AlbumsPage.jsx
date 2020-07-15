@@ -1,5 +1,5 @@
-import React from 'react';
-import Albums from '../components/Albums.jsx';
+import React from "react";
+import Albums from "../components/Albums.jsx";
 import PageLayout from "../components/PageLayout.jsx"
 import ModalCreateAlbum from "../components/ModalCreateAlbum.jsx"
 import { IconCreate } from "../components/Icons.jsx";

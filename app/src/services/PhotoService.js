@@ -1,10 +1,4 @@
-import $ from 'jquery';
-
 class PhotoService {
-
-	constructor(props) {
-	}
-	
 	static baseUrl() {
 		return "/api";
 	}
@@ -75,38 +69,27 @@ class PhotoService {
 		});
 	}
 
-	static getPhotos(callback) {
-		$.get(PhotoService.baseUrl() + "/photos")
-			.done((response) => {
-				let photos = !response ? [] : response.map((photo) => {
-					return {
-						id: photo.id,
-						src: PhotoService.baseUrl() + "/photo/" + photo.id + "/thumb",
-						width: photo.width,
-						height: photo.height
-					};
-				});
+	static getPhotos() {
+		return new Promise((ok, err) => {
+			PhotoService.getJson("GET", PhotoService.baseUrl() + "/photos")
+				.then((response) => {
+					let photos = !response ? [] : response.map((photo) => {
+						return {
+							id: photo.id,
+							src: PhotoService.baseUrl() + "/photo/" + photo.id + "/thumb",
+							width: photo.width,
+							height: photo.height
+						};
+					});
 
-				if (callback)
-					callback(photos);
-			})
-			.fail((error) => console.log("Get failed", error));
+					ok(photos);
+				})
+				.catch(err);
+		});
 	}
 
-	static deletePhotos(photoIds, callback) {
-		$.ajax({
-			url: PhotoService.baseUrl() + "/photos",
-			type: "DELETE",
-			data: JSON.stringify(photoIds),
-			contentType: "application/json"
-		})
-		.done(() => {
-			if (callback)
-				callback();
-		})
-		.fail((error) => {
-			console.log("Delete failed", error);
-		});
+	static deletePhotos(photoIds) {
+		return PhotoService.sendRequest("DELETE", PhotoService.baseUrl() + "/photos", photoIds);
 	}
 
 	static createAlbum(title, photoIds, callback) {
@@ -114,29 +97,25 @@ class PhotoService {
 			title
 		};
 
-		$.ajax({
-			url: PhotoService.baseUrl() + "/album",
-			type: "POST",
-			data: JSON.stringify(requestData),
-			contentType: "application/json"
-		}).done((response) => {
-			// TODO: allow setting photos and thumb in initial create call
-			let albumId = response.id;
+		return new Promise((ok, err) => {
+			PhotoService.getJson("POST", PhotoService.baseUrl() + "/album", requestData)
+				.then((response) => {
+					// TODO: allow setting photos and thumb in initial create call
+					let albumId = response.id;
 
-			if (!!photoIds) {
-				requestData.thumbPhotoId = photoIds[0];
-				requestData.photos = photoIds;
+					if (!!photoIds) {
+						requestData.thumbPhotoId = photoIds[0];
+						requestData.photos = photoIds;
 
-				PhotoService.updateAlbum(albumId, requestData)
-					.then(() => {
-						if (callback)
-							callback(albumId);
-					});
-			} else {
-				if (callback)
-					callback(albumId);
-			}
-		}).fail((response) => console.error(response.responseJSON));
+						PhotoService.updateAlbum(albumId, requestData)
+							.then(() => ok(albumId))
+							.catch(err);
+					} else {
+						ok(albumId);
+					}
+				})
+				.catch(err);
+		});
 	}
 
 	static addPhotosToAlbum(albumId, photoIds) {
@@ -153,16 +132,12 @@ class PhotoService {
 							ok();
 						});
 				})
-				.catch(error => err(error));
+				.catch(err);
 		});
 	}
 
 	static getAlbums() {
-		return new Promise((ok, err) => {
-			$.get(PhotoService.baseUrl() + "/albums")
-				.done((response) => ok(response))
-				.fail((error) => err(error));
-		});
+		return PhotoService.getJson("GET", PhotoService.baseUrl() + "/albums");
 	}
 
 	static getAlbum(albumId) {
@@ -170,14 +145,7 @@ class PhotoService {
 	}
 
 	static deleteAlbum(albumId) {
-		return new Promise((ok, err) => {
-			$.ajax({
-				url: PhotoService.baseUrl() + "/album/" + albumId,
-				type: "DELETE"
-			})
-			.done(() => ok())
-			.fail((error) => err(error));
-		});
+		return PhotoService.sendRequest("DELETE", PhotoService.baseUrl() + "/album/" + albumId);
 	}
 
 	static updateAlbumPhotos(albumId, newPhotoIds) {
@@ -199,16 +167,7 @@ class PhotoService {
 	}
 
 	static updateAlbum(albumId, albumObjectWithModifiedProperties) {
-		return new Promise((ok, err) => {
-			$.ajax({
-				url: PhotoService.baseUrl() + "/album/" + albumId,
-				type: "PUT",
-				data: JSON.stringify(albumObjectWithModifiedProperties),
-				contentType: "application/json"
-			})
-			.done(() => ok())
-			.fail((error) => err(error));
-		});
+		return PhotoService.sendRequest("PUT", PhotoService.baseUrl() + "/album/" + albumId, albumObjectWithModifiedProperties);
 	}
 
 	static getSharedCollection(collectionId) {
@@ -216,18 +175,52 @@ class PhotoService {
 	}
 
 	static getPhotoInfo(url) {
-		return new Promise((ok, err) => {
-			$.get(url).done(ok).fail(err);
-		});
+		return PhotoService.getJson("GET", url);
 	}
 
 	static getAlbumInfo(url) {
+		return PhotoService.getJson("GET", url);
+	}
+
+	/// Send a web request and gets json from the response body, returns a promise.
+	static getJson(method, url, data) {
 		return new Promise((ok, err) => {
-			$.get(url)
-				.done((response) => {
-					ok(response);
+			this.sendRequest(method, url, data)
+			.then(response => {
+				response.json()
+					.then(ok)
+					.catch(err);
+			})
+			.catch(err);
+		});
+	}
+
+	/// Send a web request, returns a promise.
+	static sendRequest(method, url, data) {
+		const options = {
+			method,
+			credentials: "include",
+			body: JSON.stringify(data)
+		};
+
+		if (!!data) {
+			options.headers = {
+				"Content-Type": "application/json"
+			};
+			options.body = JSON.stringify(data);
+		}
+
+		return new Promise((ok, err) => {
+			fetch(url, options)
+				.then(response => {
+					if (response.ok) {
+						ok(response);
+					}
+					else{
+						err(response);
+					}
 				})
-				.fail((error) => err(error));
+				.catch(err);
 		});
 	}
 }

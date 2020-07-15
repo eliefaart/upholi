@@ -1,6 +1,6 @@
-import React from 'react';
-import { default as ReactModal } from 'react-modal';
-import Header from './Header.jsx';
+import React from "react";
+import { default as ReactModal } from "react-modal";
+import Header from "./Header.jsx";
 
 class PageLayout extends React.Component {
 

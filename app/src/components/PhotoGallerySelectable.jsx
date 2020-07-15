@@ -1,5 +1,4 @@
-import React, {useState, useCallback} from 'react';
-import $ from 'jquery';
+import React from "react";
 import Gallery from "react-photo-gallery";
 
 class PhotoGallerySelectable extends React.Component {

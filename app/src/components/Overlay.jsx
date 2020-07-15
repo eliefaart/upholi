@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 class Overlay extends React.Component {
 

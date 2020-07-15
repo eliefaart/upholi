@@ -1,8 +1,8 @@
-import React from 'react';
-import Modal from './Modal.jsx';
-import AppStateContext from '../contexts/AppStateContext.jsx';
+import React from "react";
+import Modal from "./Modal.jsx";
+import AppStateContext from "../contexts/AppStateContext.jsx";
 import { IconCopy } from "../components/Icons.jsx";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 
 class ModalCopyUrl extends React.Component {
 

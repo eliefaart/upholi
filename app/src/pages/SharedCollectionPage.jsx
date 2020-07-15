@@ -1,8 +1,8 @@
-import React from 'react';
-import PhotoGallerySelectable from '../components/PhotoGallerySelectable.jsx';
+import React from "react";
+import PhotoGallerySelectable from "../components/PhotoGallerySelectable.jsx";
 import PageLayout from "../components/PageLayout.jsx"
-import AppStateContext from '../contexts/AppStateContext.jsx';
-import PhotoService from '../services/PhotoService';
+import AppStateContext from "../contexts/AppStateContext.jsx";
+import PhotoService from "../services/PhotoService";
 
 class SharedCollectionPage extends React.Component {
 
