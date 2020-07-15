@@ -40,7 +40,7 @@ class Header extends React.Component {
 			!!this.context.history && this.context.history.push(path);
 		}
 		const menuItems = [
-			{ path: "/", title: "Home" },
+			{ path: "/", title: "Library" },
 			{ path: "/albums", title: "Albums" },
 			//{ path: "/shared", title: "Shared" }
 		];

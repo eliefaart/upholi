@@ -26,6 +26,15 @@
 			}
 		}
 
+		svg {
+			position: absolute;
+			top: $spacing;
+			right: $spacing;
+			color: $accentColor;
+			background-color: rgba($altBackgroundColor, 0.5);
+			border-radius: 50px;
+		}
+
 		span {
 			position: absolute;
 			border-bottom-left-radius: $borderRadius;

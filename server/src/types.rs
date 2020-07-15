@@ -13,7 +13,7 @@ pub struct ClientAlbum {
 	pub title: String,
 	pub public: bool,
 	pub thumb_photo: Option<ClientPhoto>,
-	pub photos: Option<Vec<ClientPhoto>>
+	pub photos: Vec<ClientPhoto>
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -62,9 +62,9 @@ impl From<Album> for ClientAlbum {
 							result_photos.push(photo.to_client_photo());
 						}
 
-						Some(result_photos)
+						result_photos
 					}
-					Err(_) => None
+					Err(_) => vec!{}
 				}
 			}
 		}
