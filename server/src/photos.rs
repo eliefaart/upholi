@@ -1,6 +1,7 @@
 use serde::{Serialize, Deserialize};
 use rand::{thread_rng, Rng};
 use rand::distributions::Alphanumeric;
+use chrono::prelude::*;
 
 use crate::images;
 use crate::files;
@@ -18,6 +19,7 @@ pub struct Photo {
 	pub name: String,
 	pub width: i32,
 	pub height: i32,
+	pub created_on: chrono::DateTime<Utc>,
 	pub hash: String,
 	pub path_thumbnail: String,
 	pub path_preview: String,
@@ -52,6 +54,14 @@ impl Photo {
 			let path_original = files::store_photo(&filename, photo_bytes);
 			let path_thumbnail = files::store_photo(&thumbnail_file_name, &image_info.bytes_thumbnail);
 			let path_preview = files::store_photo(&preview_file_name, &image_info.bytes_preview);
+			
+			// Decide 'created' date for the photo. Use 'taken on' field from exif if available, otherwise use current time
+			let created_on = {
+				match exif.date_taken {
+					Some(date_taken) => date_taken,
+					None => Utc::now()
+				}
+			};
 
 			Ok(Self {
 				id,
@@ -59,6 +69,7 @@ impl Photo {
 				name: filename,
 				width: image_info.width as i32,
 				height: image_info.height as i32,
+				created_on,
 				hash,
 				path_thumbnail,
 				path_preview,
@@ -182,7 +193,7 @@ impl DatabaseUserOperations for Photo {
 	fn get_all_as_user(user_id: i64) -> Result<Vec<Self>, String> {
 		let collection = database::get_collection_photos();
 		let sort = database::SortField{
-			field: "_id", 
+			field: "createdOn", 
 			ascending: false
 		};
 		database::find_many(&collection, Some(user_id), None, Some(&sort))
@@ -191,7 +202,7 @@ impl DatabaseUserOperations for Photo {
 	fn get_all_with_ids_as_user(ids: &[&str], user_id: i64) -> Result<Vec<Self>, String> {
 		let collection = database::get_collection_photos();
 		let sort = database::SortField{
-			field: "_id", 
+			field: "createdOn", 
 			ascending: false
 		};
 		database::find_many(&collection, Some(user_id), Some(ids), Some(&sort))
@@ -265,6 +276,7 @@ mod tests {
 			name: "photo name".to_string(),
 			width: 150,
 			height: 2500,
+			created_on: Utc::now(),
 			hash: "abc123".to_string(),
 			path_thumbnail: "path_thumbnail".to_string(),
 			path_preview: "path_preview".to_string(),

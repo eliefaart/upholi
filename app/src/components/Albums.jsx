@@ -1,5 +1,5 @@
-import React from 'react';
-
+import React from "react";
+import { IconPublic } from "../components/Icons.jsx";
 import PhotoService from "../services/PhotoService.js"
 import AppStateContext from '../contexts/AppStateContext.jsx';
 
@@ -26,14 +26,15 @@ class Albums extends React.Component {
 
 	render() {
 		let history = this.context.history;
-		let fnOnClick = this.props.onClick
+		const fnOnClick = this.props.onClick
 			|| ((album) => { history.push("/album/" + album.id) });
 
 		const AlbumLink = function (props) {
-			let album = props.album;
-			let thumbUrl = "url('" + PhotoService.baseUrl() + "/photo/" + album.thumbPhotoId + "/thumb')";
+			const album = props.album;
+			const thumbUrl = "url('" + PhotoService.baseUrl() + "/photo/" + album.thumbPhotoId + "/thumb')";
 
 			return <div onClick={() => fnOnClick(album)} className={"album " + (props.className || "")} style={{ backgroundImage: !!album.thumbPhotoId && thumbUrl }}>
+				{album.public && <IconPublic title="This album is public"/>}
 				<span>{album.title}</span>
 			</div>;
 		}

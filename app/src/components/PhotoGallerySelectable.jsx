@@ -9,23 +9,15 @@ class PhotoGallerySelectable extends React.Component {
 	}
 
 	render() {
-		let galleryComponent = this;
-
-		// Todo: handle resize event to update column count
-		const width = $("body").width();
-		const roughWidthPerPhoto = 300;		// How width each photo should be, roughly (in pixels)
-		const galleryColumns = Math.ceil(width / roughWidthPerPhoto);
+		const galleryComponent = this;
+		const photoHeight = 200;	// Target height for algorithm, but exact height will vary a bit.
+		const photoMargin = 3;
 
 		// Inline-component representing one photo tile.
 		const imageRenderer = ({ index, onClick, photo, margin, direction, top, left, key }) => {
 			const imgStyle = { 
-				margin: margin, 
-				display: "block",
-
 				backgroundImage: "url(\"" + photo.src + "\")",
-				backgroundSize: "cover",
-				backgroundPosition: "center center",
-				backgroundRepeat: "no-repeat",
+				margin: margin, 
 				width: photo.width,
 				height: photo.height,
 			};
@@ -96,7 +88,7 @@ class PhotoGallerySelectable extends React.Component {
 
 		return (
 			<div className="photoGallery">
-				<Gallery className="" photos={this.props.photos} onClick={(e, d) => { !!this.props.onClick && this.props.onClick(e, d);}} columns={galleryColumns} margin={3} renderImage={imageRenderer}/>
+				<Gallery className="" photos={this.props.photos} onClick={(e, d) => { !!this.props.onClick && this.props.onClick(e, d);}} margin={photoMargin} targetRowHeight={photoHeight} renderImage={imageRenderer}/>
 			</div>
 		);
 	}

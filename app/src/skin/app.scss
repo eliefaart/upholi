@@ -4,7 +4,7 @@
 $backgroundColor: #000;
 $altBackgroundColor: #191d25;
 $accentColor: #d3e532;
-$secondaryAccentColor: #4398b9;
+$secondaryAccentColor: #05668d;
 $textColorDark: #161f21;
 $textColorLight: #dedfe4; //white;
 $disabledColor: gray;
@@ -60,10 +60,6 @@ html {
 @import "app.component.exif";
 @import "app.component.toasts";
 @import "app.component.switch";
-
-iframe {
-	border: none;
-}
 
 input, select, button, .asButton {
 	margin: 10px 0 10px 0;
