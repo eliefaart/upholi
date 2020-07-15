@@ -1,17 +1,16 @@
-import React from 'react';
-import PhotoGallerySelectable from '../components/PhotoGallerySelectable.jsx';
+import React from "react";
+import PhotoGallerySelectable from "../components/PhotoGallerySelectable.jsx";
 import PageLayout from "../components/PageLayout.jsx";
 import PhotoService from "../services/PhotoService.js";
 import UploadHelper from "../helpers/UploadHelper.js";
-import AppStateContext from '../contexts/AppStateContext.jsx';
-import ModalConfirmation from '../components/ModalConfirmation.jsx';
-import ModalUploadProgress from '../components/ModalUploadProgress.jsx';
-import ModalCreateAlbum from '../components/ModalCreateAlbum.jsx';
-import ModalAddToAlbum from '../components/ModalAddToAlbum.jsx';
-import UploadButton from '../components/UploadButton.jsx';
+import AppStateContext from "../contexts/AppStateContext.jsx";
+import ModalConfirmation from "../components/ModalConfirmation.jsx";
+import ModalUploadProgress from "../components/ModalUploadProgress.jsx";
+import ModalCreateAlbum from "../components/ModalCreateAlbum.jsx";
+import ModalAddToAlbum from "../components/ModalAddToAlbum.jsx";
+import UploadButton from "../components/UploadButton.jsx";
 import { IconUpload, IconDelete, IconAddToAlbum } from "../components/Icons.jsx";
-import { toast } from 'react-toastify';
-import $ from 'jquery';
+import { toast } from "react-toastify";
 
 class PhotosDashboardPage extends React.Component {
 
@@ -38,12 +37,11 @@ class PhotosDashboardPage extends React.Component {
 	}
 
 	refreshPhotos() {
-		let _this = this;
-		PhotoService.getPhotos((photos) => {
-			_this.setState({
-				photos: photos
-			});
-		});
+		const fnSetPhotos = (photos) => this.setState({ photos });
+
+		PhotoService.getPhotos()
+			.then(fnSetPhotos)
+			.catch(console.error);
 	}
 
 	resetSelection() {
@@ -59,18 +57,20 @@ class PhotosDashboardPage extends React.Component {
 	}
 
 	deleteSelectedPhotos() {
-		PhotoService.deletePhotos(this.state.selectedPhotos, () => {
-			let remainingPhotos = this.state.photos.filter(p => 
-				this.state.selectedPhotos.indexOf(p.id) === -1);
-
-			this.setState({
-				photos: remainingPhotos,
-				selectedPhotos: [],
-				confirmDeletePhotosOpen: false
-			});
-
-			toast.info("Photos deleted.");
-		});
+		PhotoService.deletePhotos(this.state.selectedPhotos)
+			.then(() => {
+				let remainingPhotos = this.state.photos.filter(p => 
+					this.state.selectedPhotos.indexOf(p.id) === -1);
+	
+				this.setState({
+					photos: remainingPhotos,
+					selectedPhotos: [],
+					confirmDeletePhotosOpen: false
+				});
+	
+				toast.info("Photos deleted.");
+			})
+			.catch(console.error);
 	}
 
 	onClickAddSelectedPhotosToAlbum() {
@@ -172,7 +172,7 @@ class PhotosDashboardPage extends React.Component {
 
 	render() {
 		const headerActions = (<div>
-			{this.state.selectedPhotos.length === 0 && <button className="iconOnly" onClick={() => $("#select-photos").click()} title="Upload photos">
+			{this.state.selectedPhotos.length === 0 && <button className="iconOnly" onClick={() => document.getElementById("select-photos").click()} title="Upload photos">
 				<IconUpload/>
 			</button>}
 			{this.state.selectedPhotos.length > 0 && <button className="iconOnly" onClick={() => this.onClickAddSelectedPhotosToAlbum(this.state.selectedPhotos)} title="Add to album">

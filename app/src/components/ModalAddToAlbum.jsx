@@ -1,6 +1,6 @@
-import React from 'react';
-import Modal from './Modal.jsx';
-import AppStateContext from '../contexts/AppStateContext.jsx';
+import React from "react";
+import Modal from "./Modal.jsx";
+import AppStateContext from "../contexts/AppStateContext.jsx";
 import Albums from "../components/Albums.jsx";
 
 class ModalAddToAlbum extends React.Component {

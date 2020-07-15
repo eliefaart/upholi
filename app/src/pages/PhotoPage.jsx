@@ -1,6 +1,6 @@
-import React from 'react';
-import PhotoService from '../services/PhotoService';
-import AppStateContext from '../contexts/AppStateContext.jsx';
+import React from "react";
+import PhotoService from "../services/PhotoService";
+import AppStateContext from "../contexts/AppStateContext.jsx";
 import PhotoBasePage from "./PhotoBasePage.jsx"
 
 class PhotoPage extends React.Component {

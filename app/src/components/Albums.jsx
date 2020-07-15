@@ -1,7 +1,7 @@
 import React from "react";
 import { IconPublic } from "../components/Icons.jsx";
 import PhotoService from "../services/PhotoService.js"
-import AppStateContext from '../contexts/AppStateContext.jsx';
+import AppStateContext from "../contexts/AppStateContext.jsx";
 
 class Albums extends React.Component {
 

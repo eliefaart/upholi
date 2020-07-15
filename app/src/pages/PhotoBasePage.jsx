@@ -1,8 +1,8 @@
-import React from 'react';
-import PhotoService from '../services/PhotoService';
-import PhotoDetail from '../components/PhotoDetail.jsx';
+import React from "react";
+import PhotoService from "../services/PhotoService";
+import PhotoDetail from "../components/PhotoDetail.jsx";
 import PageLayout from "../components/PageLayout.jsx"
-import AppStateContext from '../contexts/AppStateContext.jsx';
+import AppStateContext from "../contexts/AppStateContext.jsx";
 import { IconClose, IconDownload } from "../components/Icons.jsx";
 
 class PhotoBasePage extends React.Component {

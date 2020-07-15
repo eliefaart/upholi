@@ -1,5 +1,5 @@
-import React from 'react';
-import { default as ReactModal } from 'react-modal';
+import React from "react";
+import { default as ReactModal } from "react-modal";
 import { IconClose } from "../components/Icons.jsx";
 
 class Modal extends React.Component {

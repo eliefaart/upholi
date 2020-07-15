@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 class Icon extends React.Component {
 	constructor(props) { super(props); }

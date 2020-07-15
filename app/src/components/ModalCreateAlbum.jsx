@@ -1,9 +1,8 @@
-import React from 'react';
-import $ from 'jquery';
-import Modal from '../components/Modal.jsx';
-import AppStateContext from '../contexts/AppStateContext.jsx';
+import React from "react";
+import Modal from "../components/Modal.jsx";
+import AppStateContext from "../contexts/AppStateContext.jsx";
 import PhotoService from "../services/PhotoService.js";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 
 class ModalCreateAlbum extends React.Component {
 
@@ -12,17 +11,19 @@ class ModalCreateAlbum extends React.Component {
 	}
 
 	submitCreateAlbum() {
-		let history = this.context.history;
-		let form = $("#form-create-album");
-		let title = form.find("[name=title]").val();
+		const history = this.context.history;
+		const form = document.getElementById("form-create-album");
+		const title = form.getElementsByTagName("input")[0].value;
 
-		PhotoService.createAlbum(title, this.props.createWithPhotos, (albumId) => {
-			toast.info("Album '" + title + "' created.");
-			
-			if (history) {
-				history.push("/album/" + albumId);
-			}
-		});
+		PhotoService.createAlbum(title, this.props.createWithPhotos)
+			.then(albumId => {
+				toast.info("Album '" + title + "' created.");
+				
+				if (history) {
+					history.push("/album/" + albumId);
+				}
+			})
+			.catch(console.error);
 	}
 
 	render() {
