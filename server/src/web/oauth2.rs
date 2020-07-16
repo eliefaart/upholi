@@ -5,8 +5,6 @@ use oauth2::reqwest::http_client;
 use serde::{Deserialize};
 use lazy_static::lazy_static;
 
-// https://docs.rs/oauth2/3.0.0-alpha.10/oauth2/index.html
-
 const USER_AGENT: &str = "localhost";
 
 lazy_static! {

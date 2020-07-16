@@ -5,7 +5,6 @@ use actix_http::cookie::Cookie;
 use serde::{Serialize, Deserialize};
 use futures::{StreamExt, TryStreamExt};
 use futures::future::{ok, err, Ready};
-
 use crate::session::{Session};
 use crate::database::{DatabaseOperations};
 
