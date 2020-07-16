@@ -6,7 +6,6 @@ use chrono::prelude::*;
 use crate::images;
 use crate::files;
 use crate::database;
-use crate::types;
 use crate::ids;
 use crate::exif;
 use crate::database::{DatabaseOperations, DatabaseBatchOperations, DatabaseUserOperations};
@@ -76,16 +75,6 @@ impl Photo {
 				path_original,
 				exif
 			})
-		}
-	}
-
-	/// Convert photo to a smaller struct suitable for exposing to client
-	/// TODO: Remove this and implement From trait for it
-	pub fn to_client_photo(&self) -> types::ClientPhoto {
-		types::ClientPhoto{
-			id: self.id.to_string(),
-			width: self.width,
-			height: self.height
 		}
 	}
 

@@ -1,9 +1,7 @@
 use actix_web::{web, HttpRequest, HttpResponse, Responder};
 use actix_multipart::{Multipart};
 use actix_http::cookie::Cookie;
-use serde::{Deserialize};
 
-use crate::types::{ClientAlbum, UpdateAlbum};
 use crate::session::{Session};
 use crate::database;
 use crate::database::{DatabaseOperations, DatabaseUserOperations};
@@ -12,30 +10,111 @@ use crate::photos;
 use crate::photos::Photo;
 use crate::albums;
 use crate::albums::Album;
-use crate::oauth2;
-use crate::http::*;
+use crate::web::oauth2;
+use crate::web::http::*;
 
-/// Data send to oauth callback handler by oauth provider
-#[derive(Deserialize)]
-pub struct OauthCallbackRequest {
-	code: String,
-	state: String
+mod requests {
+	use serde::{Deserialize};
+
+	#[derive(Deserialize)]
+	pub struct OauthCallback {
+		pub code: String,
+		pub state: String
+	}
+
+	#[derive(Deserialize)]
+	pub struct CreateAlbum {
+		pub title: String
+	}
+
+	#[derive(Deserialize)]
+	pub struct GetSharedCollection {
+		pub shared_collection_id: String
+	}
+
+	#[derive(Deserialize)]
+	pub struct GetSharedCollectionPhoto {
+		pub shared_collection_id: String,
+		pub photo_id: String
+	}
+
+	#[derive(Deserialize)]
+	pub struct UpdateAlbum {
+		pub title: Option<String>,
+		pub public: Option<bool>,
+		pub thumb_photo_id: Option<String>,
+		pub photos: Option<Vec<String>>
+	}
 }
 
-#[derive(Deserialize)]
-pub struct CreateAlbumRequest {
-	title: String
-}
+mod responses {
+	use serde::{Serialize};
+	use crate::photos::Photo;
+	use crate::albums::Album;
+	use crate::database::{DatabaseOperations, DatabaseBatchOperations};
+ 
+	#[derive(Serialize)]
+	pub struct PhotoSmall {
+		id: String,
+		width: u16,
+		height: u16
+	}
 
-#[derive(Deserialize)]
-pub struct GetSharedCollectionRequest {
-	shared_collection_id: String
-}
+	#[derive(Serialize)]
+	pub struct ClientAlbum {
+		pub title: String,
+		pub public: bool,
+		pub thumb_photo: Option<PhotoSmall>,
+		pub photos: Vec<PhotoSmall>
+	}
+	
+	impl From<Photo> for PhotoSmall {
+		fn from(photo: Photo) -> Self {
+			Self {
+				id: photo.id,
+				width: photo.width as u16,
+				height: photo.height as u16
+			}
+		}
+	}
+	
+	impl From<Album> for ClientAlbum {
+		fn from(album: Album) -> Self {
+			let mut ids: Vec<&str> = Vec::new();
+			
+			for id in album.photos.iter() {
+				ids.push(&id[..]);
+			}
 
-#[derive(Deserialize)]
-pub struct GetPhotoOfSharedCollectionRequest {
-	shared_collection_id: String,
-	photo_id: String
+			Self {
+				title: album.title,
+				public: album.public,
+				thumb_photo: {
+					if let Some(thumb_photo_id) = album.thumb_photo_id {
+						match Photo::get(&thumb_photo_id) {
+							Some(thumb_photo) => Some(PhotoSmall::from(thumb_photo)),
+							None => None
+						}
+					} else {
+						None
+					}
+				},
+				photos: {
+					match Photo::get_with_ids(&ids) {
+						Ok(photos) => {
+							let mut result_photos = Vec::new();
+							for photo in photos {
+								result_photos.push(PhotoSmall::from(photo));
+							}
+
+							result_photos
+						}
+						Err(_) => vec!{}
+					}
+				}
+			}
+		}
+	}
 }
 
 /// Get all albums
@@ -56,7 +135,7 @@ pub async fn route_get_album(user: User, req: HttpRequest) -> impl Responder {
 	match Album::get_as_user(album_id, user.user_id) {
 		Ok(album_opt) => {
 			match album_opt {
-				Some(album) => HttpResponse::Ok().json(ClientAlbum::from(album)),
+				Some(album) => HttpResponse::Ok().json(responses::ClientAlbum::from(album)),
 				None => create_not_found_response()
 			}
 		},
@@ -65,7 +144,7 @@ pub async fn route_get_album(user: User, req: HttpRequest) -> impl Responder {
 }
 
 /// Create a new album
-pub async fn route_create_album(user: User, album: web::Json<CreateAlbumRequest>) -> impl Responder {
+pub async fn route_create_album(user: User, album: web::Json<requests::CreateAlbum>) -> impl Responder {
 	if album.title.len() > crate::constants::ALBUM_TITLE_MAX_LENGTH {
 		create_bad_request_response(&format!("Maximum length for album title is {}.", crate::constants::ALBUM_TITLE_MAX_LENGTH))
 	} else {
@@ -79,7 +158,7 @@ pub async fn route_create_album(user: User, album: web::Json<CreateAlbumRequest>
 }
 
 /// Update an album
-pub async fn route_update_album(user: User, req: HttpRequest, updated_album: web::Json<UpdateAlbum>) -> impl Responder {
+pub async fn route_update_album(user: User, req: HttpRequest, updated_album: web::Json<requests::UpdateAlbum>) -> impl Responder {
 	let album_id = req.match_info().get("album_id").unwrap();
 
 	match Album::get_as_user(&album_id, user.user_id) {
@@ -140,7 +219,12 @@ pub async fn route_delete_album(user: User, req: HttpRequest) -> impl Responder 
 /// Get all photos
 pub async fn route_get_photos(user: User) -> impl Responder {
 	match Photo::get_all_as_user(user.user_id) {
-		Ok(photos) => HttpResponse::Ok().json(photos),
+		Ok(photos) => {
+			let photos_small: Vec<responses::PhotoSmall> = photos.into_iter()
+				.map(|photo| responses::PhotoSmall::from(photo))
+				.collect();
+			HttpResponse::Ok().json(photos_small)
+		},
 		Err(error) => {
 			println!("{}", error);
 			create_internal_server_error_response(Some(&error))
@@ -263,7 +347,7 @@ pub async fn oauth_start_login() -> impl Responder {
 }
 
 /// OAuth callback
-pub async fn oauth_callback(mut session: Session, oauth_info: web::Query<OauthCallbackRequest>) -> impl Responder {
+pub async fn oauth_callback(mut session: Session, oauth_info: web::Query<requests::OauthCallback>) -> impl Responder {
 	match &session.oauth {
 		Some(oauth_data) => {
 			// Verify state value
@@ -312,11 +396,11 @@ pub async fn oauth_user_info(user: User) -> impl Responder {
 }
 
 /// Get shared collection
-pub async fn route_get_shared_collection(info: web::Path<GetSharedCollectionRequest>) -> impl Responder {
+pub async fn route_get_shared_collection(info: web::Path<requests::GetSharedCollection>) -> impl Responder {
 	match Album::get(&info.shared_collection_id) {
 		Some(album) => {
 			if album.public {
-				HttpResponse::Ok().json(ClientAlbum::from(album))
+				HttpResponse::Ok().json(responses::ClientAlbum::from(album))
 			} else {
 				create_unauthorized_response()
 			}
@@ -326,7 +410,7 @@ pub async fn route_get_shared_collection(info: web::Path<GetSharedCollectionRequ
 }
 
 /// Get info about a photo of a shared collection
-pub async fn route_get_photo_for_shared_collection(info: web::Path<GetPhotoOfSharedCollectionRequest>) -> impl Responder {
+pub async fn route_get_photo_for_shared_collection(info: web::Path<requests::GetSharedCollectionPhoto>) -> impl Responder {
 	match Album::get(&info.shared_collection_id) {
 		Some(album) => {
 			if album.public && album.photos.contains(&info.photo_id) {
@@ -343,17 +427,17 @@ pub async fn route_get_photo_for_shared_collection(info: web::Path<GetPhotoOfSha
 }
 
 /// Download original photo of a shared collection
-pub async fn route_download_photo_original_for_shared_collection(info: web::Path<GetPhotoOfSharedCollectionRequest>) -> impl Responder {
+pub async fn route_download_photo_original_for_shared_collection(info: web::Path<requests::GetSharedCollectionPhoto>) -> impl Responder {
 	create_response_for_public_album_photo(&info.shared_collection_id, &info.photo_id, |photo| serve_photo(&photo.path_original, &photo.name, true))
 }
 
 /// Download thumb photo of a shared collection
-pub async fn route_download_photo_thumb_for_shared_collection(info: web::Path<GetPhotoOfSharedCollectionRequest>) -> impl Responder {
+pub async fn route_download_photo_thumb_for_shared_collection(info: web::Path<requests::GetSharedCollectionPhoto>) -> impl Responder {
 	create_response_for_public_album_photo(&info.shared_collection_id, &info.photo_id, |photo| serve_photo(&photo.path_thumbnail, &photo.name, false))
 }
 
 /// Download preview photo of a shared collection
-pub async fn route_download_photo_preview_for_shared_collection(info: web::Path<GetPhotoOfSharedCollectionRequest>) -> impl Responder {
+pub async fn route_download_photo_preview_for_shared_collection(info: web::Path<requests::GetSharedCollectionPhoto>) -> impl Responder {
 	create_response_for_public_album_photo(&info.shared_collection_id, &info.photo_id, |photo| serve_photo(&photo.path_preview, &photo.name, false))
 }
 
