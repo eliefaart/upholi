@@ -2,6 +2,7 @@ use actix_web::{web, HttpRequest, HttpResponse, Responder};
 use actix_multipart::{Multipart};
 use actix_http::cookie::Cookie;
 
+use crate::error::*;
 use crate::session::{Session};
 use crate::database;
 use crate::database::{DatabaseOperations, DatabaseUserOperations};
@@ -123,7 +124,7 @@ pub async fn route_get_albums(user: User) -> impl Responder {
 		Ok(albums) => HttpResponse::Ok().json(albums),
 		Err(error) => {
 			println!("{}", error);
-			create_internal_server_error_response(Some(&error))
+			create_internal_server_error_response(Some(error))
 		}
 	}
 }
@@ -146,13 +147,13 @@ pub async fn route_get_album(user: User, req: HttpRequest) -> impl Responder {
 /// Create a new album
 pub async fn route_create_album(user: User, album: web::Json<requests::CreateAlbum>) -> impl Responder {
 	if album.title.len() > crate::constants::ALBUM_TITLE_MAX_LENGTH {
-		create_bad_request_response(&format!("Maximum length for album title is {}.", crate::constants::ALBUM_TITLE_MAX_LENGTH))
+		create_bad_request_response(Box::from(format!("Maximum length for album title is {}.", crate::constants::ALBUM_TITLE_MAX_LENGTH)))
 	} else {
 		let album = albums::Album::new(user.user_id, &album.title);
 
 		match album.insert() {
 			Ok(_) => create_created_response(&album.id),
-			Err(error) => create_internal_server_error_response(Some(&error))
+			Err(error) => create_internal_server_error_response(Some(error))
 		}
 	}
 }
@@ -171,22 +172,22 @@ pub async fn route_update_album(user: User, req: HttpRequest, updated_album: web
 		
 					// TODO: Verify if all photoIds & thumbPhotoId are valid.
 		
-					if updated_album.title.is_some() {
-						album.title = updated_album.title.as_ref().unwrap().to_string();
+					if let Some(title) = &updated_album.title {
+						album.title = title.to_string();
 					}
-					if updated_album.public.is_some() {
-						album.public = updated_album.public.unwrap();
+					if let Some(public) = updated_album.public {
+						album.public = public;
 					}
-					if updated_album.photos.is_some() {
-						album.photos = updated_album.photos.as_ref().unwrap().to_vec();
+					if let Some(photos) = &updated_album.photos {
+						album.photos = photos.to_vec();
 					}
-					if updated_album.thumb_photo_id.is_some() {
-						album.thumb_photo_id = Some(updated_album.thumb_photo_id.as_ref().unwrap().to_string());
+					if let Some(thumb_photo_id) = &updated_album.thumb_photo_id {
+						album.thumb_photo_id = Some(thumb_photo_id.to_string());
 					}
 		
 					match album.update() {
 						Ok(_) => create_ok_response(),
-						Err(error) => create_internal_server_error_response(Some(&error))
+						Err(error) => create_internal_server_error_response(Some(error))
 					}
 				},
 				None => create_not_found_response()
@@ -206,7 +207,7 @@ pub async fn route_delete_album(user: User, req: HttpRequest) -> impl Responder 
 				Some(album) => {
 					match album.delete() {
 						Ok(_) => create_ok_response(),
-						Err(error) => create_internal_server_error_response(Some(&error))
+						Err(error) => create_internal_server_error_response(Some(error))
 					}
 				},
 				None => create_not_found_response()
@@ -227,7 +228,7 @@ pub async fn route_get_photos(user: User) -> impl Responder {
 		},
 		Err(error) => {
 			println!("{}", error);
-			create_internal_server_error_response(Some(&error))
+			create_internal_server_error_response(Some(error))
 		}
 	}
 }
@@ -290,29 +291,32 @@ pub async fn route_download_photo_original(user: User, req: HttpRequest) -> impl
 
 /// Upload a photo
 pub async fn route_upload_photo(user: User, payload: Multipart) -> impl Responder {
-	let form_data = get_form_data(payload).await;
+	match get_form_data(payload).await {
+		Ok(form_data) => {
+			let mut files_iter = form_data.iter().filter(|d| d.name == "file");
+			let file_option = files_iter.next();
+			let remaining_files = files_iter.count();
 
-	let mut files_iter = form_data.iter().filter(|d| d.name == "file");
-	let file_option = files_iter.next();
-	let remaining_files = files_iter.count();
+			if remaining_files > 0 {
+				return create_bad_request_response(Box::from(UploadError::MoreThanOneFile));
+			}
 
-	if remaining_files > 0 {
-		return create_bad_request_response("Request contains more than one file.");
-	}
-
-	match file_option {
-		Some(file) => {
-			match photos::Photo::new(user.user_id, &file.bytes) {
-				Ok(photo) => {
-					match photo.insert() {
-						Ok(_) => create_created_response(&photo.id),
-						Err(error) => create_bad_request_response(&error)
+			match file_option {
+				Some(file) => {
+					match photos::Photo::new(user.user_id, &file.bytes) {
+						Ok(photo) => {
+							match photo.insert() {
+								Ok(_) => create_created_response(&photo.id),
+								Err(error) => create_bad_request_response(error)
+							}
+						},
+						Err(error) => create_bad_request_response(error)
 					}
 				},
-				Err(error) => create_bad_request_response(&error)
+				None => create_bad_request_response(Box::from(UploadError::NoFile))
 			}
 		},
-		None => create_bad_request_response("Request contains no file.")
+		Err(error) => create_bad_request_response(error)
 	}
 }
 
@@ -339,10 +343,10 @@ pub async fn oauth_start_login() -> impl Responder {
 						.header(http::header::LOCATION, redirect_uri)
 						.finish()
 				},
-				Err(error) => create_internal_server_error_response(Some(&error))
+				Err(error) => create_internal_server_error_response(Some(error))
 			}
 		},
-		Err(error) => create_internal_server_error_response(Some(&error))
+		Err(error) => create_internal_server_error_response(Some(error))
 	}
 }
 
@@ -372,11 +376,11 @@ pub async fn oauth_callback(mut session: Session, oauth_info: web::Query<request
 										.header(http::header::LOCATION, "/")
 										.finish()
 								},
-								Err(error) => create_internal_server_error_response(Some(&format!("Error: {}", error)))
+								Err(error) => create_internal_server_error_response(Some(error))
 							}
 						},
 						Err(error) => {
-							create_internal_server_error_response(Some(&format!("Error: {}", error)))
+							create_internal_server_error_response(Some(error))
 						}
 					}
 				},
@@ -478,18 +482,23 @@ fn create_response_for_photo(photo_id: &str, user_id: i64, offer_as_download: bo
 /// Create an HTTP response that offers photo file at given path as download
 fn serve_photo(path: &str, file_name: &str, offer_as_download: bool) -> actix_http::Response {
 	match crate::files::get_photo(path) {
-		Some(file_bytes) => {
-			HttpResponse::Ok()
-				.content_type("image/jpeg")
-				.header(http::header::CONTENT_DISPOSITION, 
-					if offer_as_download {
-						format!("attachment; filename=\"{}\"", file_name) 
-					} else {  
-						"inline;".to_string()
-					})
-				.body(file_bytes)
+		Ok(file_bytes_option) => {
+			match file_bytes_option {
+				Some(file_bytes) => {
+					HttpResponse::Ok()
+						.content_type("image/jpeg")
+						.header(http::header::CONTENT_DISPOSITION, 
+							if offer_as_download {
+								format!("attachment; filename=\"{}\"", file_name) 
+							} else {  
+								"inline;".to_string()
+							})
+						.body(file_bytes)
+				},
+				None => create_internal_server_error_response(Some(Box::from(FileError::NotFound)))
+			}
 		},
-		None => create_internal_server_error_response(Some("Error reading file content from disk, or file not found"))
+		Err(error) => create_internal_server_error_response(Some(error))
 	}
 }
 
@@ -506,7 +515,11 @@ pub fn delete_photos(user_id: i64, ids: &[&str]) -> impl Responder {
 
 	// Delete physical files for photo
 	for id in ids {
-		delete_photo_files(&id);
+		let result = delete_photo_files(&id);
+		match result {
+			Ok(_) => {},
+			Err(error) => return create_internal_server_error_response(Some(error))
+		}
 	}
 
 	// Delete all photos from database
@@ -518,10 +531,11 @@ pub fn delete_photos(user_id: i64, ids: &[&str]) -> impl Responder {
 
 /// Deletes all physical files of a photo from file system
 /// Original, thumbnail and preview images.
-fn delete_photo_files(photo_id: &str) {
+fn delete_photo_files(photo_id: &str) -> Result<()> {
 	if let Some(photo) = photos::Photo::get(&photo_id) {
-		files::delete_photo(&photo.path_original);
-		files::delete_photo(&photo.path_preview);
-		files::delete_photo(&photo.path_thumbnail);
+		files::delete_photo(&photo.path_original)?;
+		files::delete_photo(&photo.path_preview)?;
+		files::delete_photo(&photo.path_thumbnail)?;
 	}
+	Ok(())
 }

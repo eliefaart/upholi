@@ -5,6 +5,7 @@ use actix_http::cookie::Cookie;
 use serde::{Serialize, Deserialize};
 use futures::{StreamExt, TryStreamExt};
 use futures::future::{ok, err, Ready};
+use crate::error::*;
 use crate::session::{Session};
 use crate::database::{DatabaseOperations};
 
@@ -96,38 +97,47 @@ fn get_user_id(req: &HttpRequest) -> Option<i64> {
 }
 
 /// Gets all fields from multipart payload.
-pub async fn get_form_data(mut payload: Multipart) -> Vec<FormData> {
+pub async fn get_form_data(mut payload: Multipart) -> Result<Vec<FormData>> {
 	let mut form_data: Vec<FormData> = Vec::new();
 
 	while let Ok(Some(field)) = payload.try_next().await {
 
-		let content_disposition = field.content_disposition().unwrap();
-		//let content_type = field.content_type();
-		let key = content_disposition.get_name().unwrap();
-
-		let field_bytes = get_form_field_bytes(field).await;
-		form_data.push(FormData{
-			name: key.to_string(),
-			bytes: field_bytes
-		});
-	}
-
-	form_data
-}
-
-/// Gets the bytes of a single multipart field.
-async fn get_form_field_bytes(mut field: Field) -> Vec<u8> {
-	let mut field_bytes: Vec<u8> = Vec::new();
-
-	while let Some(chunk) = field.next().await {
-		let chunk_bytes = chunk.unwrap();
-
-		for byte in chunk_bytes {
-			field_bytes.push(byte);
+		match field.content_disposition() {
+			Some(content_disposition) => {
+				match content_disposition.get_name() {
+					Some(key) => {
+						let field_bytes = get_form_field_bytes(field).await?;
+						form_data.push(FormData{
+							name: key.to_string(),
+							bytes: field_bytes
+						});
+					},
+					None => return Err(Box::from(UploadError::HeaderContentDispositionInvalid))
+				}
+			},
+			None => return Err(Box::from(UploadError::HeaderContentDispositionMissing))
 		}
 	}
 
-	field_bytes
+	Ok(form_data)
+}
+
+/// Gets the bytes of a single multipart field.
+async fn get_form_field_bytes(mut field: Field) -> Result<Vec<u8>> {
+	let mut field_bytes: Vec<u8> = Vec::new();
+
+	while let Some(chunk) = field.next().await {
+		match chunk {
+			Ok(chunk_bytes) => {
+				for byte in chunk_bytes {
+					field_bytes.push(byte);
+				}
+			},
+			Err(error) => return Err(Box::from(format!("{:?}", error)))
+		}
+	}
+
+	Ok(field_bytes)
 }
 
 /// Create a HTTP 200 OK response
@@ -146,16 +156,21 @@ pub fn create_not_found_response() -> actix_http::Response {
 }
 
 /// Create a HTTP 400 Bad Request response
-pub fn create_bad_request_response(message: &str) -> actix_http::Response {
-	HttpResponse::BadRequest().json(ErrorResult{message: message.to_string()})
+pub fn create_bad_request_response(error: Box<dyn std::error::Error>) -> actix_http::Response {
+	HttpResponse::BadRequest()
+		.json(ErrorResult{
+			message: format!("{:?}", error) 
+		})
 }
 
 /// Create a HTTP 500 Internal Server Error response
-pub fn create_internal_server_error_response(message: Option<&str>) -> actix_http::Response {
+pub fn create_internal_server_error_response(error: Option<Box<dyn std::error::Error>>) -> actix_http::Response {
 	let mut response = HttpResponse::InternalServerError();
 
-	match message {
-		Some(msg) => response.json(ErrorResult{message: msg.to_string()}),
+	match error {
+		Some(error) => response.json(ErrorResult{
+			message: format!("{:?}", error) 
+		}),
 		None => response.finish()
 	}
 }

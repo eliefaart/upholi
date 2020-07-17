@@ -4,6 +4,7 @@ use oauth2::basic::BasicClient;
 use oauth2::reqwest::http_client;
 use serde::{Deserialize};
 use lazy_static::lazy_static;
+use crate::error::*;
 
 const USER_AGENT: &str = "localhost";
 
@@ -34,7 +35,7 @@ pub fn get_auth_url() -> (String, String, String) {
 }
 
 /// Get access token for the authorization code received from oauth provider 
-pub fn get_access_token(auth_code: &str, pkce_verifier: &str) -> Result<String, String> {
+pub fn get_access_token(auth_code: &str, pkce_verifier: &str) -> Result<String> {
 	let token_result = OAUTH_CLIENT
 		.exchange_code(AuthorizationCode::new(auth_code.to_string()))
 		.set_pkce_verifier(oauth2::PkceCodeVerifier::new(pkce_verifier.to_string()))
@@ -46,7 +47,7 @@ pub fn get_access_token(auth_code: &str, pkce_verifier: &str) -> Result<String, 
 		},
 		Err(error) => {
 			println!("{}", error);
-			Err("Failed to get access token for auth code".to_string())
+			Err(Box::from(Oauth2Error::GetAccessTokenFailed))
 		}
 	}
 }

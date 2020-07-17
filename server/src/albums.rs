@@ -3,6 +3,7 @@ use serde::{Serialize, Deserialize};
 use crate::ids;
 use crate::database;
 use crate::database::*;
+use crate::error::*;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -39,15 +40,15 @@ impl DatabaseOperations for Album {
 		database::find_one(&id, &collection)
 	}
 
-	fn insert(&self) -> Result<(), String> {
+	fn insert(&self) -> Result<()> {
 		if self.id.is_empty() {
-			return Err("Album ID not set".to_string());
+			return Err(Box::from(EntityError::IdMissing));
 		}
 
 		let collection = database::get_collection_albums();
 		
 		match Self::get(&self.id) {
-			Some(_) => Err(format!("An album with id {} already exists", &self.id)),
+			Some(_) => Err(Box::from(EntityError::AlreadyExists)),
 			None => {
 				let _ = database::insert_item(&collection, &self)?;
 				Ok(())
@@ -55,26 +56,26 @@ impl DatabaseOperations for Album {
 		}
 	}
 
-	fn update(&self) -> Result<(), String> {
+	fn update(&self) -> Result<()> {
 		let collection = database::get_collection_albums();
 		database::replace_one(&self.id, self, &collection)
 	}
 
-	fn delete(&self) -> Result<(), String> {
+	fn delete(&self) -> Result<()> {
 		let collection = database::get_collection_albums();
 		match database::delete_one(&self.id, &collection) {
 			Some(_) => Ok(()),
-			None => Err("Failed to delete album".to_string())
+			None => Err(Box::from(EntityError::DeleteFailed))
 		}
 	}
 }
 
 impl DatabaseUserOperations for Album {
-	fn get_as_user(id: &str, user_id: i64) -> Result<Option<Self>, String>{
+	fn get_as_user(id: &str, user_id: i64) -> Result<Option<Self>>{
 		match Self::get(id) {
 			Some(album) => {
 				if album.user_id != user_id {
-					Err(format!("User {} does not have access to album {}", user_id, album.id))
+					Err(Box::from(format!("User {} does not have access to album {}", user_id, album.id)))
 				} else {
 					Ok(Some(album))
 				}
@@ -83,12 +84,12 @@ impl DatabaseUserOperations for Album {
 		}
 	}
 
-	fn get_all_as_user(user_id: i64) -> Result<Vec<Self>, String> {
+	fn get_all_as_user(user_id: i64) -> Result<Vec<Self>> {
 		let collection = database::get_collection_albums();
 		database::find_many(&collection, Some(user_id), None, None) 
 	}
 
-	fn get_all_with_ids_as_user(ids: &[&str], user_id: i64) -> Result<Vec<Self>, String> {
+	fn get_all_with_ids_as_user(ids: &[&str], user_id: i64) -> Result<Vec<Self>> {
 		let collection = database::get_collection_albums();
 		database::find_many(&collection, Some(user_id), Some(ids), None) 
 	}

@@ -3,6 +3,7 @@ use rand::{thread_rng, Rng};
 use rand::distributions::Alphanumeric;
 use chrono::prelude::*;
 
+use crate::error::*;
 use crate::images;
 use crate::files;
 use crate::database;
@@ -28,7 +29,7 @@ pub struct Photo {
 
 impl Photo {
 	/// Create a new photo from bytes
-	pub fn new(user_id: i64, photo_bytes: &[u8]) -> Result<Self, String> {
+	pub fn new(user_id: i64, photo_bytes: &[u8]) -> Result<Self> {
 		let id = ids::create_unique_id();
 		let filename = Self::generate_filename(".jpg")?;
 		let hash = Self::compute_md5_hash(photo_bytes);
@@ -37,7 +38,7 @@ impl Photo {
 		let exists = database::photo::exists_for_user(user_id, &hash)?;
 		
 		if exists {
-			Err("Photo already exists".to_string())
+			Err(Box::from(EntityError::AlreadyExists))
 		} else {
 			// Parse exif data
 			let exif = exif::Exif::parse_from_photo_bytes(photo_bytes)?;
@@ -50,9 +51,9 @@ impl Photo {
 			let thumbnail_file_name = format!("thumb_{}", filename);
 			let preview_file_name = format!("preview_{}", filename);
 					
-			let path_original = files::store_photo(&filename, photo_bytes);
-			let path_thumbnail = files::store_photo(&thumbnail_file_name, &image_info.bytes_thumbnail);
-			let path_preview = files::store_photo(&preview_file_name, &image_info.bytes_preview);
+			let path_original = files::store_photo(&filename, photo_bytes)?;
+			let path_thumbnail = files::store_photo(&thumbnail_file_name, &image_info.bytes_thumbnail)?;
+			let path_preview = files::store_photo(&preview_file_name, &image_info.bytes_preview)?;
 			
 			// Decide 'created' date for the photo. Use 'taken on' field from exif if available, otherwise use current time
 			let created_on = {
@@ -87,7 +88,7 @@ impl Photo {
 	}
 
 	/// Generate a random filename
-	fn generate_filename(extension: &str) -> Result<String, String> {
+	fn generate_filename(extension: &str) -> Result<String> {
 		const NAME_LENGTH: usize = 20;
 
 		// Generate random string
@@ -104,11 +105,11 @@ impl Photo {
 			let all_chars_valid = chars.all(|ch| ch.is_alphanumeric() || ch == '.');
 
 			if !all_chars_valid {
-				return Err(format!("Extension '{}' contains invalid characters", extension));
+				return Err(Box::from(FileError::InvalidFileName));
 			}
 
 			if extension.ends_with('.') {
-				return Err("Last extension character cannot be a period".to_string());
+				return Err(Box::from(FileError::InvalidFileName));
 			}
 
 			// Prepend extension with a period if it is missing
@@ -128,15 +129,15 @@ impl DatabaseOperations for Photo {
 		database::find_one(&id, &collection)
 	}
 
-	fn insert(&self) -> Result<(), String> {
+	fn insert(&self) -> Result<()> {
 		if self.id.is_empty() {
-			return Err("Photo ID not set".to_string());
+			return Err(Box::from(EntityError::IdMissing));
 		}
 
 		let collection = database::get_collection_photos();
 		
 		match Self::get(&self.id) {
-			Some(_) => Err(format!("A photo with id {} already exists", &self.id)),
+			Some(_) => Err(Box::from(EntityError::AlreadyExists)),
 			None => {
 				let _ = database::insert_item(&collection, &self)?;
 				Ok(())
@@ -144,33 +145,33 @@ impl DatabaseOperations for Photo {
 		}
 	}
 
-	fn update(&self) -> Result<(), String> {
+	fn update(&self) -> Result<()> {
 		let collection = database::get_collection_photos();
 		database::replace_one(&self.id, self, &collection)
 	}
 
-	fn delete(&self) -> Result<(), String> {
+	fn delete(&self) -> Result<()> {
 		let collection = database::get_collection_photos();
 		match database::delete_one(&self.id, &collection) {
 			Some(_) => Ok(()),
-			None => Err("Failed to delete album".to_string())
+			None => Err(Box::from(EntityError::DeleteFailed))
 		}
 	}
 }
 
 impl DatabaseBatchOperations for Photo {
-	fn get_with_ids(ids: &[&str]) -> Result<Vec<Self>, String> {
+	fn get_with_ids(ids: &[&str]) -> Result<Vec<Self>> {
 		let collection = database::get_collection_photos();
 		database::find_many(&collection, None, Some(ids), None)
 	}
 }
 
 impl DatabaseUserOperations for Photo {
-	fn get_as_user(id: &str, user_id: i64) -> Result<Option<Self>, String>{
+	fn get_as_user(id: &str, user_id: i64) -> Result<Option<Self>>{
 		match Self::get(id) {
 			Some(photo) => {
 				if photo.user_id != user_id {
-					Err(format!("User {} does not have access to photo {}", user_id, photo.id))
+					Err(Box::from(EntityError::NoAccess))
 				} else {
 					Ok(Some(photo))
 				}
@@ -179,7 +180,7 @@ impl DatabaseUserOperations for Photo {
 		}
 	}
 
-	fn get_all_as_user(user_id: i64) -> Result<Vec<Self>, String> {
+	fn get_all_as_user(user_id: i64) -> Result<Vec<Self>> {
 		let collection = database::get_collection_photos();
 		let sort = database::SortField{
 			field: "createdOn", 
@@ -188,7 +189,7 @@ impl DatabaseUserOperations for Photo {
 		database::find_many(&collection, Some(user_id), None, Some(&sort))
 	}
 
-	fn get_all_with_ids_as_user(ids: &[&str], user_id: i64) -> Result<Vec<Self>, String> {
+	fn get_all_with_ids_as_user(ids: &[&str], user_id: i64) -> Result<Vec<Self>> {
 		let collection = database::get_collection_photos();
 		let sort = database::SortField{
 			field: "createdOn", 
