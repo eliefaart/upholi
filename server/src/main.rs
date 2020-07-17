@@ -2,6 +2,7 @@ use lazy_static::lazy_static;
 use settings::Settings;
 
 mod constants;
+mod error;
 mod database;
 mod images;
 mod files;

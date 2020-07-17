@@ -1,8 +1,9 @@
+use serde::{Serialize, Deserialize};
+use chrono::prelude::*;
 use crate::database;
 use crate::database::{DatabaseOperations};
 use crate::ids;
-use serde::{Serialize, Deserialize};
-use chrono::prelude::*;
+use crate::error::*;
 
 /// A client session
 #[derive(Serialize, Deserialize)]
@@ -52,23 +53,23 @@ impl DatabaseOperations for Session {
 		database::find_one(id, &collection)
 	}
 
-	fn insert(&self) -> Result<(), String> {
+	fn insert(&self) -> Result<()> {
 		let collection = database::get_collection_sessions();
 		database::insert_item(&collection, &self)?;
 
 		Ok(())
 	}
 
-	fn update(&self)  -> Result<(), String> {
+	fn update(&self)  -> Result<()> {
 		let collection = database::get_collection_sessions();
 		database::replace_one(&self.id, &self, &collection)
 	}
 
-	fn delete(&self)  -> Result<(), String> {
+	fn delete(&self)  -> Result<()> {
 		let collection = database::get_collection_sessions();
 		match database::delete_one(&self.id, &collection) {
 			Some(_) => Ok(()),
-			None => Err("Failed to delete session".to_string())
+			None => Err(Box::from(EntityError::DeleteFailed))
 		}
 	}
 }

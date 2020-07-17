@@ -1,5 +1,5 @@
 use bson::{doc};
-
+use crate::error::*;
 use crate::database;
 
 /// Remove photos with given photo_ids from all albums containing any of these photos

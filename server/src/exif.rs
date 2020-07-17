@@ -1,6 +1,7 @@
 use serde::{Serialize, Deserialize};
 use chrono::prelude::*;
 use rexif::{TagValue, ExifTag};
+use crate::error::*;
 
 #[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
@@ -20,7 +21,7 @@ pub struct Exif {
 
 impl Exif {
 	/// Parse EXIF data from photo bytes. Bytes can represent a .jpg or .tiff file.
-	pub fn parse_from_photo_bytes(photo_bytes: &[u8]) -> Result<Exif, String> {
+	pub fn parse_from_photo_bytes(photo_bytes: &[u8]) -> Result<Exif> {
 		let result = rexif::parse_buffer(photo_bytes);
 		match result {
 			Ok(exif) => {
@@ -61,7 +62,7 @@ impl Exif {
 					rexif::ExifError::JpegWithoutExif(_) => Ok(Self::default()),
 					rexif::ExifError::FileTypeUnknown => Ok(Self::default()),
 					rexif::ExifError::UnsupportedNamespace => Ok(Self::default()),
-					_ => Err(format!("{:?}", error))
+					_ => Err(Box::from(format!("{:?}", error)))
 				}
 			}
 		}

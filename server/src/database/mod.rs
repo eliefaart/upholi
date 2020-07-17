@@ -1,6 +1,7 @@
 use mongodb::{Client, options::ClientOptions};
 use bson::{doc};
 use lazy_static::lazy_static;
+use crate::error::*;
 
 pub mod album;
 pub mod photo;
@@ -47,47 +48,55 @@ pub trait DatabaseOperations {
 		where Self: std::marker::Sized;
 
 	/// Insert item as new record
-	fn insert(&self) -> Result<(), String>;
+	fn insert(&self) -> Result<()>;
 
 	/// Store this instance in its current state
-	fn update(&self) -> Result<(), String>;
+	fn update(&self) -> Result<()>;
 
 	/// Delete this item from database
-	fn delete(&self) -> Result<(), String>;
+	fn delete(&self) -> Result<()>;
 }
 
 /// Adds CRUD operations to a struct that targets multiple items
 pub trait DatabaseBatchOperations {
 	/// Get all items with an id contained within given array
-	fn get_with_ids(ids: &[&str]) -> Result<Vec<Self>, String>
+	fn get_with_ids(ids: &[&str]) -> Result<Vec<Self>>
 		where Self: std::marker::Sized;
 }
 
 /// Add database operations to a struct, which are targetted only to entries owned by given user
 pub trait DatabaseUserOperations: DatabaseOperations {
-	fn get_as_user(id: &str, user_id: i64) -> Result<Option<Self>, String>
+	fn get_as_user(id: &str, user_id: i64) -> Result<Option<Self>>
 		where Self: std::marker::Sized;
 
-	fn get_all_as_user(user_id: i64) -> Result<Vec<Self>, String>
+	fn get_all_as_user(user_id: i64) -> Result<Vec<Self>>
 		where Self: std::marker::Sized;
 
-	fn get_all_with_ids_as_user(ids: &[&str], user_id: i64) -> Result<Vec<Self>, String>
+	fn get_all_with_ids_as_user(ids: &[&str], user_id: i64) -> Result<Vec<Self>>
 		where Self: std::marker::Sized;
 }
 
 
 /// Insert a single item into a collection
-pub fn insert_item<T: serde::Serialize>(collection: &mongodb::Collection, bson_item: &T) -> Result<String, String> {
-	let serialized_bson = bson::to_bson(bson_item).unwrap();
-
-	if let bson::Bson::Document(document) = serialized_bson {
-		let result = collection.insert_one(document, None);
-		match result {
-			Ok(insert_result) => Ok(insert_result.inserted_id.as_object_id().unwrap().to_hex()),
-			Err(err) => Err(err.to_string())
-		}
-	} else {
-		Err("Failed to serialize struct".to_string())
+pub fn insert_item<T: serde::Serialize>(collection: &mongodb::Collection, item: &T) -> Result<String> {
+	match bson::to_bson(item) {
+		Ok(bson_item) => {
+			if let bson::Bson::Document(document) = bson_item {
+				let result = collection.insert_one(document, None);
+				match result {
+					Ok(insert_result) => {
+						match insert_result.inserted_id.as_object_id() {
+							Some(object_id) => Ok(object_id.to_hex()),
+							None => Err(Box::from(DatabaseError::InvalidId))
+						}
+					},
+					Err(error) => Err(Box::from(error))
+				}
+			} else {
+				Err(Box::from("Invalid bson document"))
+			}
+		},
+		Err(error) => Err(Box::from(error))
 	}
 }
 
@@ -100,7 +109,7 @@ pub fn find_one<'de, T: serde::Deserialize<'de>>(id: &str, collection: &mongodb:
 }
 
 /// Get multiple items from a collection
-pub fn find_many<'de, T: serde::Deserialize<'de>>(collection: &mongodb::Collection, user_id: Option<i64>, ids: Option<&[&str]>, sort_field: Option<&SortField>) -> Result<Vec<T>, String> {
+pub fn find_many<'de, T: serde::Deserialize<'de>>(collection: &mongodb::Collection, user_id: Option<i64>, ids: Option<&[&str]>, sort_field: Option<&SortField>) -> Result<Vec<T>> {
 	let mut pipeline = vec!{
 		doc!{
 			"$match": create_filter_for_user_and_ids_options(&user_id, &ids)
@@ -126,25 +135,26 @@ pub fn find_many<'de, T: serde::Deserialize<'de>>(collection: &mongodb::Collecti
 	// Run query and collect results
 	match collection.aggregate(pipeline, None) {
 		Ok(cursor) => Ok(get_items_from_cursor(cursor)?),
-		Err(error) => Err(format!("error: {:?}", error))
+		Err(error) => Err(Box::from(format!("error: {:?}", error)))
 	}
 }
 
 /// Take all items available in given cursor
-fn get_items_from_cursor<'de, T: serde::Deserialize<'de>>(cursor: mongodb::Cursor) -> Result<Vec<T>, String> {
+fn get_items_from_cursor<'de, T: serde::Deserialize<'de>>(cursor: mongodb::Cursor) -> Result<Vec<T>> {
 	let mut items = Vec::new();
 
 	for document_result in cursor {
 		if let Ok(document) = document_result {
-			if let Ok(item) = bson::from_bson(bson::Bson::Document(document)) {
-				items.push(item);
-			}
-			else {
-				return Err("Failed to deserialize a bson document".to_string());
+
+			match bson::from_bson(bson::Bson::Document(document)) {
+				Ok(item) => items.push(item),
+				Err(error) => {
+					return Err(Box::from(error));
+				}
 			}
 		}
 		else {
-			return Err("Failed to get item from cursor".to_string());
+			return Err(Box::from(DatabaseError::ReadCursorFailed));
 		}
 	}
 
@@ -152,21 +162,21 @@ fn get_items_from_cursor<'de, T: serde::Deserialize<'de>>(cursor: mongodb::Curso
 }
 
 /// Replace a single existing item with a new version in its entirety
-pub fn replace_one<T: serde::Serialize>(id: &str, replacement: &T, collection: &mongodb::Collection) -> Result<(), String> {
+pub fn replace_one<T: serde::Serialize>(id: &str, replacement: &T, collection: &mongodb::Collection) -> Result<()> {
 	let filter = create_filter_for_id(id);
 	match bson::to_bson(&replacement) {
-		Ok(serialized_bson) => {
-			if let bson::Bson::Document(document) = serialized_bson {
+		Ok(bson_item) => {
+			if let bson::Bson::Document(document) = bson_item {
 				match collection.replace_one(filter, document, None) {
 					Ok(_) => Ok(()),
-					Err(error) => Err(error.to_string())
+					Err(error) => Err(Box::from(error.to_string()))
 				}
 			}
 			else {
-				Err("Invalid bson document".to_string())
+				Err(Box::from("Invalid bson document"))
 			}
 		},
-		Err(error) => Err(error.to_string())
+		Err(error) => Err(Box::from(error.to_string()))
 	}
 }
 

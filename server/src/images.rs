@@ -1,6 +1,7 @@
 extern crate base64;
 
 use image::{GenericImageView, DynamicImage, ImageFormat};
+use crate::error::*;
 
 const DIMENSIONS_THUMB: u32 = 700;
 const DIMENSIONS_PREVIEW: u32 = 2250;
@@ -16,15 +17,25 @@ pub struct Image {
 impl Image {
 
 	/// Process image from buffer
-	pub fn from_buffer(bytes: &[u8], exif_orientation: u8) -> Result<Self, String>  {
+	pub fn from_buffer(bytes: &[u8], exif_orientation: u8) -> Result<Self>  {
 		//let image = Self::get_image_from_bytes(bytes);
 		match image::load_from_memory(&bytes[0..]) {
 			Ok(image) => {
 				let (mut width, mut height) = Self::get_image_dimensions(&image);
 
 				// Generate thumbs
-				let mut image_preview = Self::resize_image(&image, DIMENSIONS_PREVIEW).unwrap_or_else(|| Self::clone_image(&image));
-				let mut image_thumbnail = Self::resize_image(&image_preview, DIMENSIONS_THUMB).unwrap_or_else(|| Self::clone_image(&image_preview));
+				let mut image_preview = {
+					match Self::resize_image(&image, DIMENSIONS_PREVIEW) {
+						Some(image) => image,
+						None => Self::clone_image(&image)?
+					}
+				};
+				let mut image_thumbnail = {
+					match Self::resize_image(&image_preview, DIMENSIONS_THUMB) {
+						Some(image) => image,
+						None => Self::clone_image(&image_preview)?
+					}
+				};
 		
 				// Rotate if needed
 				if let Some(rotated_image) = Self::rotate_image_upright(&image_thumbnail, exif_orientation) {
@@ -47,7 +58,7 @@ impl Image {
 					bytes_preview: Self::get_image_bytes(&image_preview)
 				})
 			},
-			Err(_) => Err("Corrupt image".to_string())
+			Err(_) => Err(Box::from(FileError::Corrupt))
 		}
 	}
 
@@ -95,14 +106,16 @@ impl Image {
 	}
 
 	/// Clone an image
-	fn clone_image(image: &DynamicImage) -> DynamicImage {
+	fn clone_image(image: &DynamicImage) -> Result<DynamicImage> {
 		Self::get_image_from_bytes(&Self::get_image_bytes(image))
 	}
 
 	/// Convert image bytes to image object
-	fn get_image_from_bytes(image_bytes: &[u8]) -> DynamicImage {
-		let image_result = image::load_from_memory(&image_bytes[0..]);
-		image_result.unwrap()
+	fn get_image_from_bytes(image_bytes: &[u8]) -> Result<DynamicImage> {
+		match image::load_from_memory(&image_bytes[0..]){
+			Ok(image) => Ok(image),
+			Err(error) => Err(Box::from(error))
+		}
 	}
 
 	/// Get bytes from image in Jpeg format
