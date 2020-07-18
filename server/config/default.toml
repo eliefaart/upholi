@@ -1,0 +1,29 @@
+[database]
+# Connection string to database
+# Can also by set using env var HB_DATABASE_CONNECTIONSTRING
+connection_string = ""
+# Name of database to use
+# Can also by set using env var HB_DATABASE_NAME
+name = "hummingbird"
+
+[storage]
+# Path to directory where photos will be stored
+# Can also by set using env var HB_STORAGE_DIRECTORYPHOTOS
+directory_photos = "/srv/hummingbird/photos"
+
+[oauth]
+# OAuth2 authorization url
+# Can also by set using env var HB_OAUTH_AUTHURL
+auth_url = "https://github.com/login/oauth/authorize"
+# OAuth2 token url
+# Can also by set using env var HB_OAUTH_TOKENURL
+token_url = "https://github.com/login/oauth/access_token"
+# Url from which information about the current use can be retreived using an oauth2 access token
+# Can also by set using env var HB_OAUTH_USERINFOURL
+userinfo_url = "https://api.github.com/user"
+# OAuth2 application client ID
+# Can also by set using env var HB_OAUTH_CLIENTID
+client_id = ""
+# OAuth2 application client secret
+# Can also by set using env var HB_OAUTH_CLIENTSECRET
+client_secret = ""

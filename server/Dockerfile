@@ -14,6 +14,9 @@ RUN apt-get update &&\
 # Copy app folder
 COPY target/release/hummingbird /bin/
 
+# Copy configurations
+COPY config/ /bin/config/
+
 # Add execution rights and create folder that a volume will be mounted to
 RUN chmod +x /bin/hummingbird &&\
 	mkdir /srv/hummingbird

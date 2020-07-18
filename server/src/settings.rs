@@ -1,30 +1,41 @@
 use std::env::{var};
+use config::{Config, File};
+use serde::{Deserialize};
+use std::collections::{HashMap};
+use crate::error::*;
 
-const ENV_VAR_DB_CONNECTION_STRING: &str = "HB_DB_CONNSTRING";
-const ENV_VAR_DB_NAME: &str = "HB_DB_NAME";
-const ENV_VAR_DIR_PHOTOS: &str = "HB_DIR_PHOTOS";
-const ENV_VAR_OAUTH_CLIENT_ID: &str = "HB_OAUTH_CLIENTID";
-const ENV_VAR_OAUTH_CLIENT_SECRET: &str = "HB_OAUTH_CLIENTSECRET";
+const ENV_VAR_DATABASE_CONNECTIONSTRING: &str = "HB_DATABASE_CONNECTIONSTRING";
+const ENV_VAR_DATABASE_NAME: &str = "HB_DATABASE_NAME";
+const ENV_VAR_STORAGE_DIRECTORYPHOTOS: &str = "HB_STORAGE_DIRECTORYPHOTOS";
+const ENV_VAR_OAUTH_CLIENTID: &str = "HB_OAUTH_CLIENTID";
+const ENV_VAR_OAUTH_CLIENTSECRET: &str = "HB_OAUTH_CLIENTSECRET";
+const ENV_VAR_OAUTH_AUTHURL: &str = "HB_OAUTH_AUTHURL";
+const ENV_VAR_OAUTH_TOKENURL: &str = "HB_OAUTH_TOKENURL";
+const ENV_VAR_OAUTH_USERINFOURL: &str = "HB_OAUTH_USERINFOURL";
 
 /// Application settings
+#[derive(Debug, Deserialize)]
 pub struct Settings {
 	pub database: Database,
-	pub photos: Photos,
+	pub storage: Storage,
 	pub oauth: OAuth
 }
 
 /// Database settings
+#[derive(Debug, Deserialize)]
 pub struct Database {
 	pub connection_string: String,
 	pub name: String
 }
 
 /// Photos settings
-pub struct Photos {
-	pub base_directory: String
+#[derive(Debug, Deserialize)]
+pub struct Storage {
+	pub directory_photos: String
 }
 
 /// OAuth setting of identity provider
+#[derive(Debug, Deserialize)]
 pub struct OAuth {
 	pub client_id: String,
 	pub client_secret: String,
@@ -41,28 +52,56 @@ impl Default for Settings {
 
 impl Settings {
 	/// Get all application settings
-	/// It just panics now if something went wrong (eg missing env var)
+	/// 
+	/// # Panics
+	/// 
+	/// Panics if anything went wrong
 	pub fn new() -> Self {
-		Self {
-			database: Database{
-				connection_string: Self::get_env_var(ENV_VAR_DB_CONNECTION_STRING),
-				name: Self::get_env_var(ENV_VAR_DB_NAME)
-			},
-			photos: Photos{
-				base_directory: Self::get_env_var(ENV_VAR_DIR_PHOTOS)
-			},
-			oauth: OAuth{
-				client_id: Self::get_env_var(ENV_VAR_OAUTH_CLIENT_ID),
-				client_secret: Self::get_env_var(ENV_VAR_OAUTH_CLIENT_SECRET),
-				auth_url: "https://github.com/login/oauth/authorize".to_string(),
-				token_url: "https://github.com/login/oauth/access_token".to_string(),
-				userinfo_url: "https://api.github.com/user".to_string(),
-			}
+
+		let mut config = Config::new();
+
+		// Set defaults from file
+		config.merge(File::with_name("config/default")).expect("Default config file not found");
+		
+		// TODO: How does this work with field names containing underscores?
+		// I would prefer to use this method instead of the solution below,
+		// but not sure how to get around underscores issue.
+		// Setting 'rename' or 'alias' via serde's attributes doesn't work.
+		// config.merge(Environment::with_prefix("HB"))
+		// 	.expect("Failed to set settings from env variables");
+
+		// Set/overwrite certain settings from environment variables
+		let overwritable_settings: HashMap<&str, &str> = [
+			("database.connection_string", ENV_VAR_DATABASE_CONNECTIONSTRING),
+			("database.name", ENV_VAR_DATABASE_NAME),
+			("storage.directory_photos", ENV_VAR_STORAGE_DIRECTORYPHOTOS),
+			("oauth.client_id", ENV_VAR_OAUTH_CLIENTID),
+			("oauth.client_secret", ENV_VAR_OAUTH_CLIENTSECRET),
+			("oauth.auth_url", ENV_VAR_OAUTH_AUTHURL),
+			("oauth.token_url", ENV_VAR_OAUTH_TOKENURL),
+			("oauth.userinfo_url", ENV_VAR_OAUTH_USERINFOURL),
+		].iter().cloned().collect();
+
+		for setting in overwritable_settings {
+			Self::set_from_env_var(&mut config, setting.0, setting.1)
+				.expect(&format!("Failed to set '{}' from env variable '{}'", setting.0, setting.1));
 		}
+
+		// Build
+		config.try_into().expect("Error building configuration")
+	}
+
+	// Write the value of an env var to configuration if the env var exists
+	// This overwrites any existing value in configuration at given path.
+	fn set_from_env_var(config: &mut Config, path: &str, env_var: &str) -> Result<()> {
+		if let Some(env_var_value) = Self::get_env_var(env_var) {
+			config.set(path, env_var_value)?;
+		};
+		Ok(())
 	}
 	
-	fn get_env_var(key: &str) -> String {
-		let result = var(key);
-		result.unwrap_or_else(|_| panic!("Environment variable with key '{}' missing", key))
+	/// Get the value of an environment variable if it exists
+	fn get_env_var(key: &str) -> Option<String> {
+		var(key).ok()
 	}
 }

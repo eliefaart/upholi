@@ -1,3 +1,4 @@
 *
+!config/
 !target/debug/hummingbird
 !target/release/hummingbird
