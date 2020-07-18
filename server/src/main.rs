@@ -16,10 +16,13 @@ mod web;
 
 lazy_static! {
 	/// Global application settings
+	#[derive(Debug)]
 	pub static ref SETTINGS: Settings = Settings::new();
 }
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
+	println!("{:?}", SETTINGS.database);
+
 	web::run_server().await
 }

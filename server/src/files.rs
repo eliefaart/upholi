@@ -3,9 +3,6 @@ use std::io::prelude::*;
 use std::path::Path;
 use crate::error::{Result};
 
-// TODO: Remove this, it makes no sense since configuration already sets photos directory.
-const PHOTOS_FOLDER_NAME: &str = "photos";
-
 /// Store a photo on file system. Returns the relative path of photo
 pub fn store_photo(file_name: &str, file_bytes: &[u8]) -> Result<String> {
 	
@@ -50,17 +47,16 @@ fn get_absolute_photo_path(photo_relative_path: &str) -> Result<String> {
 /// Returns the absolute path to photo storage base directory 
 /// TODO: Can probably make this lazy_static.. path is constant and only need to check+create once
 fn get_photos_base_path() -> Result<String> {
-	let path_info = Path::new(&crate::SETTINGS.photos.base_directory);
+	let path_info = Path::new(&crate::SETTINGS.storage.directory_photos);
 	if !path_info.exists() {
-		return Err(Box::from(format!("Path {} does not exist", &crate::SETTINGS.photos.base_directory)));
+		return Err(Box::from(format!("Path {} does not exist", &crate::SETTINGS.storage.directory_photos)));
 	}
 
-	let photos_path_info = path_info.join(&PHOTOS_FOLDER_NAME);
-	let photos_path_str = photos_path_info.to_str().ok_or("Empty directory path")?;
+	let photos_path_str = path_info.to_str().ok_or("Empty directory path")?;
 	let photos_path = photos_path_str.to_string();
 
-	if !photos_path_info.exists() {
-		let result = std::fs::create_dir(&photos_path_info);
+	if !path_info.exists() {
+		let result = std::fs::create_dir(&path_info);
 		if result.is_err() {
 			return Err(Box::from(format!("Failed to create directory {}", photos_path)));
 		}
