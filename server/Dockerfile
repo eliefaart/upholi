@@ -15,7 +15,7 @@ RUN apt-get update &&\
 COPY target/release/hummingbird /bin/
 
 # Copy configurations
-COPY config/default.toml /bin/config/
+COPY config/ /config/
 
 # Add execution rights and create folder that a volume will be mounted to
 RUN chmod +x /bin/hummingbird &&\
