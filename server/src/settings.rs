@@ -105,3 +105,39 @@ impl Settings {
 		var(key).ok()
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn no_env_vars() {
+		Settings::new();
+	}
+
+	#[test]
+	fn set_env_vars() {
+		// Set some env vars
+		std::env::set_var(ENV_VAR_DATABASE_CONNECTIONSTRING, "DATABASE_CONNECTIONSTRING");
+		std::env::set_var(ENV_VAR_DATABASE_NAME, "DATABASE_NAME");
+		std::env::set_var(ENV_VAR_STORAGE_DIRECTORYPHOTOS, "STORAGE_DIRECTORYPHOTOS");
+		std::env::set_var(ENV_VAR_OAUTH_CLIENTID, "OAUTH_CLIENTID");
+		std::env::set_var(ENV_VAR_OAUTH_CLIENTSECRET, "OAUTH_CLIENTSECRET");
+		std::env::set_var(ENV_VAR_OAUTH_AUTHURL, "OAUTH_AUTHURL");
+		std::env::set_var(ENV_VAR_OAUTH_TOKENURL, "OAUTH_TOKENURL");
+		std::env::set_var(ENV_VAR_OAUTH_USERINFOURL, "OAUTH_USERINFOURL");
+
+		// Create settings
+		let settings = Settings::new();
+
+		// Check if config settings' values are same as set in env vars
+		assert_eq!(settings.database.connection_string, "DATABASE_CONNECTIONSTRING");
+		assert_eq!(settings.database.name, "DATABASE_NAME");
+		assert_eq!(settings.storage.directory_photos, "STORAGE_DIRECTORYPHOTOS");
+		assert_eq!(settings.oauth.client_id, "OAUTH_CLIENTID");
+		assert_eq!(settings.oauth.client_secret, "OAUTH_CLIENTSECRET");
+		assert_eq!(settings.oauth.auth_url, "OAUTH_AUTHURL");
+		assert_eq!(settings.oauth.token_url, "OAUTH_TOKENURL");
+		assert_eq!(settings.oauth.userinfo_url, "OAUTH_USERINFOURL");
+	}
+}

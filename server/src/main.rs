@@ -22,7 +22,5 @@ lazy_static! {
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
-	println!("{:?}", SETTINGS.database);
-
 	web::run_server().await
 }
