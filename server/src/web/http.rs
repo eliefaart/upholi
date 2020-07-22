@@ -7,7 +7,7 @@ use futures::{StreamExt, TryStreamExt};
 use futures::future::{ok, err, Ready};
 use crate::error::*;
 use crate::session::{Session};
-use crate::database::{DatabaseOperations};
+use crate::database::{DatabaseEntity};
 
 pub const SESSION_COOKIE_NAME: &str = "session";
 
@@ -32,6 +32,7 @@ struct ErrorResult {
 
 /// Data associated with a session
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct User {
 	pub user_id: i64
 }

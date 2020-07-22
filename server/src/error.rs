@@ -10,8 +10,6 @@ pub type Result<T, E = Box<dyn Error>> = std::result::Result<T, E>;
 pub enum EntityError {
 	IdMissing,
 	AlreadyExists,
-	DeleteFailed,
-	UpdateFailed,
 	NoAccess
 }
 
@@ -57,8 +55,6 @@ impl Display for EntityError {
 			match self {
 				EntityError::IdMissing => "Id field missing or empty",
 				EntityError::AlreadyExists => "Entity already exists",
-				EntityError::DeleteFailed => "Failed to delete entity",
-				EntityError::UpdateFailed => "Failed to update entity",
 				EntityError::NoAccess => "Access to entity not allowed for current user"	// Note: 'current user' could be anonymous
 			}
 		};

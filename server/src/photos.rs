@@ -6,10 +6,10 @@ use chrono::prelude::*;
 use crate::error::*;
 use crate::images;
 use crate::files;
-use crate::database;
 use crate::ids;
 use crate::exif;
-use crate::database::{DatabaseOperations, DatabaseBatchOperations, DatabaseUserOperations};
+use crate::database;
+use crate::database::{Database, DatabaseEntity, DatabaseEntityBatch, DatabaseUserEntity, DatabaseExt};
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -35,7 +35,7 @@ impl Photo {
 		let hash = Self::compute_md5_hash(photo_bytes);
 
 		// Verify if this photo doesn't already exist by checking hash in database
-		let exists = database::photo::exists_for_user(user_id, &hash)?;
+		let exists = database::get_database().photo_exists_for_user(user_id, &hash)?;
 		
 		if exists {
 			Err(Box::from(EntityError::AlreadyExists))
@@ -123,10 +123,12 @@ impl Photo {
 	}
 }
 
-impl DatabaseOperations for Photo {
+impl DatabaseEntity for Photo {
 	fn get(id: &str) -> Option<Self> {
-		let collection = database::get_collection_photos();
-		database::find_one(&id, &collection)
+		match database::get_database().find_one(database::COLLECTION_PHOTOS, id) {
+			Ok(item) => item,
+			Err(_) => None
+		}
 	}
 
 	fn insert(&self) -> Result<()> {
@@ -134,39 +136,31 @@ impl DatabaseOperations for Photo {
 			return Err(Box::from(EntityError::IdMissing));
 		}
 
-		let collection = database::get_collection_photos();
-		
 		match Self::get(&self.id) {
 			Some(_) => Err(Box::from(EntityError::AlreadyExists)),
 			None => {
-				let _ = database::insert_item(&collection, &self)?;
+				database::get_database().insert_one(database::COLLECTION_PHOTOS, &self)?;
 				Ok(())
 			}
 		}
 	}
 
 	fn update(&self) -> Result<()> {
-		let collection = database::get_collection_photos();
-		database::replace_one(&self.id, self, &collection)
+		database::get_database().replace_one(database::COLLECTION_PHOTOS, &self.id, self)
 	}
 
 	fn delete(&self) -> Result<()> {
-		let collection = database::get_collection_photos();
-		match database::delete_one(&self.id, &collection) {
-			Some(_) => Ok(()),
-			None => Err(Box::from(EntityError::DeleteFailed))
-		}
+		database::get_database().delete_one(database::COLLECTION_PHOTOS, &self.id)
 	}
 }
 
-impl DatabaseBatchOperations for Photo {
+impl DatabaseEntityBatch for Photo {
 	fn get_with_ids(ids: &[&str]) -> Result<Vec<Self>> {
-		let collection = database::get_collection_photos();
-		database::find_many(&collection, None, Some(ids), None)
+		database::get_database().find_many(database::COLLECTION_PHOTOS, None, Some(ids), None)
 	}
 }
 
-impl DatabaseUserOperations for Photo {
+impl DatabaseUserEntity for Photo {
 	fn get_as_user(id: &str, user_id: i64) -> Result<Option<Self>>{
 		match Self::get(id) {
 			Some(photo) => {
@@ -181,21 +175,19 @@ impl DatabaseUserOperations for Photo {
 	}
 
 	fn get_all_as_user(user_id: i64) -> Result<Vec<Self>> {
-		let collection = database::get_collection_photos();
 		let sort = database::SortField{
 			field: "createdOn", 
 			ascending: false
 		};
-		database::find_many(&collection, Some(user_id), None, Some(&sort))
+		database::get_database().find_many(database::COLLECTION_PHOTOS, Some(user_id), None, Some(&sort))
 	}
 
 	fn get_all_with_ids_as_user(ids: &[&str], user_id: i64) -> Result<Vec<Self>> {
-		let collection = database::get_collection_photos();
 		let sort = database::SortField{
 			field: "createdOn", 
 			ascending: false
 		};
-		database::find_many(&collection, Some(user_id), Some(ids), Some(&sort))
+		database::get_database().find_many(database::COLLECTION_PHOTOS, Some(user_id), Some(ids), Some(&sort))
 	}
 }
 
