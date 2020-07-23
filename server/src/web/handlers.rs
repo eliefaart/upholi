@@ -5,7 +5,7 @@ use actix_http::cookie::Cookie;
 use crate::error::*;
 use crate::session::{Session};
 use crate::database;
-use crate::database::{DatabaseOperations, DatabaseUserOperations};
+use crate::database::{Database, DatabaseExt, DatabaseEntity, DatabaseUserEntity};
 use crate::files;
 use crate::photos;
 use crate::photos::Photo;
@@ -15,15 +15,17 @@ use crate::web::oauth2;
 use crate::web::http::*;
 
 mod requests {
-	use serde::{Deserialize};
+	use serde::Deserialize;
 
 	#[derive(Deserialize)]
+	#[serde(rename_all = "camelCase")]
 	pub struct OauthCallback {
 		pub code: String,
 		pub state: String
 	}
 
 	#[derive(Deserialize)]
+	#[serde(rename_all = "camelCase")]
 	pub struct CreateAlbum {
 		pub title: String
 	}
@@ -39,7 +41,8 @@ mod requests {
 		pub photo_id: String
 	}
 
-	#[derive(Deserialize)]
+	#[derive(Deserialize, Debug)]
+	#[serde(rename_all = "camelCase")]
 	pub struct UpdateAlbum {
 		pub title: Option<String>,
 		pub public: Option<bool>,
@@ -49,12 +52,13 @@ mod requests {
 }
 
 mod responses {
-	use serde::{Serialize};
+	use serde::Serialize;
 	use crate::photos::Photo;
 	use crate::albums::Album;
-	use crate::database::{DatabaseOperations, DatabaseBatchOperations};
+	use crate::database::{DatabaseEntity, DatabaseEntityBatch};
  
 	#[derive(Serialize)]
+	#[serde(rename_all = "camelCase")]
 	pub struct PhotoSmall {
 		id: String,
 		width: u16,
@@ -62,6 +66,7 @@ mod responses {
 	}
 
 	#[derive(Serialize)]
+	#[serde(rename_all = "camelCase")]
 	pub struct ClientAlbum {
 		pub title: String,
 		pub public: bool,
@@ -513,6 +518,14 @@ pub fn delete_photos(user_id: i64, ids: &[&str]) -> impl Responder {
 		}
 	}
 
+	// Remove references to these photos from albums
+	if let Err(error) = database::get_database().remove_photos_from_all_albums(ids) {
+		return create_internal_server_error_response(Some(error));
+	}
+	if let Err(error) = database::get_database().remove_thumbs_from_all_albums(ids) {
+		return create_internal_server_error_response(Some(error));
+	}
+
 	// Delete physical files for photo
 	for id in ids {
 		let result = delete_photo_files(&id);
@@ -523,7 +536,7 @@ pub fn delete_photos(user_id: i64, ids: &[&str]) -> impl Responder {
 	}
 
 	// Delete all photos from database
-	match database::photo::delete_many(ids) {
+	match database::get_database().delete_many(database::COLLECTION_PHOTOS, ids) {
 		Ok(_) => create_ok_response(),
 		Err(_) => create_not_found_response()
 	}

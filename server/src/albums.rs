@@ -34,10 +34,12 @@ impl Album {
 	}
 }
 
-impl DatabaseOperations for Album {
+impl DatabaseEntity for Album {
 	fn get(id: &str) -> Option<Self> {
-		let collection = database::get_collection_albums();
-		database::find_one(&id, &collection)
+		match database::get_database().find_one(database::COLLECTION_ALBUMS, id) {
+			Ok(item) => item,
+			Err(_) => None
+		}
 	}
 
 	fn insert(&self) -> Result<()> {
@@ -45,32 +47,26 @@ impl DatabaseOperations for Album {
 			return Err(Box::from(EntityError::IdMissing));
 		}
 
-		let collection = database::get_collection_albums();
-		
 		match Self::get(&self.id) {
 			Some(_) => Err(Box::from(EntityError::AlreadyExists)),
 			None => {
-				let _ = database::insert_item(&collection, &self)?;
+				database::get_database().insert_one(database::COLLECTION_ALBUMS, &self)?;
 				Ok(())
 			}
 		}
 	}
 
 	fn update(&self) -> Result<()> {
-		let collection = database::get_collection_albums();
-		database::replace_one(&self.id, self, &collection)
+		println!("{:?}", self);
+		database::get_database().replace_one(database::COLLECTION_ALBUMS, &self.id, self)
 	}
 
 	fn delete(&self) -> Result<()> {
-		let collection = database::get_collection_albums();
-		match database::delete_one(&self.id, &collection) {
-			Some(_) => Ok(()),
-			None => Err(Box::from(EntityError::DeleteFailed))
-		}
+		database::get_database().delete_one(database::COLLECTION_ALBUMS, &self.id)
 	}
 }
 
-impl DatabaseUserOperations for Album {
+impl DatabaseUserEntity for Album {
 	fn get_as_user(id: &str, user_id: i64) -> Result<Option<Self>>{
 		match Self::get(id) {
 			Some(album) => {
@@ -85,13 +81,11 @@ impl DatabaseUserOperations for Album {
 	}
 
 	fn get_all_as_user(user_id: i64) -> Result<Vec<Self>> {
-		let collection = database::get_collection_albums();
-		database::find_many(&collection, Some(user_id), None, None) 
+		database::get_database().find_many(database::COLLECTION_ALBUMS, Some(user_id), None, None) 
 	}
 
 	fn get_all_with_ids_as_user(ids: &[&str], user_id: i64) -> Result<Vec<Self>> {
-		let collection = database::get_collection_albums();
-		database::find_many(&collection, Some(user_id), Some(ids), None) 
+		database::get_database().find_many(database::COLLECTION_ALBUMS, Some(user_id), Some(ids), None) 
 	}
 }
 

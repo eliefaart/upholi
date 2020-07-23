@@ -1,7 +1,7 @@
 use serde::{Serialize, Deserialize};
 use chrono::prelude::*;
 use crate::database;
-use crate::database::{DatabaseOperations};
+use crate::database::{Database, DatabaseEntity};
 use crate::ids;
 use crate::error::*;
 
@@ -47,30 +47,25 @@ impl Session {
 	}
 }
 
-impl DatabaseOperations for Session {
+impl DatabaseEntity for Session {
 	fn get(id: &str) -> Option<Self> {
-		let collection = database::get_collection_sessions();
-		database::find_one(id, &collection)
+		match database::get_database().find_one(database::COLLECTION_SESSIONS, id) {
+			Ok(item) => item,
+			Err(_) => None
+		}
 	}
 
 	fn insert(&self) -> Result<()> {
-		let collection = database::get_collection_sessions();
-		database::insert_item(&collection, &self)?;
-
+		database::get_database().insert_one(database::COLLECTION_SESSIONS, &self)?;
 		Ok(())
 	}
 
 	fn update(&self)  -> Result<()> {
-		let collection = database::get_collection_sessions();
-		database::replace_one(&self.id, &self, &collection)
+		database::get_database().replace_one(database::COLLECTION_SESSIONS, &self.id, self)
 	}
 
 	fn delete(&self)  -> Result<()> {
-		let collection = database::get_collection_sessions();
-		match database::delete_one(&self.id, &collection) {
-			Some(_) => Ok(()),
-			None => Err(Box::from(EntityError::DeleteFailed))
-		}
+		database::get_database().delete_one(database::COLLECTION_SESSIONS, &self.id)
 	}
 }
 
