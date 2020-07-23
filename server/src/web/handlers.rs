@@ -15,7 +15,7 @@ use crate::web::oauth2;
 use crate::web::http::*;
 
 mod requests {
-	use serde::{Deserialize};
+	use serde::Deserialize;
 
 	#[derive(Deserialize)]
 	#[serde(rename_all = "camelCase")]
@@ -52,7 +52,7 @@ mod requests {
 }
 
 mod responses {
-	use serde::{Serialize};
+	use serde::Serialize;
 	use crate::photos::Photo;
 	use crate::albums::Album;
 	use crate::database::{DatabaseEntity, DatabaseEntityBatch};

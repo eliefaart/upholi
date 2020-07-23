@@ -1,6 +1,6 @@
 use crate::error::*;
 
-pub mod mongo;
+mod mongodb;
 
 pub const COLLECTION_SESSIONS: &str = "sessions";
 pub const COLLECTION_PHOTOS: &str = "photos";
@@ -8,7 +8,7 @@ pub const COLLECTION_ALBUMS: &str = "albums";
 
 // Get the implementation of the database traits
 pub fn get_database() -> impl Database + DatabaseExt {
-	mongo::MongoDatabase{}
+	mongodb::MongoDatabase{}
 }
 
 pub struct SortField<'a> {
