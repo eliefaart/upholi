@@ -27,7 +27,7 @@ impl Database for MongoDatabase {
 	{
 		let mut items: Vec<T> = Self::find_many(self, collection, None, Some(&[id]), None)?;
 
-		if items.len() >= 1 {
+		if !items.is_empty() {
 			Ok(items.pop())
 		} 
 		else {

@@ -227,7 +227,7 @@ pub async fn route_get_photos(user: User) -> impl Responder {
 	match Photo::get_all_as_user(user.user_id) {
 		Ok(photos) => {
 			let photos_small: Vec<responses::PhotoSmall> = photos.into_iter()
-				.map(|photo| responses::PhotoSmall::from(photo))
+				.map(responses::PhotoSmall::from)
 				.collect();
 			HttpResponse::Ok().json(photos_small)
 		},

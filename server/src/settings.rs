@@ -84,7 +84,7 @@ impl Settings {
 
 		for setting in overwritable_settings {
 			Self::set_from_env_var(&mut config, setting.0, setting.1)
-				.expect(&format!("Failed to set '{}' from env variable '{}'", setting.0, setting.1));
+				.unwrap_or_else(|_| panic!("Failed to set '{}' from env variable '{}'", setting.0, setting.1));
 		}
 
 		// Build
