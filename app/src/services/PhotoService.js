@@ -6,10 +6,12 @@ class PhotoService {
 	static uploadPhotos(files, fnFileStatusUpdatedCallback) {
 		const nConcurrentUploads = 3;
 
-		// Create queue: reverse files array so we can use pop() which is faster than shift()
+		// Create queue, and set initial status
 		let queue = [];
 		for (let file of files) {
-			queue.unshift(file);
+			// Reverse array using unshift,
+			// so we can use pop() when consuming array, which is faster than shift()
+			queue.unshift(file);	
 			fnFileStatusUpdatedCallback(file, "Waiting");
 		}
 

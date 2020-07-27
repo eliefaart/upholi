@@ -146,7 +146,7 @@ class AlbumPage extends React.Component {
 		if (!event.dataTransfer.files || event.dataTransfer.files.length === 0)
 			return; // no files
 
-		uploadFilesList(event.dataTransfer.files);
+		this.uploadFilesList(event.dataTransfer.files);
 	}
 
 	uploadFilesList (filesList) {
