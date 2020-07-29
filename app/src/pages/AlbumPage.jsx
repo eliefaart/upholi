@@ -84,7 +84,6 @@ class AlbumPage extends React.Component {
 
 	onPhotoClicked(event, target) {
 		let photo = this.state.photos[target.index];
-
 		!!this.context.history && this.context.history.push("/photo/" + photo.id);
 	}
 

@@ -1,4 +1,5 @@
 use crate::error::*;
+use crate::albums::Album;
 
 mod mongodb;
 
@@ -55,6 +56,9 @@ pub trait DatabaseExt : Database {
 
 	/// Check if a photo already exists for user, by hash
 	fn photo_exists_for_user(&self, user_id: i64, hash: &str) -> Result<bool>;
+
+	/// Get all albums that contain given photo
+	fn get_albums_containing_photo(&self, photo_id: &str) -> Result<Vec<Album>>;
 }
 
 /// Add standard CRUD operations to a struct

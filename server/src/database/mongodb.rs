@@ -5,6 +5,7 @@ use lazy_static::lazy_static;
 use crate::database;
 use crate::database::{Database, DatabaseExt, SortField};
 use crate::error::*;
+use crate::albums::Album;
 
 lazy_static!{
 	/// A reference to the database that can be used to execute queries etc
@@ -130,8 +131,7 @@ impl Database for MongoDatabase {
 }
 
 impl DatabaseExt for MongoDatabase {
-	fn remove_photos_from_all_albums(&self, photo_ids: &[&str]) -> Result<()>
-	{
+	fn remove_photos_from_all_albums(&self, photo_ids: &[&str]) -> Result<()> {
 		let mongo_collection = DATABASE.collection(database::COLLECTION_ALBUMS);
 
 		let query = doc!{
@@ -151,8 +151,7 @@ impl DatabaseExt for MongoDatabase {
 		Ok(())
 	}
 
-	fn remove_thumbs_from_all_albums(&self, photo_ids: &[&str]) -> Result<()>
-	{
+	fn remove_thumbs_from_all_albums(&self, photo_ids: &[&str]) -> Result<()> {
 		let mongo_collection = DATABASE.collection(database::COLLECTION_ALBUMS);
 
 		let query = doc!{
@@ -170,8 +169,7 @@ impl DatabaseExt for MongoDatabase {
 		Ok(())
 	}
 
-	fn photo_exists_for_user(&self, user_id: i64, hash: &str) -> Result<bool>
-	{
+	fn photo_exists_for_user(&self, user_id: i64, hash: &str) -> Result<bool> {
 		let mongo_collection = DATABASE.collection(database::COLLECTION_PHOTOS);
 		let filter = doc!{ 
 			"user_id": user_id,
@@ -181,9 +179,19 @@ impl DatabaseExt for MongoDatabase {
 		let count = mongo_collection.count_documents(filter, None)?;
 		Ok(count > 0)
 	}
+
+	fn get_albums_containing_photo(&self, photo_id: &str) -> Result<Vec<Album>> {
+		let mongo_collection = DATABASE.collection(database::COLLECTION_ALBUMS);
+		let query = doc!{
+			"photos": photo_id
+		};
+
+		let cursor = mongo_collection.find(query, None)?;
+		get_items_from_cursor(cursor)
+	}
 }
 
-/// Take all items available in given cursor
+/// Take all items available in given cursor. This exhausts the cursor.
 fn get_items_from_cursor<'de, T: serde::Deserialize<'de>>(cursor: mongodb::Cursor) -> Result<Vec<T>> {
 	let mut items = Vec::new();
 

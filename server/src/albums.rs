@@ -4,6 +4,8 @@ use crate::ids;
 use crate::database;
 use crate::database::*;
 use crate::error::*;
+use crate::entities::AccessControl;
+use crate::entities::user::User;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -83,6 +85,17 @@ impl DatabaseUserEntity for Album {
 
 	fn get_all_with_ids_as_user(ids: &[&str], user_id: i64) -> Result<Vec<Self>> {
 		database::get_database().find_many(database::COLLECTION_ALBUMS, Some(user_id), Some(ids), None) 
+	}
+}
+
+impl AccessControl for Album {
+	fn user_has_access(&self, user_opt: Option<User>) -> bool {
+		if let Some(user) = user_opt {
+			self.user_id == user.user_id
+		} 
+		else {
+			self.public
+		}
 	}
 }
 

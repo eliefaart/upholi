@@ -27,14 +27,14 @@ class SharedCollectionPage extends React.Component {
 
 	refreshPhotos() {
 		let _this = this;
-		PhotoService.getSharedCollection(this.state.collectionId)
+		PhotoService.getAlbum(this.state.collectionId)
 			.then((response) => {
 				_this.setState({
 					title: response.title,
 					photos: response.photos.map((photo) => {
 						return {
 							id: photo.id,
-							src: PhotoService.baseUrl() + "/pub/collection/" + this.state.collectionId + "/photo/" + photo.id + "/thumb",
+							src: PhotoService.baseUrl() + "/photo/" + photo.id + "/thumb",
 							width: photo.width,
 							height: photo.height
 						};
@@ -46,7 +46,7 @@ class SharedCollectionPage extends React.Component {
 
 	onPhotoClicked(event, target) {
 		let photo = this.state.photos[target.index];
-		!!this.context.history && this.context.history.push("/shared/collection/" + this.state.collectionId + "/photo/" + photo.id);
+		!!this.context.history && this.context.history.push("/photo/" + photo.id);
 	}
 
 	render() {

@@ -10,6 +10,8 @@ use crate::ids;
 use crate::exif;
 use crate::database;
 use crate::database::{Database, DatabaseEntity, DatabaseEntityBatch, DatabaseUserEntity, DatabaseExt};
+use crate::entities::AccessControl;
+use crate::entities::user::User;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -185,6 +187,24 @@ impl DatabaseUserEntity for Photo {
 			ascending: false
 		};
 		database::get_database().find_many(database::COLLECTION_PHOTOS, Some(user_id), Some(ids), Some(&sort))
+	}
+}
+
+impl AccessControl for Photo {
+	fn user_has_access(&self, user_opt: Option<User>) -> bool {
+		match user_opt {
+			Some(user) => self.user_id == user.user_id,
+			None => {
+				if let Ok(albums) = database::get_database().get_albums_containing_photo(&self.id) {
+					for album in albums {
+						if album.public {
+							return true;
+						}
+					}
+				}
+				false
+			}
+		}
 	}
 }
 

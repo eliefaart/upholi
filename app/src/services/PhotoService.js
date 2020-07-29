@@ -171,11 +171,7 @@ class PhotoService {
 	static updateAlbum(albumId, albumObjectWithModifiedProperties) {
 		return PhotoService.sendRequest("PUT", PhotoService.baseUrl() + "/album/" + albumId, albumObjectWithModifiedProperties);
 	}
-
-	static getSharedCollection(collectionId) {
-		return PhotoService.getAlbumInfo(PhotoService.baseUrl() + "/pub/collection/" + collectionId);
-	}
-
+	
 	static getPhotoInfo(url) {
 		return PhotoService.getJson("GET", url);
 	}

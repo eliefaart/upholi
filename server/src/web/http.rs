@@ -5,9 +5,11 @@ use actix_http::cookie::Cookie;
 use serde::{Serialize, Deserialize};
 use futures::{StreamExt, TryStreamExt};
 use futures::future::{ok, err, Ready};
+
 use crate::error::*;
 use crate::session::{Session};
 use crate::database::{DatabaseEntity};
+use crate::entities::user::User;
 
 pub const SESSION_COOKIE_NAME: &str = "session";
 
@@ -28,13 +30,6 @@ struct CreatedResult {
 #[serde(rename_all = "camelCase")]
 struct ErrorResult {
 	message: String
-}
-
-/// Data associated with a session
-#[derive(Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct User {
-	pub user_id: i64
 }
 
 /// Allow User to be used as function parameter for request handlers

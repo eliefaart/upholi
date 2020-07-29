@@ -20,7 +20,7 @@ class PhotoPage extends React.Component {
 				infoUrl={infoUrl}
 				previewUrl={previewUrl}
 				downloadUrl={downloadUrl}
-				requiresAuthentication={true}
+				requiresAuthentication={false}
 				/>
 		);
 	}

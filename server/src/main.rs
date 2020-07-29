@@ -13,6 +13,7 @@ mod settings;
 mod exif;
 mod session;
 mod web;
+mod entities;
 
 lazy_static! {
 	/// Global application settings
