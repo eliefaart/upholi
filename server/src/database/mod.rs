@@ -60,7 +60,7 @@ pub trait DatabaseExt : Database {
 /// Add standard CRUD operations to a struct
 pub trait DatabaseEntity {
 	/// Get an existing item
-	fn get(id: &str) -> Option<Self>
+	fn get(id: &str) -> Result<Option<Self>>
 		where Self: std::marker::Sized;
 
 	/// Insert item as new record

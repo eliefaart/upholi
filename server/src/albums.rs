@@ -35,11 +35,8 @@ impl Album {
 }
 
 impl DatabaseEntity for Album {
-	fn get(id: &str) -> Option<Self> {
-		match database::get_database().find_one(database::COLLECTION_ALBUMS, id) {
-			Ok(item) => item,
-			Err(_) => None
-		}
+	fn get(id: &str) -> Result<Option<Self>> {
+		database::get_database().find_one(database::COLLECTION_ALBUMS, id)
 	}
 
 	fn insert(&self) -> Result<()> {
@@ -47,7 +44,7 @@ impl DatabaseEntity for Album {
 			return Err(Box::from(EntityError::IdMissing));
 		}
 
-		match Self::get(&self.id) {
+		match Self::get(&self.id)? {
 			Some(_) => Err(Box::from(EntityError::AlreadyExists)),
 			None => {
 				database::get_database().insert_one(database::COLLECTION_ALBUMS, &self)?;
@@ -68,7 +65,7 @@ impl DatabaseEntity for Album {
 
 impl DatabaseUserEntity for Album {
 	fn get_as_user(id: &str, user_id: i64) -> Result<Option<Self>>{
-		match Self::get(id) {
+		match Self::get(id)? {
 			Some(album) => {
 				if album.user_id != user_id {
 					Err(Box::from(format!("User {} does not have access to album {}", user_id, album.id)))

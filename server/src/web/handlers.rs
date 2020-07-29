@@ -98,8 +98,13 @@ mod responses {
 				thumb_photo: {
 					if let Some(thumb_photo_id) = album.thumb_photo_id {
 						match Photo::get(&thumb_photo_id) {
-							Some(thumb_photo) => Some(PhotoSmall::from(thumb_photo)),
-							None => None
+							Ok(thumb_photo_opt) => {
+								match thumb_photo_opt {
+									Some(thumb_photo) => Some(PhotoSmall::from(thumb_photo)),
+									None => None
+								}
+							},
+							Err(_) => None
 						}
 					} else {
 						None
@@ -407,31 +412,46 @@ pub async fn oauth_user_info(user: User) -> impl Responder {
 /// Get shared collection
 pub async fn route_get_shared_collection(info: web::Path<requests::GetSharedCollection>) -> impl Responder {
 	match Album::get(&info.shared_collection_id) {
-		Some(album) => {
-			if album.public {
-				HttpResponse::Ok().json(responses::ClientAlbum::from(album))
-			} else {
-				create_unauthorized_response()
+		Ok(album_opt) => {
+			match album_opt {
+				Some(album) => {
+					if album.public {
+						HttpResponse::Ok().json(responses::ClientAlbum::from(album))
+					} else {
+						create_unauthorized_response()
+					}
+				},
+				None => create_not_found_response()
 			}
 		},
-		None => create_not_found_response()
+		Err(error) => create_internal_server_error_response(Some(error))
 	}
 }
 
 /// Get info about a photo of a shared collection
 pub async fn route_get_photo_for_shared_collection(info: web::Path<requests::GetSharedCollectionPhoto>) -> impl Responder {
 	match Album::get(&info.shared_collection_id) {
-		Some(album) => {
-			if album.public && album.photos.contains(&info.photo_id) {
-				match Photo::get(&info.photo_id) {
-					Some(photo) => HttpResponse::Ok().json(photo),
-					None => create_not_found_response()
-				}
-			} else {
-				create_unauthorized_response()
+		Ok(album_opt) => {
+			match album_opt {
+				Some(album) => {
+					if album.public && album.photos.contains(&info.photo_id) {
+						match Photo::get(&info.photo_id) {
+							Ok(photo_opt) => {
+								match photo_opt {
+									Some(photo) => HttpResponse::Ok().json(photo),
+									None => create_not_found_response()
+								}
+							},
+							Err(error) => create_internal_server_error_response(Some(error))
+						}
+					} else {
+						create_unauthorized_response()
+					}
+				},
+				None => create_not_found_response()
 			}
 		},
-		None => create_not_found_response()
+		Err(error) => create_internal_server_error_response(Some(error))
 	}
 }
 
@@ -453,20 +473,31 @@ pub async fn route_download_photo_preview_for_shared_collection(info: web::Path<
 /// Create an HTTP response for a photo within a public album based on given 'photo handler' function
 fn create_response_for_public_album_photo(album_id: &str, photo_id: &str, photo_action: fn(photo: Photo) -> actix_http::Response) -> impl Responder {
 	match Album::get(album_id) {
-		Some(album) => {
-			if album.public && album.photos.contains(&photo_id.to_string()) {
-				match Photo::get(photo_id) {
-					Some(photo) => {
-						// Let the fn provided in params do the rest:
-						photo_action(photo)
-					},
-					None => create_not_found_response()
-				}
-			} else {
-				create_unauthorized_response()
+		Ok(album_opt) => {
+			match album_opt {
+				Some(album) => {
+					if album.public && album.photos.contains(&photo_id.to_string()) {
+						match Photo::get(photo_id) {
+							Ok(photo_opt) => {
+								match photo_opt {
+									Some(photo) => {
+										// Let the fn provided in params do the rest:
+										photo_action(photo)
+									},
+									None => create_not_found_response()
+								}
+							},
+							Err(error) => create_internal_server_error_response(Some(error))
+							
+						}
+					} else {
+						create_unauthorized_response()
+					}
+				},
+				None => create_not_found_response()
 			}
 		},
-		None => create_not_found_response()
+		Err(error) => create_internal_server_error_response(Some(error))
 	}
 }
 
@@ -511,10 +542,15 @@ fn serve_photo(path: &str, file_name: &str, offer_as_download: bool) -> actix_ht
 pub fn delete_photos(user_id: i64, ids: &[&str]) -> impl Responder {
 	// Check if all ids to be deleted are owned by user_id
 	for id in ids {
-		if let Some(photo) = Photo::get(id) {
-			if photo.user_id != user_id {
-				return create_unauthorized_response();
-			}
+		match Photo::get(id) {
+			Ok(photo_opt) => {
+				if let Some(photo) = photo_opt {
+					if photo.user_id != user_id {
+						return create_unauthorized_response();
+					}
+				}
+			},
+			Err(error) => return create_internal_server_error_response(Some(error))
 		}
 	}
 
@@ -545,7 +581,7 @@ pub fn delete_photos(user_id: i64, ids: &[&str]) -> impl Responder {
 /// Deletes all physical files of a photo from file system
 /// Original, thumbnail and preview images.
 fn delete_photo_files(photo_id: &str) -> Result<()> {
-	if let Some(photo) = photos::Photo::get(&photo_id) {
+	if let Some(photo) = photos::Photo::get(&photo_id)? {
 		files::delete_photo(&photo.path_original)?;
 		files::delete_photo(&photo.path_preview)?;
 		files::delete_photo(&photo.path_thumbnail)?;

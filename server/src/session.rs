@@ -48,11 +48,8 @@ impl Session {
 }
 
 impl DatabaseEntity for Session {
-	fn get(id: &str) -> Option<Self> {
-		match database::get_database().find_one(database::COLLECTION_SESSIONS, id) {
-			Ok(item) => item,
-			Err(_) => None
-		}
+	fn get(id: &str) -> Result<Option<Self>> {
+		database::get_database().find_one(database::COLLECTION_SESSIONS, id)
 	}
 
 	fn insert(&self) -> Result<()> {
