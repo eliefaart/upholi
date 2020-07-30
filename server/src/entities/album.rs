@@ -56,7 +56,6 @@ impl DatabaseEntity for Album {
 	}
 
 	fn update(&self) -> Result<()> {
-		println!("{:?}", self);
 		database::get_database().replace_one(database::COLLECTION_ALBUMS, &self.id, self)
 	}
 

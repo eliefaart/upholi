@@ -38,7 +38,7 @@ html {
 		.page {
 			min-height: 100vh;
 
-			.content {
+			&.hasHeader .content {
 				padding-top: $headerHeight;
 			}
 		}

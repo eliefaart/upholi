@@ -36,16 +36,21 @@ class PageLayout extends React.Component {
 		if (this.props.requiresAuthentication && !this.state.authorized)
 			return null;
 
+		const headerVisible = !!this.props.title
+			|| this.props.renderMenu
+			|| !!this.props.headerActions
+			|| !!this.props.headerContextMenuActions;
+
 		return (
-			<div className="page" 
+			<div className={"page " + (headerVisible ? "hasHeader" : "")}
 				onDrop={this.props.onDrop} 
 				onDragOver={this.props.onDragOver || ((event) => event.preventDefault())}>
-				<Header title={this.props.title} 
+				{headerVisible && <Header title={this.props.title} 
 					renderMenu={this.props.renderMenu} 
 					actionsElement={this.props.headerActions}
 					contextMenuElement={this.props.headerContextMenuActions}
 					>
-				</Header>
+				</Header>}
 
 				<div className="content">
 					{this.props.children}
