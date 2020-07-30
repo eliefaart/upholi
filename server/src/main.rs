@@ -6,12 +6,8 @@ mod error;
 mod database;
 mod images;
 mod files;
-mod photos;
-mod albums;
 mod ids;
 mod settings;
-mod exif;
-mod session;
 mod web;
 mod entities;
 

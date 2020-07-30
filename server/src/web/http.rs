@@ -7,8 +7,8 @@ use futures::{StreamExt, TryStreamExt};
 use futures::future::{ok, err, Ready};
 
 use crate::error::*;
-use crate::session::{Session};
-use crate::database::{DatabaseEntity};
+use crate::entities::session::Session;
+use crate::database::DatabaseEntity;
 use crate::entities::user::User;
 
 pub const SESSION_COOKIE_NAME: &str = "session";

@@ -5,7 +5,7 @@ use lazy_static::lazy_static;
 use crate::database;
 use crate::database::{Database, DatabaseExt, SortField};
 use crate::error::*;
-use crate::albums::Album;
+use crate::entities::album::Album;
 
 lazy_static!{
 	/// A reference to the database that can be used to execute queries etc

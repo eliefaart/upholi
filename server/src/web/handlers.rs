@@ -3,18 +3,17 @@ use actix_multipart::Multipart;
 use actix_http::cookie::Cookie;
 
 use crate::error::*;
-use crate::session::Session;
+
 use crate::database;
 use crate::database::{Database, DatabaseExt, DatabaseEntity, DatabaseUserEntity};
 use crate::files;
-use crate::photos;
-use crate::photos::Photo;
-use crate::albums;
-use crate::albums::Album;
 use crate::web::oauth2;
 use crate::web::http::*;
 use crate::entities::AccessControl;
 use crate::entities::user::User;
+use crate::entities::session::Session;
+use crate::entities::photo::Photo;
+use crate::entities::album::Album;
 
 mod requests {
 	use serde::Deserialize;
@@ -44,8 +43,8 @@ mod requests {
 
 mod responses {
 	use serde::Serialize;
-	use crate::photos::Photo;
-	use crate::albums::Album;
+	use crate::entities::photo::Photo;
+	use crate::entities::album::Album;
 	use crate::database::{DatabaseEntity, DatabaseEntityBatch};
  
 	#[derive(Serialize)]
@@ -157,7 +156,7 @@ pub async fn route_create_album(user: User, album: web::Json<requests::CreateAlb
 	if album.title.len() > crate::constants::ALBUM_TITLE_MAX_LENGTH {
 		create_bad_request_response(Box::from(format!("Maximum length for album title is {}.", crate::constants::ALBUM_TITLE_MAX_LENGTH)))
 	} else {
-		let album = albums::Album::new(user.user_id, &album.title);
+		let album = Album::new(user.user_id, &album.title);
 
 		match album.insert() {
 			Ok(_) => create_created_response(&album.id),
@@ -318,7 +317,7 @@ pub async fn route_upload_photo(user: User, payload: Multipart) -> impl Responde
 
 			match file_option {
 				Some(file) => {
-					match photos::Photo::new(user.user_id, &file.bytes) {
+					match Photo::new(user.user_id, &file.bytes) {
 						Ok(photo) => {
 							match photo.insert() {
 								Ok(_) => create_created_response(&photo.id),
@@ -501,7 +500,7 @@ pub fn delete_photos(user_id: i64, ids: &[&str]) -> impl Responder {
 /// Deletes all physical files of a photo from file system
 /// Original, thumbnail and preview images.
 fn delete_photo_files(photo_id: &str) -> Result<()> {
-	if let Some(photo) = photos::Photo::get(&photo_id)? {
+	if let Some(photo) = Photo::get(&photo_id)? {
 		files::delete_photo(&photo.path_original)?;
 		files::delete_photo(&photo.path_preview)?;
 		files::delete_photo(&photo.path_thumbnail)?;

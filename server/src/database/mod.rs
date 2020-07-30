@@ -1,5 +1,5 @@
 use crate::error::*;
-use crate::albums::Album;
+use crate::entities::album::Album;
 
 mod mongodb;
 
