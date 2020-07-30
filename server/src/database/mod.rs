@@ -1,4 +1,5 @@
 use crate::error::*;
+use crate::entities::album::Album;
 
 mod mongodb;
 
@@ -55,12 +56,15 @@ pub trait DatabaseExt : Database {
 
 	/// Check if a photo already exists for user, by hash
 	fn photo_exists_for_user(&self, user_id: i64, hash: &str) -> Result<bool>;
+
+	/// Get all albums that contain given photo
+	fn get_albums_containing_photo(&self, photo_id: &str) -> Result<Vec<Album>>;
 }
 
 /// Add standard CRUD operations to a struct
 pub trait DatabaseEntity {
 	/// Get an existing item
-	fn get(id: &str) -> Option<Self>
+	fn get(id: &str) -> Result<Option<Self>>
 		where Self: std::marker::Sized;
 
 	/// Insert item as new record

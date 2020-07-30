@@ -51,15 +51,6 @@ pub async fn run_server() -> std::io::Result<()>{
 			// 		.route("/pub/collections", actix_web::web::get().to(handlers::route_download_photo_preview_for_shared_collection))
 			// )
 			.service(
-				// Public API routes that do not require a session cookie
-				actix_web::web::scope("/api/pub/collection/{shared_collection_id}")
-					.route("", actix_web::web::get().to(handlers::route_get_shared_collection))
-					.route("/photo/{photo_id}", actix_web::web::get().to(handlers::route_get_photo_for_shared_collection))
-					.route("/photo/{photo_id}/original", actix_web::web::get().to(handlers::route_download_photo_original_for_shared_collection))
-					.route("/photo/{photo_id}/thumb", actix_web::web::get().to(handlers::route_download_photo_thumb_for_shared_collection))
-					.route("/photo/{photo_id}/preview", actix_web::web::get().to(handlers::route_download_photo_preview_for_shared_collection))
-			)
-			.service(
 				// Protected user-specific API routes that require a session cookie
 				actix_web::web::scope("/api")
 					.wrap_fn(|req, srv| {

@@ -5,9 +5,11 @@ use actix_http::cookie::Cookie;
 use serde::{Serialize, Deserialize};
 use futures::{StreamExt, TryStreamExt};
 use futures::future::{ok, err, Ready};
+
 use crate::error::*;
-use crate::session::{Session};
-use crate::database::{DatabaseEntity};
+use crate::entities::session::Session;
+use crate::database::DatabaseEntity;
+use crate::entities::user::User;
 
 pub const SESSION_COOKIE_NAME: &str = "session";
 
@@ -28,13 +30,6 @@ struct CreatedResult {
 #[serde(rename_all = "camelCase")]
 struct ErrorResult {
 	message: String
-}
-
-/// Data associated with a session
-#[derive(Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct User {
-	pub user_id: i64
 }
 
 /// Allow User to be used as function parameter for request handlers
@@ -86,7 +81,10 @@ pub fn get_session_cookie(req: &actix_web::http::header::HeaderMap) -> Option<Co
 fn get_session(req: &HttpRequest) -> Option<Session> {
 	let session_cookie = get_session_cookie(req.headers())?;
 	let session_id = session_cookie.value();
-	Session::get(&session_id)
+	match Session::get(&session_id) {
+		Ok(session) => session,
+		Err(_) => None
+	}
 }
 
 /// Extract user_id from the HTTP request
