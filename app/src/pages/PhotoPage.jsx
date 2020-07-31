@@ -8,11 +8,16 @@ import { IconClose, IconDownload } from "../components/Icons.jsx";
 class PhotoPage extends React.Component {
 	constructor(props) {
 		super(props);
-		this.photoId = props.match.params.photoId;
+
+		const photoId = props.match.params.photoId;
+		const photoBaseUrl = PhotoService.baseUrl() + "/photo/" + photoId;
+		const previewUrl = photoBaseUrl + "/preview";
+		const downloadUrl = photoBaseUrl + "/original";
 
 		this.state = {
-			url: this.props.previewUrl,
-			downloadUrl: this.props.downloadUrl
+			photoId,
+			previewUrl,
+			downloadUrl
 		};
 	}
 
@@ -21,18 +26,14 @@ class PhotoPage extends React.Component {
 			this.setState({ photo });
 		};
 
-		PhotoService.getPhotoInfo(this.props.infoUrl)
+		PhotoService.getPhotoInfo(this.state.photoId)
 			.then(fnOnPhotoDataReceived)
 			.catch(console.error);
 	}
 
 	render() {
-		const infoUrl = PhotoService.baseUrl() + "/photo/" + this.photoId;
-		const previewUrl = infoUrl + "/preview";
-		const downloadUrl = infoUrl + "/original";
-
 		const headerActions = (<div>
-			{<a className="iconOnly asButton" href={downloadUrl} download title="Download">
+			{<a className="iconOnly asButton" href={this.state.downloadUrl} download title="Download">
 				<IconDownload/>
 			</a>}
 			{<button className="iconOnly" onClick={() => this.context.history.goBack()} title="Close">
@@ -42,7 +43,7 @@ class PhotoPage extends React.Component {
 
 		return (
 			<PageLayout requiresAuthentication={this.props.requiresAuthentication} renderMenu={false} headerActions={headerActions}>
-				<PhotoDetail src={previewUrl} exif={!!this.state.photo ? this.state.photo.exif : null} />
+				<PhotoDetail src={this.state.previewUrl} exif={!!this.state.photo ? this.state.photo.exif : null} />
 			</PageLayout>
 		);
 	}

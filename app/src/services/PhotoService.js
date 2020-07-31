@@ -71,6 +71,10 @@ class PhotoService {
 		});
 	}
 
+	static getPhotoInfo(photoId) {
+		return PhotoService.getJson("GET", PhotoService.baseUrl() + "/photo/" + photoId);
+	}
+
 	static getPhotos() {
 		return new Promise((ok, err) => {
 			PhotoService.getJson("GET", PhotoService.baseUrl() + "/photos")
@@ -143,7 +147,7 @@ class PhotoService {
 	}
 
 	static getAlbum(albumId) {
-		return PhotoService.getAlbumInfo(PhotoService.baseUrl() + "/album/" + albumId);
+		return PhotoService.getJson("GET", PhotoService.baseUrl() + "/album/" + albumId);
 	}
 
 	static deleteAlbum(albumId) {
@@ -172,14 +176,6 @@ class PhotoService {
 		return PhotoService.sendRequest("PUT", PhotoService.baseUrl() + "/album/" + albumId, albumObjectWithModifiedProperties);
 	}
 	
-	static getPhotoInfo(url) {
-		return PhotoService.getJson("GET", url);
-	}
-
-	static getAlbumInfo(url) {
-		return PhotoService.getJson("GET", url);
-	}
-
 	/// Send a web request and gets json from the response body, returns a promise.
 	static getJson(method, url, data) {
 		return new Promise((ok, err) => {
