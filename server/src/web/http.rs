@@ -35,7 +35,7 @@ struct ErrorResult {
 /// Allow User to be used as function parameter for request handlers
 impl FromRequest for User {
 	type Error = Error;
-	type Future = Ready<Result<User, Error>>;
+	type Future = Ready<Result<Self, Error>>;
 	type Config = ();
 
 	#[inline]

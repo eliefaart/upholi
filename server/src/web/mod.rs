@@ -2,7 +2,7 @@ use std::time::Instant;
 use actix_cors::Cors;
 use actix_web::{App, HttpServer};
 use actix_service::Service;
-use futures::future::{ok, Either, FutureExt};
+use futures::future::FutureExt;
 
 mod handlers;
 mod http;
@@ -45,26 +45,9 @@ pub async fn run_server() -> std::io::Result<()>{
 					//TODO:
 					// .route("/logout", actix_web::web::get().to(handlers::logout))
 			)
-			// .service(
-			// 	// Routes related to information of a user
-			// 	actix_web::web::scope("/api/user/{user_id}")
-			// 		.route("/pub/collections", actix_web::web::get().to(handlers::route_download_photo_preview_for_shared_collection))
-			// )
 			.service(
-				// Protected user-specific API routes that require a session cookie
+				// API routes
 				actix_web::web::scope("/api")
-					.wrap_fn(|req, srv| {
-						// If session cookie exists, then continue
-						// Otherwise, abort request and return HTTP 401 unauthorized
-						match http::get_session_cookie(&req.headers()) {
-							Some(_) => srv.call(req),
-							None => {
-								Either::Right(ok(req.into_response(
-									http::create_unauthorized_response()
-								)))
-							}
-						}
-					})
 					.route("/albums", actix_web::web::get().to(handlers::route_get_albums))
 					.route("/album", actix_web::web::post().to(handlers::route_create_album))
 					.route("/album/{album_id}", actix_web::web::get().to(handlers::route_get_album))

@@ -90,7 +90,7 @@ impl DatabaseUserEntity for Album {
 impl AccessControl for Album {
 	fn user_has_access(&self, user_opt: Option<User>) -> bool {
 		if let Some(user) = user_opt {
-			self.user_id == user.user_id
+			self.user_id == user.user_id || self.public
 		} 
 		else {
 			self.public
