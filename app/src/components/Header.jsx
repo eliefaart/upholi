@@ -32,7 +32,7 @@ class Header extends React.Component {
 	}
 	
 	render() {
-		const headerEmpty = !this.props.renderMenu && !this.props.title && !this.props.actionsElement && !this.props.contextMenuElement;
+		const headerEmpty = !this.props.renderMenu && !this.props.actionsElement && !this.props.contextMenuElement;
 		if (headerEmpty)
 			return null;
 
@@ -57,7 +57,7 @@ class Header extends React.Component {
 					)}
 				</div>}
 
-				<span className="title">{this.props.title || " "}</span>
+				<span className="buffer">&nbsp;</span>
 
 				{!!this.props.actionsElement && <div className="actions">
 					{this.props.actionsElement}

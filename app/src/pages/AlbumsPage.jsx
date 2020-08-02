@@ -14,12 +14,6 @@ class AlbumsPage extends React.Component {
 		}
 	}
 
-	componentDidMount() {
-	}
-
-	componentWillUnmount() {
-	}
-
 	onCreateAlbumClick() {
 		this.setState({
 			newAlbumDialogOpen: true
@@ -34,7 +28,7 @@ class AlbumsPage extends React.Component {
 		</div>);
 
 		return (
-			<PageLayout requiresAuthentication={true} headerActions={headerContextMenuActions}>
+			<PageLayout title="Albums" requiresAuthentication={true} headerActions={headerContextMenuActions}>
 				<Albums/>
 
 				<ModalCreateAlbum

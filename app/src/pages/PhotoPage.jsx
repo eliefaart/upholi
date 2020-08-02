@@ -42,7 +42,7 @@ class PhotoPage extends React.Component {
 		</div>);
 
 		return (
-			<PageLayout requiresAuthentication={this.props.requiresAuthentication} renderMenu={false} headerActions={headerActions}>
+			<PageLayout title={"Photo - " + this.state.photoId} requiresAuthentication={this.props.requiresAuthentication} renderMenu={false} headerActions={headerActions}>
 				<PhotoDetail src={this.state.previewUrl} exif={!!this.state.photo ? this.state.photo.exif : null} />
 			</PageLayout>
 		);

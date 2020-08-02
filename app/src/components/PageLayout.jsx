@@ -15,6 +15,7 @@ class PageLayout extends React.Component {
 	componentDidMount() {
 		ReactModal.setAppElement("#app");
 
+		// Start auth process if no user is logged in and if login is required for page.
 		if (this.props.requiresAuthentication) {
 			let setAuthorized = () => this.setState({authorized: true});
 			let startLogin = () => document.location = "/oauth/start";
@@ -36,8 +37,11 @@ class PageLayout extends React.Component {
 		if (this.props.requiresAuthentication && !this.state.authorized)
 			return null;
 
-		const headerVisible = !!this.props.title
-			|| this.props.renderMenu
+		// Change document title
+		let pageTitle = this.props.title || "Hummingbird";
+		document.title = pageTitle;
+
+		const headerVisible = this.props.renderMenu
 			|| !!this.props.headerActions
 			|| !!this.props.headerContextMenuActions;
 
@@ -45,7 +49,7 @@ class PageLayout extends React.Component {
 			<div className={"page " + (headerVisible ? "hasHeader" : "")}
 				onDrop={this.props.onDrop} 
 				onDragOver={this.props.onDragOver || ((event) => event.preventDefault())}>
-				{headerVisible && <Header title={this.props.title} 
+				{headerVisible && <Header 
 					renderMenu={this.props.renderMenu} 
 					actionsElement={this.props.headerActions}
 					contextMenuElement={this.props.headerContextMenuActions}

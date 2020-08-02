@@ -35,9 +35,6 @@ class AlbumPage extends React.Component {
 		this.refreshPhotos();
 	}
 
-	componentWillUnmount() {
-	}
-
 	refreshPhotos() {
 		let _this = this;
 		PhotoService.getAlbum(this.state.albumId)
@@ -205,9 +202,9 @@ class AlbumPage extends React.Component {
 		const headerContextMenuActions = (<div>
 			{<button onClick={(e) => this.onDeleteAlbumClick()}>Delete album</button>}
 		</div>);
-		
+
 		return (
-			<PageLayout requiresAuthentication={true} headerActions={headerActions} headerContextMenuActions={headerContextMenuActions} onDrop={(event) => this.onFilesDropped(event)}>
+			<PageLayout title={"Album - " + this.state.title} requiresAuthentication={true} headerActions={headerActions} headerContextMenuActions={headerContextMenuActions} onDrop={(event) => this.onFilesDropped(event)}>
 				<div className="topBar">
 					<h1>{this.state.title}</h1>
 

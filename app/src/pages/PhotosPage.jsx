@@ -33,9 +33,6 @@ class PhotosDashboardPage extends React.Component {
 		this.refreshPhotos();
 	}
 
-	componentWillUnmount() {
-	}
-
 	refreshPhotos() {
 		const fnSetPhotos = (photos) => this.setState({ photos });
 
@@ -184,7 +181,7 @@ class PhotosDashboardPage extends React.Component {
 		</div>);
 
 		return (
-			<PageLayout requiresAuthentication={true} headerActions={headerActions} onDrop={(event) => this.onFilesDropped(event)}>
+			<PageLayout title="Library" requiresAuthentication={true} headerActions={headerActions} onDrop={(event) => this.onFilesDropped(event)}>
 				<PhotoGallerySelectable photos={this.state.photos} onClick={(event, target) => this.onPhotoClicked(event, target)} selectedItems={this.state.selectedPhotos} onPhotoSelectedChange={(photoId, selected) => this.onPhotoSelectedChange(photoId, selected)} />
 
 				<ModalCreateAlbum

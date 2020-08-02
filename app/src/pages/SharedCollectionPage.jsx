@@ -51,7 +51,7 @@ class SharedCollectionPage extends React.Component {
 
 	render() {
 		return (
-			<PageLayout requiresAuthentication={false} onDrop={(event) => this.onFilesDropped(event)} renderMenu={false}>
+			<PageLayout title={"Collection - " + this.state.title} requiresAuthentication={false} onDrop={(event) => this.onFilesDropped(event)} renderMenu={false}>
 				<div className="topBar">
 					<h1>{this.state.title}</h1>
 				</div>

@@ -33,13 +33,9 @@
 		}
 	}
 
-	.title{
+	.buffer{
 		flex: 0 1 100%;
 		padding-left: $spacing * 10;
-		font-size: $fontSizeLarge;
-		line-height: $headerHeight;
-		display: flex;
-		justify-content: left;
 	}
 
 	.contextMenuToggle {
