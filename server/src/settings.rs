@@ -1,9 +1,10 @@
-use std::env::{var};
+use std::env::var;
 use config::{Config, File};
-use serde::{Deserialize};
-use std::collections::{HashMap};
+use serde::Deserialize;
+use std::collections::HashMap;
 use crate::error::*;
 
+const ENV_VAR_SERVER_ADDRESS: &str = "HB_SERVER_ADDRESS";
 const ENV_VAR_DATABASE_CONNECTIONSTRING: &str = "HB_DATABASE_CONNECTIONSTRING";
 const ENV_VAR_DATABASE_NAME: &str = "HB_DATABASE_NAME";
 const ENV_VAR_STORAGE_DIRECTORYPHOTOS: &str = "HB_STORAGE_DIRECTORYPHOTOS";
@@ -16,9 +17,16 @@ const ENV_VAR_OAUTH_USERINFOURL: &str = "HB_OAUTH_USERINFOURL";
 /// Application settings
 #[derive(Debug, Deserialize)]
 pub struct Settings {
+	pub server: Server,
 	pub database: Database,
 	pub storage: Storage,
 	pub oauth: OAuth
+}
+
+/// Web server settings
+#[derive(Debug, Deserialize)]
+pub struct Server {
+	pub address: String,
 }
 
 /// Database settings
@@ -72,6 +80,7 @@ impl Settings {
 
 		// Set/overwrite certain settings from environment variables
 		let overwritable_settings: HashMap<&str, &str> = [
+			("server.address", ENV_VAR_SERVER_ADDRESS),
 			("database.connection_string", ENV_VAR_DATABASE_CONNECTIONSTRING),
 			("database.name", ENV_VAR_DATABASE_NAME),
 			("storage.directory_photos", ENV_VAR_STORAGE_DIRECTORYPHOTOS),
@@ -118,6 +127,7 @@ mod tests {
 	#[test]
 	fn set_env_vars() {
 		// Set some env vars
+		std::env::set_var(ENV_VAR_SERVER_ADDRESS, "SERVER_ADDRESS");
 		std::env::set_var(ENV_VAR_DATABASE_CONNECTIONSTRING, "DATABASE_CONNECTIONSTRING");
 		std::env::set_var(ENV_VAR_DATABASE_NAME, "DATABASE_NAME");
 		std::env::set_var(ENV_VAR_STORAGE_DIRECTORYPHOTOS, "STORAGE_DIRECTORYPHOTOS");
@@ -131,6 +141,7 @@ mod tests {
 		let settings = Settings::new();
 
 		// Check if config settings' values are same as set in env vars
+		assert_eq!(settings.server.address, "SERVER_ADDRESS");
 		assert_eq!(settings.database.connection_string, "DATABASE_CONNECTIONSTRING");
 		assert_eq!(settings.database.name, "DATABASE_NAME");
 		assert_eq!(settings.storage.directory_photos, "STORAGE_DIRECTORYPHOTOS");

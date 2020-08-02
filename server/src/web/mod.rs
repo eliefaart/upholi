@@ -10,7 +10,7 @@ mod oauth2;
 
 /// Start and run the web server
 pub async fn run_server() -> std::io::Result<()>{
-	let address = "0.0.0.0:8000";
+	let address = &crate::SETTINGS.server.address;
 	println!("Hello server, address: {}", address);
 
 	HttpServer::new(|| {

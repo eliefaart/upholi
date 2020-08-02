@@ -1,3 +1,7 @@
+[server]
+# Address to bind to
+address = "0.0.0.0:8000"
+
 [database]
 # Connection string to database
 # Can also by set using env var HB_DATABASE_CONNECTIONSTRING
