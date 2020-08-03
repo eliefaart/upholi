@@ -76,7 +76,7 @@ class AlbumPage extends React.Component {
 				toast.info("Album '" + albumTitle + "' deleted.");
 				component.context.history.push("/albums");
 			})
-			.catch((error) => console.log(error));
+			.catch(console.error);
 	}
 
 	onPhotoClicked(event, target) {
@@ -94,7 +94,7 @@ class AlbumPage extends React.Component {
 				toast.info("Album cover updated.");
 				_refreshPhotos();
 			})
-			.catch(error => console.log(error));
+			.catch(console.error);
 	}
 
 	onRemovePhotosClick() {
@@ -117,7 +117,7 @@ class AlbumPage extends React.Component {
 				fnCloseConfirmDialog();
 				fnRefreshPhotos();
 			})
-			.catch(error => console.log(error));
+			.catch(console.error);
 	}
 
 	onPhotoSelectedChange(photoId, selected) {

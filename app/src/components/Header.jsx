@@ -13,24 +13,6 @@ class Header extends React.Component {
 		};
 	}
 	
-	componentDidMount() {
-	}
-	
-	componentWillUnmount() {
-	}
-
-	gotoPhotos() {
-		!!this.context.history && this.context.history.push("/");
-	}
-
-	gotoAlbums() {
-		!!this.context.history && this.context.history.push("/albums");
-	}
-
-	gotoShared() {
-		!!this.context.history && this.context.history.push("/shared");
-	}
-	
 	render() {
 		const headerEmpty = !this.props.renderMenu && !this.props.actionsElement && !this.props.contextMenuElement;
 		if (headerEmpty)
@@ -44,7 +26,6 @@ class Header extends React.Component {
 			{ path: "/albums", title: "Albums" },
 			//{ path: "/shared", title: "Shared" }
 		];
-
 
 		return (
 			<div className="header">

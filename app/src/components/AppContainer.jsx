@@ -16,22 +16,37 @@ class AppContainer extends React.Component {
 
 	constructor(props) {
 		super(props);
+		
+		this.context = React.createContext();
+		this.state = {
+			ready: false
+		}
+	}
+
+	componentDidMount() {
+		// Call server to find out if user is authenticated
+		fetch("/oauth/user/info").then((response) => {
+			this.context.authenticated = response.status === 200;
+			this.setState({
+				ready: true
+			});
+		}).catch(console.error)
 	}
 	
 	render() {
+		if (!this.state.ready)
+			return null;
+
 		// Create a new browser history object
-		// Store this in a context, that any component can access to add navigate
+		// Store this in a context, so any component can access it and navigate
 		const history = createHistory();
-		this.context = {
-			history: history
-		}
+		this.context.history = history;
 
 		return (
-			<Router history={history}>
+			<Router history={this.context.history}>
 				<div id="app">
 					<AppStateContext.Provider value={this.context}>
 						<Route path="/" exact component={PhotosPage} />
-						{/* <Route path="/photos" exact component={PhotosPage} /> */}
 						<Route path="/albums" exact component={AlbumsPage} />
 						<Route path="/shared" exact component={SharedPage} />
 						<Route path="/photo/:photoId" exact component={PhotoPage} />
@@ -53,6 +68,6 @@ class AppContainer extends React.Component {
 		);
 	}
 }
-AppContainer.contextType = AppStateContext;
 
+AppContainer.contextType = AppStateContext;
 export default AppContainer;

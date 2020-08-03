@@ -11,7 +11,7 @@ class Albums extends React.Component {
 		let _this = this;
 		PhotoService.getAlbums()
 			.then((albums) => _this.setState({ albums: albums }))
-			.catch((error) => console.log(error));
+			.catch(console.error);
 
 		this.state = {
 			albums: []

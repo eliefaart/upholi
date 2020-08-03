@@ -93,7 +93,7 @@ class PhotosDashboardPage extends React.Component {
 				})
 				toast.info("Photos added to album.");
 			})
-			.catch(error => console.log(error));
+			.catch(console.error);
 	}
 
 	onPhotoSelectedChange(photoId, selected) {

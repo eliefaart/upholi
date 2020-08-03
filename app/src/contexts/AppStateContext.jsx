@@ -1,7 +1,8 @@
 import React from "react";
 
 const AppStateContext = React.createContext({
-	userLoggedIn: false
+	authenticated: false,
+	history: null
 });
 
 export default AppStateContext;
