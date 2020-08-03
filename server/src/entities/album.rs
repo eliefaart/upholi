@@ -122,6 +122,36 @@ mod tests {
 		assert!(result.is_err());
 	}
 
+	#[test]
+	fn access_private() {
+		let user_album_owner = User{user_id: 1};
+		let user_not_album_owner = User{user_id: 2};
+
+		let mut album = create_dummy_album_with_id("");
+		album.public = false;
+		album.user_id = user_album_owner.user_id;
+
+		// Only the user that owns the album may access it
+		assert_eq!(album.user_has_access(Some(user_album_owner)), true);
+		assert_eq!(album.user_has_access(Some(user_not_album_owner)), false);
+		assert_eq!(album.user_has_access(None), false);
+	}
+
+	#[test]
+	fn access_public() {
+		let user_album_owner = User{user_id: 1};
+		let user_not_album_owner = User{user_id: 2};
+
+		let mut album = create_dummy_album_with_id("");
+		album.public = true;
+		album.user_id = user_album_owner.user_id;
+
+		// Everyone may access the album, because it is public
+		assert_eq!(album.user_has_access(Some(user_album_owner)), true);
+		assert_eq!(album.user_has_access(Some(user_not_album_owner)), true);
+		assert_eq!(album.user_has_access(None), true);
+	}
+
 	fn create_dummy_album_with_id(id: &str) -> Album {
 		Album{
 			id: id.to_string(),

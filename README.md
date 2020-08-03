@@ -25,6 +25,7 @@ Default configuration is inside ```/server/config/default.toml```. Each setting 
 
 | Environment variable 			| Description |
 | :---------------------------- | :---------- |
+| `HB_SERVER_ADDRESS`           | Address to bind to |
 | `HB_DATABASE_CONNECTIONSTRING`| Connection string to database server |
 | `HB_DATABASE_NAME`			| Name of database to use |
 | `HB_STORAGE_DIRECTORYPHOTOS`	| Path to base directories where photos will be stored |

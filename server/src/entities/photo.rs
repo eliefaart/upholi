@@ -273,6 +273,22 @@ mod tests {
 		assert!(result.is_err());
 	}
 
+	#[test]
+	fn access_private() {
+		let user_photo_owner = User{user_id: 1};
+		//let user_not_photo_owner = User{user_id: 2};
+
+		let mut photo = create_dummy_photo_with_id("");
+		photo.user_id = user_photo_owner.user_id;
+
+		// Only the user that owns the photo may access it
+		assert_eq!(photo.user_has_access(Some(user_photo_owner)), true);
+
+		// Can't test the not-allowed situations without database..
+		// assert_eq!(photo.user_has_access(Some(user_not_photo_owner)), false);
+		// assert_eq!(photo.user_has_access(None), false);
+	}
+
 	fn create_dummy_photo_with_id(id: &str) -> Photo {
 		Photo {
 			id: id.to_string(),
