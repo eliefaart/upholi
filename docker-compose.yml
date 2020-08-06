@@ -1,12 +1,12 @@
 version: '3'
 
-# Must modify:
+# Must set:
 # - HB_DATABASE_CONNECTIONSTRING
 # - HB_OAUTH_CLIENTID
 # - HB_OAUTH_CLIENTSECRET
 
 volumes:
-  server_data:
+  photos:
 
 services:
   app:
@@ -22,10 +22,10 @@ services:
     environment:
       HB_DATABASE_CONNECTIONSTRING: "XXX"
       HB_DATABASE_NAME: "hummingbird"
-      HB_STORAGE_DIRECTORYPHOTOS: "/srv/hummingbird"
+      HB_STORAGE_DIRECTORYPHOTOS: "/srv/photos"
       HB_OAUTH_CLIENTID: "XXX"
       HB_OAUTH_CLIENTSECRET: "XXX"
     volumes:
-      - "server_data:/srv/hummingbird"
+      - "photos:/srv/photos"
     ports:
       - "29702:8000"
