@@ -1,15 +1,6 @@
 # Hummingbird
 Personal photo library
 
-## Useful commands
-```docker-compose up --build -d --force-recreate```
-
-```docker build . --file Dockerfile```
-
-```docker pull docker.pkg.github.com/eliefaart/hummingbird/hummingbird-server:latest```
-
-```docker pull docker.pkg.github.com/eliefaart/hummingbird/hummingbird-app:latest```
-
 ## Docker
 In docker compose:
 
@@ -34,3 +25,6 @@ Default configuration is inside ```/server/config/default.toml```. Each setting 
 | `HB_OAUTH_AUTHURL`			| OAuth2 authorization url |
 | `HB_OAUTH_TOKENURL`			| OAuth2 token url |
 | `HB_OAUTH_USERINFOURL` 		| Url from which information about the current use can be retreived using an oauth2 access token |
+
+## License
+This project is licensed under the MIT license. 

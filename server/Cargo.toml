@@ -1,7 +1,8 @@
 [package]
 name = "hummingbird"
 version = "0.1.0"
-authors = ["Eric <eric@e10t.nl>"]
+authors = ["Eric Liefaart <eric@e10t.nl>"]
+license = "MIT"
 edition = "2018"
 
 [dependencies]
