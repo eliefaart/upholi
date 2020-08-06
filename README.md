@@ -2,14 +2,7 @@
 Personal photo library
 
 ## Docker
-In docker compose:
-
-Must modify:
-- HB_DB_CONNSTRING
-
-May modify:
-- 'outer' ports
-- HB_DB_NAME
+Docker images for the server and frontend app are available. A docker compose file is provided to run both images. You will still need to set up a MongoDB database server yourself.
 
 ## Server configuration
 Default configuration is inside ```/server/config/default.toml```. Each setting can also be set using environment variables. Environment variables overwrite the settings from the default config file.
