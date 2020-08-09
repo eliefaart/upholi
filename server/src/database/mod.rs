@@ -9,7 +9,7 @@ pub const COLLECTION_ALBUMS: &str = "albums";
 
 // Get the implementation of the database traits
 pub fn get_database() -> impl Database + DatabaseExt {
-	mongodb::MongoDatabase{}
+	mongodb::MongoDatabase::new()
 }
 
 pub struct SortField<'a> {

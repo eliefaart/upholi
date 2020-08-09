@@ -16,11 +16,31 @@ lazy_static!{
 		let client = Client::with_options(client_options)
 			.expect("Failed to initialize database client");
 
-		client.database(&crate::SETTINGS.database.name)
+		let database = client.database(&crate::SETTINGS.database.name);
+
+		if let Err(error) = initialize(&database) {
+			println!("Error preparing up database: {:?}", error);
+		}
+
+		database
 	};
 }
 
+/// Initialize database by setting some indexes if needed
+fn initialize(database: &mongodb::Database) -> Result<()> {
+	create_index(database, crate::database::COLLECTION_SESSIONS, "id")?;
+	create_index(database, crate::database::COLLECTION_PHOTOS, "id")?;
+	create_index(database, crate::database::COLLECTION_ALBUMS, "id")?;
+	Ok(())
+}
+
 pub struct MongoDatabase {}
+
+impl MongoDatabase {
+	pub fn new() -> Self {
+		MongoDatabase{}
+	}
+}
 
 impl Database for MongoDatabase {
 	fn find_one<'de, T: serde::Deserialize<'de>>(&self, collection: &str, id: &str) 
@@ -224,12 +244,12 @@ fn create_in_filter_for_ids(ids: &[&str]) -> bson::ordered::OrderedDocument {
 }
 
 /// Create a filter definition to be used in queries that matches all item for a user
-pub fn create_filter_for_user(user_id: i64) -> bson::ordered::OrderedDocument {
+fn create_filter_for_user(user_id: i64) -> bson::ordered::OrderedDocument {
 	doc!{"userId": user_id}
 }
 
 /// Create a filter definition to be used in queries that matches all item for a user and certian item ids
-pub fn create_filter_for_user_and_ids(user_id: i64, ids: &[&str]) -> bson::ordered::OrderedDocument {
+fn create_filter_for_user_and_ids(user_id: i64, ids: &[&str]) -> bson::ordered::OrderedDocument {
 	doc!{
 		"id": doc!{"$in": ids },
 		"userId": user_id
@@ -250,4 +270,51 @@ fn create_filter_for_user_and_ids_options(user_id: &Option<i64>, ids: &Option<&[
 	else {
 		doc!{}
 	}
+}
+
+/// Create an index if it does not exist, this index will have option 'unique: true'.
+/// Note: existance check if by name only, does not take index options into account
+fn create_index(database: &mongodb::Database, collection: &str, key: &str) -> Result<()>{
+	if !index_exists(database, collection, key)? {
+		let command = doc!{
+			"createIndexes": collection,
+			"indexes": vec!{
+				doc!{
+					"key": {
+						key: 1
+					},
+					"name": key,
+					"unique": true
+				}
+			}
+		};
+	
+		database.run_command(command, None)?;
+	}
+	
+	Ok(())
+}
+
+/// Check if index with given name exists for collection
+fn index_exists(database: &mongodb::Database, collection: &str, index_name: &str) -> Result<bool> {
+	let command = doc!{ 
+		"listIndexes": collection
+	};
+
+	let result = database.run_command(command, None)?;
+	let index_docs = result.get_document("cursor")?.get_array("firstBatch")?;
+
+	let exists = index_docs.iter().any(|bson| 
+		match bson.as_document() {
+			Some(doc) => {
+				match doc.get_str("name") {
+					Ok(name) => name == index_name,
+					Err(_) => false
+				}
+			},
+			None => false
+		});
+
+	println!("{}, {}, {}", collection, index_name, exists);
+	Ok(exists)
 }
