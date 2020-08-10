@@ -9,7 +9,7 @@ use futures::future::{ok, err, Ready};
 use crate::error::*;
 use crate::entities::session::Session;
 use crate::database::DatabaseEntity;
-use crate::entities::user::User;
+use crate::entities::user::*;
 
 pub const SESSION_COOKIE_NAME: &str = "session";
 
@@ -41,7 +41,17 @@ impl FromRequest for User {
 	#[inline]
 	fn from_request(request: &HttpRequest, _: &mut Payload) -> Self::Future {
 		match get_user_id(request) {
-			Some(user_id) => ok(User{user_id}),
+			Some(user_id) => {
+				match User::get(&user_id) {
+					Ok(user_opt) => {
+						match user_opt {
+							Some(user) => ok(user),
+							None => err(Error::from(HttpResponse::NotFound()))
+						}
+					},
+					Err(_) => err(Error::from(HttpResponse::InternalServerError()))
+				}
+			},
 			None => err(Error::from(HttpResponse::Unauthorized()))
 		}
 	}
@@ -88,7 +98,7 @@ fn get_session(req: &HttpRequest) -> Option<Session> {
 }
 
 /// Extract user_id from the HTTP request
-fn get_user_id(req: &HttpRequest) -> Option<i64> {
+fn get_user_id(req: &HttpRequest) -> Option<String> {
 	match get_session(req) {
 		Some(session) => session.user_id,
 		None => None

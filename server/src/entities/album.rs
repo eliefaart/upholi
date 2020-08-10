@@ -12,7 +12,7 @@ use crate::entities::user::User;
 pub struct Album {
 	#[serde(default)] 
 	pub id: String,
-	pub user_id: i64,
+	pub user_id: String,
 	pub title: String,
 	pub public: bool,
 	#[serde(default)]
@@ -22,7 +22,7 @@ pub struct Album {
 }
 
 impl Album {
-	pub fn new(user_id: i64, title: &str) -> Self {
+	pub fn new(user_id: String, title: &str) -> Self {
 		let id = ids::create_unique_id();
 
 		Self {
@@ -65,7 +65,7 @@ impl DatabaseEntity for Album {
 }
 
 impl DatabaseUserEntity for Album {
-	fn get_as_user(id: &str, user_id: i64) -> Result<Option<Self>>{
+	fn get_as_user(id: &str, user_id: String) -> Result<Option<Self>>{
 		match Self::get(id)? {
 			Some(album) => {
 				if album.user_id != user_id {
@@ -78,19 +78,19 @@ impl DatabaseUserEntity for Album {
 		}
 	}
 
-	fn get_all_as_user(user_id: i64) -> Result<Vec<Self>> {
-		database::get_database().find_many(database::COLLECTION_ALBUMS, Some(user_id), None, None) 
+	fn get_all_as_user(user_id: String) -> Result<Vec<Self>> {
+		database::get_database().find_many(database::COLLECTION_ALBUMS, Some(&user_id), None, None) 
 	}
 
-	fn get_all_with_ids_as_user(ids: &[&str], user_id: i64) -> Result<Vec<Self>> {
-		database::get_database().find_many(database::COLLECTION_ALBUMS, Some(user_id), Some(ids), None) 
+	fn get_all_with_ids_as_user(ids: &[&str], user_id: String) -> Result<Vec<Self>> {
+		database::get_database().find_many(database::COLLECTION_ALBUMS, Some(&user_id), Some(ids), None) 
 	}
 }
 
 impl AccessControl for Album {
 	fn user_has_access(&self, user_opt: Option<User>) -> bool {
 		if let Some(user) = user_opt {
-			self.user_id == user.user_id || self.public
+			self.user_id == user.id || self.public
 		} 
 		else {
 			self.public
@@ -101,13 +101,15 @@ impl AccessControl for Album {
 #[cfg(test)]
 mod tests {
 	use super::*;
+	use crate::ids::create_unique_id;
+
 
 	#[test]
 	fn new() {
 		const TITLE: &str = "Hello world";
-		const USER_ID: i64 = 100i64;
+		const USER_ID: &str = "100";
 
-		let album = Album::new(USER_ID, TITLE);
+		let album = Album::new(USER_ID.to_string(), TITLE);
 
 		assert!(!album.id.is_empty());
 		assert_eq!(album.title, TITLE);
@@ -124,12 +126,12 @@ mod tests {
 
 	#[test]
 	fn access_private() {
-		let user_album_owner = User{user_id: 1};
-		let user_not_album_owner = User{user_id: 2};
+		let user_album_owner = create_dummy_user();
+		let user_not_album_owner = create_dummy_user();
 
 		let mut album = create_dummy_album_with_id("");
 		album.public = false;
-		album.user_id = user_album_owner.user_id;
+		album.user_id = user_album_owner.id.to_string();
 
 		// Only the user that owns the album may access it
 		assert_eq!(album.user_has_access(Some(user_album_owner)), true);
@@ -139,12 +141,12 @@ mod tests {
 
 	#[test]
 	fn access_public() {
-		let user_album_owner = User{user_id: 1};
-		let user_not_album_owner = User{user_id: 2};
+		let user_album_owner = create_dummy_user();
+		let user_not_album_owner = create_dummy_user();
 
 		let mut album = create_dummy_album_with_id("");
 		album.public = true;
-		album.user_id = user_album_owner.user_id;
+		album.user_id = user_album_owner.id.to_string();
 
 		// Everyone may access the album, because it is public
 		assert_eq!(album.user_has_access(Some(user_album_owner)), true);
@@ -155,7 +157,7 @@ mod tests {
 	fn create_dummy_album_with_id(id: &str) -> Album {
 		Album{
 			id: id.to_string(),
-			user_id: 0i64,
+			user_id: create_unique_id(),
 			public: false,
 			title: "title".to_string(),
 			thumb_photo_id: Some(bson::oid::ObjectId::new().unwrap().to_hex()),
@@ -164,6 +166,14 @@ mod tests {
 				bson::oid::ObjectId::new().unwrap().to_hex(),
 				bson::oid::ObjectId::new().unwrap().to_hex()
 			}
+		}
+	}
+
+	fn create_dummy_user() -> User {
+		User{
+			id: create_unique_id(), 
+			identity_provider: "".to_string(), 
+			identity_provider_user_id: "".to_string()
 		}
 	}
 }

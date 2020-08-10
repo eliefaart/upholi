@@ -6,6 +6,7 @@ use crate::database;
 use crate::database::{Database, DatabaseExt, SortField};
 use crate::error::*;
 use crate::entities::album::Album;
+use crate::entities::user::User;
 
 lazy_static!{
 	/// A reference to the database that can be used to execute queries etc
@@ -29,6 +30,7 @@ lazy_static!{
 /// Initialize database by setting some indexes if needed
 fn initialize(database: &mongodb::Database) -> Result<()> {
 	create_index(database, crate::database::COLLECTION_SESSIONS, "id")?;
+	create_index(database, crate::database::COLLECTION_USERS, "id")?;
 	create_index(database, crate::database::COLLECTION_PHOTOS, "id")?;
 	create_index(database, crate::database::COLLECTION_ALBUMS, "id")?;
 	Ok(())
@@ -56,7 +58,7 @@ impl Database for MongoDatabase {
 		}
 	}
 
-	fn find_many<'de, T: serde::Deserialize<'de>>(&self, collection: &str, user_id: Option<i64>, ids: Option<&[&str]>, sort_field: Option<&SortField>) 
+	fn find_many<'de, T: serde::Deserialize<'de>>(&self, collection: &str, user_id: Option<&str>, ids: Option<&[&str]>, sort_field: Option<&SortField>) 
 		-> Result<Vec<T>>
 	{
 		let mongo_collection = DATABASE.collection(collection);
@@ -189,7 +191,7 @@ impl DatabaseExt for MongoDatabase {
 		Ok(())
 	}
 
-	fn photo_exists_for_user(&self, user_id: i64, hash: &str) -> Result<bool> {
+	fn photo_exists_for_user(&self, user_id: &str, hash: &str) -> Result<bool> {
 		let mongo_collection = DATABASE.collection(database::COLLECTION_PHOTOS);
 		let filter = doc!{ 
 			"user_id": user_id,
@@ -208,6 +210,23 @@ impl DatabaseExt for MongoDatabase {
 
 		let cursor = mongo_collection.find(query, None)?;
 		get_items_from_cursor(cursor)
+	}
+
+	fn get_user_for_identity_provider(&self, identity_provider: &str, identity_provider_user_id: &str) -> Result<Option<User>> {
+		let mongo_collection = DATABASE.collection(database::COLLECTION_USERS);
+		let query = doc!{
+			"identityProvider": identity_provider,
+			"identityProviderUserId": identity_provider_user_id
+		};
+
+		let cursor = mongo_collection.find(query, None)?;
+		let users = get_items_from_cursor(cursor)?;
+
+		match users.len() {
+			1 => Ok(Some(users.into_iter().nth(0).unwrap())),
+			0 => Ok(None),
+			_ => Err(Box::from(format!("Multiple users found for identity provider '{}' and identity provider user ID '{}'. There cannot be more than one.", identity_provider, identity_provider_user_id)))
+		}
 	}
 }
 
@@ -244,12 +263,12 @@ fn create_in_filter_for_ids(ids: &[&str]) -> bson::ordered::OrderedDocument {
 }
 
 /// Create a filter definition to be used in queries that matches all item for a user
-fn create_filter_for_user(user_id: i64) -> bson::ordered::OrderedDocument {
+fn create_filter_for_user(user_id: &str) -> bson::ordered::OrderedDocument {
 	doc!{"userId": user_id}
 }
 
 /// Create a filter definition to be used in queries that matches all item for a user and certian item ids
-fn create_filter_for_user_and_ids(user_id: i64, ids: &[&str]) -> bson::ordered::OrderedDocument {
+fn create_filter_for_user_and_ids(user_id: &str, ids: &[&str]) -> bson::ordered::OrderedDocument {
 	doc!{
 		"id": doc!{"$in": ids },
 		"userId": user_id
@@ -257,7 +276,7 @@ fn create_filter_for_user_and_ids(user_id: i64, ids: &[&str]) -> bson::ordered::
 }
 
 /// Create a filter definition to be used in queries that matches all item for a user and certian item ids
-fn create_filter_for_user_and_ids_options(user_id: &Option<i64>, ids: &Option<&[&str]>) -> bson::ordered::OrderedDocument {
+fn create_filter_for_user_and_ids_options(user_id: &Option<&str>, ids: &Option<&[&str]>) -> bson::ordered::OrderedDocument {
 	if user_id.is_some() && ids.is_some() {
 		create_filter_for_user_and_ids(user_id.unwrap(), ids.unwrap())
 	}

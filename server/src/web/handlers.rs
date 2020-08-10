@@ -120,7 +120,7 @@ mod responses {
 
 /// Get all albums
 pub async fn route_get_albums(user: User) -> impl Responder {
-	match Album::get_all_as_user(user.user_id) {
+	match Album::get_all_as_user(user.id) {
 		Ok(albums) => HttpResponse::Ok().json(albums),
 		Err(error) => {
 			println!("{}", error);
@@ -156,7 +156,7 @@ pub async fn route_create_album(user: User, album: web::Json<requests::CreateAlb
 	if album.title.len() > crate::constants::ALBUM_TITLE_MAX_LENGTH {
 		create_bad_request_response(Box::from(format!("Maximum length for album title is {}.", crate::constants::ALBUM_TITLE_MAX_LENGTH)))
 	} else {
-		let album = Album::new(user.user_id, &album.title);
+		let album = Album::new(user.id, &album.title);
 
 		match album.insert() {
 			Ok(_) => create_created_response(&album.id),
@@ -169,11 +169,11 @@ pub async fn route_create_album(user: User, album: web::Json<requests::CreateAlb
 pub async fn route_update_album(user: User, req: HttpRequest, updated_album: web::Json<requests::UpdateAlbum>) -> impl Responder {
 	let album_id = req.match_info().get("album_id").unwrap();
 
-	match Album::get_as_user(&album_id, user.user_id) {
+	match Album::get_as_user(&album_id, user.id.to_string()) {
 		Ok(album_opt) => {
 			match album_opt {
 				Some(mut album) => {
-					if album.user_id != user.user_id {
+					if album.user_id != user.id {
 						return create_unauthorized_response();
 					}
 		
@@ -208,7 +208,7 @@ pub async fn route_update_album(user: User, req: HttpRequest, updated_album: web
 pub async fn route_delete_album(user: User, req: HttpRequest) -> impl Responder {
 	let album_id = req.match_info().get("album_id").unwrap();
 
-	match Album::get_as_user(&album_id, user.user_id) {
+	match Album::get_as_user(&album_id, user.id) {
 		Ok(album_opt) => {
 			match album_opt {
 				Some(album) => {
@@ -226,7 +226,7 @@ pub async fn route_delete_album(user: User, req: HttpRequest) -> impl Responder 
 
 /// Get all photos
 pub async fn route_get_photos(user: User) -> impl Responder {
-	match Photo::get_all_as_user(user.user_id) {
+	match Photo::get_all_as_user(user.id) {
 		Ok(photos) => {
 			let photos_small: Vec<responses::PhotoSmall> = photos.into_iter()
 				.map(responses::PhotoSmall::from)
@@ -244,7 +244,7 @@ pub async fn route_get_photos(user: User) -> impl Responder {
 pub async fn route_delete_photo(user: User, req: HttpRequest) -> impl Responder {
 	let photo_id = req.match_info().get("photo_id").unwrap();
 
-	delete_photos(user.user_id, &[photo_id])
+	delete_photos(user.id, &[photo_id])
 }
 
 /// Delete multiple photos
@@ -254,7 +254,7 @@ pub async fn route_delete_photos(user: User, photo_ids: web::Json<Vec<String>>) 
 		ids.push(&id);
 	}
 
-	delete_photos(user.user_id, &ids)
+	delete_photos(user.id, &ids)
 }
 
 /// Get info about a photo
@@ -317,7 +317,7 @@ pub async fn route_upload_photo(user: User, payload: Multipart) -> impl Responde
 
 			match file_option {
 				Some(file) => {
-					match Photo::new(user.user_id, &file.bytes) {
+					match Photo::new(user.id, &file.bytes) {
 						Ok(photo) => {
 							match photo.insert() {
 								Ok(_) => create_created_response(&photo.id),
@@ -380,7 +380,7 @@ pub async fn oauth_callback(mut session: Session, oauth_info: web::Query<request
 					match oauth2::get_user_info(&access_token).await {
 						Ok(user_info) => {
 							// Assign the user to the session, and clear oauth login data/tokens
-							session.set_user(user_info.id);
+							session.set_user(&user_info.id);
 							session.oauth = None;
 
 							match session.update() {
@@ -458,7 +458,7 @@ fn serve_photo(path: &str, file_name: &str, offer_as_download: bool) -> actix_ht
 }
 
 /// Delete multiple photos from database and disk
-pub fn delete_photos(user_id: i64, ids: &[&str]) -> impl Responder {
+pub fn delete_photos(user_id: String, ids: &[&str]) -> impl Responder {
 	// Check if all ids to be deleted are owned by user_id
 	for id in ids {
 		match Photo::get(id) {

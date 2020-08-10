@@ -2,10 +2,15 @@
 use oauth2::{AuthUrl, ClientId, ClientSecret, CsrfToken, TokenUrl, TokenResponse, AuthorizationCode, PkceCodeChallenge};
 use oauth2::basic::BasicClient;
 use oauth2::reqwest::http_client;
-use serde::{Deserialize};
+use serde::Deserialize;
 use lazy_static::lazy_static;
 use crate::error::*;
+use crate::database;
+use crate::database::{DatabaseExt,DatabaseEntity};
+use crate::entities::user::User;
+use crate::ids::create_unique_id;
 
+const IDENTITY_PROVIDER_NAME: &str = "github";
 const USER_AGENT: &str = "localhost";
 
 lazy_static! {
@@ -14,7 +19,7 @@ lazy_static! {
 }
 
 #[derive(Deserialize, Debug)]
-pub struct UserInfo {
+struct UserInfo {
 	pub id: i64
 }
 
@@ -53,7 +58,7 @@ pub fn get_access_token(auth_code: &str, pkce_verifier: &str) -> Result<String> 
 }
 
 /// Get user info for access_token
-pub async fn get_user_info(access_token: &str) -> Result<UserInfo, Box<dyn std::error::Error>> {
+pub async fn get_user_info(access_token: &str) -> Result<User, Box<dyn std::error::Error>> {
 	let client = reqwest::Client::new();
 	let request = client
 		.get(&crate::SETTINGS.oauth.userinfo_url)
@@ -62,7 +67,24 @@ pub async fn get_user_info(access_token: &str) -> Result<UserInfo, Box<dyn std::
 	let response = request.send().await?;
 
 	let user_info = response.json::<UserInfo>().await?;
-	Ok(user_info)
+	let user_opt = database::get_database().get_user_for_identity_provider(IDENTITY_PROVIDER_NAME, &user_info.id.to_string())?;
+
+	// Take the user in the Option, or create a new one
+	let user = match user_opt {
+		Some(user) => user,
+		None => {
+			let user = User{
+				id: create_unique_id(),
+				identity_provider: IDENTITY_PROVIDER_NAME.to_string(),
+				identity_provider_user_id: user_info.id.to_string()
+			};
+	
+			user.insert()?;
+			user
+		}
+	};
+	
+	Ok(user)
 }
 
 /// Create an oauth2 client

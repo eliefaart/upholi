@@ -17,7 +17,7 @@ use crate::entities::user::User;
 #[serde(rename_all = "camelCase")]
 pub struct Photo {
 	pub id: String,
-	pub user_id: i64,
+	pub user_id: String,
 	pub name: String,
 	pub width: i32,
 	pub height: i32,
@@ -31,13 +31,13 @@ pub struct Photo {
 
 impl Photo {
 	/// Create a new photo from bytes
-	pub fn new(user_id: i64, photo_bytes: &[u8]) -> Result<Self> {
+	pub fn new(user_id: String, photo_bytes: &[u8]) -> Result<Self> {
 		let id = ids::create_unique_id();
 		let filename = Self::generate_filename(".jpg")?;
 		let hash = Self::compute_md5_hash(photo_bytes);
 
 		// Verify if this photo doesn't already exist by checking hash in database
-		let exists = database::get_database().photo_exists_for_user(user_id, &hash)?;
+		let exists = database::get_database().photo_exists_for_user(&user_id, &hash)?;
 		
 		if exists {
 			Err(Box::from(EntityError::AlreadyExists))
@@ -160,7 +160,7 @@ impl DatabaseEntityBatch for Photo {
 }
 
 impl DatabaseUserEntity for Photo {
-	fn get_as_user(id: &str, user_id: i64) -> Result<Option<Self>>{
+	fn get_as_user(id: &str, user_id: String) -> Result<Option<Self>>{
 		match Self::get(id)? {
 			Some(photo) => {
 				if photo.user_id != user_id {
@@ -173,20 +173,20 @@ impl DatabaseUserEntity for Photo {
 		}
 	}
 
-	fn get_all_as_user(user_id: i64) -> Result<Vec<Self>> {
+	fn get_all_as_user(user_id: String) -> Result<Vec<Self>> {
 		let sort = database::SortField{
 			field: "createdOn", 
 			ascending: false
 		};
-		database::get_database().find_many(database::COLLECTION_PHOTOS, Some(user_id), None, Some(&sort))
+		database::get_database().find_many(database::COLLECTION_PHOTOS, Some(&user_id), None, Some(&sort))
 	}
 
-	fn get_all_with_ids_as_user(ids: &[&str], user_id: i64) -> Result<Vec<Self>> {
+	fn get_all_with_ids_as_user(ids: &[&str], user_id: String) -> Result<Vec<Self>> {
 		let sort = database::SortField{
 			field: "createdOn", 
 			ascending: false
 		};
-		database::get_database().find_many(database::COLLECTION_PHOTOS, Some(user_id), Some(ids), Some(&sort))
+		database::get_database().find_many(database::COLLECTION_PHOTOS, Some(&user_id), Some(ids), Some(&sort))
 	}
 }
 
@@ -194,7 +194,7 @@ impl AccessControl for Photo {
 	fn user_has_access(&self, user_opt: Option<User>) -> bool {
 		// Check if photo is owned by current user
 		if let Some(user) = user_opt {
-			if self.user_id == user.user_id {
+			if self.user_id == user.id {
 				return true;
 			}
 		}
@@ -216,6 +216,7 @@ impl AccessControl for Photo {
 #[cfg(test)]
 mod tests {
 	use super::*;
+	use crate::ids::create_unique_id;
 
 	#[test]
 	fn generate_filename() {
@@ -256,7 +257,7 @@ mod tests {
 	// #[test]
 	// fn new() {
 	// 	const TITLE: &str = "Hello world";
-	// 	const USER_ID: i64 = 100i64;
+	// 	const user_id: String = 100i64;
 
 	// 	let photo = Photo::new(USER_ID, TITLE);
 
@@ -275,11 +276,11 @@ mod tests {
 
 	#[test]
 	fn access_private() {
-		let user_photo_owner = User{user_id: 1};
-		//let user_not_photo_owner = User{user_id: 2};
+		let user_photo_owner = create_dummy_user();
+		//let user_not_photo_owner = create_dummy_user();
 
 		let mut photo = create_dummy_photo_with_id("");
-		photo.user_id = user_photo_owner.user_id;
+		photo.user_id = user_photo_owner.id.to_string();
 
 		// Only the user that owns the photo may access it
 		assert_eq!(photo.user_has_access(Some(user_photo_owner)), true);
@@ -292,7 +293,7 @@ mod tests {
 	fn create_dummy_photo_with_id(id: &str) -> Photo {
 		Photo {
 			id: id.to_string(),
-			user_id: 0i64,
+			user_id: create_unique_id(),
 			name: "photo name".to_string(),
 			width: 150,
 			height: 2500,
@@ -314,6 +315,14 @@ mod tests {
 				gps_latitude: None,
 				gps_longitude: None
 			}
+		}
+	}
+
+	fn create_dummy_user() -> User {
+		User{
+			id: create_unique_id(), 
+			identity_provider: "".to_string(), 
+			identity_provider_user_id: "".to_string()
 		}
 	}
 }
