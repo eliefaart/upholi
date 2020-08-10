@@ -334,6 +334,5 @@ fn index_exists(database: &mongodb::Database, collection: &str, index_name: &str
 			None => false
 		});
 
-	println!("{}, {}, {}", collection, index_name, exists);
 	Ok(exists)
 }

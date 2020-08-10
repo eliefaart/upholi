@@ -8,6 +8,7 @@ use crate::database;
 use crate::database::{Database, DatabaseExt, DatabaseEntity, DatabaseUserEntity};
 use crate::files;
 use crate::web::oauth2;
+use crate::web::oauth2::OAuth2Provider;
 use crate::web::http::*;
 use crate::entities::AccessControl;
 use crate::entities::user::User;
@@ -336,7 +337,7 @@ pub async fn route_upload_photo(user: User, payload: Multipart) -> impl Responde
 
 /// OAuth: start login flow with an identity provider
 pub async fn oauth_start_login() -> impl Responder {
-	let (redirect_uri, state, pkce_verifier) = oauth2::get_auth_url();
+	let (redirect_uri, state, pkce_verifier) = oauth2::get_provider().get_auth_url();
 
 	let mut session = Session::new();
 	match session.insert() {
@@ -375,9 +376,9 @@ pub async fn oauth_callback(mut session: Session, oauth_info: web::Query<request
 			}
 
 			// Verify code externally
-			match oauth2::get_access_token(&oauth_info.code, &oauth_data.pkce_verifier) {
+			match oauth2::get_provider().get_access_token(&oauth_info.code, &oauth_data.pkce_verifier) {
 				Ok(access_token) => {
-					match oauth2::get_user_info(&access_token).await {
+					match oauth2::get_provider().get_user_info(&access_token).await {
 						Ok(user_info) => {
 							// Assign the user to the session, and clear oauth login data/tokens
 							session.set_user(&user_info.id);
