@@ -9,7 +9,7 @@ use crate::error::*;
 #[derive(Serialize, Deserialize)]
 pub struct Session {
 	pub id: String,
-	pub user_id: Option<i64>,
+	pub user_id: Option<String>,
 	created_on: chrono::DateTime<Utc>,
 
 	/// Contains data related to an oauth login attempt
@@ -35,8 +35,8 @@ impl Session {
 		}
 	}
 
-	pub fn set_user(&mut self, user_id: i64) {
-		self.user_id = Some(user_id);
+	pub fn set_user(&mut self, user_id: &str) {
+		self.user_id = Some(user_id.to_string());
 	}
 
 	pub fn set_oauth_data(&mut self, state: &str, pkce_verifier: &str) {
@@ -80,7 +80,7 @@ mod tests {
 
 	#[test]
 	fn set_user() {
-		const USER_ID: i64 = 999555i64;
+		const USER_ID: &str = "99995555";
 
 		let mut session = Session::new();
 		session.set_user(USER_ID);

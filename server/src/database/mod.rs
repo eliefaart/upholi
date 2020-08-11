@@ -1,9 +1,11 @@
 use crate::error::*;
 use crate::entities::album::Album;
+use crate::entities::user::User;
 
 mod mongodb;
 
 pub const COLLECTION_SESSIONS: &str = "sessions";
+pub const COLLECTION_USERS: &str = "users";
 pub const COLLECTION_PHOTOS: &str = "photos";
 pub const COLLECTION_ALBUMS: &str = "albums";
 
@@ -24,7 +26,7 @@ pub trait Database {
 		-> Result<Option<T>>;
 
 	/// Get multiple items from a collection
-	fn find_many<'de, T: serde::Deserialize<'de>>(&self, collection: &str, user_id: Option<i64>, ids: Option<&[&str]>, sort_field: Option<&SortField>) 
+	fn find_many<'de, T: serde::Deserialize<'de>>(&self, collection: &str, user_id: Option<&str>, ids: Option<&[&str]>, sort_field: Option<&SortField>) 
 		-> Result<Vec<T>>;
 
 	/// Insert a single item into a collection.
@@ -55,10 +57,13 @@ pub trait DatabaseExt : Database {
 	fn remove_thumbs_from_all_albums(&self, photo_ids: &[&str]) -> Result<()>;
 
 	/// Check if a photo already exists for user, by hash
-	fn photo_exists_for_user(&self, user_id: i64, hash: &str) -> Result<bool>;
+	fn photo_exists_for_user(&self, user_id: &str, hash: &str) -> Result<bool>;
 
 	/// Get all albums that contain given photo
 	fn get_albums_containing_photo(&self, photo_id: &str) -> Result<Vec<Album>>;
+
+	/// Get user for given ID provider name and user-ID, if it exists
+	fn get_user_for_identity_provider(&self, identity_provider: &str, identity_provider_user_id: &str) -> Result<Option<User>>;
 }
 
 /// Add standard CRUD operations to a struct
@@ -87,12 +92,12 @@ pub trait DatabaseEntityBatch {
 
 /// Add database operations to a struct, which are targetted only to entries owned by given user
 pub trait DatabaseUserEntity: DatabaseEntity {
-	fn get_as_user(id: &str, user_id: i64) -> Result<Option<Self>>
+	fn get_as_user(id: &str, user_id: String) -> Result<Option<Self>>
 		where Self: std::marker::Sized;
 
-	fn get_all_as_user(user_id: i64) -> Result<Vec<Self>>
+	fn get_all_as_user(user_id: String) -> Result<Vec<Self>>
 		where Self: std::marker::Sized;
 
-	fn get_all_with_ids_as_user(ids: &[&str], user_id: i64) -> Result<Vec<Self>>
+	fn get_all_with_ids_as_user(ids: &[&str], user_id: String) -> Result<Vec<Self>>
 		where Self: std::marker::Sized;
 }
