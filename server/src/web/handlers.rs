@@ -337,12 +337,12 @@ pub async fn route_upload_photo(user: User, payload: Multipart) -> impl Responde
 
 /// OAuth: start login flow with an identity provider
 pub async fn oauth_start_login() -> impl Responder {
-	let (redirect_uri, state, pkce_verifier) = oauth2::get_provider().get_auth_url();
+	let url_info = oauth2::get_provider().get_auth_url();
 
 	let mut session = Session::new();
 	match session.insert() {
 		Ok(_) => {
-			session.set_oauth_data(&state, &pkce_verifier);
+			session.set_oauth_data(&url_info.csrf_token, &url_info.pkce_verifier);
 			match session.update() {
 				Ok(_) => {
 					// Create a new cookie for session
@@ -355,7 +355,7 @@ pub async fn oauth_start_login() -> impl Responder {
 
 					HttpResponse::Found()
 						.cookie(cookie)
-						.header(http::header::LOCATION, redirect_uri)
+						.header(http::header::LOCATION, url_info.auth_url)
 						.finish()
 				},
 				Err(error) => create_internal_server_error_response(Some(error))

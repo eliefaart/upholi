@@ -13,23 +13,26 @@ pub fn get_provider() -> impl OAuth2Provider {
 	github::Github{}
 }
 
+pub struct AuthUrlInfo {
+    pub auth_url: String,
+    pub csrf_token: String,
+    pub pkce_verifier: String
+}
+
 #[async_trait]
 pub trait OAuth2Provider {
 	/// Get an OAauth 2 client
 	/// 
-	/// TODO: I don't want this thing to be public, 
-	/// but get_auth_url and get_access_token depend on it so these functions must know it exists
-	/// which is why it is part of this trait.
-	/// I havn't figured out yet how to model this better.
+	/// TODO: I don't want this fn to be public, 
+	/// but get_auth_url and get_access_token depend on it and its implementation is oauth-provider specific
+	/// I havn't figured out yet how to best model this in rust.
 	fn get_oauth_client() -> &'static oauth2::basic::BasicClient;
 
 	/// Get user info for access_token
 	async fn get_user_info(&self, access_token: &str) -> Result<User>;
 
 	/// Generate a full authorization URL to redirect the user to
-	/// Return-type tuple is (auth url, state token, pkce verifier)
-	/// TODO: Refactor this to return a proper type instead of a 3-string-tuple.
-	fn get_auth_url(&self) -> (String, String, String) {
+	fn get_auth_url(&self) -> AuthUrlInfo {
 		// Generate a PKCE challenge.
 		let (pkce_challenge, pkce_verifier) = PkceCodeChallenge::new_random_sha256();
 
@@ -37,9 +40,13 @@ pub trait OAuth2Provider {
 		let (auth_url, csrf_token) = Self::get_oauth_client()
 			.authorize_url(CsrfToken::new_random)
 			.set_pkce_challenge(pkce_challenge)
-			.url();
-	
-		(auth_url.to_string(), csrf_token.secret().to_string(), pkce_verifier.secret().to_string())
+            .url();
+            
+        AuthUrlInfo {
+            auth_url: auth_url.to_string(),
+            csrf_token: csrf_token.secret().to_string(),
+            pkce_verifier: pkce_verifier.secret().to_string()
+        }
 	}
 
 	/// Get access token for the authorization code received from oauth provider 
