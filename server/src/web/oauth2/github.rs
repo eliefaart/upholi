@@ -1,5 +1,4 @@
 use serde::Deserialize;
-use lazy_static::lazy_static;
 use async_trait::async_trait;
 use crate::error::*;
 use crate::database;
@@ -9,11 +8,6 @@ use crate::ids::create_unique_id;
 
 const IDENTITY_PROVIDER_NAME: &str = "github";
 const USER_AGENT: &str = "localhost";
-
-lazy_static! {
-    #[derive(Debug)]
-    pub static ref OAUTH_CLIENT: oauth2::basic::BasicClient = super::create_client(&crate::SETTINGS.oauth);
-}
 
 pub struct Github {}
 
@@ -26,36 +20,42 @@ struct UserInfo {
 
 #[async_trait]
 impl super::OAuth2Provider for Github {
-    fn get_oauth_client() -> &'static oauth2::basic::BasicClient {
-        &OAUTH_CLIENT
+    fn get_provider_id<'a>() -> &'a str {
+        IDENTITY_PROVIDER_NAME
     }
     
     async fn get_user_info(&self, access_token: &str) -> Result<User> {
-        let client = reqwest::Client::new();
-        let request = client
-            .get(&crate::SETTINGS.oauth.userinfo_url)
-            .header(reqwest::header::AUTHORIZATION, format!("Bearer {}", access_token))
-            .header(reqwest::header::USER_AGENT, USER_AGENT);
-        let response = request.send().await?;
-    
-        let user_info = response.json::<UserInfo>().await?;
-        let user_opt = database::get_database().get_user_for_identity_provider(IDENTITY_PROVIDER_NAME, &user_info.id.to_string())?;
-    
-        // Take the user in the Option, or create a new one
-        let user = match user_opt {
-            Some(user) => user,
-            None => {
-                let user = User{
-                    id: create_unique_id(),
-                    identity_provider: IDENTITY_PROVIDER_NAME.to_string(),
-                    identity_provider_user_id: user_info.id.to_string()
+        let provider_id = Self::get_provider_id();
+        match crate::SETTINGS.get_oauth_provider_settings(provider_id) {
+			Some(oauth_settings) => {
+                let client = reqwest::Client::new();
+                let request = client
+                    .get(&oauth_settings.userinfo_url)
+                    .header(reqwest::header::AUTHORIZATION, format!("Bearer {}", access_token))
+                    .header(reqwest::header::USER_AGENT, USER_AGENT);
+                let response = request.send().await?;
+            
+                let user_info = response.json::<UserInfo>().await?;
+                let user_opt = database::get_database().get_user_for_identity_provider(IDENTITY_PROVIDER_NAME, &user_info.id.to_string())?;
+            
+                // Take the user in the Option, or create a new one
+                let user = match user_opt {
+                    Some(user) => user,
+                    None => {
+                        let user = User{
+                            id: create_unique_id(),
+                            identity_provider: IDENTITY_PROVIDER_NAME.to_string(),
+                            identity_provider_user_id: user_info.id.to_string()
+                        };
+                
+                        user.insert()?;
+                        user
+                    }
                 };
-        
-                user.insert()?;
-                user
-            }
-        };
-        
-        Ok(user)
+                
+                Ok(user)
+            },
+			None => Err(Box::from(format!("No settings found for OAuth provider {}", provider_id)))
+		}
     }
 }

@@ -15,19 +15,21 @@ name = "hummingbird"
 # Can also by set using env var HB_STORAGE_DIRECTORYPHOTOS
 directory_photos = "/srv/hummingbird/photos"
 
-[oauth]
+[[oauth_providers]]
+# Unique identifier to this OAuth provider
+provider_id = "github"
 # OAuth2 authorization url
-# Can also by set using env var HB_OAUTH_AUTHURL
+# Can also by set using env var HB_OAUTH_GITHUB_AUTHURL
 auth_url = "https://github.com/login/oauth/authorize"
 # OAuth2 token url
-# Can also by set using env var HB_OAUTH_TOKENURL
+# Can also by set using env var HB_OAUTH_GITHUB_TOKENURL
 token_url = "https://github.com/login/oauth/access_token"
 # Url from which information about the current use can be retreived using an oauth2 access token
-# Can also by set using env var HB_OAUTH_USERINFOURL
+# Can also by set using env var HB_OAUTH_GITHUB_USERINFOURL
 userinfo_url = "https://api.github.com/user"
 # OAuth2 application client ID
-# Can also by set using env var HB_OAUTH_CLIENTID
+# Can also by set using env var HB_OAUTH_GITHUB_CLIENTID
 client_id = ""
 # OAuth2 application client secret
-# Can also by set using env var HB_OAUTH_CLIENTSECRET
+# Can also by set using env var HB_OAUTH_GITHUB_CLIENTSECRET
 client_secret = ""
