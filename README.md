@@ -19,5 +19,18 @@ Default configuration is inside ```/server/config/default.toml```. Each setting 
 | `HB_OAUTH_TOKENURL`			| OAuth2 token url |
 | `HB_OAUTH_USERINFOURL` 		| Url from which information about the current user can be retrieved using an oauth2 access token |
 
+### OAuth2 settings
+Settings of OAuth2 providers can also be overwritten using environment variables, but because there can be multiple OAuth2 providers the keys are not fixed. The table below shows the available settings per OAuth2 provider.
+
+| Environment variable 			| Description |
+| :---------------------------- | :---------- |
+| `HB_OAUTH_XXX_CLIENTID`   	| OAuth2 application client ID |
+| `HB_OAUTH_XXX_CLIENTSECRET`   | OAuth2 application client secret |
+| `HB_OAUTH_XXX_AUTHURL`    	| OAuth2 authorization url |
+| `HB_OAUTH_XXX_TOKENURL`   	| OAuth2 token url |
+| `HB_OAUTH_XXX_USERINFOURL`    | Url from which information about the current user can be retrieved using an oauth2 access token |
+
+ The ```XXX``` within each environment variable must be replaced with the ID of the OAuth2 provider, this is not case sensitive. So for OAuth2 provider with ID 'github' (the only one supported right now), you could for example set environment variable ```HB_OAUTH_GITHUB_CLIENTSECRET```.
+
 ## License
 This project is licensed under the MIT license. 

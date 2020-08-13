@@ -2,8 +2,8 @@ version: '3'
 
 # Must set:
 # - HB_DATABASE_CONNECTIONSTRING
-# - HB_OAUTH_CLIENTID
-# - HB_OAUTH_CLIENTSECRET
+# - HB_OAUTH_GITHUB_CLIENTID
+# - HB_OAUTH_GITHUB_CLIENTSECRET
 
 volumes:
   photos:
@@ -23,8 +23,8 @@ services:
       HB_DATABASE_CONNECTIONSTRING: "XXX"
       HB_DATABASE_NAME: "hummingbird"
       HB_STORAGE_DIRECTORYPHOTOS: "/srv/photos"
-      HB_OAUTH_CLIENTID: "XXX"
-      HB_OAUTH_CLIENTSECRET: "XXX"
+      HB_OAUTH_GITHUB_CLIENTID: "XXX"
+      HB_OAUTH_GITHUB_CLIENTSECRET: "XXX"
     volumes:
       - "photos:/srv/photos"
     ports:
