@@ -24,34 +24,44 @@ pub trait OAuth2Provider {
 	/// Get an OAauth 2 client
 	/// 
 	/// TODO: I don't want this fn to be public, 
-	/// but get_auth_url and get_access_token depend on it and its implementation is oauth-provider specific
+	/// but get_oauth_client depends on it and its implementation is oauth-provider specific
 	/// I havn't figured out yet how to best model this in rust.
-	fn get_oauth_client() -> &'static oauth2::basic::BasicClient;
+	fn get_provider_id<'a>() -> &'a str;
+
+	/// Get an OAauth 2 client
+	fn get_oauth_client() -> Result<oauth2::basic::BasicClient> {
+		let provider_id = Self::get_provider_id();
+
+		match crate::SETTINGS.get_oauth_provider_settings(provider_id) {
+			Some(oauth_settings) => Ok(create_client(&oauth_settings)),
+			None => Err(Box::from(format!("No settings found for OAuth provider {}", provider_id)))
+		}
+	}
 
 	/// Get user info for access_token
 	async fn get_user_info(&self, access_token: &str) -> Result<User>;
 
 	/// Generate a full authorization URL to redirect the user to
-	fn get_auth_url(&self) -> AuthUrlInfo {
+	fn get_auth_url(&self) -> Result<AuthUrlInfo> {
 		// Generate a PKCE challenge.
 		let (pkce_challenge, pkce_verifier) = PkceCodeChallenge::new_random_sha256();
 
 		// Generate the full authorization URL
-		let (auth_url, csrf_token) = Self::get_oauth_client()
+		let (auth_url, csrf_token) = Self::get_oauth_client()?
 			.authorize_url(CsrfToken::new_random)
 			.set_pkce_challenge(pkce_challenge)
             .url();
             
-        AuthUrlInfo {
+        Ok(AuthUrlInfo {
             auth_url: auth_url.to_string(),
             csrf_token: csrf_token.secret().to_string(),
             pkce_verifier: pkce_verifier.secret().to_string()
-        }
+        })
 	}
 
 	/// Get access token for the authorization code received from oauth provider 
 	fn get_access_token(&self, auth_code: &str, pkce_verifier: &str) -> Result<String> {
-		let token_result = Self::get_oauth_client()
+		let token_result = Self::get_oauth_client()?
 			.exchange_code(AuthorizationCode::new(auth_code.to_string()))
 			.set_pkce_verifier(oauth2::PkceCodeVerifier::new(pkce_verifier.to_string()))
 			.request(http_client);
@@ -69,7 +79,7 @@ pub trait OAuth2Provider {
 }
 
 /// Create an oauth2 client
-fn create_client(oauth_settings: &crate::settings::OAuth) -> oauth2::basic::BasicClient {
+fn create_client(oauth_settings: &crate::settings::OAuthProvider) -> oauth2::basic::BasicClient {
 	let client_id = ClientId::new(oauth_settings.client_id.to_string());
 	let client_secret = ClientSecret::new(oauth_settings.client_secret.to_string());
 

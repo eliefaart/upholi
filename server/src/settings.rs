@@ -8,11 +8,13 @@ const ENV_VAR_SERVER_ADDRESS: &str = "HB_SERVER_ADDRESS";
 const ENV_VAR_DATABASE_CONNECTIONSTRING: &str = "HB_DATABASE_CONNECTIONSTRING";
 const ENV_VAR_DATABASE_NAME: &str = "HB_DATABASE_NAME";
 const ENV_VAR_STORAGE_DIRECTORYPHOTOS: &str = "HB_STORAGE_DIRECTORYPHOTOS";
-const ENV_VAR_OAUTH_CLIENTID: &str = "HB_OAUTH_CLIENTID";
-const ENV_VAR_OAUTH_CLIENTSECRET: &str = "HB_OAUTH_CLIENTSECRET";
-const ENV_VAR_OAUTH_AUTHURL: &str = "HB_OAUTH_AUTHURL";
-const ENV_VAR_OAUTH_TOKENURL: &str = "HB_OAUTH_TOKENURL";
-const ENV_VAR_OAUTH_USERINFOURL: &str = "HB_OAUTH_USERINFOURL";
+
+const ENV_VAR_OAUTH_PREFIX: &str = "HB_OAUTH";
+const ENV_VAR_OAUTH_POSTFIX_CLIENTID: &str = "CLIENTID";
+const ENV_VAR_OAUTH_POSTFIX_CLIENTSECRET: &str = "CLIENTSECRET";
+const ENV_VAR_OAUTH_POSTFIX_AUTHURL: &str = "AUTHURL";
+const ENV_VAR_OAUTH_POSTFIX_TOKENURL: &str = "TOKENURL";
+const ENV_VAR_OAUTH_POSTFIX_USERINFOURL: &str = "USERINFOURL";
 
 /// Application settings
 #[derive(Debug, Deserialize)]
@@ -20,7 +22,7 @@ pub struct Settings {
 	pub server: Server,
 	pub database: Database,
 	pub storage: Storage,
-	pub oauth: OAuth
+	pub oauth_providers: Vec<OAuthProvider>
 }
 
 /// Web server settings
@@ -44,12 +46,25 @@ pub struct Storage {
 
 /// OAuth setting of identity provider
 #[derive(Debug, Deserialize)]
-pub struct OAuth {
+pub struct OAuthProvider {
+	pub provider_id: String,
 	pub client_id: String,
 	pub client_secret: String,
 	pub auth_url: String,
 	pub token_url: String,
 	pub userinfo_url: String
+}
+
+impl Settings {
+	/// Get the settings of an OAuth provider by its ID
+	pub fn get_oauth_provider_settings(&self, provider_id: &str) -> Option<&OAuthProvider> {
+		for provider in &self.oauth_providers {
+			if provider.provider_id == provider_id {
+				return Some(provider);
+			}
+		}
+		None
+	}
 }
 
 impl Default for Settings {
@@ -84,11 +99,6 @@ impl Settings {
 			("database.connection_string", ENV_VAR_DATABASE_CONNECTIONSTRING),
 			("database.name", ENV_VAR_DATABASE_NAME),
 			("storage.directory_photos", ENV_VAR_STORAGE_DIRECTORYPHOTOS),
-			("oauth.client_id", ENV_VAR_OAUTH_CLIENTID),
-			("oauth.client_secret", ENV_VAR_OAUTH_CLIENTSECRET),
-			("oauth.auth_url", ENV_VAR_OAUTH_AUTHURL),
-			("oauth.token_url", ENV_VAR_OAUTH_TOKENURL),
-			("oauth.userinfo_url", ENV_VAR_OAUTH_USERINFOURL),
 		].iter().cloned().collect();
 
 		for setting in overwritable_settings {
@@ -97,7 +107,15 @@ impl Settings {
 		}
 
 		// Build
-		config.try_into().expect("Error building configuration")
+		let mut settings: Settings = config.try_into().expect("Error building configuration");
+
+		// Set/overwrite settings within oauth providers from environment variables
+		// Unline non-auto provider fields, this happens after building the config because ```settings.oauth_providers``` is an array.
+		for oauth_provider in &mut settings.oauth_providers {
+			Self::update_oauth_provider_from_env_vars(oauth_provider);
+		}
+
+		settings
 	}
 
 	// Write the value of an env var to configuration if the env var exists
@@ -112,6 +130,38 @@ impl Settings {
 	/// Get the value of an environment variable if it exists
 	fn get_env_var(key: &str) -> Option<String> {
 		var(key).ok()
+	}
+
+	/// Update fields of given OauthProvider from environment variables.
+	/// 
+	/// Looks for env vars with name format: HB_OAUTH_<PROVIDER_ID>_<FIELD_KEY>
+	/// Where PROVIDER_ID equals the value in OAuthProvider.provider_id (ignoring case)
+	/// And FIELD_KEY is one of the available fields within OAuthProvider:
+	///  - CLIENTID
+	///	 - CLIENTSECRET
+	///	 - AUTHURL
+	///	 - TOKENURL
+	///	 - USERINFOURL
+	/// For example:
+	///  - HB_OAUTH_GITHUB_CLIENTSECRET
+	fn update_oauth_provider_from_env_vars(oauth_provider: &mut OAuthProvider) {
+		let id = &oauth_provider.provider_id;
+		let env_var_prefix = format!("{}_{}_", ENV_VAR_OAUTH_PREFIX, id.to_uppercase());
+
+		for (key, value) in std::env::vars() {
+			if key.starts_with(&env_var_prefix) {
+				let field_key = key.replace(&env_var_prefix, "");
+				println!("{}", field_key);
+				match field_key.as_str() {
+					ENV_VAR_OAUTH_POSTFIX_CLIENTID => oauth_provider.client_id = value,
+					ENV_VAR_OAUTH_POSTFIX_CLIENTSECRET => oauth_provider.client_secret = value,
+					ENV_VAR_OAUTH_POSTFIX_AUTHURL => oauth_provider.auth_url = value,
+					ENV_VAR_OAUTH_POSTFIX_TOKENURL => oauth_provider.token_url = value,
+					ENV_VAR_OAUTH_POSTFIX_USERINFOURL => oauth_provider.userinfo_url = value,
+					_ => {}
+				}
+			}
+		}
 	}
 }
 
@@ -131,11 +181,6 @@ mod tests {
 		std::env::set_var(ENV_VAR_DATABASE_CONNECTIONSTRING, "DATABASE_CONNECTIONSTRING");
 		std::env::set_var(ENV_VAR_DATABASE_NAME, "DATABASE_NAME");
 		std::env::set_var(ENV_VAR_STORAGE_DIRECTORYPHOTOS, "STORAGE_DIRECTORYPHOTOS");
-		std::env::set_var(ENV_VAR_OAUTH_CLIENTID, "OAUTH_CLIENTID");
-		std::env::set_var(ENV_VAR_OAUTH_CLIENTSECRET, "OAUTH_CLIENTSECRET");
-		std::env::set_var(ENV_VAR_OAUTH_AUTHURL, "OAUTH_AUTHURL");
-		std::env::set_var(ENV_VAR_OAUTH_TOKENURL, "OAUTH_TOKENURL");
-		std::env::set_var(ENV_VAR_OAUTH_USERINFOURL, "OAUTH_USERINFOURL");
 
 		// Create settings
 		let settings = Settings::new();
@@ -145,10 +190,70 @@ mod tests {
 		assert_eq!(settings.database.connection_string, "DATABASE_CONNECTIONSTRING");
 		assert_eq!(settings.database.name, "DATABASE_NAME");
 		assert_eq!(settings.storage.directory_photos, "STORAGE_DIRECTORYPHOTOS");
-		assert_eq!(settings.oauth.client_id, "OAUTH_CLIENTID");
-		assert_eq!(settings.oauth.client_secret, "OAUTH_CLIENTSECRET");
-		assert_eq!(settings.oauth.auth_url, "OAUTH_AUTHURL");
-		assert_eq!(settings.oauth.token_url, "OAUTH_TOKENURL");
-		assert_eq!(settings.oauth.userinfo_url, "OAUTH_USERINFOURL");
+	}
+
+	#[test]
+	fn get_env_var() {
+		std::env::set_var("EXISTS", "HELLO WORLD");
+
+		let exists = Settings::get_env_var("EXISTS");
+		let not_exists = Settings::get_env_var("NOT_EXISTS");
+
+		assert!(exists.is_some() && exists.unwrap() == "HELLO WORLD");
+		assert_eq!(not_exists, None);
+	}
+
+	#[test]
+	fn oauth_provider_env_vars() {
+		const VAL_INITIAL: &str = "initial";
+		const VAL_CHANGED: &str = "changed";
+
+		let mut oauth_provider = OAuthProvider{
+			provider_id: VAL_INITIAL.to_string(),
+			client_id: VAL_INITIAL.to_string(),
+			client_secret: VAL_INITIAL.to_string(),
+			auth_url: VAL_INITIAL.to_string(),
+			token_url: VAL_INITIAL.to_string(),
+			userinfo_url: VAL_INITIAL.to_string(),
+		};
+
+		// Set some env vars; oauth_provider should contain these values after function
+		std::env::set_var(format!("{}_INITIAL_{}", ENV_VAR_OAUTH_PREFIX, ENV_VAR_OAUTH_POSTFIX_CLIENTID), VAL_CHANGED);
+		std::env::set_var(format!("{}_INITIAL_{}", ENV_VAR_OAUTH_PREFIX, ENV_VAR_OAUTH_POSTFIX_CLIENTSECRET), VAL_CHANGED);
+		std::env::set_var(format!("{}_INITIAL_{}", ENV_VAR_OAUTH_PREFIX, ENV_VAR_OAUTH_POSTFIX_AUTHURL), VAL_CHANGED);
+		std::env::set_var(format!("{}_INITIAL_{}", ENV_VAR_OAUTH_PREFIX, ENV_VAR_OAUTH_POSTFIX_TOKENURL), VAL_CHANGED);
+		std::env::set_var(format!("{}_INITIAL_{}", ENV_VAR_OAUTH_PREFIX, ENV_VAR_OAUTH_POSTFIX_USERINFOURL), VAL_CHANGED);
+
+		Settings::update_oauth_provider_from_env_vars(&mut oauth_provider);
+
+		assert_eq!(oauth_provider.client_id, VAL_CHANGED);
+		assert_eq!(oauth_provider.client_secret, VAL_CHANGED);
+		assert_eq!(oauth_provider.auth_url, VAL_CHANGED);
+		assert_eq!(oauth_provider.token_url, VAL_CHANGED);
+		assert_eq!(oauth_provider.userinfo_url, VAL_CHANGED);
+	}
+
+	#[test]
+	fn oauth_provider_no_env_vars() {
+		const VAL_INITIAL: &str = "test";
+
+		let mut oauth_provider = OAuthProvider{
+			provider_id: VAL_INITIAL.to_string(),
+			client_id: VAL_INITIAL.to_string(),
+			client_secret: VAL_INITIAL.to_string(),
+			auth_url: VAL_INITIAL.to_string(),
+			token_url: VAL_INITIAL.to_string(),
+			userinfo_url: VAL_INITIAL.to_string(),
+		};
+
+		// Do not set any env vars; values should remain unchanged
+
+		Settings::update_oauth_provider_from_env_vars(&mut oauth_provider);
+
+		assert_eq!(oauth_provider.client_id, VAL_INITIAL);
+		assert_eq!(oauth_provider.client_secret, VAL_INITIAL);
+		assert_eq!(oauth_provider.auth_url, VAL_INITIAL);
+		assert_eq!(oauth_provider.token_url, VAL_INITIAL);
+		assert_eq!(oauth_provider.userinfo_url, VAL_INITIAL);
 	}
 }
