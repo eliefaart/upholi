@@ -13,11 +13,6 @@ Default configuration is inside ```/server/config/default.toml```. Each setting 
 | `HB_DATABASE_CONNECTIONSTRING`| Connection string to database server |
 | `HB_DATABASE_NAME`			| Name of database to use |
 | `HB_STORAGE_DIRECTORYPHOTOS`	| Path to directory in which photos will be stored |
-| `HB_OAUTH_CLIENTID`			| OAuth2 application client ID |
-| `HB_OAUTH_CLIENTSECRET`		| OAuth2 application client secret |
-| `HB_OAUTH_AUTHURL`			| OAuth2 authorization url |
-| `HB_OAUTH_TOKENURL`			| OAuth2 token url |
-| `HB_OAUTH_USERINFOURL` 		| Url from which information about the current user can be retrieved using an oauth2 access token |
 
 ### OAuth2 settings
 Settings of OAuth2 providers can also be overwritten using environment variables, but because there can be multiple OAuth2 providers the keys are not fixed. The table below shows the available settings per OAuth2 provider.

@@ -18,48 +18,43 @@ impl Image {
 
 	/// Process image from buffer
 	pub fn from_buffer(bytes: &[u8], exif_orientation: u8) -> Result<Self>  {
-		//let image = Self::get_image_from_bytes(bytes);
-		match image::load_from_memory(&bytes[0..]) {
-			Ok(image) => {
-				let (mut width, mut height) = Self::get_image_dimensions(&image);
+		let image = image::load_from_memory(&bytes[0..])?;
+		let (mut width, mut height) = Self::get_image_dimensions(&image);
 
-				// Generate thumbs
-				let mut image_preview = {
-					match Self::resize_image(&image, DIMENSIONS_PREVIEW) {
-						Some(image) => image,
-						None => Self::clone_image(&image)?
-					}
-				};
-				let mut image_thumbnail = {
-					match Self::resize_image(&image_preview, DIMENSIONS_THUMB) {
-						Some(image) => image,
-						None => Self::clone_image(&image_preview)?
-					}
-				};
-		
-				// Rotate if needed
-				if let Some(rotated_image) = Self::rotate_image_upright(&image_thumbnail, exif_orientation) {
-					image_thumbnail = rotated_image;
-				}
-				if let Some(rotated_image) = Self::rotate_image_upright(&image_preview, exif_orientation) {
-					image_preview = rotated_image;
-				}
-		
-				// For some orientations, I need to swap the width and height
-				if exif_orientation >= 5 && exif_orientation <= 8 {
-					std::mem::swap(&mut height, &mut width)
-				} 
-		
-				Ok(Self {
-					width,
-					height,
-					bytes_original: bytes.to_vec(),
-					bytes_thumbnail: Self::get_image_bytes(&image_thumbnail),
-					bytes_preview: Self::get_image_bytes(&image_preview)
-				})
-			},
-			Err(_) => Err(Box::from(FileError::Corrupt))
+		// Generate thumbs
+		let mut image_preview = {
+			match Self::resize_image(&image, DIMENSIONS_PREVIEW) {
+				Some(image) => image,
+				None => Self::clone_image(&image)?
+			}
+		};
+		let mut image_thumbnail = {
+			match Self::resize_image(&image_preview, DIMENSIONS_THUMB) {
+				Some(image) => image,
+				None => Self::clone_image(&image_preview)?
+			}
+		};
+
+		// Rotate if needed
+		if let Some(rotated_image) = Self::rotate_image_upright(&image_thumbnail, exif_orientation) {
+			image_thumbnail = rotated_image;
 		}
+		if let Some(rotated_image) = Self::rotate_image_upright(&image_preview, exif_orientation) {
+			image_preview = rotated_image;
+		}
+
+		// For some orientations, I need to swap the width and height
+		if exif_orientation >= 5 && exif_orientation <= 8 {
+			std::mem::swap(&mut height, &mut width)
+		} 
+
+		Ok(Self {
+			width,
+			height,
+			bytes_original: bytes.to_vec(),
+			bytes_thumbnail: Self::get_image_bytes(&image_thumbnail),
+			bytes_preview: Self::get_image_bytes(&image_preview)
+		})
 	}
 
 	/// Get current dimensions

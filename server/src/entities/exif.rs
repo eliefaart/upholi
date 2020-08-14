@@ -41,6 +41,11 @@ impl Exif {
 					Self::get_exif_data(&exif, tag, Self::convert_exif_to_gps_coord)
 				};
 
+				// Date taken can be in various EXIF fields.
+				let date_taken = closure_get_exif_data_as_datetime(ExifTag::DateTimeOriginal)
+					.or(closure_get_exif_data_as_datetime(ExifTag::DateTime))
+					.or(closure_get_exif_data_as_datetime(ExifTag::DateTimeDigitized));
+
 				Ok(Self {
 					manufactorer: closure_get_exif_data_as_string(ExifTag::Make),
 					model: closure_get_exif_data_as_string(ExifTag::Model),
@@ -50,7 +55,7 @@ impl Exif {
 					focal_length: closure_get_exif_data_as_i32(ExifTag::FocalLength),
 					focal_length_35mm_equiv: closure_get_exif_data_as_i32(ExifTag::FocalLengthIn35mmFilm),
 					orientation: closure_get_exif_data_as_i32(ExifTag::Orientation),
-					date_taken: closure_get_exif_data_as_datetime(ExifTag::DateTime),
+					date_taken,
 					gps_latitude: closure_get_exif_data_as_coord(ExifTag::GPSLatitude),
 					gps_longitude: closure_get_exif_data_as_coord(ExifTag::GPSLongitude)
 				})

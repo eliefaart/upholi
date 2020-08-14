@@ -16,7 +16,6 @@ pub enum EntityError {
 /// Errors related to operations on physical files.
 #[derive(Debug)]
 pub enum FileError {
-	Corrupt,
 	InvalidFileName,
 	NotFound
 }
@@ -66,7 +65,6 @@ impl Display for FileError {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		let message = {
 			match self {
-				FileError::Corrupt => "File corrupt",
 				FileError::InvalidFileName => "Invalid file name",
 				FileError::NotFound => "File does not exist on disk"
 			}

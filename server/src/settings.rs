@@ -151,7 +151,6 @@ impl Settings {
 		for (key, value) in std::env::vars() {
 			if key.starts_with(&env_var_prefix) {
 				let field_key = key.replace(&env_var_prefix, "");
-				println!("{}", field_key);
 				match field_key.as_str() {
 					ENV_VAR_OAUTH_POSTFIX_CLIENTID => oauth_provider.client_id = value,
 					ENV_VAR_OAUTH_POSTFIX_CLIENTSECRET => oauth_provider.client_secret = value,
