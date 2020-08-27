@@ -128,18 +128,6 @@ class CollectionsPage extends React.Component {
 								{collection.public && <button className="shareUrl iconOnly" onClick={() => this.setState({copyPublicAlbumUrlModalOpen: true})}>
 									<IconLink/>
 								</button>}
-								{/* <label className="switch">
-									<Switch checked={collection.public}
-										width={80}
-										onColor="#d3e532"
-										checkedIcon={<span className="checkedIcon">Public</span>}
-										uncheckedIcon={<span className="uncheckedIcon">Private</span>}
-										onChange={(bPublic) => {
-											PhotoService.updateCollectionPublic(collection.id, bPublic)
-												.then(() => this.refreshCollections())
-												.catch(console.error);
-										}}/>
-								</label> */}
 								<button className="iconOnly" onClick={() => this.onAddAlbumToCollectionClick(collection.id)} title="Add album to collection">
 									<IconCreate/>
 								</button>

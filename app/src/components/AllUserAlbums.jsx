@@ -18,7 +18,7 @@ class AllUserAlbums extends React.Component {
 	}
 
 	render() {
-		return <Albums albums={this.state.albums}/>
+		return <Albums albums={this.state.albums} onClick={this.props.onClick}/>
 	}
 }
 

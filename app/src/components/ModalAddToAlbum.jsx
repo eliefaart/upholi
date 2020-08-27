@@ -1,7 +1,7 @@
 import React from "react";
 import Modal from "./Modal.jsx";
 import AppStateContext from "../contexts/AppStateContext.jsx";
-import Albums from "../components/Albums.jsx";
+import AllUserAlbums from "../components/AllUserAlbums.jsx";
 
 class ModalAddToAlbum extends React.Component {
 
@@ -22,7 +22,7 @@ class ModalAddToAlbum extends React.Component {
 			className={this.props.className + " modalAddToAlbum"}
 			>
 				<button onClick={this.props.onClickNewAlbum}>New album</button>
-				<Albums onClick={this.props.onClickExistingAlbum}/>
+				<AllUserAlbums onClick={this.props.onClickExistingAlbum}/>
 		</Modal>;
 	}
 }
