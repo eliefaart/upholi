@@ -83,7 +83,7 @@ impl Database for MongoDatabase {
 				"$limit": ids_info.len() as u32
 			});
 		}
-	
+
 		// Run query and collect results
 		match mongo_collection.aggregate(pipeline, None) {
 			Ok(cursor) => Ok(get_items_from_cursor(cursor)?),

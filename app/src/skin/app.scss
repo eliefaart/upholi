@@ -3,8 +3,8 @@
 
 $backgroundColor: #000;
 $altBackgroundColor: #191d25;
-$accentColor: #d3e532;
-$secondaryAccentColor: #05668d;
+$accentColor: #437dec;//#d3e532;
+$secondaryAccentColor: #bb8736;// #05668d;
 $textColorDark: #161f21;
 $textColorLight: #dedfe4; //white;
 $disabledColor: gray;
@@ -51,6 +51,7 @@ html {
 @import "app.component.header";
 @import "app.component.overlay";
 @import "app.component.albums";
+@import "app.component.collections";
 @import "app.component.photoGallery";
 @import "app.component.photoDetail";
 @import "app.component.modalUploadProgress";
@@ -128,7 +129,7 @@ button, .asButton {
 	&:hover,
 	&:active {
 		background: $secondaryAccentColor;
-		color: $textColorLight;
+		color: $textColorDark;
 	}
 
 	svg {

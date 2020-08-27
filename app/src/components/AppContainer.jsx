@@ -5,9 +5,10 @@ import { ToastContainer, Zoom } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import PhotosPage from "../pages/PhotosPage.jsx";
 import AlbumsPage from "../pages/AlbumsPage.jsx";
-import SharedPage from "../pages/SharedPage.jsx";
+import CollectionsPage from "../pages/CollectionsPage.jsx";
 import AlbumPage from "../pages/AlbumPage.jsx";
 import PhotoPage from "../pages/PhotoPage.jsx";
+import CollectionPage from "../pages/CollectionPage.jsx";
 import SharedCollectionPage from "../pages/SharedCollectionPage.jsx";
 
 import AppStateContext from "../contexts/AppStateContext.jsx";
@@ -48,7 +49,8 @@ class AppContainer extends React.Component {
 					<AppStateContext.Provider value={this.context}>
 						<Route path="/" exact component={PhotosPage} />
 						<Route path="/albums" exact component={AlbumsPage} />
-						<Route path="/shared" exact component={SharedPage} />
+						<Route path="/collections" exact component={CollectionsPage} />
+						<Route path="/collection/:collectionId" exact component={CollectionPage} />
 						<Route path="/photo/:photoId" exact component={PhotoPage} />
 						<Route path="/album/:albumId" exact component={AlbumPage} />
 						<Route path="/shared/collection/:collectionId" exact component={SharedCollectionPage} />

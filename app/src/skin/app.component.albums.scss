@@ -1,19 +1,19 @@
 
-.photoAlbums {
+.albums {
 	display: flex;
 	flex-wrap: wrap;
-	justify-content: center;
+	gap: $spacing * 2;
+	padding: $spacing * 2;
 
 	.album {
 		position: relative;
-		margin: $spacing * 3;
 		cursor: pointer;
 		border-radius: $borderRadius;
 
-		width:200px;
-		height:200px;
+		width: 200px;
+		height: 150px;
 		max-width: 40vw;
-		max-height: 40vw;
+		max-height: 30vw;
 		background-size:cover; 
 		background-position:center center; 
 		background-repeat:no-repeat; 
@@ -21,7 +21,7 @@
 
 		&:hover {
 			span {
-				background-color: rgba($accentColor, 0.7);
+				background-color: rgba($accentColor, 1);
 				color: $textColorDark;
 			}
 		}

@@ -1,5 +1,5 @@
 import React from "react";
-import Albums from "../components/Albums.jsx";
+import AllUserAlbums from "../components/AllUserAlbums.jsx";
 import PageLayout from "../components/PageLayout.jsx"
 import ModalCreateAlbum from "../components/ModalCreateAlbum.jsx"
 import { IconCreate } from "../components/Icons.jsx";
@@ -29,7 +29,7 @@ class AlbumsPage extends React.Component {
 
 		return (
 			<PageLayout title="Albums" requiresAuthentication={true} headerActions={headerContextMenuActions}>
-				<Albums/>
+				<AllUserAlbums/>
 
 				<ModalCreateAlbum
 					isOpen={this.state.newAlbumDialogOpen}

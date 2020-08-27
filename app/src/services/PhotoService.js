@@ -98,7 +98,7 @@ class PhotoService {
 		return PhotoService.sendRequest("DELETE", PhotoService.baseUrl() + "/photos", photoIds);
 	}
 
-	static createAlbum(title, photoIds, callback) {
+	static createAlbum(title, photoIds) {
 		let requestData = {
 			title
 		};
@@ -174,6 +174,82 @@ class PhotoService {
 
 	static updateAlbum(albumId, albumObjectWithModifiedProperties) {
 		return PhotoService.sendRequest("PUT", PhotoService.baseUrl() + "/album/" + albumId, albumObjectWithModifiedProperties);
+	}
+
+	static getCollections() {
+		return PhotoService.getJson("GET", PhotoService.baseUrl() + "/collections");
+	}
+
+	static getCollection(collectionId) {
+		return PhotoService.getJson("GET", PhotoService.baseUrl() + "/collection/" + collectionId);
+	}
+
+	static createCollection(title) {
+		let requestData = {
+			title
+		};
+
+		return new Promise((ok, err) => {
+			PhotoService.getJson("POST", PhotoService.baseUrl() + "/collection", requestData)
+				.then((response) => {
+					let collectionId = response.id;
+					ok(collectionId);
+				})
+				.catch(err);
+		});
+	}
+
+	static deleteCollection(collectionId) {
+		return PhotoService.sendRequest("DELETE", PhotoService.baseUrl() + "/collection/" + collectionId);
+	}
+
+	static addAlbumToCollection(collectionId, albumId) {
+		return new Promise((ok, err) => {
+			PhotoService.getCollection(collectionId)
+				.then(collection => {
+					let albumIds = collection.albums.map(a => a.id);
+					if (albumIds.indexOf(albumId) === -1) {
+						var updatedAlbums = albumIds.concat(albumId);
+						PhotoService.updateCollection(collectionId, {
+							albums: updatedAlbums
+						}).then(ok).catch(err);
+					}
+					else {
+						err("Album already exists in collection");
+					}
+				})
+				.catch(console.error);
+		});
+	}
+
+	static removeAlbumFromCollection(collectionId, albumId) {
+		return new Promise((ok, err) => {
+			PhotoService.getCollection(collectionId)
+				.then(collection => {
+					let albumIds = collection.albums.map(a => a.id);
+					const albumIndex = albumIds.indexOf(albumId);
+					if (albumIndex !== -1) {
+						albumIds.splice(albumIndex, 1);
+						PhotoService.updateCollection(collectionId, {
+							albums: albumIds
+						}).then(ok).catch(err);
+					}
+					else {
+						err("Album does not exist in collection");
+					}
+				})
+				.catch(console.error);
+		});
+	}
+
+	static updateCollectionPublic(collectionId, bPublic) {
+		return PhotoService.updateCollection(collectionId, {
+			public: bPublic
+		});
+	}
+
+	static updateCollection(collectionId, collectionObjectWithModifiedProperties) {
+		return PhotoService.sendRequest("PUT", PhotoService.baseUrl() + "/collection/" + collectionId, collectionObjectWithModifiedProperties);
 	}
 	
 	/// Send a web request and gets json from the response body, returns a promise.

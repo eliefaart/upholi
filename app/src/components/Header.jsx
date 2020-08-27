@@ -24,7 +24,7 @@ class Header extends React.Component {
 		const menuItems = [
 			{ path: "/", title: "Library" },
 			{ path: "/albums", title: "Albums" },
-			//{ path: "/shared", title: "Shared" }
+			{ path: "/collections", title: "Collections" }
 		];
 
 		return (

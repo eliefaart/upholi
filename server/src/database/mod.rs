@@ -8,6 +8,7 @@ pub const COLLECTION_SESSIONS: &str = "sessions";
 pub const COLLECTION_USERS: &str = "users";
 pub const COLLECTION_PHOTOS: &str = "photos";
 pub const COLLECTION_ALBUMS: &str = "albums";
+pub const COLLECTION_COLLECTIONS: &str = "collections";
 
 // Get the implementation of the database traits
 pub fn get_database() -> impl Database + DatabaseExt {
@@ -91,7 +92,7 @@ pub trait DatabaseEntityBatch {
 }
 
 /// Add database operations to a struct, which are targetted only to entries owned by given user
-pub trait DatabaseUserEntity: DatabaseEntity {
+pub trait DatabaseUserEntity : DatabaseEntity {
 	fn get_as_user(id: &str, user_id: String) -> Result<Option<Self>>
 		where Self: std::marker::Sized;
 

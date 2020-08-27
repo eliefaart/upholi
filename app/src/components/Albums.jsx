@@ -7,21 +7,6 @@ class Albums extends React.Component {
 
 	constructor(props) {
 		super(props);
-
-		let _this = this;
-		PhotoService.getAlbums()
-			.then((albums) => _this.setState({ albums: albums }))
-			.catch(console.error);
-
-		this.state = {
-			albums: []
-		};
-	}
-
-	componentDidMount() {
-	}
-
-	componentWillUnmount() {
 	}
 
 	render() {
@@ -39,14 +24,14 @@ class Albums extends React.Component {
 			</div>;
 		}
 
-		const albums = this.state.albums.map((album) => {
+		const albums = this.props.albums.map((album) => {
 			return (
 				<AlbumLink key={album.id} album={album} />
 			);
 		});
 
 		return (
-			<div className="photoAlbums">
+			<div className="albums">
 				{albums}
 			</div>
 		);

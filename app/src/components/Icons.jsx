@@ -140,7 +140,6 @@ class IconShare extends React.Component {
 	}
 } 
 
-
 export {
 	IconClose, IconCopy, IconDownload, IconUpload, IconContextMenu,
 	IconRemove, IconDelete, IconCreate,

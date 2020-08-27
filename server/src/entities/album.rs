@@ -64,6 +64,12 @@ impl DatabaseEntity for Album {
 	}
 }
 
+impl DatabaseEntityBatch for Album {
+	fn get_with_ids(ids: &[&str]) -> Result<Vec<Self>> {
+		database::get_database().find_many(database::COLLECTION_ALBUMS, None, Some(ids), None)
+	}
+}
+
 impl DatabaseUserEntity for Album {
 	fn get_as_user(id: &str, user_id: String) -> Result<Option<Self>>{
 		match Self::get(id)? {

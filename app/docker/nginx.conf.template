@@ -6,7 +6,7 @@ server {
 	# These paths are 'virtual' paths, routing is done client side.
 	# So for all these paths just return the index file.
 	# Can I do this in a way so that I don't need to type out all paths here?
-	location ~* ^/(albums|album|photos|photo|shared).+ {
+	location ~* ^/(albums|album|photos|photo|collections|collection|shared).+ {
 		try_files /index.html =404;
 	}
 
