@@ -169,8 +169,8 @@ class PhotosDashboardPage extends React.Component {
 
 	render() {
 		const headerActions = (<div>
-			{this.state.selectedPhotos.length === 0 && <button className="iconOnly" onClick={() => document.getElementById("select-photos").click()} title="Upload photos">
-				<IconUpload/>
+			{this.state.selectedPhotos.length === 0 && <button onClick={() => document.getElementById("select-photos").click()} title="Upload photos">
+				Upload
 			</button>}
 			{this.state.selectedPhotos.length > 0 && <button className="iconOnly" onClick={() => this.onClickAddSelectedPhotosToAlbum(this.state.selectedPhotos)} title="Add to album">
 				<IconAddToAlbum/>

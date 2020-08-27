@@ -29,7 +29,7 @@ class CollectionPage extends React.Component {
 		return (
 			<PageLayout title={this.state.collection.title} requiresAuthentication={false} renderMenu={true}>
 				<div className="topBar">
-					<h1>Collection "{this.state.collection.title}"</h1>
+					<h1>{this.state.collection.title}</h1>
 				</div>
 				<div className="collectionContent">
 					<Albums albums={this.state.collection.albums}/>

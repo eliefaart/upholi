@@ -194,8 +194,8 @@ class AlbumPage extends React.Component {
 			{this.state.selectedPhotos.length > 0 && <button className="iconOnly" onClick={(e) => this.onRemovePhotosClick()} title="Remove from album">
 				<IconRemove/>
 			</button>}
-			{this.state.selectedPhotos.length === 0 && <button className="iconOnly" onClick={() => document.getElementById("select-photos").click()} title="Upload photos">
-				<IconUpload/>
+			{this.state.selectedPhotos.length === 0 && <button onClick={() => document.getElementById("select-photos").click()} title="Upload photos">
+				Upload
 			</button>}
 		</div>);
 

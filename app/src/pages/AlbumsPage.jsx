@@ -22,8 +22,8 @@ class AlbumsPage extends React.Component {
 
 	render() {
 		const headerContextMenuActions = (<div>
-			{<button className="iconOnly" onClick={(e) => this.onCreateAlbumClick()} title="Create album">
-				<IconCreate/>
+			{<button onClick={(e) => this.onCreateAlbumClick()} title="Create album">
+				New album
 			</button>}
 		</div>);
 
