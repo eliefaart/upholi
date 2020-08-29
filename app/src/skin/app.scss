@@ -129,8 +129,8 @@ button, .asButton {
 
 	&:hover,
 	&:active {
-		background: $secondaryAccentColor;
-		color: $textColorDark;
+		//background: $secondaryAccentColor;
+		color: $secondaryAccentColor;
 	}
 
 	svg {

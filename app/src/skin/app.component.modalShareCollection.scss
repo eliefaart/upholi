@@ -1,3 +1,24 @@
 .modalShareCollection {
+    min-width: 400px;
+    .modalBody {
+        >*:not(button) {
+            width: 100%;
+        }
 
+        button {
+            align-self: flex-end;
+        }
+
+        label {
+            justify-content: center;
+            span {
+                flex: 1;
+            }
+        }
+
+        .url {
+            display: flex;
+            flex-direction: column;
+        }
+    }
 }
