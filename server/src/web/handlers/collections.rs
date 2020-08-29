@@ -60,11 +60,43 @@ pub async fn update_collection(user: User, collection_id: web::Path<String>, upd
 						if let Some(title) = &updated_collection.title {
 							collection.title = title.to_string();
 						}
-						if let Some(public) = updated_collection.public {
-							collection.public = public;
-						}
 						if let Some(albums) = &updated_collection.albums {
 							collection.albums = albums.to_vec();
+						}
+						if let Some(sharing_options) = &updated_collection.sharing {
+							collection.sharing.shared = sharing_options.shared;
+							// if let Some(password) = &sharing_options.password {
+							// 	if password.len() == 0 {
+							// 		return create_bad_request_response(Box::from("Empty password provided"));
+							// 	}
+
+							// 	collection.sharing.password_hash = Some(password.to_string());
+							// }
+							// else {
+							// 	collection.sharing.password_hash = None;
+							// }
+
+
+							if sharing_options.require_password {
+								// Check if a password was provided in request:
+								if let Some(password) = &sharing_options.password {
+									if password.len() == 0 {
+										return create_bad_request_response(Box::from("Empty password provided"));
+									}
+	
+									collection.sharing.password_hash = Some(password.to_string());
+								}
+								else {
+									// If no password is provided in request, then there must already be one set.
+									// Otherwise the request is not valid
+									if collection.sharing.password_hash.is_none() {
+										create_bad_request_response(Box::from("Missing password in request"));
+									}
+								}
+							} 
+							else {
+								collection.sharing.password_hash = None;
+							}
 						}
 
 						match collection.update(){

@@ -48,8 +48,11 @@ $modalHeaderHeight: $buttonHeight;
 		flex: 0 0 auto;
 		display: flex;
 		justify-content: right;
-		border-top: 1px solid $secondaryAccentColor;
 		margin-top: $spacing * 6;
+
+		&:not(:empty) {
+			border-top: 1px solid $secondaryAccentColor;
+		}
 	}
 }
 

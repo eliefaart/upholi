@@ -4,6 +4,7 @@ import AppStateContext from "../contexts/AppStateContext.jsx";
 import { IconCopy } from "../components/Icons.jsx";
 import { toast } from "react-toastify";
 import Switch from "react-switch";
+import PhotoService from "../services/PhotoService.js";
 
 class ModalShareCollection extends React.Component {
 
@@ -38,12 +39,31 @@ class ModalShareCollection extends React.Component {
 		// TODO: Updating password should revoke access 
 		// for all sessions that have been granted access to collection
 		this.setState({ 
-			isChangingPassword: false
+			isChangingPassword: false,
+			password: password
+		 }, () => {
+			 this.updateSharingOptions();
 		 });
 	}
 
-	generateNewUrl() {
+	updateSharingOptions() {
+		const updateOptions = {
+			sharing: {
+				shared: this.state.shared,
+				requirePassword: this.state.requirePassword
+			}
+		};
 
+		if (this.state.requirePassword && !!this.state.password) {
+			updateOptions.sharing.password = this.state.password;
+		}
+
+		PhotoService.updateCollection(this.props.collection.id, updateOptions)
+			.catch(console.error);
+	}
+
+	generateNewUrl() {
+		//PhotoService.updateCollection(this.props.collection.id, new )
 	}
 
 	render() {
@@ -73,7 +93,11 @@ class ModalShareCollection extends React.Component {
 						checkedIcon={<span className="checkedIcon">Shared</span>}
 						uncheckedIcon={<span className="uncheckedIcon">Private</span>}
 						onChange={(bShared) => {
-							this.setState({ shared: bShared });
+							this.setState({ 
+								shared: bShared 
+							}, () => {
+								this.updateSharingOptions();
+							});
 						}}/>
 				</label>
 				
@@ -89,6 +113,10 @@ class ModalShareCollection extends React.Component {
 							this.setState({ 
 								requirePassword: bRequirePassword,
 								isChangingPassword: bRequirePassword
+							}, () => {
+								if (!bRequirePassword) {
+									this.updateSharingOptions();
+								}
 							});
 						}}/>
 				</label>}

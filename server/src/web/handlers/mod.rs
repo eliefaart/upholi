@@ -40,9 +40,17 @@ mod requests {
 	pub struct UpdateCollection {
 		pub title: Option<String>,
 		pub public: Option<bool>,
-		pub albums: Option<Vec<String>>
+		pub albums: Option<Vec<String>>,
+		pub sharing: Option<UpdateCollectionSharingOptions>
 	}
 
+	#[derive(Deserialize)]
+	#[serde(rename_all = "camelCase")]
+	pub struct UpdateCollectionSharingOptions {
+		pub shared: bool,
+		pub require_password: bool,
+		pub password: Option<String>
+	}
 }
 
 // Response types
@@ -83,7 +91,6 @@ mod responses {
 	pub struct ClientCollection {
 		pub id: String,
 		pub title: String,
-		pub public: bool,
 		pub albums: Vec<ClientCollectionAlbum>
 	}
     
@@ -164,7 +171,6 @@ mod responses {
             ClientCollection {
 				id: collection.id,
 				title: collection.title,
-				public: collection.public,
                 albums: collection_albums,
             }
         }

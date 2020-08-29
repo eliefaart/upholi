@@ -15,8 +15,16 @@ pub struct Collection {
 	pub id: String,
 	pub user_id: String,
 	pub title: String,
-	pub public: bool,
-	pub albums: Vec<String>
+	pub albums: Vec<String>,
+	pub sharing: CollectionSharingOptions
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CollectionSharingOptions {
+	pub shared: bool,
+	pub token: String,
+	pub password_hash: Option<String>
 }
 
 impl Collection {
@@ -25,8 +33,12 @@ impl Collection {
 			id: ids::create_unique_id(),
 			user_id: user_id.to_string(),
 			title: title.to_string(),
-			public: false,
-			albums: vec!{}
+			albums: vec!{},
+			sharing: CollectionSharingOptions {
+				shared: false,
+				token: ids::create_unique_id(),
+				password_hash: Some(String::new()),
+			}
 		}
 	}
 }
@@ -76,10 +88,10 @@ impl DatabaseUserEntity for Collection {
 impl AccessControl for Collection {
 	fn user_has_access(&self, user_opt: Option<User>) -> bool {
 		if let Some(user) = user_opt {
-			self.user_id == user.id || self.public
+			self.user_id == user.id
 		} 
 		else {
-			self.public
+			false
 		}
 	}
 }
@@ -95,7 +107,6 @@ mod tests {
 		let user_not_collection_owner = create_dummy_user();
 
 		let mut collection = create_dummy_collection_with_id("");
-		collection.public = false;
 		collection.user_id = user_collection_owner.id.to_string();
 
 		// Only the user that owns the collection may access it
@@ -110,7 +121,6 @@ mod tests {
 		let user_not_collection_owner = create_dummy_user();
 
 		let mut collection = create_dummy_collection_with_id("");
-		collection.public = true;
 		collection.user_id = user_collection_owner.id.to_string();
 
 		// Everyone may access the collection, because it is public
@@ -120,13 +130,7 @@ mod tests {
 	}
 
 	fn create_dummy_collection_with_id(id: &str) -> Collection {
-		Collection{
-			id: id.to_string(),
-			user_id: create_unique_id(),
-			public: false,
-			title: "title".to_string(),
-			albums: vec!{}
-		}
+		Collection::new(id, &create_unique_id())
 	}
 
 	fn create_dummy_user() -> User {
