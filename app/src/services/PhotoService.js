@@ -251,6 +251,10 @@ class PhotoService {
 	static updateCollection(collectionId, collectionObjectWithModifiedProperties) {
 		return PhotoService.sendRequest("PUT", PhotoService.baseUrl() + "/collection/" + collectionId, collectionObjectWithModifiedProperties);
 	}
+
+	static rotateCollectionShareToken(collectionId) {
+		return PhotoService.getJson("POST", PhotoService.baseUrl() + "/collection/" + collectionId + "/rotate-token");
+	}
 	
 	/// Send a web request and gets json from the response body, returns a promise.
 	static getJson(method, url, data) {

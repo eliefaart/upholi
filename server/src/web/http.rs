@@ -2,7 +2,7 @@ use actix_web::{Error, HttpRequest, HttpResponse, FromRequest};
 use actix_web::dev::Payload;
 use actix_multipart::{Multipart, Field};
 use actix_http::cookie::Cookie;
-use serde::{Serialize, Deserialize};
+use serde::Serialize;
 use futures::{StreamExt, TryStreamExt};
 use futures::future::{ok, err, Ready};
 
@@ -19,14 +19,14 @@ pub struct FormData {
 }
 
 /// Response data for HTTP 201 results
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct CreatedResult {
 	id: String
 }
 
 /// Response data for HTTP 4xx & 5xx results
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct ErrorResult {
 	message: String

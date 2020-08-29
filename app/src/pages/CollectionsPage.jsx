@@ -118,7 +118,7 @@ class CollectionsPage extends React.Component {
 
 	render() {
 		const headerContextMenuActions = (<div>
-			<button onClick={(e) => this.onCreateCollectionClick()} title="Create collection">
+			<button onClick={() => this.onCreateCollectionClick()} title="Create collection">
 				New collection
 			</button>
 		</div>);
@@ -175,6 +175,7 @@ class CollectionsPage extends React.Component {
 					isOpen={true}
 					onRequestClose={() => this.setState({collectionSharingOptionsDialoOpen: false})}
 					collection={activeCollection}
+					onOptionsChanged={() => this.refreshCollections()}
 					/>}
 				{this.state.addAlbumToCollectionDialogOpen && <ModalAddAlbumToCollection
 					isOpen={true}

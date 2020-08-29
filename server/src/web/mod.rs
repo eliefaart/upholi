@@ -68,6 +68,7 @@ pub async fn run_server() -> std::io::Result<()>{
 					.route("/collection/{collection_id}", actix_web::web::get().to(handlers::collections::get_collection))
 					.route("/collection/{collection_id}", actix_web::web::put().to(handlers::collections::update_collection))
 					.route("/collection/{collection_id}", actix_web::web::delete().to(handlers::collections::delete_collection))
+					.route("/collection/{collection_id}/rotate-token", actix_web::web::post().to(handlers::collections::rotate_collection_share_token))
 
 			)
 	})

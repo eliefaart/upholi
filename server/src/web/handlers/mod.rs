@@ -91,7 +91,16 @@ mod responses {
 	pub struct ClientCollection {
 		pub id: String,
 		pub title: String,
-		pub albums: Vec<ClientCollectionAlbum>
+		pub albums: Vec<ClientCollectionAlbum>,
+		pub sharing: ClientCollectionSharingOptions
+	}
+
+	#[derive(Serialize)]
+	#[serde(rename_all = "camelCase")]
+	pub struct ClientCollectionSharingOptions {
+		pub shared: bool,
+		pub require_password: bool,
+		pub token: String
 	}
     
 	impl From<Photo> for PhotoSmall {
@@ -147,8 +156,8 @@ mod responses {
 		}
     }
     
-    impl From<Collection> for ClientCollection {
-        fn from(collection: Collection) -> Self {
+	impl From<&Collection> for ClientCollection {
+        fn from(collection: &Collection) -> Self {
 			let mut album_ids: Vec<&str> = Vec::new();
 			for album in &collection.albums {
 				album_ids.push(album);
@@ -169,9 +178,14 @@ mod responses {
 			}).collect();
 
             ClientCollection {
-				id: collection.id,
-				title: collection.title,
-                albums: collection_albums,
+				id: collection.id.to_string(),
+				title: collection.title.to_string(),
+				albums: collection_albums,
+				sharing: ClientCollectionSharingOptions {
+					shared: collection.sharing.shared,
+					require_password: collection.sharing.password_hash.is_some(),
+					token: collection.sharing.token.to_string()
+				}
             }
         }
     }

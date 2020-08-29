@@ -12,8 +12,8 @@ class ModalShareCollection extends React.Component {
 		super(props);
 
 		this.state = {
-			shared: false,
-			requirePassword: false,
+			shared: this.props.collection.sharing.shared,
+			requirePassword: this.props.collection.sharing.requirePassword,
 			isChangingPassword: false
 		};
 	}
@@ -35,9 +35,6 @@ class ModalShareCollection extends React.Component {
 	}
 
 	onPasswordUpdated (password) {
-		// TODO: Send request to enable password + set password
-		// TODO: Updating password should revoke access 
-		// for all sessions that have been granted access to collection
 		this.setState({ 
 			isChangingPassword: false,
 			password: password
@@ -59,21 +56,25 @@ class ModalShareCollection extends React.Component {
 		}
 
 		PhotoService.updateCollection(this.props.collection.id, updateOptions)
+			.then(_ => this.props.onOptionsChanged())
 			.catch(console.error);
 	}
 
 	generateNewUrl() {
-		//PhotoService.updateCollection(this.props.collection.id, new )
+		PhotoService.rotateCollectionShareToken(this.props.collection.id)
+			.then(_ => this.props.onOptionsChanged())
+			.catch(console.error);
 	}
 
 	render() {
-
 		let statusText = "This collection is private, only you can see it.";
 		if (this.state.shared) {
 			statusText = !this.state.requirePassword
 				? "This collection is visible to anyone who has the link."
 				: "This collection is visible to anyone who has the link, and knows the password.";
 		}
+
+		const shareUrl = document.location.origin + "/shared/collection/" + this.props.collection.sharing.token;
 
 		return <Modal
 			title="Sharing options"
@@ -128,14 +129,11 @@ class ModalShareCollection extends React.Component {
 
 				{/* URL */}
 				{this.state.shared && <div className="url">
-					{/* <p>
-						This collection can be shared using the link below.
-					</p> */}
 					<div className="copyUrl">
-						<input className="urlToCopy" type="text" value={this.props.collection.id} 
+						<input className="urlToCopy" type="text" value={shareUrl} 
 							// Prevent changes to the value of this input by resetting value in onchange event.
 							// I cannot make it 'disabled', because then I cannot copy the text using JS
-							onChange={(event) => event.target.value = this.props.collection.id}/>
+							onChange={(event) => event.target.value = shareUrl}/>
 						<button className="iconOnly" onClick={() => this.copyUrlToClipboard()} title="Copy URL">
 							<IconCopy/>
 						</button>
@@ -155,13 +153,11 @@ class ModalSetPassword extends React.Component {
 	constructor(props) {
 		super(props);
 
-		this.state = {
-		};
+		this.state = {};
 	}
 
-	onOkButtonClick(event) {
+	onOkButtonClick() {
 		const input = document.getElementById("password");
-
 		this.props.onOkButtonClick(input.value);
 	}
 
