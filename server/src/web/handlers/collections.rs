@@ -100,7 +100,7 @@ pub async fn delete_collection(user: User, collection_id: web::Path<String>) -> 
 /// Rotate the token with which a collection may be accessed by clients other than the user that owns a collection
 pub async fn rotate_collection_share_token(user: User, collection_id: web::Path<String>) -> impl Responder {
 	handle_collection_operation(user, collection_id, |collection| {
-		collection.sharing.token = crate::ids::create_unique_id();
+		collection.rotate_share_token();
 		
 		match collection.update(){
 			Ok(_) => HttpResponse::Ok().json(RotateTokenResult{token: collection.sharing.token.to_string()}),

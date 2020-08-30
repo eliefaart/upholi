@@ -41,6 +41,11 @@ impl Collection {
 			}
 		}
 	}
+
+	/// Rotate the token with which a collection may be accessed by clients other than the user that owns a collection
+	pub fn rotate_share_token(&mut self) {
+		self.sharing.token = crate::ids::create_unique_id();
+	}
 }
 
 impl DatabaseEntity for Collection {
@@ -87,11 +92,12 @@ impl DatabaseUserEntity for Collection {
 
 impl AccessControl for Collection {
 	fn user_has_access(&self, user_opt: Option<User>) -> bool {
+		// Access if one of the conditions has been met:
 		if let Some(user) = user_opt {
-			self.user_id == user.id
-		} 
+			self.user_id == user.id || self.sharing.shared
+		}
 		else {
-			false
+			self.sharing.shared
 		}
 	}
 }
@@ -122,8 +128,8 @@ mod tests {
 
 		let mut collection = create_dummy_collection_with_id("");
 		collection.user_id = user_collection_owner.id.to_string();
+		collection.sharing.shared = true;
 
-		// Everyone may access the collection, because it is public
 		assert_eq!(collection.user_has_access(Some(user_collection_owner)), true);
 		assert_eq!(collection.user_has_access(Some(user_not_collection_owner)), true);
 		assert_eq!(collection.user_has_access(None), true);
