@@ -184,6 +184,10 @@ class PhotoService {
 		return PhotoService.getJson("GET", PhotoService.baseUrl() + "/collection/" + collectionId);
 	}
 
+	static getCollectionByShareToken(shareToken) {
+		return PhotoService.getJson("GET", PhotoService.baseUrl() + "/collection/shared/" + shareToken);
+	}
+
 	static createCollection(title) {
 		let requestData = {
 			title

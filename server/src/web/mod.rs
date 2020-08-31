@@ -1,8 +1,14 @@
 use std::time::Instant;
 use actix_cors::Cors;
 use actix_web::{App, HttpServer};
+use actix_web::http::header::{HeaderName,HeaderValue};
 use actix_service::Service;
+use actix_http::cookie::Cookie;
 use futures::future::FutureExt;
+
+use crate::database::DatabaseEntity;
+use crate::entities::session::Session;
+use crate::web::http::SESSION_COOKIE_NAME;
 
 mod handlers;
 mod http;
@@ -66,10 +72,10 @@ pub async fn run_server() -> std::io::Result<()>{
 					.route("/collections", actix_web::web::get().to(handlers::collections::get_collections))
 					.route("/collection", actix_web::web::post().to(handlers::collections::create_collection))
 					.route("/collection/{collection_id}", actix_web::web::get().to(handlers::collections::get_collection))
+					.route("/collection/shared/{token}", actix_web::web::get().to(handlers::collections::get_collections_by_share_token))
 					.route("/collection/{collection_id}", actix_web::web::put().to(handlers::collections::update_collection))
 					.route("/collection/{collection_id}", actix_web::web::delete().to(handlers::collections::delete_collection))
 					.route("/collection/{collection_id}/rotate-token", actix_web::web::post().to(handlers::collections::rotate_collection_share_token))
-
 			)
 	})
 	.bind(address)

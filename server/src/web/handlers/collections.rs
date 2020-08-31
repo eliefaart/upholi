@@ -5,6 +5,7 @@ use crate::database::{DatabaseEntity, DatabaseUserEntity};
 use crate::web::http::*;
 use crate::entities::AccessControl;
 use crate::entities::user::User;
+use crate::entities::session::Session;
 use crate::entities::collection::Collection;
 use crate::web::handlers::requests::*;
 use crate::web::handlers::responses::*;
@@ -33,6 +34,26 @@ pub async fn get_collection(user: User, collection_id: web::Path<String>) -> imp
 		let collection_ref: &Collection = &collection;
 		HttpResponse::Ok().json(ClientCollection::from(collection_ref))
 	}).await
+}
+
+/// Get a single shared collection collection by its token
+pub async fn get_collections_by_share_token(session: Option<Session>, token: web::Path<String>) -> impl Responder {
+	match Collection::get_by_share_token(&token) {
+		Ok(opt) => {
+			match opt {
+				Some(collection) => {
+					if collection.user_has_access(None) {
+						HttpResponse::Ok().json(ClientCollection::from(&collection))
+					}
+					else {
+						create_unauthorized_response()
+					}
+				},
+				None => create_not_found_response()
+			}
+		},
+		Err(error) => create_internal_server_error_response(Some(error))
+	}
 }
 
 /// Create a new collection

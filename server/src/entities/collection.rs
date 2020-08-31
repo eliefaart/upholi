@@ -1,7 +1,7 @@
 use serde::{Serialize, Deserialize};
 
 use crate::database;
-use crate::database::{Database, DatabaseEntity, DatabaseUserEntity};
+use crate::database::{Database, DatabaseExt, DatabaseEntity, DatabaseUserEntity};
 use crate::ids;
 use crate::error::*;
 use crate::entities::AccessControl;
@@ -39,6 +39,15 @@ impl Collection {
 				token: ids::create_unique_id(),
 				password_hash: Some(String::new()),
 			}
+		}
+	}
+
+	pub fn get_by_share_token(token: &str) -> Result<Option<Self>> {
+		match database::get_database().get_collection_by_share_token(token)? {
+			Some(collection) => {
+				Ok(Some(collection))
+			},
+			None => Ok(None)
 		}
 	}
 

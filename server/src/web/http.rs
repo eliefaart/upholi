@@ -73,9 +73,9 @@ impl FromRequest for Session {
 }
 
 /// Extract the session cookie from headers
-pub fn get_session_cookie(req: &actix_web::http::header::HeaderMap) -> Option<Cookie> {
+pub fn get_session_cookie(headers: &actix_web::http::header::HeaderMap) -> Option<Cookie> {
 	// TODO: Look specifically for SESSION_COOKIE_NAME, among potentially multiple cookie headers
-	let cookie_header = req.get("cookie")?;
+	let cookie_header = headers.get("cookie")?;
 	match cookie_header.to_str() {
 		Ok(cookie_header_str) => {
 			match Cookie::parse(cookie_header_str) {
@@ -89,7 +89,7 @@ pub fn get_session_cookie(req: &actix_web::http::header::HeaderMap) -> Option<Co
 
 /// Extract Session from the HTTP request
 fn get_session(req: &HttpRequest) -> Option<Session> {
-	let session_cookie = get_session_cookie(req.headers())?;
+	let session_cookie = get_session_cookie(&req.headers())?;
 	let session_id = session_cookie.value();
 	match Session::get(&session_id) {
 		Ok(session) => session,

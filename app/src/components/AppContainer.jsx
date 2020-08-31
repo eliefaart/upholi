@@ -10,6 +10,7 @@ import AlbumPage from "../pages/AlbumPage.jsx";
 import PhotoPage from "../pages/PhotoPage.jsx";
 import CollectionPage from "../pages/CollectionPage.jsx";
 import SharedCollectionPage from "../pages/SharedCollectionPage.jsx";
+import SharedCollectionPageNew from "../pages/SharedCollectionPageNew.jsx";
 
 import AppStateContext from "../contexts/AppStateContext.jsx";
 
@@ -53,7 +54,7 @@ class AppContainer extends React.Component {
 						<Route path="/collection/:collectionId" exact component={CollectionPage} />
 						<Route path="/photo/:photoId" exact component={PhotoPage} />
 						<Route path="/album/:albumId" exact component={AlbumPage} />
-						<Route path="/shared/collection/:collectionId" exact component={SharedCollectionPage} />
+						<Route path="/shared/collection/:token" exact component={SharedCollectionPageNew} />
 					</AppStateContext.Provider>
 
 					<ToastContainer position="bottom-center"
