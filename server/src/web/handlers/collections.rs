@@ -37,15 +37,17 @@ pub async fn get_collection(user: User, collection_id: web::Path<String>) -> imp
 }
 
 /// Get a single shared collection collection by its token
-pub async fn get_collections_by_share_token(session: Option<Session>, token: web::Path<String>) -> impl Responder {
+pub async fn get_collections_by_share_token(session: Session, token: web::Path<String>) -> impl Responder {
 	match Collection::get_by_share_token(&token) {
 		Ok(opt) => {
 			match opt {
 				Some(collection) => {
 					if collection.user_has_access(None) {
+
 						HttpResponse::Ok().json(ClientCollection::from(&collection))
 					}
 					else {
+						// Password required?
 						create_unauthorized_response()
 					}
 				},
