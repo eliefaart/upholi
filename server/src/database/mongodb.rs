@@ -50,7 +50,6 @@ impl Database for MongoDatabase {
 		-> Result<Option<T>>
 	{
 		let mut items: Vec<T> = Self::find_many(self, collection, None, Some(&[id]), None)?;
-		println!("{} -> {}", id, items.len());
 
 		if !items.is_empty() {
 			Ok(items.pop())
