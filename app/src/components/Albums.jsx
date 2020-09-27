@@ -10,9 +10,8 @@ class Albums extends React.Component {
 	}
 
 	render() {
-		let history = this.context.history;
 		const fnOnClick = this.props.onClick
-			|| ((album) => { history.push("/album/" + album.id) });
+			|| ((album) => { history.push(this.props.albumUrl(album.id)) });
 
 		const AlbumLink = function (props) {
 			const album = props.album;
