@@ -6,7 +6,7 @@ use crate::ids;
 use crate::error::*;
 
 /// A client session
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Session {
 	pub id: String,
 	pub user_id: Option<String>,
@@ -19,7 +19,7 @@ pub struct Session {
 }
 
 /// Contains data related to an oauth login attempt
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct OauthData {
 	pub state: String,
 	pub pkce_verifier: String

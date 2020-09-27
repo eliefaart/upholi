@@ -54,7 +54,7 @@ pub async fn route_get_photo(user: Option<User>, req: HttpRequest) -> impl Respo
 		Ok(photo_opt) => {
 			match photo_opt {
 				Some(photo) => {
-					if photo.user_has_access(user) {
+					if photo.user_has_access(&user) {
 						HttpResponse::Ok().json(photo)
 					}
 					else {
@@ -171,7 +171,7 @@ fn create_response_for_photo(photo_id: &str, user: Option<User>, offer_as_downlo
 		Ok(photo_opt) => {
 			match photo_opt {
 				Some(photo_info) => {
-					if photo_info.user_has_access(user) {
+					if photo_info.user_has_access(&user) {
 						serve_photo(&select_path(&photo_info), &photo_info.name, offer_as_download)
 					}
 					else {

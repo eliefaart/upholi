@@ -1,5 +1,4 @@
 use actix_web::{web, HttpResponse, Responder};
-use actix_http::cookie::Cookie;
 
 use crate::database::DatabaseEntity;
 use crate::web::oauth2;

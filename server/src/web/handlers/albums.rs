@@ -27,7 +27,7 @@ pub async fn route_get_album(user: Option<User>, req: HttpRequest) -> impl Respo
 		Ok(album_opt) => {
 			match album_opt {
 				Some(album) => {
-					if album.user_has_access(user) {
+					if album.user_has_access(&user) {
 						HttpResponse::Ok().json(ClientAlbum::from(album))
 					} 
 					else {

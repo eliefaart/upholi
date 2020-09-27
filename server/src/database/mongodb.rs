@@ -50,6 +50,7 @@ impl Database for MongoDatabase {
 		-> Result<Option<T>>
 	{
 		let mut items: Vec<T> = Self::find_many(self, collection, None, Some(&[id]), None)?;
+		println!("{} -> {}", id, items.len());
 
 		if !items.is_empty() {
 			Ok(items.pop())
@@ -203,7 +204,7 @@ impl DatabaseExt for MongoDatabase {
 		Ok(count > 0)
 	}
 
-	fn get_albums_containing_photo(&self, photo_id: &str) -> Result<Vec<Album>> {
+	fn get_albums_with_photo(&self, photo_id: &str) -> Result<Vec<Album>> {
 		let mongo_collection = DATABASE.collection(database::COLLECTION_ALBUMS);
 		let query = doc!{
 			"photos": photo_id
@@ -243,6 +244,18 @@ impl DatabaseExt for MongoDatabase {
 			},
 			None => Ok(None)
 		}
+	}
+
+	fn get_collections_with_album(&self, album_id: &str) -> Result<Vec<Collection>> {
+		let mongo_collection = DATABASE.collection(database::COLLECTION_COLLECTIONS);
+		let query = doc!{
+			"albums": album_id
+		};
+
+		let cursor = mongo_collection.find(query, None)?;
+		let collections = get_items_from_cursor(cursor)?;
+
+		Ok(collections)
 	}
 }
 

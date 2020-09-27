@@ -9,7 +9,7 @@ use crate::entities::user::User;
 
 
 /// A Collection is a collection of 0..n albums 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Collection {
 	pub id: String,
@@ -19,7 +19,7 @@ pub struct Collection {
 	pub sharing: CollectionSharingOptions
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CollectionSharingOptions {
 	pub shared: bool,
@@ -100,7 +100,7 @@ impl DatabaseUserEntity for Collection {
 }
 
 impl AccessControl for Collection {
-	fn user_has_access(&self, user_opt: Option<User>) -> bool {
+	fn user_has_access(&self, user_opt: &Option<User>) -> bool {
 		// Access if one of the conditions has been met:
 		if let Some(user) = user_opt {
 			self.user_id == user.id || self.sharing.shared
@@ -125,9 +125,9 @@ mod tests {
 		collection.user_id = user_collection_owner.id.to_string();
 
 		// Only the user that owns the collection may access it
-		assert_eq!(collection.user_has_access(Some(user_collection_owner)), true);
-		assert_eq!(collection.user_has_access(Some(user_not_collection_owner)), false);
-		assert_eq!(collection.user_has_access(None), false);
+		assert_eq!(collection.user_has_access(&Some(user_collection_owner)), true);
+		assert_eq!(collection.user_has_access(&Some(user_not_collection_owner)), false);
+		assert_eq!(collection.user_has_access(&None), false);
 	}
 
 	#[test]
@@ -139,9 +139,9 @@ mod tests {
 		collection.user_id = user_collection_owner.id.to_string();
 		collection.sharing.shared = true;
 
-		assert_eq!(collection.user_has_access(Some(user_collection_owner)), true);
-		assert_eq!(collection.user_has_access(Some(user_not_collection_owner)), true);
-		assert_eq!(collection.user_has_access(None), true);
+		assert_eq!(collection.user_has_access(&Some(user_collection_owner)), true);
+		assert_eq!(collection.user_has_access(&Some(user_not_collection_owner)), true);
+		assert_eq!(collection.user_has_access(&None), true);
 	}
 
 	fn create_dummy_collection_with_id(id: &str) -> Collection {

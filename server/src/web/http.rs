@@ -90,6 +90,7 @@ pub fn get_session_cookie(headers: &actix_web::http::header::HeaderMap) -> Optio
 /// Extract Session from the HTTP request
 fn get_session(req: &HttpRequest) -> Option<Session> {
 	let session_cookie = get_session_cookie(&req.headers())?;
+	println!("{:?}", session_cookie);
 	let session_id = session_cookie.value();
 	match Session::get(&session_id) {
 		Ok(session) => session,
