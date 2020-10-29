@@ -5,7 +5,7 @@ import ModalCreateCollection from "../components/ModalCreateCollection.jsx"
 import ModalAddAlbumToCollection from "../components/ModalAddAlbumToCollection.jsx"
 import ModalConfirmation from "../components/ModalConfirmation.jsx"
 import ModalShareCollection from "../components/ModalShareCollection.jsx"
-import { IconLink, IconCreate, IconDelete, IconShare } from "../components/Icons.jsx";
+import { IconCreate, IconDelete, IconShare, IconClose } from "../components/Icons.jsx";
 import PhotoService from "../services/PhotoService.js";
 
 class CollectionsPage extends React.Component {
@@ -152,14 +152,14 @@ class CollectionsPage extends React.Component {
 								{collection.albums.map(album => {
 									let albumThumbUrl = "url('" + PhotoService.baseUrl() + "/photo/" + album.thumbPhotoId + "/thumb')";
 
-									return (<div key={album.id} 
-										className="album" 
+									return (<div key={album.id}
+										className="album"
 										style={{ backgroundImage: !!album.thumbPhotoId && albumThumbUrl }}
 										onClick={() => this.openAlbum(album.id)}>
 										<div className="albumContent">
 											<span className="title">{album.title}</span>
 											<button className="iconOnly" onClick={() => this.onRemoveAlbumFromCollectionClick(collection.id, album.id)} title="Remove album from collection">
-												<IconDelete/>
+												<IconClose/>
 											</button>
 										</div>
 									</div>);
@@ -199,9 +199,9 @@ class CollectionsPage extends React.Component {
 					onRequestClose={() => this.setState({confirmRemoveAlbumFromCollectionOpen: false})}
 					onOkButtonClick={() => this.removeAlbumFromCollection(this.state.activeCollectionId, this.state.activeAlbumId)}
 					okButtonText="Remove"
-					confirmationText={"Album '" 
-						+ activeCollection.title 
-						+ "' will be remove from collection '" 
+					confirmationText={"Album '"
+						+ activeCollection.title
+						+ "' will be remove from collection '"
 						+ activeAlbum.title + "'."}
 					/>}
 			</PageLayout>

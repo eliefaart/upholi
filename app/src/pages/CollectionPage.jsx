@@ -14,10 +14,6 @@ class CollectionPage extends React.Component {
 			.catch(console.error);
 
 		this.state = {
-			albums: []
-		};
-
-		this.state = {
 			collection: null
 		};
 	}
@@ -26,13 +22,17 @@ class CollectionPage extends React.Component {
 		if (!this.state.collection)
 			return null;
 
+		const history = this.context.history;
+
 		return (
 			<PageLayout title={this.state.collection.title} requiresAuthentication={false} renderMenu={true}>
 				<div className="topBar">
 					<h1>{this.state.collection.title}</h1>
 				</div>
 				<div className="collectionContent">
-					<Albums albums={this.state.collection.albums}/>
+					<Albums
+						albums={this.state.collection.albums}
+						onClick={album => history.push("/album/" + album.id)}/>
 				</div>
 			</PageLayout>
 		);

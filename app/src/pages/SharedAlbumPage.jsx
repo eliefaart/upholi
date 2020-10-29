@@ -3,6 +3,7 @@ import PhotoGallerySelectable from "../components/PhotoGallerySelectable.jsx";
 import PageLayout from "../components/PageLayout.jsx"
 import AppStateContext from "../contexts/AppStateContext.jsx";
 import PhotoService from "../services/PhotoService";
+import { IconBack } from "../components/Icons.jsx";
 
 class SharedAlbumPage extends React.Component {
 	constructor(props) {
@@ -46,25 +47,25 @@ class SharedAlbumPage extends React.Component {
 
 	onBackToCollectionClicked() {
 		!!this.context.history && this.context.history.push("/shared/collection/" + this.props.match.params.token);
-		
+
 	}
 
 	render() {
 		return (
 			<PageLayout title={"Album - " + this.state.title} requiresAuthentication={false} onDrop={(event) => this.onFilesDropped(event)}>
 				<div className="topBar">
-					<span onClick={() => this.onBackToCollectionClicked()}>Back</span>
+					<IconBack className="iconOnly asButton" onClick={() => this.onBackToCollectionClicked()}/>
 					<h1>{this.state.title}</h1>
 				</div>
 
-				{!!this.state.title && this.state.photos.length === 0 && 
+				{!!this.state.title && this.state.photos.length === 0 &&
 					<span className="centerText">This album has no photos.</span>
 				}
 
-				{this.state.photos.length > 0 && <PhotoGallerySelectable 
-					onClick={(event, target) => this.onPhotoClicked(event, target)} 
-					photos={this.state.photos} 
-					selectedItems={[]} 
+				{this.state.photos.length > 0 && <PhotoGallerySelectable
+					onClick={(event, target) => this.onPhotoClicked(event, target)}
+					photos={this.state.photos}
+					selectedItems={[]}
 					onPhotoSelectedChange={() => {}}/>
 				}
 			</PageLayout>
