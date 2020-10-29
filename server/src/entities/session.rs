@@ -13,8 +13,8 @@ pub struct Session {
 	created_on: chrono::DateTime<Utc>,
 
 	/// Contains data related to an oauth login attempt
-	/// Such as: state id, PKCE tokens. 
-	/// The value of this field will be None if login has completed
+	/// Such as: state id, PKCE tokens.
+	/// The value of this field will be None once authorization has completed
 	pub oauth: Option<OauthData>
 }
 

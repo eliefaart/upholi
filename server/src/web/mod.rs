@@ -53,7 +53,7 @@ pub async fn run_server() -> std::io::Result<()>{
 						Ok(_) => {
 							let header_name = HeaderName::from_static("cookie");
 							let header_value = HeaderValue::from_str(&format!("{}={}", SESSION_COOKIE_NAME, &session.id)).unwrap();
-		
+
 							req.headers_mut().insert(header_name, header_value);
 							new_session = Some(session);
 						},
@@ -69,8 +69,7 @@ pub async fn run_server() -> std::io::Result<()>{
 					// If the request did originally not contain a session, then update the response to include the 'set-cookie' header.
 					if let Some(session) = new_session {
 						if let Ok(response) = result.as_mut() {
-							println!("RESP! {:?}", &session.id);
-							
+
 							let session_max_age = 60 * 60 * 24 * 365;
 							let header_name = HeaderName::from_static("set-cookie");
 							let header_value = HeaderValue::from_str(&format!("{}={}; HttpOnly; Secure; Path=/; Max-Age={}", SESSION_COOKIE_NAME, &session.id, session_max_age)).unwrap();
@@ -78,7 +77,7 @@ pub async fn run_server() -> std::io::Result<()>{
 							response.headers_mut().insert(header_name, header_value);
 						}
 					}
-					
+
 					result
 				})
 			})
@@ -102,7 +101,7 @@ pub async fn run_server() -> std::io::Result<()>{
 					.route("/photo/{photo_id}/thumb", actix_web::web::get().to(handlers::photos::route_download_photo_thumbnail))
 					.route("/photo/{photo_id}/preview", actix_web::web::get().to(handlers::photos::route_download_photo_preview))
 					.route("/photo/{photo_id}", actix_web::web::delete().to(handlers::photos::route_delete_photo))
-					
+
 					.route("/albums", actix_web::web::get().to(handlers::albums::route_get_albums))
 					.route("/album", actix_web::web::post().to(handlers::albums::route_create_album))
 					.route("/album/{album_id}", actix_web::web::get().to(handlers::albums::route_get_album))

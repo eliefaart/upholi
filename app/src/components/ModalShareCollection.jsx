@@ -35,7 +35,7 @@ class ModalShareCollection extends React.Component {
 	}
 
 	onPasswordUpdated (password) {
-		this.setState({ 
+		this.setState({
 			isChangingPassword: false,
 			password: password
 		 }, () => {
@@ -82,6 +82,7 @@ class ModalShareCollection extends React.Component {
 			isOpen={this.props.isOpen}
 			onRequestClose={this.props.onRequestClose}
 			okButtonText="Done"
+			onOkButtonClick={this.props.onRequestClose}
 			>
 				<p>
 					{statusText}
@@ -94,16 +95,16 @@ class ModalShareCollection extends React.Component {
 						checkedIcon={<span className="checkedIcon">Shared</span>}
 						uncheckedIcon={<span className="uncheckedIcon">Private</span>}
 						onChange={(bShared) => {
-							this.setState({ 
-								shared: bShared 
+							this.setState({
+								shared: bShared
 							}, () => {
 								this.updateSharingOptions();
 							});
 						}}/>
 				</label>
-				
+
 				{/* Password */}
-				{this.state.shared && <label className="switch">
+				{/* {this.state.shared && <label className="switch">
 					<span>Require password</span>
 					<Switch checked={this.state.requirePassword}
 						width={80}
@@ -111,7 +112,7 @@ class ModalShareCollection extends React.Component {
 						checkedIcon={<span className="checkedIcon">Yes</span>}
 						uncheckedIcon={<span className="uncheckedIcon">No</span>}
 						onChange={(bRequirePassword) => {
-							this.setState({ 
+							this.setState({
 								requirePassword: bRequirePassword,
 								isChangingPassword: bRequirePassword
 							}, () => {
@@ -125,12 +126,12 @@ class ModalShareCollection extends React.Component {
 					<button onClick={() => this.setState({ isChangingPassword: true })}>
 						Change password
 					</button>
-				}
+				} */}
 
 				{/* URL */}
 				{this.state.shared && <div className="url">
 					<div className="copyUrl">
-						<input className="urlToCopy" type="text" value={shareUrl} 
+						<input className="urlToCopy" type="text" value={shareUrl}
 							// Prevent changes to the value of this input by resetting value in onchange event.
 							// I cannot make it 'disabled', because then I cannot copy the text using JS
 							onChange={(event) => event.target.value = shareUrl}/>
@@ -142,8 +143,8 @@ class ModalShareCollection extends React.Component {
 						Generate new URL
 					</button>
 				</div>}
-					
-			{this.state.isChangingPassword && <ModalSetPassword 
+
+			{this.state.isChangingPassword && <ModalSetPassword
 				onOkButtonClick={(password) => this.onPasswordUpdated(password)}/>}
 		</Modal>;
 	}
