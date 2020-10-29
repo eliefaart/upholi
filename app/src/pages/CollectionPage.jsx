@@ -19,7 +19,7 @@ class CollectionPage extends React.Component {
 	}
 
 	render() {
-		if (!this.state.collection)
+		if (this.state.collection == null)
 			return null;
 
 		const history = this.context.history;

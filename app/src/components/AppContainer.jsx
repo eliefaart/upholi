@@ -10,7 +10,6 @@ import AlbumPage from "../pages/AlbumPage.jsx";
 import PhotoPage from "../pages/PhotoPage.jsx";
 import CollectionPage from "../pages/CollectionPage.jsx";
 import SharedCollectionPage from "../pages/SharedCollectionPage.jsx";
-import SharedCollectionPageNew from "../pages/SharedCollectionPageNew.jsx";
 import SharedAlbumPage from "../pages/SharedAlbumPage.jsx";
 
 import AppStateContext from "../contexts/AppStateContext.jsx";
@@ -19,7 +18,7 @@ class AppContainer extends React.Component {
 
 	constructor(props) {
 		super(props);
-		
+
 		this.context = React.createContext();
 		this.state = {
 			ready: false
@@ -35,7 +34,7 @@ class AppContainer extends React.Component {
 			});
 		}).catch(console.error)
 	}
-	
+
 	render() {
 		if (!this.state.ready)
 			return null;
@@ -55,7 +54,7 @@ class AppContainer extends React.Component {
 						<Route path="/collection/:collectionId" exact component={CollectionPage} />
 						<Route path="/photo/:photoId" exact component={PhotoPage} />
 						<Route path="/album/:albumId" exact component={AlbumPage} />
-						<Route path="/shared/collection/:token" exact component={SharedCollectionPageNew} />
+						<Route path="/shared/collection/:token" exact component={SharedCollectionPage} />
 						<Route path="/shared/collection/:token/album/:albumId" exact component={SharedAlbumPage} />
 					</AppStateContext.Provider>
 

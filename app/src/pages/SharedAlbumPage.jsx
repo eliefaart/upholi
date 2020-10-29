@@ -47,7 +47,6 @@ class SharedAlbumPage extends React.Component {
 
 	onBackToCollectionClicked() {
 		!!this.context.history && this.context.history.push("/shared/collection/" + this.props.match.params.token);
-
 	}
 
 	render() {
