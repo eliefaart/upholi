@@ -10,13 +10,26 @@ class CollectionView extends React.Component {
 		super(props);
 
 		this.state = {
-			collection: this.props.collection,
+			collection: props.collection,
 			activeAlbum: {
 				id: null,
 				title: null,
 				photos: []
 			},
 		};
+	}
+
+	componentDidMount() {
+		let defaultActiveAlbumId = this.props.initialActiveAlbumId;
+
+		// If there is only one album in collection, open it by default
+		if (!defaultActiveAlbumId && this.state.collection.albums.length === 1) {
+			defaultActiveAlbumId = this.state.collection.albums[0].id;
+		}
+
+		if (defaultActiveAlbumId){
+			this.openAlbum(defaultActiveAlbumId);
+		}
 	}
 
 	openAlbum(albumId) {
@@ -38,6 +51,29 @@ class CollectionView extends React.Component {
 					}
 				});
 			});
+
+		this.setLocationPath(albumId);
+	}
+
+	/**
+	 * Update the current browser location to match the currently opened album.
+	 */
+	setLocationPath(albumId) {
+		const locationPathAlbumPartIndex = location.pathname.indexOf("/album/");
+		const collectionBaseUrl = locationPathAlbumPartIndex !== -1
+			? location.pathname.substr(0, locationPathAlbumPartIndex)
+			: location.pathname;
+
+		if (collectionBaseUrl.endsWith("/")) {
+			collectionBaseUrl = collectionBaseUrl.substr(0, collectionBaseUrl.length - 1);
+		}
+
+		let newUrl = collectionBaseUrl;
+		if (albumId) {
+			newUrl += "/album/" + albumId;
+		}
+
+		this.context.history.replace(newUrl);
 	}
 
 	onAlbumClicked(album) {
@@ -49,6 +85,8 @@ class CollectionView extends React.Component {
 					photos: []
 				}
 			});
+
+			this.setLocationPath(null);
 		}
 		else {
 			this.openAlbum(album.id);

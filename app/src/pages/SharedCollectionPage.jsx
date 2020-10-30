@@ -24,7 +24,7 @@ class SharedCollectionPage extends React.Component {
 
 		return (
 			<PageLayout title={"Collection - " + this.state.title} requiresAuthentication={false} renderMenu={false}>
-				<CollectionView collection={this.state.collection}/>
+				<CollectionView collection={this.state.collection} initialActiveAlbumId={this.props.match.params.albumId}/>
 			</PageLayout>
 		);
 	}
