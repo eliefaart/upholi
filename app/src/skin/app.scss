@@ -1,14 +1,15 @@
 @import "_cssreset";
 @import "_fonts";
 
-$backgroundColor: #000;
-$altBackgroundColor: #191d25;
-$accentColor: #437dec;
-$secondaryAccentColor: #bb8736;
-$textColorDark: #161f21;
-$textColorLight: #dedfe4;
-$disabledColor: gray;
-$sharedColor: #53c253;
+$colorBackground: #000;
+$colorBackgroundAlt: #191d25;
+$colorAccent: #437dec;
+$colorSecondaryAccent: #bb8736;
+$colorSpecial: #53c253;
+$colorTextDark: #161f21;
+$colorTextLight: #dedfe4;
+$colorDisabled: gray;
+
 
 $fontSizeNormal: 0.8em;
 $fontSizeLarge: 1.2em;
@@ -33,8 +34,8 @@ html {
 		font-size: $fontSizeNormal;
 		font-weight: 500;
 
-		background: $backgroundColor;
-		color: $textColorLight;
+		background: $colorBackground;
+		color: $colorTextLight;
 
 		.page {
 			min-height: 100vh;
@@ -73,7 +74,7 @@ input, select, button, .asButton {
 	border-radius: $borderRadius;
 
 	&:disabled {
-		background-color: $disabledColor;
+		background-color: $colorDisabled;
 	}
 }
 
@@ -83,17 +84,17 @@ a[href]:not(.asButton) {
 }
 
 input, select {
-	background-color: $altBackgroundColor;
-	color: $textColorLight;
-	border: 2px solid $secondaryAccentColor;
+	background-color: $colorBackgroundAlt;
+	color: $colorTextLight;
+	border: 2px solid $colorSecondaryAccent;
 
 	&:focus {
-		border-color: $accentColor;
+		border-color: $colorAccent;
 	}
 }
 
 .selectFiles {
-	background: $secondaryAccentColor;
+	background: $colorSecondaryAccent;
 	cursor: pointer;
 	height: $buttonHeight;
 	line-height: $buttonHeight;
@@ -105,7 +106,7 @@ input[type=file] {
 }
 
 button, .asButton {
-	color: $accentColor;
+	color: $colorAccent;
 	background-color: transparent;
 	text-transform: uppercase;
 	border: none;
@@ -131,8 +132,8 @@ button, .asButton {
 
 	&:hover,
 	&:active {
-		//background: $secondaryAccentColor;
-		color: $secondaryAccentColor;
+		//background: $colorSecondaryAccent;
+		color: $colorSecondaryAccent;
 	}
 
 	svg {

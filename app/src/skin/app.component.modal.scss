@@ -10,10 +10,10 @@ $modalHeaderHeight: $buttonHeight;
 
 .modal {
 	position: absolute;
-	background: $altBackgroundColor;
+	background: $colorBackgroundAlt;
 	overflow: auto;
 	border-radius: $borderRadius;
-	border: 1px solid $accentColor;
+	border: 1px solid $colorAccent;
 	padding: $spacing * 2;
 	min-width: 250px;
 
@@ -51,7 +51,7 @@ $modalHeaderHeight: $buttonHeight;
 		margin-top: $spacing * 6;
 
 		&:not(:empty) {
-			border-top: 1px solid $secondaryAccentColor;
+			border-top: 1px solid $colorSecondaryAccent;
 		}
 	}
 }

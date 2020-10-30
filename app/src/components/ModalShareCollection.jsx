@@ -91,7 +91,7 @@ class ModalShareCollection extends React.Component {
 					<span>Status</span>
 					<Switch checked={this.state.shared}
 						width={80}
-						onColor="#d3e532"
+						onColor="#53c253"
 						checkedIcon={<span className="checkedIcon">Shared</span>}
 						uncheckedIcon={<span className="uncheckedIcon">Private</span>}
 						onChange={(bShared) => {
@@ -108,7 +108,7 @@ class ModalShareCollection extends React.Component {
 					<span>Require password</span>
 					<Switch checked={this.state.requirePassword}
 						width={80}
-						onColor="#d3e532"
+						onColor="#53c253"
 						checkedIcon={<span className="checkedIcon">Yes</span>}
 						uncheckedIcon={<span className="uncheckedIcon">No</span>}
 						onChange={(bRequirePassword) => {

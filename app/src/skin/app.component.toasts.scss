@@ -1,9 +1,9 @@
 .Toastify__toast-container {
 
 	.Toastify__toast {
-		background: $altBackgroundColor;
-		color: $textColorLight;
-		border: 1px solid $accentColor;
+		background: $colorBackgroundAlt;
+		color: $colorTextLight;
+		border: 1px solid $colorAccent;
 		border-radius: $borderRadius;
 		min-height: $headerHeight;
 		font-family: unset;
@@ -12,7 +12,7 @@
 			all: unset;
 
 			svg {
-				fill: $accentColor;
+				fill: $colorAccent;
 			}
 		}
 	}

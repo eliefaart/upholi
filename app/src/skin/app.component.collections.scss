@@ -7,7 +7,7 @@
 
 	.collection {
 		padding: $spacing * 2;
-		background: $altBackgroundColor;
+		background: $colorBackgroundAlt;
 		border-radius: $borderRadius;
 
 		.head {
@@ -23,7 +23,7 @@
 			}
 
 			.shared {
-				color: $sharedColor;
+				color: $colorSpecial;
 			}
 		}
 
