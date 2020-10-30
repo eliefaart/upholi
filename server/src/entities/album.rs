@@ -11,11 +11,10 @@ use crate::entities::collection::Collection;
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Album {
-	#[serde(default)] 
+	#[serde(default)]
 	pub id: String,
 	pub user_id: String,
 	pub title: String,
-	pub public: bool,
 	#[serde(default)]
 	pub thumb_photo_id: Option<String>,
 	#[serde(default)]
@@ -29,7 +28,6 @@ impl Album {
 		Self {
 			id,
 			user_id,
-			public: false,
 			title: title.to_string(),
 			thumb_photo_id: None,
 			photos: vec!{}
@@ -91,25 +89,24 @@ impl DatabaseUserEntity for Album {
 	}
 
 	fn get_all_as_user(user_id: String) -> Result<Vec<Self>> {
-		database::get_database().find_many(database::COLLECTION_ALBUMS, Some(&user_id), None, None) 
+		database::get_database().find_many(database::COLLECTION_ALBUMS, Some(&user_id), None, None)
 	}
 
 	fn get_all_with_ids_as_user(ids: &[&str], user_id: String) -> Result<Vec<Self>> {
-		database::get_database().find_many(database::COLLECTION_ALBUMS, Some(&user_id), Some(ids), None) 
+		database::get_database().find_many(database::COLLECTION_ALBUMS, Some(&user_id), Some(ids), None)
 	}
 }
 
 impl AccessControl for Album {
 	fn user_has_access(&self, user_opt: &Option<User>) -> bool {
-		if self.public {
-			return true;
-		}
-		else if let Some(user) = user_opt {
+		if let Some(user) = user_opt {
+			// Check if user is owner of album
 			if self.user_id == user.id {
 				return true;
 			}
-		} 
+		}
 		else {
+			// Check if album is part of any collection that user has access to
 			if let Ok(collections) = self.get_collections() {
 				for collection in collections {
 					if collection.user_has_access(user_opt) {
@@ -118,7 +115,7 @@ impl AccessControl for Album {
 				}
 			}
 		}
-		
+
 		return false;
 	}
 }
@@ -150,12 +147,11 @@ mod tests {
 	}
 
 	#[test]
-	fn access_private() {
+	fn access_ownership() {
 		let user_album_owner = create_dummy_user();
 		let user_not_album_owner = create_dummy_user();
 
 		let mut album = create_dummy_album_with_id("");
-		album.public = false;
 		album.user_id = user_album_owner.id.to_string();
 
 		// Only the user that owns the album may access it
@@ -165,26 +161,10 @@ mod tests {
 		//assert_eq!(album.user_has_access(&None), false);
 	}
 
-	#[test]
-	fn access_public() {
-		let user_album_owner = create_dummy_user();
-		let user_not_album_owner = create_dummy_user();
-
-		let mut album = create_dummy_album_with_id("");
-		album.public = true;
-		album.user_id = user_album_owner.id.to_string();
-
-		// Everyone may access the album, because it is public
-		assert_eq!(album.user_has_access(&Some(user_album_owner)), true);
-		assert_eq!(album.user_has_access(&Some(user_not_album_owner)), true);
-		assert_eq!(album.user_has_access(&None), true);
-	}
-
 	fn create_dummy_album_with_id(id: &str) -> Album {
 		Album{
 			id: id.to_string(),
 			user_id: create_unique_id(),
-			public: false,
 			title: "title".to_string(),
 			thumb_photo_id: Some(bson::oid::ObjectId::new().unwrap().to_hex()),
 			photos: vec!{
@@ -197,8 +177,8 @@ mod tests {
 
 	fn create_dummy_user() -> User {
 		User{
-			id: create_unique_id(), 
-			identity_provider: "".to_string(), 
+			id: create_unique_id(),
+			identity_provider: "".to_string(),
 			identity_provider_user_id: "".to_string()
 		}
 	}

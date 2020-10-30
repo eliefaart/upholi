@@ -24,7 +24,6 @@ mod requests {
 	#[serde(rename_all = "camelCase")]
 	pub struct UpdateAlbum {
 		pub title: Option<String>,
-		pub public: Option<bool>,
 		pub thumb_photo_id: Option<String>,
 		pub photos: Option<Vec<String>>
 	}
@@ -60,7 +59,7 @@ mod responses {
 	use crate::entities::album::Album;
 	use crate::entities::collection::Collection;
 	use crate::database::{DatabaseEntity, DatabaseEntityBatch};
- 
+
 	#[derive(Serialize)]
 	#[serde(rename_all = "camelCase")]
 	pub struct PhotoSmall {
@@ -73,11 +72,10 @@ mod responses {
 	#[serde(rename_all = "camelCase")]
 	pub struct ClientAlbum {
 		pub title: String,
-		pub public: bool,
 		pub thumb_photo: Option<PhotoSmall>,
 		pub photos: Vec<PhotoSmall>
 	}
-	
+
 	#[derive(Serialize)]
 	#[serde(rename_all = "camelCase")]
 	pub struct ClientCollectionAlbum {
@@ -102,7 +100,7 @@ mod responses {
 		pub require_password: bool,
 		pub token: String
 	}
-    
+
 	impl From<Photo> for PhotoSmall {
 		fn from(photo: Photo) -> Self {
 			Self {
@@ -112,18 +110,17 @@ mod responses {
 			}
 		}
 	}
-	
+
 	impl From<Album> for ClientAlbum {
 		fn from(album: Album) -> Self {
 			let mut ids: Vec<&str> = Vec::new();
-			
+
 			for id in album.photos.iter() {
 				ids.push(&id[..]);
 			}
 
 			Self {
 				title: album.title,
-				public: album.public,
 				thumb_photo: {
 					if let Some(thumb_photo_id) = album.thumb_photo_id {
 						match Photo::get(&thumb_photo_id) {
@@ -155,7 +152,7 @@ mod responses {
 			}
 		}
     }
-    
+
 	impl From<&Collection> for ClientCollection {
         fn from(collection: &Collection) -> Self {
 			let mut album_ids: Vec<&str> = Vec::new();
@@ -169,7 +166,7 @@ mod responses {
 			let collection_albums = albums.iter().map(|album| ClientCollectionAlbum {
 				id: album.id.to_string(),
 				title: album.title.to_string(),
-				thumb_photo_id: { 
+				thumb_photo_id: {
 					match &album.thumb_photo_id {
 						Some(thumb_photo_id) => Some(thumb_photo_id.to_string()),
 						None => None

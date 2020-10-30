@@ -29,7 +29,7 @@ pub async fn route_get_album(user: Option<User>, req: HttpRequest) -> impl Respo
 				Some(album) => {
 					if album.user_has_access(&user) {
 						HttpResponse::Ok().json(ClientAlbum::from(album))
-					} 
+					}
 					else {
 						create_unauthorized_response()
 					}
@@ -66,14 +66,11 @@ pub async fn route_update_album(user: User, req: HttpRequest, updated_album: web
 					if album.user_id != user.id {
 						return create_unauthorized_response();
 					}
-		
+
 					// TODO: Verify if all photoIds & thumbPhotoId are valid.
-		
+
 					if let Some(title) = &updated_album.title {
 						album.title = title.to_string();
-					}
-					if let Some(public) = updated_album.public {
-						album.public = public;
 					}
 					if let Some(photos) = &updated_album.photos {
 						album.photos = photos.to_vec();
@@ -81,7 +78,7 @@ pub async fn route_update_album(user: User, req: HttpRequest, updated_album: web
 					if let Some(thumb_photo_id) = &updated_album.thumb_photo_id {
 						album.thumb_photo_id = Some(thumb_photo_id.to_string());
 					}
-		
+
 					match album.update() {
 						Ok(_) => create_ok_response(),
 						Err(error) => create_internal_server_error_response(Some(error))
