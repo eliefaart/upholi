@@ -16,16 +16,16 @@ class Modal extends React.Component {
 				className={this.props.className + " modal"}
 				overlayClassName="overlay"
 			>
-				<div className="modal-header">
+				<div className="modalHeader">
 					<span className="title">{this.props.title}</span>
 					<button className="iconOnly" onClick={() => this.props.onRequestClose()}>
 						<IconClose/>
 					</button>
 				</div>
-				<div className="modal-body">
+				<div className="modalBody">
 					{this.props.children}
 				</div>
-				<div className="modal-footer">
+				<div className="modalFooter">
 					{this.props.okButtonText !== null && <button onClick={this.props.onOkButtonClick}>{this.props.okButtonText || "Ok"}</button>}
 				</div>
 			</ReactModal>

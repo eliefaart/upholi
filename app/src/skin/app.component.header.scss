@@ -3,7 +3,7 @@
 .header {
 	display: flex;
 	height: $headerHeight;
-	background-color: $altBackgroundColor;
+	background-color: $colorBackgroundAlt;
 	position: fixed;
 	width: 100%;
 	z-index: 1;
@@ -11,7 +11,7 @@
 	.menu {
 		display: flex;
 		user-select: none;
-		
+
 		span {
 			cursor: pointer;
 			font-size: $fontSizeLarge;
@@ -22,19 +22,19 @@
 			padding-left: $spacing * 4;
 
 			&:hover {
-				color: $accentColor;
-				//background-color: $secondaryAccentColor;
+				color: $colorAccent;
+				//background-color: $colorSecondaryAccent;
 			}
 
 			&.active {
-				color: $accentColor;
-				border-bottom: 4px solid $secondaryAccentColor;
+				color: $colorAccent;
+				border-bottom: 4px solid $colorSecondaryAccent;
 			}
 		}
 	}
 
 	.buffer{
-		flex: 0 1 100%;
+		flex: 1 1 auto;
 		padding-left: $spacing * 10;
 	}
 
@@ -43,13 +43,13 @@
 		width: $headerHeight;
 		min-width: $headerHeight;
 		background-color: transparent;
-		color: $textColorLight;
+		color: $colorTextLight;
 	}
 
 	.actions {
-		background-color: $altBackgroundColor;
+		background-color: $colorBackgroundAlt;
 		padding-right: $spacing;
-		
+
 		span {
 			white-space: nowrap;
 		}
@@ -58,14 +58,14 @@
 			display: flex;
 			justify-content: right;
 			align-items: center;
-	
+
 			button, .asButton {
 				margin: 0 0 0 $spacing * 2;
-				padding: unset;
+				padding: 0px $spacing * 2;
 
 				span {
 					margin-right: $spacing * 2;
-					color: $textColorLight;
+					color: $colorTextLight;
 				}
 			}
 		}
@@ -81,28 +81,28 @@
 		.items {
 			background-color: transparent;
 			min-width: 150px;
-	
+
 			position: fixed;
 			top: $headerHeight;
 			right: 0;
-			
+
 			span {
 				line-height: $headerHeight;
 				white-space: nowrap;
 			}
-	
+
 			&>div{
 				display: flex;
 				flex-direction: column;
 				justify-content: right;
 				align-items: center;
-				background-color: $altBackgroundColor;
-				
+				background-color: $colorBackgroundAlt;
+
 				button {
 					border-radius: unset;
 					padding: 0 $spacing * 3;
-					color: $textColorLight;
-					background-color: $altBackgroundColor;
+					color: $colorTextLight;
+					background-color: $colorBackgroundAlt;
 					width: 100%;
 					margin: 0;
 					justify-content: left;
@@ -110,8 +110,8 @@
 
 					&:hover {
 						&, * {
-							background-color: $accentColor;
-							color: $textColorDark;
+							background-color: $colorAccent;
+							color: $colorTextDark;
 						}
 					}
 				}

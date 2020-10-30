@@ -2,7 +2,7 @@ import React from "react";
 import PageLayout from "../components/PageLayout.jsx"
 import AppStateContext from "../contexts/AppStateContext.jsx";
 import PhotoService from "../services/PhotoService.js"
-import Albums from "../components/Albums.jsx";
+import CollectionView from "./CollectionView.jsx";
 
 class CollectionPage extends React.Component {
 
@@ -14,26 +14,17 @@ class CollectionPage extends React.Component {
 			.catch(console.error);
 
 		this.state = {
-			albums: []
-		};
-
-		this.state = {
 			collection: null
 		};
 	}
 
 	render() {
-		if (!this.state.collection)
+		if (this.state.collection == null)
 			return null;
 
 		return (
-			<PageLayout title={this.state.collection.title} requiresAuthentication={false} renderMenu={true}>
-				<div className="topBar">
-					<h1>Collection "{this.state.collection.title}"</h1>
-				</div>
-				<div className="collectionContent">
-					<Albums albums={this.state.collection.albums}/>
-				</div>
+			<PageLayout title={"Collection - " + this.state.collection.title} requiresAuthentication={false} renderMenu={true}>
+				<CollectionView collection={this.state.collection} initialActiveAlbumId={this.props.match.params.albumId}/>
 			</PageLayout>
 		);
 	}

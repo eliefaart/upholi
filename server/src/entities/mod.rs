@@ -8,5 +8,5 @@ pub mod exif;
 pub mod collection;
 
 pub trait AccessControl {
-    fn user_has_access(&self, user: Option<User>) -> bool;
+    fn user_has_access(&self, user: &Option<User>) -> bool;
 }

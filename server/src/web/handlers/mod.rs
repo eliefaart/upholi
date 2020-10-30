@@ -24,7 +24,6 @@ mod requests {
 	#[serde(rename_all = "camelCase")]
 	pub struct UpdateAlbum {
 		pub title: Option<String>,
-		pub public: Option<bool>,
 		pub thumb_photo_id: Option<String>,
 		pub photos: Option<Vec<String>>
 	}
@@ -40,9 +39,17 @@ mod requests {
 	pub struct UpdateCollection {
 		pub title: Option<String>,
 		pub public: Option<bool>,
-		pub albums: Option<Vec<String>>
+		pub albums: Option<Vec<String>>,
+		pub sharing: Option<UpdateCollectionSharingOptions>
 	}
 
+	#[derive(Deserialize)]
+	#[serde(rename_all = "camelCase")]
+	pub struct UpdateCollectionSharingOptions {
+		pub shared: bool,
+		pub require_password: bool,
+		pub password: Option<String>
+	}
 }
 
 // Response types
@@ -52,7 +59,7 @@ mod responses {
 	use crate::entities::album::Album;
 	use crate::entities::collection::Collection;
 	use crate::database::{DatabaseEntity, DatabaseEntityBatch};
- 
+
 	#[derive(Serialize)]
 	#[serde(rename_all = "camelCase")]
 	pub struct PhotoSmall {
@@ -65,11 +72,10 @@ mod responses {
 	#[serde(rename_all = "camelCase")]
 	pub struct ClientAlbum {
 		pub title: String,
-		pub public: bool,
 		pub thumb_photo: Option<PhotoSmall>,
 		pub photos: Vec<PhotoSmall>
 	}
-	
+
 	#[derive(Serialize)]
 	#[serde(rename_all = "camelCase")]
 	pub struct ClientCollectionAlbum {
@@ -83,10 +89,18 @@ mod responses {
 	pub struct ClientCollection {
 		pub id: String,
 		pub title: String,
-		pub public: bool,
-		pub albums: Vec<ClientCollectionAlbum>
+		pub albums: Vec<ClientCollectionAlbum>,
+		pub sharing: ClientCollectionSharingOptions
 	}
-    
+
+	#[derive(Serialize)]
+	#[serde(rename_all = "camelCase")]
+	pub struct ClientCollectionSharingOptions {
+		pub shared: bool,
+		pub require_password: bool,
+		pub token: String
+	}
+
 	impl From<Photo> for PhotoSmall {
 		fn from(photo: Photo) -> Self {
 			Self {
@@ -96,18 +110,17 @@ mod responses {
 			}
 		}
 	}
-	
+
 	impl From<Album> for ClientAlbum {
 		fn from(album: Album) -> Self {
 			let mut ids: Vec<&str> = Vec::new();
-			
+
 			for id in album.photos.iter() {
 				ids.push(&id[..]);
 			}
 
 			Self {
 				title: album.title,
-				public: album.public,
 				thumb_photo: {
 					if let Some(thumb_photo_id) = album.thumb_photo_id {
 						match Photo::get(&thumb_photo_id) {
@@ -139,9 +152,9 @@ mod responses {
 			}
 		}
     }
-    
-    impl From<Collection> for ClientCollection {
-        fn from(collection: Collection) -> Self {
+
+	impl From<&Collection> for ClientCollection {
+        fn from(collection: &Collection) -> Self {
 			let mut album_ids: Vec<&str> = Vec::new();
 			for album in &collection.albums {
 				album_ids.push(album);
@@ -153,7 +166,7 @@ mod responses {
 			let collection_albums = albums.iter().map(|album| ClientCollectionAlbum {
 				id: album.id.to_string(),
 				title: album.title.to_string(),
-				thumb_photo_id: { 
+				thumb_photo_id: {
 					match &album.thumb_photo_id {
 						Some(thumb_photo_id) => Some(thumb_photo_id.to_string()),
 						None => None
@@ -162,10 +175,14 @@ mod responses {
 			}).collect();
 
             ClientCollection {
-				id: collection.id,
-				title: collection.title,
-				public: collection.public,
-                albums: collection_albums,
+				id: collection.id.to_string(),
+				title: collection.title.to_string(),
+				albums: collection_albums,
+				sharing: ClientCollectionSharingOptions {
+					shared: collection.sharing.shared,
+					require_password: collection.sharing.password_hash.is_some(),
+					token: collection.sharing.token.to_string()
+				}
             }
         }
     }

@@ -1,5 +1,6 @@
 use crate::error::*;
 use crate::entities::album::Album;
+use crate::entities::collection::Collection;
 use crate::entities::user::User;
 
 mod mongodb;
@@ -61,10 +62,17 @@ pub trait DatabaseExt : Database {
 	fn photo_exists_for_user(&self, user_id: &str, hash: &str) -> Result<bool>;
 
 	/// Get all albums that contain given photo
-	fn get_albums_containing_photo(&self, photo_id: &str) -> Result<Vec<Album>>;
+	fn get_albums_with_photo(&self, photo_id: &str) -> Result<Vec<Album>>;
 
 	/// Get user for given ID provider name and user-ID, if it exists
 	fn get_user_for_identity_provider(&self, identity_provider: &str, identity_provider_user_id: &str) -> Result<Option<User>>;
+
+	/// Get a single collection by its share token.
+	/// Note: this does not check if collection is shared at all.
+	fn get_collection_by_share_token(&self, token: &str) -> Result<Option<Collection>>;
+
+	/// Get all collections that contain given album
+	fn get_collections_with_album(&self, album_id: &str) -> Result<Vec<Collection>>;
 }
 
 /// Add standard CRUD operations to a struct

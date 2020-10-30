@@ -11,12 +11,12 @@
 			background-size: cover;
 			background-position: center center;
 			background-repeat: no-repeat;
-			background-color: $altBackgroundColor;
+			background-color: $colorBackgroundAlt;
 		}
 
 		&.selected .photoImg{
 			box-sizing: border-box;
-			border: 3px solid $accentColor;
+			border: 3px solid $colorAccent;
 		}
 
 		&:hover, &.any-other-selected {
@@ -35,15 +35,15 @@
 			display: none;
 
 			&:checked+label {
-				background: $accentColor;
+				background: $colorAccent;
 			}
 		}
 
 		label {
 			display: none;
 			cursor: pointer;
-			background: $textColorLight;
-			border: 1px solid $textColorLight;
+			background: $colorTextLight;
+			border: 1px solid $colorTextLight;
 			width: 20px;
 			height: 20px;
 			border-radius: 20px;

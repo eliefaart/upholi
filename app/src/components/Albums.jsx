@@ -1,5 +1,4 @@
 import React from "react";
-import { IconPublic } from "../components/Icons.jsx";
 import PhotoService from "../services/PhotoService.js"
 import AppStateContext from "../contexts/AppStateContext.jsx";
 
@@ -10,28 +9,34 @@ class Albums extends React.Component {
 	}
 
 	render() {
-		let history = this.context.history;
-		const fnOnClick = this.props.onClick
-			|| ((album) => { history.push("/album/" + album.id) });
+		const activeAlbumId = this.props.activeAlbumId;
+		const anyAlbumActive = this.props.albums.some(album => album.id === this.props.activeAlbumId);
 
-		const AlbumLink = function (props) {
+		const fnOnClick = this.props.onClick
+			|| ((album) => { history.push(this.props.albumUrl(album.id)) });
+
+		const AlbumElement = function (props) {
 			const album = props.album;
 			const thumbUrl = "url('" + PhotoService.baseUrl() + "/photo/" + album.thumbPhotoId + "/thumb')";
+			const isActive = album.id === activeAlbumId;
 
-			return <div onClick={() => fnOnClick(album)} className={"album " + (props.className || "")} style={{ backgroundImage: !!album.thumbPhotoId && thumbUrl }}>
-				{album.public && <IconPublic title="This album is public"/>}
-				<span>{album.title}</span>
+			return <div
+				onClick={() => fnOnClick(album)}
+				className={"album " + (props.className || "") + (isActive ? " active" : "")}
+				style={{ backgroundImage: !!album.thumbPhotoId && thumbUrl }}
+				>
+					<span>{album.title}</span>
 			</div>;
 		}
 
 		const albums = this.props.albums.map((album) => {
 			return (
-				<AlbumLink key={album.id} album={album} />
+				<AlbumElement key={album.id} album={album} />
 			);
 		});
 
 		return (
-			<div className="albums">
+			<div className={"albums " + (anyAlbumActive ? "anyActive" : "")}>
 				{albums}
 			</div>
 		);

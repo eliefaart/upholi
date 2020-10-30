@@ -10,17 +10,17 @@ $modalHeaderHeight: $buttonHeight;
 
 .modal {
 	position: absolute;
-	background: $altBackgroundColor;
+	background: $colorBackgroundAlt;
 	overflow: auto;
 	border-radius: $borderRadius;
-	border: 1px solid $accentColor;
+	border: 1px solid $colorAccent;
 	padding: $spacing * 2;
 	min-width: 250px;
 
 	display: flex;
 	flex-direction: column;
 
-	.modal-header {
+	.modalHeader {
 		flex: 0 0 modalHeaderHeight;
 		display: flex;
 
@@ -33,21 +33,26 @@ $modalHeaderHeight: $buttonHeight;
 		}
 	}
 
-	.modal-body {
+	.modalBody {
 		display: flex;
 		flex: 0 1 100%;
 		align-items: center;
 		min-height: 50px;
 		flex-direction: column;
 		max-height: 80vh;
-		//overflow-y: scroll;
 		margin: $spacing * 4 0px;
+		gap: $spacing * 2;
 	}
 
-	.modal-footer {
+	.modalFooter {
 		flex: 0 0 auto;
 		display: flex;
 		justify-content: right;
+		margin-top: $spacing * 6;
+
+		&:not(:empty) {
+			border-top: 1px solid $colorSecondaryAccent;
+		}
 	}
 }
 

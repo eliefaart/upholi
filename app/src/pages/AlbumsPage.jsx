@@ -2,7 +2,7 @@ import React from "react";
 import AllUserAlbums from "../components/AllUserAlbums.jsx";
 import PageLayout from "../components/PageLayout.jsx"
 import ModalCreateAlbum from "../components/ModalCreateAlbum.jsx"
-import { IconCreate } from "../components/Icons.jsx";
+import AppStateContext from "../contexts/AppStateContext.jsx";
 
 class AlbumsPage extends React.Component {
 
@@ -21,15 +21,16 @@ class AlbumsPage extends React.Component {
 	}
 
 	render() {
+		const history = this.context.history;
 		const headerContextMenuActions = (<div>
-			{<button className="iconOnly" onClick={(e) => this.onCreateAlbumClick()} title="Create album">
-				<IconCreate/>
+			{<button onClick={(e) => this.onCreateAlbumClick()} title="Create album">
+				New album
 			</button>}
 		</div>);
 
 		return (
 			<PageLayout title="Albums" requiresAuthentication={true} headerActions={headerContextMenuActions}>
-				<AllUserAlbums/>
+				<AllUserAlbums onClick={album => history.push("/album/" + album.id)}/>
 
 				<ModalCreateAlbum
 					isOpen={this.state.newAlbumDialogOpen}
@@ -39,4 +40,5 @@ class AlbumsPage extends React.Component {
 	}
 }
 
+AlbumsPage.contextType = AppStateContext;
 export default AlbumsPage;

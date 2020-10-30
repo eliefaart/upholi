@@ -4,9 +4,9 @@ import AppStateContext from "../contexts/AppStateContext.jsx";
 import ModalCreateCollection from "../components/ModalCreateCollection.jsx"
 import ModalAddAlbumToCollection from "../components/ModalAddAlbumToCollection.jsx"
 import ModalConfirmation from "../components/ModalConfirmation.jsx"
-import { IconLink, IconCreate, IconDelete } from "../components/Icons.jsx";
+import ModalShareCollection from "../components/ModalShareCollection.jsx"
+import { IconCreate, IconDelete, IconShare, IconClose } from "../components/Icons.jsx";
 import PhotoService from "../services/PhotoService.js";
-import Switch from "react-switch";
 
 class CollectionsPage extends React.Component {
 	constructor(props) {
@@ -15,6 +15,7 @@ class CollectionsPage extends React.Component {
 		this.state = {
 			collections: [],
 			// Modal state
+			collectionSharingOptionsDialoOpen: false,
 			newCollectionDialogOpen: false,
 			addAlbumToCollectionDialogOpen: false,
 			confirmDeleteCollectionOpen: false,
@@ -86,6 +87,13 @@ class CollectionsPage extends React.Component {
 			.finally(() => this.setState({newCollectionDialogOpen: false}));
 	}
 
+	openShareModal(collectionId) {
+		this.setState({
+			collectionSharingOptionsDialoOpen: true,
+			activeCollectionId: collectionId
+		});
+	}
+
 	onClickDeleteCollection(collectionId) {
 		this.setState({
 			confirmDeleteCollectionOpen: true,
@@ -110,10 +118,13 @@ class CollectionsPage extends React.Component {
 
 	render() {
 		const headerContextMenuActions = (<div>
-			{<button className="iconOnly" onClick={(e) => this.onCreateCollectionClick()} title="Create collection">
-				<IconCreate/>
-			</button>}
+			<button onClick={() => this.onCreateCollectionClick()} title="Create collection">
+				New collection
+			</button>
 		</div>);
+
+		const activeCollection = this.state.collections.find(col => col.id === this.state.activeCollectionId);
+		const activeAlbum = activeCollection && activeCollection.albums.find(alb => alb.id === this.state.activeAlbumId);
 
 		return (
 			<PageLayout title="Collections" requiresAuthentication={true} renderMenu={true} headerActions={headerContextMenuActions}>
@@ -125,9 +136,9 @@ class CollectionsPage extends React.Component {
 							<div className="head">
 								{/* Collection title and some actions/buttons */}
 								<span className="title" onClick={() => this.openCollection(collection.id)}>{collection.title}</span>
-								{collection.public && <button className="shareUrl iconOnly" onClick={() => this.setState({copyPublicAlbumUrlModalOpen: true})}>
-									<IconLink/>
-								</button>}
+								<button className={"iconOnly" + (collection.sharing.shared ? " shared" : "")} onClick={() => this.openShareModal(collection.id)} title="Collection sharing options">
+									<IconShare/>
+								</button>
 								<button className="iconOnly" onClick={() => this.onAddAlbumToCollectionClick(collection.id)} title="Add album to collection">
 									<IconCreate/>
 								</button>
@@ -140,14 +151,14 @@ class CollectionsPage extends React.Component {
 								{collection.albums.map(album => {
 									let albumThumbUrl = "url('" + PhotoService.baseUrl() + "/photo/" + album.thumbPhotoId + "/thumb')";
 
-									return (<div key={album.id} 
-										className="album" 
+									return (<div key={album.id}
+										className="album"
 										style={{ backgroundImage: !!album.thumbPhotoId && albumThumbUrl }}
 										onClick={() => this.openAlbum(album.id)}>
 										<div className="albumContent">
 											<span className="title">{album.title}</span>
 											<button className="iconOnly" onClick={() => this.onRemoveAlbumFromCollectionClick(collection.id, album.id)} title="Remove album from collection">
-												<IconDelete/>
+												<IconClose/>
 											</button>
 										</div>
 									</div>);
@@ -157,6 +168,12 @@ class CollectionsPage extends React.Component {
 					))}
 				</div>
 
+				{this.state.collectionSharingOptionsDialoOpen && <ModalShareCollection
+					isOpen={true}
+					onRequestClose={() => this.setState({collectionSharingOptionsDialoOpen: false})}
+					collection={activeCollection}
+					onOptionsChanged={() => this.refreshCollections()}
+					/>}
 				{this.state.addAlbumToCollectionDialogOpen && <ModalAddAlbumToCollection
 					isOpen={true}
 					onRequestClose={() => this.setState({addAlbumToCollectionDialogOpen: false})}
@@ -173,7 +190,7 @@ class CollectionsPage extends React.Component {
 					onRequestClose={() => this.setState({confirmDeleteCollectionOpen: false})}
 					onOkButtonClick={() => this.deleteCollection(this.state.activeCollectionId)}
 					okButtonText="Delete"
-					confirmationText={"Collection '" + this.state.collections.find(col => col.id === this.state.activeCollectionId).title + "' will be deleted."}
+					confirmationText={"Collection '" + activeCollection.title + "' will be deleted."}
 					/>}
 				{this.state.confirmRemoveAlbumFromCollectionOpen && <ModalConfirmation
 					title="Remove album from collection"
@@ -181,10 +198,10 @@ class CollectionsPage extends React.Component {
 					onRequestClose={() => this.setState({confirmRemoveAlbumFromCollectionOpen: false})}
 					onOkButtonClick={() => this.removeAlbumFromCollection(this.state.activeCollectionId, this.state.activeAlbumId)}
 					okButtonText="Remove"
-					confirmationText={"Album '" 
-						+ this.state.collections.find(col => col.id === this.state.activeCollectionId).title 
-						+ "' will be remove from collection '" 
-						+ this.state.collections.find(col => col.id === this.state.activeCollectionId).albums.find(alb => alb.id === this.state.activeAlbumId).title + "'."}
+					confirmationText={"Album '"
+						+ activeCollection.title
+						+ "' will be remove from collection '"
+						+ activeAlbum.title + "'."}
 					/>}
 			</PageLayout>
 		);

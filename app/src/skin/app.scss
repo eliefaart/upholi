@@ -1,13 +1,15 @@
 @import "_cssreset";
 @import "_fonts";
 
-$backgroundColor: #000;
-$altBackgroundColor: #191d25;
-$accentColor: #437dec;//#d3e532;
-$secondaryAccentColor: #bb8736;// #05668d;
-$textColorDark: #161f21;
-$textColorLight: #dedfe4; //white;
-$disabledColor: gray;
+$colorBackground: #000;
+$colorBackgroundAlt: #191d25;
+$colorAccent: #437dec;
+$colorSecondaryAccent: #bb8736;
+$colorSpecial: #53c253;
+$colorTextDark: #161f21;
+$colorTextLight: #dedfe4;
+$colorDisabled: gray;
+
 
 $fontSizeNormal: 0.8em;
 $fontSizeLarge: 1.2em;
@@ -32,8 +34,8 @@ html {
 		font-size: $fontSizeNormal;
 		font-weight: 500;
 
-		background: $backgroundColor;
-		color: $textColorLight;
+		background: $colorBackground;
+		color: $colorTextLight;
 
 		.page {
 			min-height: 100vh;
@@ -51,13 +53,14 @@ html {
 @import "app.component.header";
 @import "app.component.overlay";
 @import "app.component.albums";
+@import "app.component.collection";
 @import "app.component.collections";
 @import "app.component.photoGallery";
 @import "app.component.photoDetail";
 @import "app.component.modalUploadProgress";
 @import "app.component.modalCreateAlbum";
 @import "app.component.modalAddToAlbum";
-@import "app.component.modalCopyUrl";
+@import "app.component.modalShareCollection";
 @import "app.component.exif";
 @import "app.component.toasts";
 @import "app.component.switch";
@@ -70,7 +73,7 @@ input, select, button, .asButton {
 	border-radius: $borderRadius;
 
 	&:disabled {
-		background-color: $disabledColor;
+		background-color: $colorDisabled;
 	}
 }
 
@@ -80,17 +83,17 @@ a[href]:not(.asButton) {
 }
 
 input, select {
-	background-color: $altBackgroundColor;
-	color: $textColorLight;
-	border: 2px solid $secondaryAccentColor;
+	background-color: $colorBackgroundAlt;
+	color: $colorTextLight;
+	border: 2px solid $colorSecondaryAccent;
 
 	&:focus {
-		border-color: $accentColor;
+		border-color: $colorAccent;
 	}
 }
 
 .selectFiles {
-	background: $secondaryAccentColor;
+	background: $colorSecondaryAccent;
 	cursor: pointer;
 	height: $buttonHeight;
 	line-height: $buttonHeight;
@@ -102,7 +105,7 @@ input[type=file] {
 }
 
 button, .asButton {
-	color: $accentColor;
+	color: $colorAccent;
 	background-color: transparent;
 	text-transform: uppercase;
 	border: none;
@@ -116,7 +119,7 @@ button, .asButton {
 
 	display: flex;
 	justify-content: center;
-	
+
 	&.iconOnly {
 		display: flex;
 		min-width: $buttonHeight;
@@ -128,8 +131,8 @@ button, .asButton {
 
 	&:hover,
 	&:active {
-		background: $secondaryAccentColor;
-		color: $textColorDark;
+		//background: $colorSecondaryAccent;
+		color: $colorSecondaryAccent;
 	}
 
 	svg {
@@ -146,6 +149,7 @@ svg {
 	max-width: 24px;
 }
 
-h1 {
+h1, h2 {
 	margin: 0;
+	text-align: center;
 }

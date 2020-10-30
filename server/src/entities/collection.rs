@@ -1,7 +1,7 @@
 use serde::{Serialize, Deserialize};
 
 use crate::database;
-use crate::database::{Database, DatabaseEntity, DatabaseUserEntity};
+use crate::database::{Database, DatabaseExt, DatabaseEntity, DatabaseUserEntity};
 use crate::ids;
 use crate::error::*;
 use crate::entities::AccessControl;
@@ -9,14 +9,22 @@ use crate::entities::user::User;
 
 
 /// A Collection is a collection of 0..n albums 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Collection {
 	pub id: String,
 	pub user_id: String,
 	pub title: String,
-	pub public: bool,
-	pub albums: Vec<String>
+	pub albums: Vec<String>,
+	pub sharing: CollectionSharingOptions
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CollectionSharingOptions {
+	pub shared: bool,
+	pub token: String,
+	pub password_hash: Option<String>
 }
 
 impl Collection {
@@ -25,9 +33,27 @@ impl Collection {
 			id: ids::create_unique_id(),
 			user_id: user_id.to_string(),
 			title: title.to_string(),
-			public: false,
-			albums: vec!{}
+			albums: vec!{},
+			sharing: CollectionSharingOptions {
+				shared: false,
+				token: ids::create_unique_id(),
+				password_hash: Some(String::new()),
+			}
 		}
+	}
+
+	pub fn get_by_share_token(token: &str) -> Result<Option<Self>> {
+		match database::get_database().get_collection_by_share_token(token)? {
+			Some(collection) => {
+				Ok(Some(collection))
+			},
+			None => Ok(None)
+		}
+	}
+
+	/// Rotate the token with which a collection may be accessed by clients other than the user that owns a collection
+	pub fn rotate_share_token(&mut self) {
+		self.sharing.token = crate::ids::create_unique_id();
 	}
 }
 
@@ -74,12 +100,13 @@ impl DatabaseUserEntity for Collection {
 }
 
 impl AccessControl for Collection {
-	fn user_has_access(&self, user_opt: Option<User>) -> bool {
+	fn user_has_access(&self, user_opt: &Option<User>) -> bool {
+		// Access if one of the conditions has been met:
 		if let Some(user) = user_opt {
-			self.user_id == user.id || self.public
-		} 
+			self.user_id == user.id || self.sharing.shared
+		}
 		else {
-			self.public
+			self.sharing.shared
 		}
 	}
 }
@@ -95,13 +122,12 @@ mod tests {
 		let user_not_collection_owner = create_dummy_user();
 
 		let mut collection = create_dummy_collection_with_id("");
-		collection.public = false;
 		collection.user_id = user_collection_owner.id.to_string();
 
 		// Only the user that owns the collection may access it
-		assert_eq!(collection.user_has_access(Some(user_collection_owner)), true);
-		assert_eq!(collection.user_has_access(Some(user_not_collection_owner)), false);
-		assert_eq!(collection.user_has_access(None), false);
+		assert_eq!(collection.user_has_access(&Some(user_collection_owner)), true);
+		assert_eq!(collection.user_has_access(&Some(user_not_collection_owner)), false);
+		assert_eq!(collection.user_has_access(&None), false);
 	}
 
 	#[test]
@@ -110,23 +136,16 @@ mod tests {
 		let user_not_collection_owner = create_dummy_user();
 
 		let mut collection = create_dummy_collection_with_id("");
-		collection.public = true;
 		collection.user_id = user_collection_owner.id.to_string();
+		collection.sharing.shared = true;
 
-		// Everyone may access the collection, because it is public
-		assert_eq!(collection.user_has_access(Some(user_collection_owner)), true);
-		assert_eq!(collection.user_has_access(Some(user_not_collection_owner)), true);
-		assert_eq!(collection.user_has_access(None), true);
+		assert_eq!(collection.user_has_access(&Some(user_collection_owner)), true);
+		assert_eq!(collection.user_has_access(&Some(user_not_collection_owner)), true);
+		assert_eq!(collection.user_has_access(&None), true);
 	}
 
 	fn create_dummy_collection_with_id(id: &str) -> Collection {
-		Collection{
-			id: id.to_string(),
-			user_id: create_unique_id(),
-			public: false,
-			title: "title".to_string(),
-			albums: vec!{}
-		}
+		Collection::new(id, &create_unique_id())
 	}
 
 	fn create_dummy_user() -> User {

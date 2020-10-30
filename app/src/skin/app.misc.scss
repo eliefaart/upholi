@@ -13,7 +13,7 @@
 
 .topBar {
 	display: flex;
-	margin: $spacing * 3;
+	padding: $spacing * 3;
 	min-height: $buttonHeight;
 	line-height: $buttonHeight;
 
@@ -28,4 +28,16 @@
 
 .shareUrl {
 	align-self: center;
+}
+
+.copyUrl {
+	display: flex;
+
+	> * {
+		margin: $spacing * 2 0;
+
+		&:not(:last-child) {
+			margin-right: $spacing * 2;
+		}
+	}
 }

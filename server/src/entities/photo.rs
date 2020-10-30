@@ -191,7 +191,7 @@ impl DatabaseUserEntity for Photo {
 }
 
 impl AccessControl for Photo {
-	fn user_has_access(&self, user_opt: Option<User>) -> bool {
+	fn user_has_access(&self, user_opt: &Option<User>) -> bool {
 		// Check if photo is owned by current user
 		if let Some(user) = user_opt {
 			if self.user_id == user.id {
@@ -201,9 +201,9 @@ impl AccessControl for Photo {
 
 		// Check if photo is part of any public albums,
 		// if so, photo is publically accessible too.
-		if let Ok(albums) = database::get_database().get_albums_containing_photo(&self.id) {
+		if let Ok(albums) = database::get_database().get_albums_with_photo(&self.id) {
 			for album in albums {
-				if album.public {
+				if album.user_has_access(user_opt) {
 					return true;
 				}
 			}
@@ -283,7 +283,7 @@ mod tests {
 		photo.user_id = user_photo_owner.id.to_string();
 
 		// Only the user that owns the photo may access it
-		assert_eq!(photo.user_has_access(Some(user_photo_owner)), true);
+		assert_eq!(photo.user_has_access(&Some(user_photo_owner)), true);
 
 		// Can't test the not-allowed situations without database..
 		// assert_eq!(photo.user_has_access(Some(user_not_photo_owner)), false);

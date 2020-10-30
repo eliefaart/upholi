@@ -1,8 +1,13 @@
 use std::time::Instant;
 use actix_cors::Cors;
 use actix_web::{App, HttpServer};
+use actix_web::http::header::{HeaderName,HeaderValue};
 use actix_service::Service;
 use futures::future::FutureExt;
+
+use crate::database::DatabaseEntity;
+use crate::entities::session::Session;
+use crate::web::http::SESSION_COOKIE_NAME;
 
 mod handlers;
 mod http;
@@ -36,6 +41,46 @@ pub async fn run_server() -> std::io::Result<()>{
 					res
 				})
 			})
+			.wrap_fn(|mut req, srv| {
+				let mut new_session: Option<Session> = None;
+				let request_session = http::get_session_cookie(&req.headers());
+
+				// If the request does not have a session, create a new session and modify the request to 'inject' the newly created session.
+				if request_session.is_none() {
+					let session = Session::new();
+
+					match session.insert() {
+						Ok(_) => {
+							let header_name = HeaderName::from_static("cookie");
+							let header_value = HeaderValue::from_str(&format!("{}={}", SESSION_COOKIE_NAME, &session.id)).unwrap();
+
+							req.headers_mut().insert(header_name, header_value);
+							new_session = Some(session);
+						},
+						Err(error) => {
+							// Now what?
+							panic!(format!("Failed to create session. {}", error));
+						}
+					}
+				}
+
+				srv.call(req).map(move |mut result| {
+
+					// If the request did originally not contain a session, then update the response to include the 'set-cookie' header.
+					if let Some(session) = new_session {
+						if let Ok(response) = result.as_mut() {
+
+							let session_max_age = 60 * 60 * 24 * 365;
+							let header_name = HeaderName::from_static("set-cookie");
+							let header_value = HeaderValue::from_str(&format!("{}={}; HttpOnly; Secure; Path=/; Max-Age={}", SESSION_COOKIE_NAME, &session.id, session_max_age)).unwrap();
+
+							response.headers_mut().insert(header_name, header_value);
+						}
+					}
+
+					result
+				})
+			})
 			.service(
 				// OAuth related routes
 				actix_web::web::scope("/oauth")
@@ -56,7 +101,7 @@ pub async fn run_server() -> std::io::Result<()>{
 					.route("/photo/{photo_id}/thumb", actix_web::web::get().to(handlers::photos::route_download_photo_thumbnail))
 					.route("/photo/{photo_id}/preview", actix_web::web::get().to(handlers::photos::route_download_photo_preview))
 					.route("/photo/{photo_id}", actix_web::web::delete().to(handlers::photos::route_delete_photo))
-					
+
 					.route("/albums", actix_web::web::get().to(handlers::albums::route_get_albums))
 					.route("/album", actix_web::web::post().to(handlers::albums::route_create_album))
 					.route("/album/{album_id}", actix_web::web::get().to(handlers::albums::route_get_album))
@@ -66,9 +111,10 @@ pub async fn run_server() -> std::io::Result<()>{
 					.route("/collections", actix_web::web::get().to(handlers::collections::get_collections))
 					.route("/collection", actix_web::web::post().to(handlers::collections::create_collection))
 					.route("/collection/{collection_id}", actix_web::web::get().to(handlers::collections::get_collection))
+					.route("/collection/shared/{token}", actix_web::web::get().to(handlers::collections::get_collections_by_share_token))
 					.route("/collection/{collection_id}", actix_web::web::put().to(handlers::collections::update_collection))
 					.route("/collection/{collection_id}", actix_web::web::delete().to(handlers::collections::delete_collection))
-
+					.route("/collection/{collection_id}/rotate-token", actix_web::web::post().to(handlers::collections::rotate_collection_share_token))
 			)
 	})
 	.bind(address)

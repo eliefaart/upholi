@@ -6,6 +6,7 @@ use crate::database;
 use crate::database::{Database, DatabaseExt, SortField};
 use crate::error::*;
 use crate::entities::album::Album;
+use crate::entities::collection::Collection;
 use crate::entities::user::User;
 
 lazy_static!{
@@ -202,7 +203,7 @@ impl DatabaseExt for MongoDatabase {
 		Ok(count > 0)
 	}
 
-	fn get_albums_containing_photo(&self, photo_id: &str) -> Result<Vec<Album>> {
+	fn get_albums_with_photo(&self, photo_id: &str) -> Result<Vec<Album>> {
 		let mongo_collection = DATABASE.collection(database::COLLECTION_ALBUMS);
 		let query = doc!{
 			"photos": photo_id
@@ -227,6 +228,33 @@ impl DatabaseExt for MongoDatabase {
 			0 => Ok(None),
 			_ => Err(Box::from(format!("Multiple users found for identity provider '{}' and identity provider user ID '{}'. There cannot be more than one.", identity_provider, identity_provider_user_id)))
 		}
+	}
+
+	fn get_collection_by_share_token(&self, token: &str) -> Result<Option<Collection>> {
+		let mongo_collection = DATABASE.collection(database::COLLECTION_COLLECTIONS);
+		let query = doc!{
+			"sharing.token": token
+		};
+
+		match mongo_collection.find_one(query, None)? {
+			Some(document) => {
+				let collection: Collection = bson::from_bson(bson::Bson::Document(document))?;
+				Ok(Some(collection))
+			},
+			None => Ok(None)
+		}
+	}
+
+	fn get_collections_with_album(&self, album_id: &str) -> Result<Vec<Collection>> {
+		let mongo_collection = DATABASE.collection(database::COLLECTION_COLLECTIONS);
+		let query = doc!{
+			"albums": album_id
+		};
+
+		let cursor = mongo_collection.find(query, None)?;
+		let collections = get_items_from_cursor(cursor)?;
+
+		Ok(collections)
 	}
 }
 
