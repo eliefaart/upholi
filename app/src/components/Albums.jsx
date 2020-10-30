@@ -1,5 +1,4 @@
 import React from "react";
-import { IconPublic } from "../components/Icons.jsx";
 import PhotoService from "../services/PhotoService.js"
 import AppStateContext from "../contexts/AppStateContext.jsx";
 
@@ -26,7 +25,6 @@ class Albums extends React.Component {
 				className={"album " + (props.className || "") + (isActive ? " active" : "")}
 				style={{ backgroundImage: !!album.thumbPhotoId && thumbUrl }}
 				>
-					{album.public && <IconPublic title="This album is public"/>}
 					<span>{album.title}</span>
 			</div>;
 		}

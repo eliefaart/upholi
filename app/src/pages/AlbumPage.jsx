@@ -60,7 +60,7 @@ class AlbumPage extends React.Component {
 			copyPublicAlbumUrlModalOpen: true
 		});
 	}
-	
+
 	onDeleteAlbumClick() {
 		this.setState({
 			confirmDeleteAlbumOpen: true
@@ -86,7 +86,7 @@ class AlbumPage extends React.Component {
 
 	setSelectedPhotoAsAlbumCover() {
 		let _refreshPhotos = () => this.refreshPhotos();
-		
+
 		let photoId = this.state.selectedPhotos[0];
 
 		PhotoService.updateAlbumCover(this.state.albumId, photoId)
@@ -106,7 +106,7 @@ class AlbumPage extends React.Component {
 	removeSelectedPhotosFromAlbum() {
 		let fnRefreshPhotos = () => this.refreshPhotos();
 		let fnCloseConfirmDialog = () => this.setState({ confirmRemovePhotosOpen: false });
-		
+
 		let selectedPhotos = this.state.selectedPhotos;
 		let photoIds = this.state.photos.map(p => p.id);
 		let remainingPhotosAfterRemoval = photoIds.filter(id => selectedPhotos.indexOf(id) === -1);
@@ -150,7 +150,7 @@ class AlbumPage extends React.Component {
 		let photoIds = this.state.photos.map(p => p.id)
 
 		let files = UploadHelper.convertFileListToFileArrayForUploadDialog(filesList);
-		
+
 		let fnOnUploadFinished = (uploadedPhotoIds) => {
 			this.setState({
 				uploadInProgress: false,
@@ -208,7 +208,7 @@ class AlbumPage extends React.Component {
 				<div className="topBar">
 					<h1>{this.state.title}</h1>
 
-					{this.state.public && <button className="shareUrl iconOnly" onClick={() => this.setState({copyPublicAlbumUrlModalOpen: true})}>
+					{/* {this.state.public && <button className="shareUrl iconOnly" onClick={() => this.setState({copyPublicAlbumUrlModalOpen: true})}>
 						<IconLink/>
 					</button>}
 
@@ -224,17 +224,17 @@ class AlbumPage extends React.Component {
 									public: bPublic
 								});
 							}}/>
-					</label>
+					</label> */}
 				</div>
 
-				{!!this.state.title && this.state.photos.length === 0 && 
+				{!!this.state.title && this.state.photos.length === 0 &&
 					<span className="centerText">This album has no photos.</span>
 				}
 
-				{this.state.photos.length > 0 && <PhotoGallerySelectable 
-					onClick={(event, target) => this.onPhotoClicked(event, target)} 
-					photos={this.state.photos} 
-					selectedItems={this.state.selectedPhotos} 
+				{this.state.photos.length > 0 && <PhotoGallerySelectable
+					onClick={(event, target) => this.onPhotoClicked(event, target)}
+					photos={this.state.photos}
+					selectedItems={this.state.selectedPhotos}
 					onPhotoSelectedChange={(photoId, selected) => this.onPhotoSelectedChange(photoId, selected)}/>
 				}
 
@@ -267,7 +267,7 @@ class AlbumPage extends React.Component {
 					onRequestClose={() => this.setState({uploadInProgress: false})}
 					files={this.state.uploadFiles}
 					/>
-					
+
 
 				{/* Hidden upload button triggered by the button in action bar. This allos me to write simpler CSS to style the action buttons. */}
 				<UploadButton className="hidden" onSubmit={(files) => this.uploadFilesList(files)}/>
