@@ -1,0 +1,25 @@
+
+.collection {
+	.albums {
+		padding-top: 0px;
+
+		.album {
+			height: 75px;
+		}
+
+		&.anyActive {
+			.album:not(.active):not(:hover) {
+				filter: brightness(0.5)
+			}
+		}
+	}
+
+	.photos {
+		h2 {
+			height: $headerHeight;
+			line-height: $headerHeight;
+		}
+
+		margin-top: $headerHeight;
+	}
+}

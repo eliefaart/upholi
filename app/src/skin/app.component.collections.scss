@@ -16,13 +16,13 @@
 
 			.title {
 				flex: 1;
-				
+
 				&:hover {
 					cursor: pointer;
 				}
 			}
 		}
-	
+
 		.body {
 			display: flex;
 			flex-direction: row;
@@ -30,9 +30,9 @@
 			gap: $spacing * 2;
 
 			.album {
-				background-size: cover; 
-				background-position: center center; 
-				background-repeat: no-repeat; 
+				background-size: cover;
+				background-position: center center;
+				background-repeat: no-repeat;
 				width: 200px;
 				height: $buttonHeight * 2;
 				border-radius: $borderRadius;
@@ -54,11 +54,5 @@
 				}
 			}
 		}
-	}
-}
-
-.collectionContent {
-	.albums {
-		padding-top: 0px;
 	}
 }

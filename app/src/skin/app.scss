@@ -51,6 +51,7 @@ html {
 @import "app.component.header";
 @import "app.component.overlay";
 @import "app.component.albums";
+@import "app.component.collection";
 @import "app.component.collections";
 @import "app.component.photoGallery";
 @import "app.component.photoDetail";
@@ -117,7 +118,7 @@ button, .asButton {
 
 	display: flex;
 	justify-content: center;
-	
+
 	&.iconOnly {
 		display: flex;
 		min-width: $buttonHeight;
@@ -147,6 +148,7 @@ svg {
 	max-width: 24px;
 }
 
-h1 {
+h1, h2 {
 	margin: 0;
+	text-align: center;
 }
