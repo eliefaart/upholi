@@ -18,8 +18,7 @@
 		h2 {
 			height: $headerHeight;
 			line-height: $headerHeight;
+			margin-top: $headerHeight / 2;
 		}
-
-		margin-top: $headerHeight;
 	}
 }
