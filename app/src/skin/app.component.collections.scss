@@ -16,6 +16,7 @@
 
 			.title {
 				flex: 1;
+				text-align: unset;
 
 				&:hover {
 					cursor: pointer;
@@ -32,13 +33,14 @@
 			flex-direction: row;
 			flex-wrap: wrap;
 			gap: $spacing * 2;
+			margin-top: $spacing * 2;
 
 			.album {
 				background-size: cover;
 				background-position: center center;
 				background-repeat: no-repeat;
 				width: 200px;
-				height: $buttonHeight * 2;
+				height: $buttonHeight * 2.5;
 				border-radius: $borderRadius;
 
 				&:hover {
