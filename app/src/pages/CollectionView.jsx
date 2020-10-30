@@ -1,4 +1,5 @@
 import React from "react";
+import queryString from "query-string";
 import PhotoGallerySelectable from "../components/PhotoGallerySelectable.jsx";
 import AppStateContext from "../contexts/AppStateContext.jsx";
 import PhotoService from "../services/PhotoService";
@@ -8,6 +9,8 @@ class CollectionView extends React.Component {
 
 	constructor(props) {
 		super(props);
+
+		this.collectionHasOneAlbum = props.collection.albums.length === 1;
 
 		this.state = {
 			collection: props.collection,
@@ -20,10 +23,16 @@ class CollectionView extends React.Component {
 	}
 
 	componentDidMount() {
-		let defaultActiveAlbumId = this.props.initialActiveAlbumId;
+		let defaultActiveAlbumId = null;
+
+		// Parse from query string
+		const queryStringParams = queryString.parse(location.search);
+		if (queryStringParams["album"]) {
+			defaultActiveAlbumId = queryStringParams.album;
+		}
 
 		// If there is only one album in collection, open it by default
-		if (!defaultActiveAlbumId && this.state.collection.albums.length === 1) {
+		if (!defaultActiveAlbumId && this.collectionHasOneAlbum) {
 			defaultActiveAlbumId = this.state.collection.albums[0].id;
 		}
 
@@ -59,18 +68,9 @@ class CollectionView extends React.Component {
 	 * Update the current browser location to match the currently opened album.
 	 */
 	setLocationPath(albumId) {
-		const locationPathAlbumPartIndex = location.pathname.indexOf("/album/");
-		const collectionBaseUrl = locationPathAlbumPartIndex !== -1
-			? location.pathname.substr(0, locationPathAlbumPartIndex)
-			: location.pathname;
-
-		if (collectionBaseUrl.endsWith("/")) {
-			collectionBaseUrl = collectionBaseUrl.substr(0, collectionBaseUrl.length - 1);
-		}
-
-		let newUrl = collectionBaseUrl;
+		let newUrl = location.pathname;
 		if (albumId) {
-			newUrl += "/album/" + albumId;
+			newUrl += "?album=" + albumId;
 		}
 
 		this.context.history.replace(newUrl);
@@ -105,18 +105,19 @@ class CollectionView extends React.Component {
 		return (
 			<div className="collection">
 				<div className="topBar">
-					<h1>{this.state.collection.title}</h1>
+					<h1>{this.collectionHasOneAlbum ? this.state.activeAlbum.title : this.state.collection.title}</h1>
 				</div>
 
 				{/* Albums in this collection */}
-				<Albums
+				{!this.collectionHasOneAlbum && <Albums
 					albums={this.state.collection.albums}
 					activeAlbumId={this.state.activeAlbum.id}
 					onClick={album => this.onAlbumClicked(album)}/>
+				}
 
 				{/* Photos inside selected/active album */}
 				{!!this.state.activeAlbum.id && <div className="photos">
-					<h2>{this.state.activeAlbum.title}</h2>
+					{!this.collectionHasOneAlbum && <h2>{this.state.activeAlbum.title}</h2>}
 					{this.state.activeAlbum.photos.length > 0 && <PhotoGallerySelectable
 						onClick={(event, target) => this.onPhotoClicked(event, target)}
 						photos={this.state.activeAlbum.photos}

@@ -51,11 +51,9 @@ class AppContainer extends React.Component {
 						<Route path="/albums" exact component={AlbumsPage} />
 						<Route path="/collections" exact component={CollectionsPage} />
 						<Route path="/collection/:collectionId" exact component={CollectionPage} />
-						<Route path="/collection/:collectionId/album/:albumId" exact component={CollectionPage} />
 						<Route path="/photo/:photoId" exact component={PhotoPage} />
 						<Route path="/album/:albumId" exact component={AlbumPage} />
 						<Route path="/shared/collection/:token" exact component={SharedCollectionPage} />
-						<Route path="/shared/collection/:token/album/:albumId" exact component={SharedCollectionPage} />
 					</AppStateContext.Provider>
 
 					<ToastContainer position="bottom-center"

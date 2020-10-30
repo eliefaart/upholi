@@ -24,7 +24,7 @@ class CollectionPage extends React.Component {
 
 		return (
 			<PageLayout title={"Collection - " + this.state.collection.title} requiresAuthentication={false} renderMenu={true}>
-				<CollectionView collection={this.state.collection} initialActiveAlbumId={this.props.match.params.albumId}/>
+				<CollectionView collection={this.state.collection}/>
 			</PageLayout>
 		);
 	}
