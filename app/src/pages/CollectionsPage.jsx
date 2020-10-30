@@ -136,8 +136,7 @@ class CollectionsPage extends React.Component {
 							<div className="head">
 								{/* Collection title and some actions/buttons */}
 								<span className="title" onClick={() => this.openCollection(collection.id)}>{collection.title}</span>
-								{collection.sharing.shared && <span>shared</span>}
-								<button className="iconOnly" onClick={() => this.openShareModal(collection.id)} title="Collection sharing options">
+								<button className={"iconOnly" + (collection.sharing.shared ? " shared" : "")} onClick={() => this.openShareModal(collection.id)} title="Collection sharing options">
 									<IconShare/>
 								</button>
 								<button className="iconOnly" onClick={() => this.onAddAlbumToCollectionClick(collection.id)} title="Add album to collection">
