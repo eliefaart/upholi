@@ -45,27 +45,25 @@ class AppContainer extends React.Component {
 
 		return (
 			<Router history={this.context.history}>
-				<div id="app">
-					<AppStateContext.Provider value={this.context}>
-						<Route path="/" exact component={LibraryPage} />
-						<Route path="/albums" exact component={AlbumsPage} />
-						<Route path="/collections" exact component={CollectionsPage} />
-						<Route path="/collection/:collectionId" exact component={CollectionPage} />
-						<Route path="/photo/:photoId" exact component={PhotoPage} />
-						<Route path="/album/:albumId" exact component={AlbumPage} />
-						<Route path="/shared/collection/:token" exact component={SharedCollectionPage} />
-					</AppStateContext.Provider>
+				<AppStateContext.Provider value={this.context}>
+					<Route path="/" exact component={LibraryPage} />
+					<Route path="/albums" exact component={AlbumsPage} />
+					<Route path="/collections" exact component={CollectionsPage} />
+					<Route path="/collection/:collectionId" exact component={CollectionPage} />
+					<Route path="/photo/:photoId" exact component={PhotoPage} />
+					<Route path="/album/:albumId" exact component={AlbumPage} />
+					<Route path="/shared/collection/:token" exact component={SharedCollectionPage} />
+				</AppStateContext.Provider>
 
-					<ToastContainer position="bottom-center"
-						autoClose={3000}
-						hideProgressBar
-						newestOnTop
-						closeOnClick
-						rtl={false}
-						draggable
-						pauseOnHover
-						transition={Zoom}/>
-				</div>
+				<ToastContainer position="bottom-center"
+					autoClose={3000}
+					hideProgressBar
+					newestOnTop
+					closeOnClick
+					rtl={false}
+					draggable
+					pauseOnHover
+					transition={Zoom}/>
 			</Router>
 		);
 	}

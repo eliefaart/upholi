@@ -20,10 +20,6 @@ class LibraryPage extends React.Component {
 		// Contains all user's photos, but this is not the viewmodel of the Gallery
 		this.photos = [];
 
-		document.body.onscroll = (event) => {
-			this.loadVisiblePhotos();
-		};
-
 		this.state = {
 			photos: [],
 			selectedPhotos: [],
@@ -38,6 +34,10 @@ class LibraryPage extends React.Component {
 
 	componentDidMount() {
 		this.refreshPhotos();
+
+		document.getElementById("content").onscroll = (event) => {
+			this.loadVisiblePhotos();
+		};
 	}
 
 	componentDidUpdate(prevProps, prevState) {
@@ -50,7 +50,7 @@ class LibraryPage extends React.Component {
 			// Call that function again after some time.
 			// This is because the Gallery component still seems to move and re-fit the photos a bit after its render function has completed,
 			// and I don't see any event for when it is fully finished rendering.
-			setTimeout(() => this.loadVisiblePhotos(), 100);
+			setTimeout(() => this.loadVisiblePhotos(), 500);
 		}
 
 		// Remove onscroll event handler from body once all photos have been loaded
@@ -60,6 +60,23 @@ class LibraryPage extends React.Component {
 				document.body.onscroll = null;
 			}
 		}
+
+
+
+
+
+		const headerActions = (<div>
+			{this.state.selectedPhotos.length === 0 && <button onClick={() => document.getElementById("select-photos").click()} title="Upload photos">
+				Upload
+			</button>}
+			{this.state.selectedPhotos.length > 0 && <button className="iconOnly" onClick={() => this.onClickAddSelectedPhotosToAlbum(this.state.selectedPhotos)} title="Add to album">
+				<IconAddToAlbum/>
+			</button>}
+			{this.state.selectedPhotos.length > 0 && <button className="iconOnly" onClick={() => this.onClickDeletePhotos()} title="Delete photos">
+				<IconDelete/>
+			</button>}
+		</div>);
+		this.props.setHeaderActions(headerActions);
 	}
 
 	/**

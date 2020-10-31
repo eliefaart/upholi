@@ -37,11 +37,14 @@ html {
 		background: $colorBackground;
 		color: $colorTextLight;
 
-		.page {
-			min-height: 100vh;
+		#appRoot {
+			display: flex;
+			flex-direction: column;
+			height: 100vh;
 
-			&.hasHeader .content {
-				padding-top: $headerHeight;
+			#content {
+				overflow: auto;
+				scrollbar-color: $colorBackgroundAlt $colorBackground;
 			}
 		}
 	}

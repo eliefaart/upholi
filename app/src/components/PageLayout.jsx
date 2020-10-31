@@ -14,7 +14,7 @@ class PageLayout extends React.Component {
 	}
 
 	componentDidMount() {
-		ReactModal.setAppElement("#app");
+		ReactModal.setAppElement("#appRoot");
 	}
 
 	render() {
@@ -34,9 +34,7 @@ class PageLayout extends React.Component {
 			|| !!this.props.headerContextMenuActions;
 
 		return (
-			<div className={"page " + (headerVisible ? "hasHeader" : "")}
-				onDrop={this.props.onDrop}
-				onDragOver={this.props.onDragOver || ((event) => event.preventDefault())}>
+			<React.Fragment>
 				{headerVisible && <Header
 					renderMenu={this.props.renderMenu}
 					actionsElement={this.props.headerActions}
@@ -44,10 +42,12 @@ class PageLayout extends React.Component {
 					>
 				</Header>}
 
-				<div className="content">
+				<div id="content"
+					onDrop={this.props.onDrop}
+					onDragOver={this.props.onDragOver || ((event) => event.preventDefault())}>
 					{this.props.children}
 				</div>
-			</div>
+			</React.Fragment>
 		);
 	}
 }

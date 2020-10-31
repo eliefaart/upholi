@@ -1,10 +1,10 @@
 
 
-.header {
+#header {
 	display: flex;
 	height: $headerHeight;
 	background-color: $colorBackgroundAlt;
-	position: fixed;
+	//position: fixed;
 	width: 100%;
 	z-index: 1;
 
