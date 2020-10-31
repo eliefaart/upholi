@@ -28,11 +28,11 @@ class CollectionsPage extends PageBaseComponent {
 	}
 
 	getHeaderActions() {
-		return  (<div>
+		return  (<React.Fragment>
 			<button onClick={() => this.onCreateCollectionClick()} title="Create collection">
 				New collection
 			</button>
-		</div>);
+		</React.Fragment>);
 	}
 
 	getTitle() {

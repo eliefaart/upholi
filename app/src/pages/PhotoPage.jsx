@@ -23,14 +23,14 @@ class PhotoPage extends PageBaseComponent {
 	}
 
 	getHeaderActions() {
-		return (<div>
+		return (<React.Fragment>
 			{<a className="iconOnly asButton" href={this.state.downloadUrl} download title="Download">
 				<IconDownload/>
 			</a>}
 			{<button className="iconOnly" onClick={() => this.context.history.goBack()} title="Close">
 				<IconClose/>
 			</button>}
-		</div>);
+		</React.Fragment>);
 	}
 
 	getTitle() {

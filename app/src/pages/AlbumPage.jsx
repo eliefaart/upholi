@@ -29,7 +29,7 @@ class AlbumPage extends PageBaseComponent {
 	}
 
 	getHeaderActions() {
-		return (<div>
+		return (<React.Fragment>
 			{this.state.selectedPhotos.length === 1 && <button className="iconOnly" onClick={(e) => this.setSelectedPhotoAsAlbumCover()} title="Set album cover">
 				<IconImage/>
 			</button>}
@@ -39,13 +39,13 @@ class AlbumPage extends PageBaseComponent {
 			{this.state.selectedPhotos.length === 0 && <button onClick={() => document.getElementById("select-photos").click()} title="Upload photos">
 				Upload
 			</button>}
-		</div>);
+		</React.Fragment>);
 	}
 
 	getHeaderContextMenu() {
-		return (<div>
+		return (<React.Fragment>
 			{<button onClick={() => this.onDeleteAlbumClick()}>Delete album</button>}
-		</div>);
+		</React.Fragment>);
 	}
 
 	getTitle() {

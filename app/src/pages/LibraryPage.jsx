@@ -34,7 +34,7 @@ class LibraryPage extends PageBaseComponent {
 	}
 
 	getHeaderActions() {
-		return (<div>
+		return (<React.Fragment>
 			{this.state.selectedPhotos.length === 0 && <button onClick={() => document.getElementById("select-photos").click()} title="Upload photos">
 				Upload
 			</button>}
@@ -44,7 +44,7 @@ class LibraryPage extends PageBaseComponent {
 			{this.state.selectedPhotos.length > 0 && <button className="iconOnly" onClick={() => this.onClickDeletePhotos()} title="Delete photos">
 				<IconDelete/>
 			</button>}
-		</div>);
+		</React.Fragment>);
 	}
 
 	getTitle() {

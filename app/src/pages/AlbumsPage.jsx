@@ -16,11 +16,11 @@ class AlbumsPage extends PageBaseComponent {
 	}
 
 	getHeaderActions() {
-		return (<div>
+		return (<React.Fragment>
 			{<button onClick={(e) => this.onCreateAlbumClick()} title="Create album">
 				New album
 			</button>}
-		</div>);
+		</React.Fragment>);
 	}
 
 	getTitle() {
