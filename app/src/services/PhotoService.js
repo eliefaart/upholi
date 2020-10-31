@@ -1,3 +1,5 @@
+import Photo from "../entities/Photo.js";
+
 class PhotoService {
 	static baseUrl() {
 		return "/api";
@@ -11,7 +13,7 @@ class PhotoService {
 		for (let file of files) {
 			// Reverse array using unshift,
 			// so we can use pop() when consuming array, which is faster than shift()
-			queue.unshift(file);	
+			queue.unshift(file);
 			fnFileStatusUpdatedCallback(file, "Waiting");
 		}
 
@@ -26,14 +28,14 @@ class PhotoService {
 					let uploadPromise = PhotoService.uploadPhoto(file);
 					uploadPromises.push(uploadPromise);
 					fnFileStatusUpdatedCallback(file, "Uploading");
-	
+
 					uploadPromise.then((photoId) => {
 						uploadPromises.splice(uploadPromises.indexOf(uploadPromise), 1);
-	
+
 						photoIdsUploaded.push(photoId);
 						fnFileStatusUpdatedCallback(file, "Done");
 						fnStartNextUpload();
-	
+
 						if (queue.length === 0 && uploadPromises.length === 0) {
 							ok(photoIdsUploaded);
 						}
@@ -43,7 +45,7 @@ class PhotoService {
 					});
 				}
 			}
-	
+
 			for (let i = 0; i < nConcurrentUploads; i++) {
 				fnStartNextUpload();
 			}
@@ -55,7 +57,7 @@ class PhotoService {
 			const xhr = new XMLHttpRequest();
 			const formData = new FormData();
 			formData.append('file', file);
-	
+
 			xhr.open("POST", PhotoService.baseUrl() + "/photo", true);
 			xhr.onreadystatechange = function (event) {
 				if (xhr.readyState == 4 && (xhr.status === 201)) {
@@ -65,7 +67,7 @@ class PhotoService {
 					err();
 				}
 			};
-	
+
 			// Initiate a multipart/form-data upload
 			xhr.send(formData);
 		});
@@ -79,14 +81,9 @@ class PhotoService {
 		return new Promise((ok, err) => {
 			PhotoService.getJson("GET", PhotoService.baseUrl() + "/photos")
 				.then((response) => {
-					let photos = !response ? [] : response.map((photo) => {
-						return {
-							id: photo.id,
-							src: PhotoService.baseUrl() + "/photo/" + photo.id + "/thumb",
-							width: photo.width,
-							height: photo.height
-						};
-					});
+					let photos = !response ? [] : response.map((photo) =>
+						new Photo(photo.id, photo.width, photo.height)
+					);
 
 					ok(photos);
 				})
@@ -259,7 +256,7 @@ class PhotoService {
 	static rotateCollectionShareToken(collectionId) {
 		return PhotoService.getJson("POST", PhotoService.baseUrl() + "/collection/" + collectionId + "/rotate-token");
 	}
-	
+
 	/// Send a web request and gets json from the response body, returns a promise.
 	static getJson(method, url, data) {
 		return new Promise((ok, err) => {

@@ -3,7 +3,7 @@ import { Router, Route } from "react-router-dom";
 import { createBrowserHistory as createHistory } from "history";
 import { ToastContainer, Zoom } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
-import PhotosPage from "../pages/PhotosPage.jsx";
+import LibraryPage from "../pages/LibraryPage.jsx";
 import AlbumsPage from "../pages/AlbumsPage.jsx";
 import CollectionsPage from "../pages/CollectionsPage.jsx";
 import AlbumPage from "../pages/AlbumPage.jsx";
@@ -47,7 +47,7 @@ class AppContainer extends React.Component {
 			<Router history={this.context.history}>
 				<div id="app">
 					<AppStateContext.Provider value={this.context}>
-						<Route path="/" exact component={PhotosPage} />
+						<Route path="/" exact component={LibraryPage} />
 						<Route path="/albums" exact component={AlbumsPage} />
 						<Route path="/collections" exact component={CollectionsPage} />
 						<Route path="/collection/:collectionId" exact component={CollectionPage} />

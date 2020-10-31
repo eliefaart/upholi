@@ -19,8 +19,8 @@ class PageLayout extends React.Component {
 
 	render() {
 		if (this.props.requiresAuthentication && !this.context.authenticated) {
-			// TODO: This is a temporary implementation, 
-			// should redirect to a Welcome component or something, 
+			// TODO: This is a temporary implementation,
+			// should redirect to a Welcome component or something,
 			// which would have a login button that starts the login flow
 			document.location = "/oauth/start";
 		}
@@ -35,10 +35,10 @@ class PageLayout extends React.Component {
 
 		return (
 			<div className={"page " + (headerVisible ? "hasHeader" : "")}
-				onDrop={this.props.onDrop} 
+				onDrop={this.props.onDrop}
 				onDragOver={this.props.onDragOver || ((event) => event.preventDefault())}>
-				{headerVisible && <Header 
-					renderMenu={this.props.renderMenu} 
+				{headerVisible && <Header
+					renderMenu={this.props.renderMenu}
 					actionsElement={this.props.headerActions}
 					contextMenuElement={this.props.headerContextMenuActions}
 					>

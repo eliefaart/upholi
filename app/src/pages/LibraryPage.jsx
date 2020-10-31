@@ -9,13 +9,20 @@ import ModalUploadProgress from "../components/ModalUploadProgress.jsx";
 import ModalCreateAlbum from "../components/ModalCreateAlbum.jsx";
 import ModalAddToAlbum from "../components/ModalAddToAlbum.jsx";
 import UploadButton from "../components/UploadButton.jsx";
-import { IconUpload, IconDelete, IconAddToAlbum } from "../components/Icons.jsx";
+import { IconDelete, IconAddToAlbum } from "../components/Icons.jsx";
 import { toast } from "react-toastify";
 
-class PhotosDashboardPage extends React.Component {
+class LibraryPage extends React.Component {
 
 	constructor(props) {
 		super(props);
+
+		// Contains all user's photos, but this is not the viewmodel of the Gallery
+		this.photos = [];
+
+		document.body.onscroll = (event) => {
+			this.loadVisiblePhotos();
+		};
 
 		this.state = {
 			photos: [],
@@ -33,12 +40,93 @@ class PhotosDashboardPage extends React.Component {
 		this.refreshPhotos();
 	}
 
+	componentDidUpdate(prevProps, prevState) {
+
+		// Load the initial batch of photo thumbnails once all photo data has been fetched
+		if (prevState.photos.length === 0 && this.state.photos.length > 0) {
+			this.loadVisiblePhotos();
+
+			// Workaround:
+			// Call that function again after some time.
+			// This is because the Gallery component still seems to move and re-fit the photos a bit after its render function has completed,
+			// and I don't see any event for when it is fully finished rendering.
+			setTimeout(() => this.loadVisiblePhotos(), 100);
+		}
+
+		// Remove onscroll event handler from body once all photos have been loaded
+		if (this.state.photos.length > 0) {
+			const nPhotosNotYetLoaded = this.state.photos.filter(photo => photo.src === "").length;
+			if (nPhotosNotYetLoaded === 0) {
+				document.body.onscroll = null;
+			}
+		}
+	}
+
+	/**
+	 * Get info of all photos in user's library
+	 */
 	refreshPhotos() {
-		const fnSetPhotos = (photos) => this.setState({ photos });
+		const fnSetPhotos = (photos) => {
+			this.photos = photos;
+
+			const galleryPhotos = [];
+			for (const photo of photos) {
+				galleryPhotos.push({
+					id: photo.id,
+					width: photo.width,
+					height: photo.height,
+					src: ""
+				});
+			}
+
+			this.setState({
+				photos: galleryPhotos
+			});
+		};
 
 		PhotoService.getPhotos()
 			.then(fnSetPhotos)
 			.catch(console.error);
+	}
+
+	/**
+	 * Load all photo thumbnails that are visible in the viewport
+	 */
+	loadVisiblePhotos() {
+		// Function that checks if given element is at least partially visible within viewport
+		const fnElementIsInViewport = (element) => {
+			if (!element)  {
+				return false;
+			}
+			else {
+				const myElementHeight = element.offsetHeight;
+				const myElementWidth = element.offsetWidth;
+				const bounding = element.getBoundingClientRect();
+
+				return bounding.top >= -myElementHeight
+					&& bounding.left >= -myElementWidth
+					&& bounding.right <= (window.innerWidth || document.documentElement.clientWidth) + myElementWidth
+					&& bounding.bottom <= (window.innerHeight || document.documentElement.clientHeight) + myElementHeight;
+			}
+		};
+
+		const statePhotos = this.state.photos;
+
+		for (const statePhoto of statePhotos) {
+			const photoHasBeenLoaded = statePhoto.src !== "";
+			if (!photoHasBeenLoaded) {
+				const photoInfo = this.photos.find(p => p.id === statePhoto.id);
+				const photoElement = document.getElementById(statePhoto.id);
+
+				if (photoElement && photoInfo && fnElementIsInViewport(photoElement)) {
+					statePhoto.src = photoInfo.getThumbUrl();
+				}
+			}
+		}
+
+		this.setState({
+			photos: statePhotos
+		});
 	}
 
 	resetSelection() {
@@ -56,15 +144,15 @@ class PhotosDashboardPage extends React.Component {
 	deleteSelectedPhotos() {
 		PhotoService.deletePhotos(this.state.selectedPhotos)
 			.then(() => {
-				let remainingPhotos = this.state.photos.filter(p => 
+				let remainingPhotos = this.state.photos.filter(p =>
 					this.state.selectedPhotos.indexOf(p.id) === -1);
-	
+
 				this.setState({
 					photos: remainingPhotos,
 					selectedPhotos: [],
 					confirmDeletePhotosOpen: false
 				});
-	
+
 				toast.info("Photos deleted.");
 			})
 			.catch(console.error);
@@ -112,7 +200,7 @@ class PhotosDashboardPage extends React.Component {
 			selectedPhotos: selectedPhotos
 		});
 	}
-	
+
 	onSelectionChange(selectedPhotos) {
 		this.setState({
 			selectedPhotos: selectedPhotos
@@ -189,7 +277,7 @@ class PhotosDashboardPage extends React.Component {
 					onRequestClose={() => this.setState({newAlbumDialogOpen: false})}
 					createWithPhotos={this.state.selectedPhotos}
 					/>
-					
+
 				<ModalAddToAlbum
 					isOpen={this.state.addPhotosToAlbumDialogOpen}
 					onRequestClose={() => this.setState({addPhotosToAlbumDialogOpen: false})}
@@ -219,5 +307,5 @@ class PhotosDashboardPage extends React.Component {
 	}
 }
 
-PhotosDashboardPage.contextType = AppStateContext;
-export default PhotosDashboardPage;
+LibraryPage.contextType = AppStateContext;
+export default LibraryPage;
