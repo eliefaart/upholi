@@ -1,10 +1,11 @@
 import React from "react";
+import PageBaseComponent from "../components/PageBaseComponent.jsx";
 import AllUserAlbums from "../components/AllUserAlbums.jsx";
-import PageLayout from "../components/PageLayout.jsx"
+import ContentContainer from "../components/ContentContainer.jsx"
 import ModalCreateAlbum from "../components/ModalCreateAlbum.jsx"
 import AppStateContext from "../contexts/AppStateContext.jsx";
 
-class AlbumsPage extends React.Component {
+class AlbumsPage extends PageBaseComponent {
 
 	constructor(props) {
 		super(props);
@@ -12,6 +13,18 @@ class AlbumsPage extends React.Component {
 		this.state = {
 			newAlbumDialogOpen: false
 		}
+	}
+
+	getHeaderActions() {
+		return (<div>
+			{<button onClick={(e) => this.onCreateAlbumClick()} title="Create album">
+				New album
+			</button>}
+		</div>);
+	}
+
+	getTitle() {
+		return "Albums";
 	}
 
 	onCreateAlbumClick() {
@@ -22,20 +35,15 @@ class AlbumsPage extends React.Component {
 
 	render() {
 		const history = this.context.history;
-		const headerContextMenuActions = (<div>
-			{<button onClick={(e) => this.onCreateAlbumClick()} title="Create album">
-				New album
-			</button>}
-		</div>);
 
 		return (
-			<PageLayout title="Albums" requiresAuthentication={true} headerActions={headerContextMenuActions}>
+			<ContentContainer>
 				<AllUserAlbums onClick={album => history.push("/album/" + album.id)}/>
 
 				<ModalCreateAlbum
 					isOpen={this.state.newAlbumDialogOpen}
 					onRequestClose={() => this.setState({newAlbumDialogOpen: false})}/>
-			</PageLayout>
+			</ContentContainer>
 		);
 	}
 }

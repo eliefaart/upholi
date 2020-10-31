@@ -14,7 +14,7 @@ class Header extends React.Component {
 	}
 
 	render() {
-		const headerEmpty = !this.props.renderMenu && !this.props.actionsElement && !this.props.contextMenuElement;
+		const headerEmpty = !this.props.renderMenu && !this.props.actions && !this.props.contextMenu;
 		if (headerEmpty)
 			return null;
 
@@ -40,17 +40,17 @@ class Header extends React.Component {
 
 				<span className="buffer">&nbsp;</span>
 
-				{!!this.props.actionsElement && <div className="actions">
-					{this.props.actionsElement}
+				{!!this.props.actions && <div className="actions">
+					{this.props.actions}
 				</div>}
 
-				{!!this.props.contextMenuElement && this.state.contextMenuOpen && <div className="contextMenu" onClick={() => this.setState({contextMenuOpen: false})}>
+				{!!this.props.contextMenu && this.state.contextMenuOpen && <div className="contextMenu" onClick={() => this.setState({contextMenuOpen: false})}>
 					<div className="items">
-						{this.props.contextMenuElement}
+						{this.props.contextMenu}
 					</div>
 				</div>}
 
-				{!!this.props.contextMenuElement && <button className="contextMenuToggle" onClick={() => this.setState({contextMenuOpen: !this.state.contextMenuOpen})}>
+				{!!this.props.contextMenu && <button className="contextMenuToggle" onClick={() => this.setState({contextMenuOpen: !this.state.contextMenuOpen})}>
 					<IconContextMenu/>
 				</button>}
 			</div>

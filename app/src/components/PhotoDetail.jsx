@@ -76,7 +76,7 @@ class PhotoDetail extends React.Component {
 					Math.pow(touches[1].clientX - touches[0].clientX, 2) +
 					Math.pow(touches[1].clientY - touches[0].clientY, 2)
 				);
-				
+
 				// If user was already touch-zooming, then handle zoom
 				// Otherwise do nothing until next touch event.
 				if (isTouchZooming) {
@@ -118,7 +118,7 @@ class PhotoDetail extends React.Component {
 
 		// If this event is a touch event, get X and Y in a different way.
 		const touches = event.touches;
-		
+
 		const fnTouchListToArray = (touchList) => {
 			let array = [];
 			for (let i = 0; i < touchList.length; i++) {
@@ -156,15 +156,15 @@ class PhotoDetail extends React.Component {
 		const currentScaleFactor = matches && matches.length >= 2
 			? parseFloat(matches[1])
 			: 1;
-		
+
 		if (zoomStyle == ZoomStyleEnum.BY_DELTA) {
 			zoomStepPercentage = Math.abs((zoomDelta / imgElement.width) * 100);
 		}
 
 		// Calculate new scale factor
 		const zoomStep = (currentScaleFactor / 100) * zoomStepPercentage;
-		let newScaleFactor = zoomingIn 
-			? currentScaleFactor + zoomStep 
+		let newScaleFactor = zoomingIn
+			? currentScaleFactor + zoomStep
 			: currentScaleFactor - zoomStep;
 
 		// Set new scale factor
@@ -187,7 +187,7 @@ class PhotoDetail extends React.Component {
 
 		const imgFitsInContainerX = imgWidth <= containerWidth;
 		const imgFitsInContainerY = imgHeight <= containerHeight;
-		
+
 		// Image smaller than container, X-axis
 		if (imgFitsInContainerX && deltaX !== 0) {
 			let movingRight = deltaX > 0;
@@ -195,14 +195,14 @@ class PhotoDetail extends React.Component {
 
 			if (movingRight) {
 				const availablePixels = -(imgElement.getBoundingClientRect().right - imgElement.parentElement.getBoundingClientRect().width);
-				
+
 				if (deltaX > availablePixels) {
 					deltaX = availablePixels;
 				}
 			}
 			if (movingLeft) {
 				const availablePixels = imgElement.getBoundingClientRect().left;
-				
+
 				if (-deltaX > availablePixels) {
 					deltaX = -availablePixels;
 				}
@@ -216,14 +216,14 @@ class PhotoDetail extends React.Component {
 
 			if (movingDown) {
 				const availablePixels = -(imgElement.getBoundingClientRect().bottom - imgElement.parentElement.getBoundingClientRect().height);
-				
+
 				if (deltaY > availablePixels) {
 					deltaY = availablePixels;
 				}
 			}
 			if (movingUp) {
 				const availablePixels = imgElement.getBoundingClientRect().top;
-				
+
 				if (-deltaY > availablePixels) {
 					deltaY = -availablePixels;
 				}
@@ -237,14 +237,14 @@ class PhotoDetail extends React.Component {
 
 			if (movingRight) {
 				const availablePixels = -imgElement.getBoundingClientRect().left;
-				
+
 				if (deltaX > availablePixels) {
 					deltaX = availablePixels;
 				}
 			}
 			if (movingLeft) {
 				const availablePixels = -(imgElement.parentElement.getBoundingClientRect().width - imgElement.getBoundingClientRect().right);
-				
+
 				if (-deltaX > availablePixels) {
 					deltaX = -availablePixels;
 				}
@@ -258,14 +258,14 @@ class PhotoDetail extends React.Component {
 
 			if (movingDown) {
 				const availablePixels = -imgElement.getBoundingClientRect().top;
-				
+
 				if (deltaY > availablePixels) {
 					deltaY = availablePixels;
 				}
 			}
 			if (movingUp) {
 				const availablePixels = -(imgElement.parentElement.getBoundingClientRect().height - imgElement.getBoundingClientRect().bottom);
-				
+
 				if (-deltaY > availablePixels) {
 					deltaY = -availablePixels;
 				}
@@ -284,7 +284,7 @@ class PhotoDetail extends React.Component {
 	render() {
 		return <div className="photoDetail">
 			{this.props.exif && <ExifData exif={this.props.exif}/>}
-			<img className="photoDetailImg" src={this.props.src} 
+			<img className="photoDetailImg" src={this.props.src}
 				draggable={false}
 				style={{top: "0px", left: "0px"}}/>
 		</div>;

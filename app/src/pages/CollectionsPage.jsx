@@ -1,5 +1,6 @@
 import React from "react";
-import PageLayout from "../components/PageLayout.jsx"
+import PageBaseComponent from "../components/PageBaseComponent.jsx";
+import ContentContainer from "../components/ContentContainer.jsx"
 import AppStateContext from "../contexts/AppStateContext.jsx";
 import ModalCreateCollection from "../components/ModalCreateCollection.jsx"
 import ModalAddAlbumToCollection from "../components/ModalAddAlbumToCollection.jsx"
@@ -8,7 +9,7 @@ import ModalShareCollection from "../components/ModalShareCollection.jsx"
 import { IconCreate, IconDelete, IconShare, IconClose } from "../components/Icons.jsx";
 import PhotoService from "../services/PhotoService.js";
 
-class CollectionsPage extends React.Component {
+class CollectionsPage extends PageBaseComponent {
 	constructor(props) {
 		super(props);
 
@@ -26,8 +27,21 @@ class CollectionsPage extends React.Component {
 		}
 	}
 
+	getHeaderActions() {
+		return  (<div>
+			<button onClick={() => this.onCreateCollectionClick()} title="Create collection">
+				New collection
+			</button>
+		</div>);
+	}
+
+	getTitle() {
+		return "Collections";
+	}
+
 	componentDidMount() {
 		this.refreshCollections();
+		super.componentDidMount();
 	}
 
 	refreshCollections() {
@@ -117,18 +131,11 @@ class CollectionsPage extends React.Component {
 	}
 
 	render() {
-		const headerContextMenuActions = (<div>
-			<button onClick={() => this.onCreateCollectionClick()} title="Create collection">
-				New collection
-			</button>
-		</div>);
-
 		const activeCollection = this.state.collections.find(col => col.id === this.state.activeCollectionId);
 		const activeAlbum = activeCollection && activeCollection.albums.find(alb => alb.id === this.state.activeAlbumId);
 
 		return (
-			<PageLayout title="Collections" requiresAuthentication={true} renderMenu={true} headerActions={headerContextMenuActions}>
-
+			<ContentContainer>
 				<div className="collections">
 					{this.state.collections.map(collection => (
 						// Collection container
@@ -203,7 +210,7 @@ class CollectionsPage extends React.Component {
 						+ "' will be remove from collection '"
 						+ activeAlbum.title + "'."}
 					/>}
-			</PageLayout>
+			</ContentContainer>
 		);
 	}
 }

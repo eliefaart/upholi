@@ -1,11 +1,12 @@
 import React from "react";
+import PageBaseComponent from "../components/PageBaseComponent.jsx";
 import PhotoService from "../services/PhotoService";
 import PhotoDetail from "../components/PhotoDetail.jsx";
-import PageLayout from "../components/PageLayout.jsx"
+import ContentContainer from "../components/ContentContainer.jsx"
 import AppStateContext from "../contexts/AppStateContext.jsx";
 import { IconClose, IconDownload } from "../components/Icons.jsx";
 
-class PhotoPage extends React.Component {
+class PhotoPage extends PageBaseComponent {
 	constructor(props) {
 		super(props);
 
@@ -21,6 +22,21 @@ class PhotoPage extends React.Component {
 		};
 	}
 
+	getHeaderActions() {
+		return (<div>
+			{<a className="iconOnly asButton" href={this.state.downloadUrl} download title="Download">
+				<IconDownload/>
+			</a>}
+			{<button className="iconOnly" onClick={() => this.context.history.goBack()} title="Close">
+				<IconClose/>
+			</button>}
+		</div>);
+	}
+
+	getTitle() {
+		return "Photo - " + this.state.photoId;
+	}
+
 	componentDidMount() {
 		let fnOnPhotoDataReceived = (photo) => {
 			this.setState({ photo });
@@ -29,22 +45,15 @@ class PhotoPage extends React.Component {
 		PhotoService.getPhotoInfo(this.state.photoId)
 			.then(fnOnPhotoDataReceived)
 			.catch(console.error);
+
+		super.componentDidMount();
 	}
 
 	render() {
-		const headerActions = (<div>
-			{<a className="iconOnly asButton" href={this.state.downloadUrl} download title="Download">
-				<IconDownload/>
-			</a>}
-			{<button className="iconOnly" onClick={() => this.context.history.goBack()} title="Close">
-				<IconClose/>
-			</button>}
-		</div>);
-
 		return (
-			<PageLayout title={"Photo - " + this.state.photoId} requiresAuthentication={this.props.requiresAuthentication} renderMenu={false} headerActions={headerActions}>
+			<ContentContainer>
 				<PhotoDetail src={this.state.previewUrl} exif={!!this.state.photo ? this.state.photo.exif : null} />
-			</PageLayout>
+			</ContentContainer>
 		);
 	}
 }

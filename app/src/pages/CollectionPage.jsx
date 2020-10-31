@@ -1,10 +1,11 @@
 import React from "react";
-import PageLayout from "../components/PageLayout.jsx"
+import PageBaseComponent from "../components/PageBaseComponent.jsx";
+import ContentContainer from "../components/ContentContainer.jsx"
 import AppStateContext from "../contexts/AppStateContext.jsx";
 import PhotoService from "../services/PhotoService.js"
 import CollectionView from "./CollectionView.jsx";
 
-class CollectionPage extends React.Component {
+class CollectionPage extends PageBaseComponent {
 
 	constructor(props) {
 		super(props);
@@ -18,14 +19,18 @@ class CollectionPage extends React.Component {
 		};
 	}
 
+	getTitle() {
+		return "Collection - " + this.state.collection.title;
+	}
+
 	render() {
 		if (this.state.collection == null)
 			return null;
 
 		return (
-			<PageLayout title={"Collection - " + this.state.collection.title} requiresAuthentication={false} renderMenu={true}>
+			<ContentContainer>
 				<CollectionView collection={this.state.collection}/>
-			</PageLayout>
+			</ContentContainer>
 		);
 	}
 }

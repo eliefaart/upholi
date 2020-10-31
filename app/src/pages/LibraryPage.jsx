@@ -1,6 +1,7 @@
 import React from "react";
+import PageBaseComponent from "../components/PageBaseComponent.jsx";
 import PhotoGallerySelectable from "../components/PhotoGallerySelectable.jsx";
-import PageLayout from "../components/PageLayout.jsx";
+import ContentContainer from "../components/ContentContainer.jsx";
 import PhotoService from "../services/PhotoService.js";
 import UploadHelper from "../helpers/UploadHelper.js";
 import AppStateContext from "../contexts/AppStateContext.jsx";
@@ -12,7 +13,7 @@ import UploadButton from "../components/UploadButton.jsx";
 import { IconDelete, IconAddToAlbum } from "../components/Icons.jsx";
 import { toast } from "react-toastify";
 
-class LibraryPage extends React.Component {
+class LibraryPage extends PageBaseComponent {
 
 	constructor(props) {
 		super(props);
@@ -32,12 +33,32 @@ class LibraryPage extends React.Component {
 		};
 	}
 
+	getHeaderActions() {
+		return (<div>
+			{this.state.selectedPhotos.length === 0 && <button onClick={() => document.getElementById("select-photos").click()} title="Upload photos">
+				Upload
+			</button>}
+			{this.state.selectedPhotos.length > 0 && <button className="iconOnly" onClick={() => this.onClickAddSelectedPhotosToAlbum(this.state.selectedPhotos)} title="Add to album">
+				<IconAddToAlbum/>
+			</button>}
+			{this.state.selectedPhotos.length > 0 && <button className="iconOnly" onClick={() => this.onClickDeletePhotos()} title="Delete photos">
+				<IconDelete/>
+			</button>}
+		</div>);
+	}
+
+	getTitle() {
+		return "Library";
+	}
+
 	componentDidMount() {
 		this.refreshPhotos();
 
 		document.getElementById("content").onscroll = (event) => {
 			this.loadVisiblePhotos();
 		};
+
+		super.componentDidMount();
 	}
 
 	componentDidUpdate(prevProps, prevState) {
@@ -61,22 +82,7 @@ class LibraryPage extends React.Component {
 			}
 		}
 
-
-
-
-
-		const headerActions = (<div>
-			{this.state.selectedPhotos.length === 0 && <button onClick={() => document.getElementById("select-photos").click()} title="Upload photos">
-				Upload
-			</button>}
-			{this.state.selectedPhotos.length > 0 && <button className="iconOnly" onClick={() => this.onClickAddSelectedPhotosToAlbum(this.state.selectedPhotos)} title="Add to album">
-				<IconAddToAlbum/>
-			</button>}
-			{this.state.selectedPhotos.length > 0 && <button className="iconOnly" onClick={() => this.onClickDeletePhotos()} title="Delete photos">
-				<IconDelete/>
-			</button>}
-		</div>);
-		this.props.setHeaderActions(headerActions);
+		super.componentDidUpdate();
 	}
 
 	/**
@@ -273,20 +279,8 @@ class LibraryPage extends React.Component {
 	}
 
 	render() {
-		const headerActions = (<div>
-			{this.state.selectedPhotos.length === 0 && <button onClick={() => document.getElementById("select-photos").click()} title="Upload photos">
-				Upload
-			</button>}
-			{this.state.selectedPhotos.length > 0 && <button className="iconOnly" onClick={() => this.onClickAddSelectedPhotosToAlbum(this.state.selectedPhotos)} title="Add to album">
-				<IconAddToAlbum/>
-			</button>}
-			{this.state.selectedPhotos.length > 0 && <button className="iconOnly" onClick={() => this.onClickDeletePhotos()} title="Delete photos">
-				<IconDelete/>
-			</button>}
-		</div>);
-
 		return (
-			<PageLayout title="Library" requiresAuthentication={true} headerActions={headerActions} onDrop={(event) => this.onFilesDropped(event)}>
+			<ContentContainer onDrop={(event) => this.onFilesDropped(event)}>
 				<PhotoGallerySelectable photos={this.state.photos} onClick={(event, target) => this.onPhotoClicked(event, target)} selectedItems={this.state.selectedPhotos} onPhotoSelectedChange={(photoId, selected) => this.onPhotoSelectedChange(photoId, selected)} />
 
 				<ModalCreateAlbum
@@ -319,7 +313,7 @@ class LibraryPage extends React.Component {
 
 				{/* Hidden upload button triggered by the button in action bar. This allos me to write simpler CSS to style the action buttons. */}
 				<UploadButton className="hidden" onSubmit={(files) => this.uploadFilesList(files)}/>
-			</PageLayout>
+			</ContentContainer>
 		);
 	}
 }
