@@ -1,10 +1,10 @@
 
 
-.header {
+#header {
 	display: flex;
 	height: $headerHeight;
-	background-color: $colorBackgroundAlt;
-	position: fixed;
+	background-color: $colorBackground;
+	border-bottom: 3px solid lighten($colorBackgroundAlt, 25%);
 	width: 100%;
 	z-index: 1;
 
@@ -22,13 +22,12 @@
 			padding-left: $spacing * 4;
 
 			&:hover {
-				color: $colorAccent;
-				//background-color: $colorSecondaryAccent;
+				color: $colorSecondaryAccent;
 			}
 
 			&.active {
 				color: $colorAccent;
-				border-bottom: 4px solid $colorSecondaryAccent;
+				border-bottom: 4px solid $colorSecondaryAccent;//colorAccent;
 			}
 		}
 	}
@@ -47,7 +46,6 @@
 	}
 
 	.actions {
-		background-color: $colorBackgroundAlt;
 		padding-right: $spacing;
 
 		span {
@@ -79,7 +77,11 @@
 		cursor: pointer;
 
 		.items {
-			background-color: transparent;
+			display: flex;
+			flex-direction: column;
+			justify-content: right;
+			align-items: center;
+			background-color: $colorBackgroundAlt;
 			min-width: 150px;
 
 			position: fixed;
@@ -91,28 +93,20 @@
 				white-space: nowrap;
 			}
 
-			&>div{
-				display: flex;
-				flex-direction: column;
-				justify-content: right;
-				align-items: center;
+			button {
+				border-radius: unset;
+				padding: 0 $spacing * 3;
+				color: $colorTextLight;
 				background-color: $colorBackgroundAlt;
+				width: 100%;
+				margin: 0;
+				justify-content: left;
+				text-transform: unset;
 
-				button {
-					border-radius: unset;
-					padding: 0 $spacing * 3;
-					color: $colorTextLight;
-					background-color: $colorBackgroundAlt;
-					width: 100%;
-					margin: 0;
-					justify-content: left;
-					text-transform: unset;
-
-					&:hover {
-						&, * {
-							background-color: $colorAccent;
-							color: $colorTextDark;
-						}
+				&:hover {
+					&, * {
+						background-color: $colorAccent;
+						color: $colorTextDark;
 					}
 				}
 			}

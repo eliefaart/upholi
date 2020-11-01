@@ -1,6 +1,7 @@
 import React from "react";
+import PageBaseComponent from "../components/PageBaseComponent.jsx";
 import PhotoGallerySelectable from "../components/PhotoGallerySelectable.jsx";
-import PageLayout from "../components/PageLayout.jsx"
+import ContentContainer from "../components/ContentContainer.jsx"
 import AppStateContext from "../contexts/AppStateContext.jsx";
 import PhotoService from "../services/PhotoService";
 import UploadHelper from "../helpers/UploadHelper.js"
@@ -10,7 +11,7 @@ import UploadButton from "../components/UploadButton.jsx";
 import { IconRemove, IconImage } from "../components/Icons.jsx";
 import { toast } from "react-toastify";
 
-class AlbumPage extends React.Component {
+class AlbumPage extends PageBaseComponent {
 
 	constructor(props) {
 		super(props);
@@ -27,8 +28,33 @@ class AlbumPage extends React.Component {
 		};
 	}
 
+	getHeaderActions() {
+		return (<React.Fragment>
+			{this.state.selectedPhotos.length === 1 && <button className="iconOnly" onClick={(e) => this.setSelectedPhotoAsAlbumCover()} title="Set album cover">
+				<IconImage/>
+			</button>}
+			{this.state.selectedPhotos.length > 0 && <button className="iconOnly" onClick={(e) => this.onRemovePhotosClick()} title="Remove from album">
+				<IconRemove/>
+			</button>}
+			{this.state.selectedPhotos.length === 0 && <button onClick={() => document.getElementById("select-photos").click()} title="Upload photos">
+				Upload
+			</button>}
+		</React.Fragment>);
+	}
+
+	getHeaderContextMenu() {
+		return (<React.Fragment>
+			{<button onClick={() => this.onDeleteAlbumClick()}>Delete album</button>}
+		</React.Fragment>);
+	}
+
+	getTitle() {
+		return "Album - " + this.state.title;
+	}
+
 	componentDidMount() {
 		this.refreshPhotos();
+		super.componentDidMount();
 	}
 
 	refreshPhotos() {
@@ -176,24 +202,8 @@ class AlbumPage extends React.Component {
 	}
 
 	render() {
-		const headerActions = (<div>
-			{this.state.selectedPhotos.length === 1 && <button className="iconOnly" onClick={(e) => this.setSelectedPhotoAsAlbumCover()} title="Set album cover">
-				<IconImage/>
-			</button>}
-			{this.state.selectedPhotos.length > 0 && <button className="iconOnly" onClick={(e) => this.onRemovePhotosClick()} title="Remove from album">
-				<IconRemove/>
-			</button>}
-			{this.state.selectedPhotos.length === 0 && <button onClick={() => document.getElementById("select-photos").click()} title="Upload photos">
-				Upload
-			</button>}
-		</div>);
-
-		const headerContextMenuActions = (<div>
-			{<button onClick={() => this.onDeleteAlbumClick()}>Delete album</button>}
-		</div>);
-
 		return (
-			<PageLayout title={"Album - " + this.state.title} requiresAuthentication={true} headerActions={headerActions} headerContextMenuActions={headerContextMenuActions} onDrop={(event) => this.onFilesDropped(event)}>
+			<ContentContainer onDrop={(event) => this.onFilesDropped(event)}>
 				<div className="topBar">
 					<h1>{this.state.title}</h1>
 				</div>
@@ -236,7 +246,7 @@ class AlbumPage extends React.Component {
 
 				{/* Hidden upload button triggered by the button in action bar. This allos me to write simpler CSS to style the action buttons. */}
 				<UploadButton className="hidden" onSubmit={(files) => this.uploadFilesList(files)}/>
-			</PageLayout>
+			</ContentContainer>
 		);
 	}
 }

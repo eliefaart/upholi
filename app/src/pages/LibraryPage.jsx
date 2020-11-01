@@ -1,6 +1,7 @@
 import React from "react";
+import PageBaseComponent from "../components/PageBaseComponent.jsx";
 import PhotoGallerySelectable from "../components/PhotoGallerySelectable.jsx";
-import PageLayout from "../components/PageLayout.jsx";
+import ContentContainer from "../components/ContentContainer.jsx";
 import PhotoService from "../services/PhotoService.js";
 import UploadHelper from "../helpers/UploadHelper.js";
 import AppStateContext from "../contexts/AppStateContext.jsx";
@@ -12,17 +13,13 @@ import UploadButton from "../components/UploadButton.jsx";
 import { IconDelete, IconAddToAlbum } from "../components/Icons.jsx";
 import { toast } from "react-toastify";
 
-class LibraryPage extends React.Component {
+class LibraryPage extends PageBaseComponent {
 
 	constructor(props) {
 		super(props);
 
 		// Contains all user's photos, but this is not the viewmodel of the Gallery
 		this.photos = [];
-
-		document.body.onscroll = (event) => {
-			this.loadVisiblePhotos();
-		};
 
 		this.state = {
 			photos: [],
@@ -36,8 +33,32 @@ class LibraryPage extends React.Component {
 		};
 	}
 
+	getHeaderActions() {
+		return (<React.Fragment>
+			{this.state.selectedPhotos.length === 0 && <button onClick={() => document.getElementById("select-photos").click()} title="Upload photos">
+				Upload
+			</button>}
+			{this.state.selectedPhotos.length > 0 && <button className="iconOnly" onClick={() => this.onClickAddSelectedPhotosToAlbum(this.state.selectedPhotos)} title="Add to album">
+				<IconAddToAlbum/>
+			</button>}
+			{this.state.selectedPhotos.length > 0 && <button className="iconOnly" onClick={() => this.onClickDeletePhotos()} title="Delete photos">
+				<IconDelete/>
+			</button>}
+		</React.Fragment>);
+	}
+
+	getTitle() {
+		return "Library";
+	}
+
 	componentDidMount() {
 		this.refreshPhotos();
+
+		document.getElementById("content").onscroll = (event) => {
+			this.loadVisiblePhotos();
+		};
+
+		super.componentDidMount();
 	}
 
 	componentDidUpdate(prevProps, prevState) {
@@ -50,7 +71,7 @@ class LibraryPage extends React.Component {
 			// Call that function again after some time.
 			// This is because the Gallery component still seems to move and re-fit the photos a bit after its render function has completed,
 			// and I don't see any event for when it is fully finished rendering.
-			setTimeout(() => this.loadVisiblePhotos(), 100);
+			setTimeout(() => this.loadVisiblePhotos(), 500);
 		}
 
 		// Remove onscroll event handler from body once all photos have been loaded
@@ -60,6 +81,8 @@ class LibraryPage extends React.Component {
 				document.body.onscroll = null;
 			}
 		}
+
+		super.componentDidUpdate();
 	}
 
 	/**
@@ -256,20 +279,8 @@ class LibraryPage extends React.Component {
 	}
 
 	render() {
-		const headerActions = (<div>
-			{this.state.selectedPhotos.length === 0 && <button onClick={() => document.getElementById("select-photos").click()} title="Upload photos">
-				Upload
-			</button>}
-			{this.state.selectedPhotos.length > 0 && <button className="iconOnly" onClick={() => this.onClickAddSelectedPhotosToAlbum(this.state.selectedPhotos)} title="Add to album">
-				<IconAddToAlbum/>
-			</button>}
-			{this.state.selectedPhotos.length > 0 && <button className="iconOnly" onClick={() => this.onClickDeletePhotos()} title="Delete photos">
-				<IconDelete/>
-			</button>}
-		</div>);
-
 		return (
-			<PageLayout title="Library" requiresAuthentication={true} headerActions={headerActions} onDrop={(event) => this.onFilesDropped(event)}>
+			<ContentContainer onDrop={(event) => this.onFilesDropped(event)}>
 				<PhotoGallerySelectable photos={this.state.photos} onClick={(event, target) => this.onPhotoClicked(event, target)} selectedItems={this.state.selectedPhotos} onPhotoSelectedChange={(photoId, selected) => this.onPhotoSelectedChange(photoId, selected)} />
 
 				<ModalCreateAlbum
@@ -302,7 +313,7 @@ class LibraryPage extends React.Component {
 
 				{/* Hidden upload button triggered by the button in action bar. This allos me to write simpler CSS to style the action buttons. */}
 				<UploadButton className="hidden" onSubmit={(files) => this.uploadFilesList(files)}/>
-			</PageLayout>
+			</ContentContainer>
 		);
 	}
 }

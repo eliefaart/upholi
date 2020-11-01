@@ -1,15 +1,14 @@
 @import "_cssreset";
 @import "_fonts";
 
-$colorBackground: #000;
-$colorBackgroundAlt: #191d25;
-$colorAccent: #437dec;
-$colorSecondaryAccent: #bb8736;
+$colorBackground: #111;
+$colorBackgroundAlt: #1e232c;
+$colorAccent: #437dec;	// #26bf84
+$colorSecondaryAccent: #bb8736;	// #c9436b
 $colorSpecial: #53c253;
 $colorTextDark: #161f21;
 $colorTextLight: #dedfe4;
 $colorDisabled: gray;
-
 
 $fontSizeNormal: 0.8em;
 $fontSizeLarge: 1.2em;
@@ -37,11 +36,14 @@ html {
 		background: $colorBackground;
 		color: $colorTextLight;
 
-		.page {
-			min-height: 100vh;
+		#appRoot {
+			display: flex;
+			flex-direction: column;
+			height: 100vh;
 
-			&.hasHeader .content {
-				padding-top: $headerHeight;
+			#content {
+				overflow: auto;
+				scrollbar-color: $colorBackgroundAlt $colorBackground;
 			}
 		}
 	}
