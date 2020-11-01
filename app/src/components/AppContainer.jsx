@@ -31,7 +31,7 @@ class AppContainer extends React.Component {
 			this.setState({
 				ready: true
 			});
-		}).catch(console.error)
+		}).catch(console.error);
 	}
 
 	render() {
