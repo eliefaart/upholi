@@ -23,6 +23,10 @@ class LibraryPage extends PageBaseComponent {
 		// Contains all user's photos, but this is not the viewmodel of the Gallery
 		this.photos = [];
 
+		this.onScroll = (event) => {
+			this.loadVisiblePhotos();
+		}
+
 		this.state = {
 			photos: [],
 			selectedPhotos: [],
@@ -57,9 +61,7 @@ class LibraryPage extends PageBaseComponent {
 	componentDidMount() {
 		this.refreshPhotos();
 
-		document.getElementById("content").onscroll = (event) => {
-			this.loadVisiblePhotos();
-		};
+		document.getElementById("content").addEventListener("scroll", this.onScroll);
 
 		super.componentDidMount();
 	}
@@ -80,7 +82,7 @@ class LibraryPage extends PageBaseComponent {
 		if (this.state.photos.length > 0) {
 			const nPhotosNotYetLoaded = this.state.photos.filter(photo => photo.src === "").length;
 			if (nPhotosNotYetLoaded === 0) {
-				document.body.onscroll = null;
+				document.getElementById("content").removeEventListener("scroll", this.onScroll);
 			}
 		}
 
@@ -145,6 +147,7 @@ class LibraryPage extends PageBaseComponent {
 		};
 
 		const statePhotos = this.state.photos;
+		let anyPhotosLoaded = false;
 
 		for (const statePhoto of statePhotos) {
 			const photoHasBeenLoaded = statePhoto.src !== "";
@@ -153,14 +156,17 @@ class LibraryPage extends PageBaseComponent {
 				const photoElement = document.getElementById(statePhoto.id);
 
 				if (photoElement && photoInfo && fnElementIsInViewport(photoElement)) {
+					anyPhotosLoaded = true;
 					statePhoto.src = photoInfo.getThumbUrl();
 				}
 			}
 		}
 
-		this.setState({
-			photos: statePhotos
-		});
+		if (anyPhotosLoaded) {
+			this.setState({
+				photos: statePhotos
+			});
+		}
 	}
 
 	resetSelection() {
