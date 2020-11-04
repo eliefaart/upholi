@@ -1,10 +1,12 @@
 import React from "react";
+import queryString from "query-string";
 import PageBaseComponent from "../components/PageBaseComponent.jsx";
 import PhotoGallerySelectable from "../components/PhotoGallerySelectable.jsx";
 import ContentContainer from "../components/ContentContainer.jsx";
 import PhotoService from "../services/PhotoService.js";
 import UploadHelper from "../helpers/UploadHelper.js";
 import AppStateContext from "../contexts/AppStateContext.jsx";
+import ModalPhotoDetail from "../components/ModalPhotoDetail.jsx";
 import ModalConfirmation from "../components/ModalConfirmation.jsx";
 import ModalUploadProgress from "../components/ModalUploadProgress.jsx";
 import ModalCreateAlbum from "../components/ModalCreateAlbum.jsx";
@@ -24,6 +26,7 @@ class LibraryPage extends PageBaseComponent {
 		this.state = {
 			photos: [],
 			selectedPhotos: [],
+			openedPhotoId: null,
 			newAlbumDialogOpen: false,
 			confirmDeletePhotosOpen: false,
 			addPhotosToAlbumDialogOpen: false,
@@ -62,7 +65,6 @@ class LibraryPage extends PageBaseComponent {
 	}
 
 	componentDidUpdate(prevProps, prevState) {
-
 		// Load the initial batch of photo thumbnails once all photo data has been fetched
 		if (prevState.photos.length === 0 && this.state.photos.length > 0) {
 			this.loadVisiblePhotos();
@@ -80,6 +82,15 @@ class LibraryPage extends PageBaseComponent {
 			if (nPhotosNotYetLoaded === 0) {
 				document.body.onscroll = null;
 			}
+		}
+
+		// Open photo (or just library), as indicated by query string
+		const queryStringParams = queryString.parse(location.search);
+		queryStringParams.photoId = queryStringParams.photoId || null;
+		if (this.state.openedPhotoId !== queryStringParams.photoId) {
+			this.setState({
+				openedPhotoId: queryStringParams.photoId
+			});
 		}
 
 		super.componentDidUpdate();
@@ -238,7 +249,10 @@ class LibraryPage extends PageBaseComponent {
 
 	onPhotoClicked(event, target) {
 		let photo = this.state.photos[target.index];
-		!!this.context.history && this.context.history.push("/photo/" + photo.id);
+		this.context.history.push(document.location.pathname + "?photoId=" + photo.id);
+		// this.setState({
+		// 	openedPhotoId: photo.id
+		// });
 	}
 
 	onFilesDropped(event) {
@@ -282,6 +296,12 @@ class LibraryPage extends PageBaseComponent {
 		return (
 			<ContentContainer onDrop={(event) => this.onFilesDropped(event)}>
 				<PhotoGallerySelectable photos={this.state.photos} onClick={(event, target) => this.onPhotoClicked(event, target)} selectedItems={this.state.selectedPhotos} onPhotoSelectedChange={(photoId, selected) => this.onPhotoSelectedChange(photoId, selected)} />
+
+				<ModalPhotoDetail
+					isOpen={!!this.state.openedPhotoId}
+					photoId={this.state.openedPhotoId}
+					onRequestClose={() => this.context.history.push("/")}
+					/>
 
 				<ModalCreateAlbum
 					isOpen={this.state.newAlbumDialogOpen}

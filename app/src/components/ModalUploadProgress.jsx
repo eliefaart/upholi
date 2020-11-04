@@ -7,9 +7,6 @@ class ModalUploadProgress extends React.Component {
 		super(props);
 	}
 
-	componentDidMount() {
-	}
-
 	render() {
 		return (
 			<Modal

@@ -14,10 +14,11 @@ class Modal extends React.Component {
 				isOpen={this.props.isOpen}
 				onRequestClose={this.props.onRequestClose}
 				className={this.props.className + " modal"}
-				overlayClassName="overlay"
+				overlayClassName="modalOverlay"
 			>
 				<div className="modalHeader">
 					<span className="title">{this.props.title}</span>
+					{this.props.headerActions}
 					<button className="iconOnly" onClick={() => this.props.onRequestClose()}>
 						<IconClose/>
 					</button>
