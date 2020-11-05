@@ -1,8 +1,8 @@
 class UploadHelper {
 
-	constructor(props) {
+	constructor() {
 	}
-	
+
 	static convertFileListToFileArrayForUploadDialog(fileList) {
 		return [...fileList].map(file => {
 			return {

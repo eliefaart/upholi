@@ -1,15 +1,18 @@
 import React from "react";
+import queryString from "query-string";
 import PageBaseComponent from "../components/PageBaseComponent.jsx";
 import PhotoGallerySelectable from "../components/PhotoGallerySelectable.jsx";
 import ContentContainer from "../components/ContentContainer.jsx"
 import AppStateContext from "../contexts/AppStateContext.jsx";
 import PhotoService from "../services/PhotoService";
 import UploadHelper from "../helpers/UploadHelper.js"
+import ModalPhotoDetail from "../components/ModalPhotoDetail.jsx";
 import ModalConfirmation from "../components/ModalConfirmation.jsx";
 import ModalUploadProgress from "../components/ModalUploadProgress.jsx";
 import UploadButton from "../components/UploadButton.jsx";
 import { IconRemove, IconImage } from "../components/Icons.jsx";
 import { toast } from "react-toastify";
+import UrlHelper from "../helpers/UrlHelper.js";
 
 class AlbumPage extends PageBaseComponent {
 
@@ -21,6 +24,7 @@ class AlbumPage extends PageBaseComponent {
 			title: "",
 			photos: [],
 			selectedPhotos: [],
+			openedPhotoId: null,
 			confirmDeleteAlbumOpen: false,
 			confirmRemovePhotosOpen: false,
 			uploadInProgress: false,
@@ -55,6 +59,19 @@ class AlbumPage extends PageBaseComponent {
 	componentDidMount() {
 		this.refreshPhotos();
 		super.componentDidMount();
+	}
+
+	componentDidUpdate() {
+		// Open photo, if indicated as such by query string
+		const queryStringParams = queryString.parse(location.search);
+		queryStringParams.photoId = queryStringParams.photoId || null;
+		if (this.state.openedPhotoId !== queryStringParams.photoId) {
+			this.setState({
+				openedPhotoId: queryStringParams.photoId
+			});
+		}
+
+		super.componentDidUpdate();
 	}
 
 	refreshPhotos() {
@@ -96,7 +113,7 @@ class AlbumPage extends PageBaseComponent {
 
 	onPhotoClicked(event, target) {
 		let photo = this.state.photos[target.index];
-		!!this.context.history && this.context.history.push("/photo/" + photo.id);
+		this.context.history.push(document.location.pathname + "?photoId=" + photo.id);
 	}
 
 	setSelectedPhotoAsAlbumCover() {
@@ -218,6 +235,12 @@ class AlbumPage extends PageBaseComponent {
 					selectedItems={this.state.selectedPhotos}
 					onPhotoSelectedChange={(photoId, selected) => this.onPhotoSelectedChange(photoId, selected)}/>
 				}
+
+				<ModalPhotoDetail
+					isOpen={!!this.state.openedPhotoId}
+					photoId={this.state.openedPhotoId}
+					onRequestClose={() => this.context.history.push(document.location.pathname + "?" + UrlHelper.removeQueryStringParam(document.location.search, "photoId"))}
+					/>
 
 				<ModalConfirmation
 					title="Delete album"

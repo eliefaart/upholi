@@ -4,6 +4,8 @@ import PhotoGallerySelectable from "../components/PhotoGallerySelectable.jsx";
 import AppStateContext from "../contexts/AppStateContext.jsx";
 import PhotoService from "../services/PhotoService";
 import Albums from "../components/Albums.jsx";
+import ModalPhotoDetail from "../components/ModalPhotoDetail.jsx";
+import UrlHelper from "../helpers/UrlHelper.js";
 
 class CollectionView extends React.Component {
 
@@ -19,6 +21,7 @@ class CollectionView extends React.Component {
 				title: null,
 				photos: []
 			},
+			openedPhotoId: null,
 		};
 	}
 
@@ -38,6 +41,17 @@ class CollectionView extends React.Component {
 
 		if (defaultActiveAlbumId){
 			this.openAlbum(defaultActiveAlbumId);
+		}
+	}
+
+	componentDidUpdate() {
+		// Open photo, if indicated as such by query string
+		const queryStringParams = queryString.parse(location.search);
+		queryStringParams.photoId = queryStringParams.photoId || null;
+		if (this.state.openedPhotoId !== queryStringParams.photoId) {
+			this.setState({
+				openedPhotoId: queryStringParams.photoId
+			});
 		}
 	}
 
@@ -95,7 +109,8 @@ class CollectionView extends React.Component {
 
 	onPhotoClicked(_, target) {
 		const photo = this.state.activeAlbum.photos[target.index];
-		!!this.context.history && this.context.history.push("/photo/" + photo.id);
+		const photoIdUrl = document.location.pathname + "?" + UrlHelper.addQueryStringParam(document.location.search, "photoId", photo.id);
+		this.context.history.push(photoIdUrl);
 	}
 
 	render() {
@@ -125,6 +140,12 @@ class CollectionView extends React.Component {
 						onPhotoSelectedChange={() => {}}/>
 					}
 				</div>}
+
+				<ModalPhotoDetail
+					isOpen={!!this.state.openedPhotoId}
+					photoId={this.state.openedPhotoId}
+					onRequestClose={() => this.context.history.push(document.location.pathname + "?" + UrlHelper.removeQueryStringParam(document.location.search, "photoId"))}
+					/>
 			</div>
 		);
 	}

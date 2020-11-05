@@ -14,6 +14,7 @@ import ModalAddToAlbum from "../components/ModalAddToAlbum.jsx";
 import UploadButton from "../components/UploadButton.jsx";
 import { IconDelete, IconAddToAlbum } from "../components/Icons.jsx";
 import { toast } from "react-toastify";
+import UrlHelper from "../helpers/UrlHelper.js";
 
 class LibraryPage extends PageBaseComponent {
 
@@ -86,7 +87,7 @@ class LibraryPage extends PageBaseComponent {
 			}
 		}
 
-		// Open photo (or just library), as indicated by query string
+		// Open photo, if indicated as such by query string
 		const queryStringParams = queryString.parse(location.search);
 		queryStringParams.photoId = queryStringParams.photoId || null;
 		if (this.state.openedPhotoId !== queryStringParams.photoId) {
@@ -256,9 +257,6 @@ class LibraryPage extends PageBaseComponent {
 	onPhotoClicked(event, target) {
 		let photo = this.state.photos[target.index];
 		this.context.history.push(document.location.pathname + "?photoId=" + photo.id);
-		// this.setState({
-		// 	openedPhotoId: photo.id
-		// });
 	}
 
 	onFilesDropped(event) {
@@ -306,7 +304,7 @@ class LibraryPage extends PageBaseComponent {
 				<ModalPhotoDetail
 					isOpen={!!this.state.openedPhotoId}
 					photoId={this.state.openedPhotoId}
-					onRequestClose={() => this.context.history.push("/")}
+					onRequestClose={() => this.context.history.push(document.location.pathname + "?" + UrlHelper.removeQueryStringParam(document.location.search, "photoId"))}
 					/>
 
 				<ModalCreateAlbum
