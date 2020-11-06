@@ -24,8 +24,19 @@ class LibraryPage extends PageBaseComponent {
 		// Contains all user's photos, but this is not the viewmodel of the Gallery
 		this.photos = [];
 
-		this.onScroll = (event) => {
-			this.loadVisiblePhotos();
+		this.photoCheckQueued = false;
+		this.onScroll = () => {
+			// No need to check check photo visibility every time the scroll event fires,
+			// because it may fire many times per second. Limiting to every 50ms is more than enough.
+			const msTimeBetweenChecks = 50;
+
+			if (!this.waitingForPhotoCheck) {
+				this.photoCheckQueued = true;
+				setTimeout(() => {
+					this.loadVisiblePhotos();
+					this.photoCheckQueued = false;
+				}, msTimeBetweenChecks);
+			}
 		}
 
 		this.state = {
