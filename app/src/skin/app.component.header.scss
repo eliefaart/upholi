@@ -4,7 +4,7 @@
 	display: flex;
 	height: $headerHeight;
 	background-color: $colorBackground;
-	border-bottom: 3px solid lighten($colorBackgroundAlt, 25%);
+	border-bottom: 3px solid $colorTextLight;
 	width: 100%;
 	z-index: 1;
 

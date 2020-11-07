@@ -135,7 +135,7 @@ class CollectionsPage extends PageBaseComponent {
 		const activeAlbum = activeCollection && activeCollection.albums.find(alb => alb.id === this.state.activeAlbumId);
 
 		return (
-			<ContentContainer>
+			<ContentContainer paddingTop={true}>
 				<div className="collections">
 					{this.state.collections.map(collection => (
 						// Collection container

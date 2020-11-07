@@ -10,12 +10,29 @@ class ContentContainer extends React.Component {
 		super(props);
 	}
 
+	getClassName() {
+		let className = "";
+
+		if (this.props.paddingTop === true){
+			className += "padding-top";
+		}
+
+		if (className.trim() === ""){
+			className = null;
+		}
+
+		return className;
+	}
+
 	render() {
-		return (<div id="content"
+		const className = this.getClassName();
+
+		return (<main id="content"
+			className={className}
 			onDrop={this.props.onDrop}
 			onDragOver={this.props.onDragOver || ((event) => event.preventDefault())}>
 			{this.props.children}
-		</div>);
+		</main>);
 	}
 }
 

@@ -1,13 +1,13 @@
 @import "_cssreset";
 @import "_fonts";
 
-$colorBackground: #111;
-$colorBackgroundAlt: #1e232c;
-$colorAccent: #437dec;	// #26bf84
-$colorSecondaryAccent: #bb8736;	// #c9436b
+$colorBackground: #121212;
+$colorBackgroundAlt: #1a1922;
+$colorAccent: #d1b440; //#437dec;	// #26bf84
+$colorSecondaryAccent: #2e75ab; //#bb8736;	// #c9436b
 $colorSpecial: #53c253;
 $colorTextDark: #161f21;
-$colorTextLight: #dedfe4;
+$colorTextLight: #eee;
 $colorDisabled: gray;
 
 $fontSizeNormal: 0.8em;
@@ -44,6 +44,10 @@ html {
 			#content {
 				overflow: auto;
 				scrollbar-color: $colorBackgroundAlt $colorBackground;
+
+				&.padding-top {
+					padding-top: $headerHeight / 2;
+				}
 			}
 		}
 	}

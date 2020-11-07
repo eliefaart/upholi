@@ -28,15 +28,15 @@ class Header extends React.Component {
 		];
 
 		return (
-			<div id="header">
-				{this.props.renderMenu !== false && <div className="menu">
+			<header id="header">
+				{this.props.renderMenu !== false && <nav className="menu">
 					{menuItems.map((menuItem) =>
 						(<span key={menuItem.path}
 							onClick={() => gotoPage(menuItem.path)}
 							className={location.pathname === menuItem.path ? "active" : ""}
 							>{menuItem.title}</span>)
 					)}
-				</div>}
+				</nav>}
 
 				<span className="buffer">&nbsp;</span>
 
@@ -53,7 +53,7 @@ class Header extends React.Component {
 				{!!this.props.contextMenu && <button className="contextMenuToggle" onClick={() => this.setState({contextMenuOpen: !this.state.contextMenuOpen})}>
 					<IconContextMenu/>
 				</button>}
-			</div>
+			</header>
 		);
 	}
 }

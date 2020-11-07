@@ -41,7 +41,10 @@
 				background-repeat: no-repeat;
 				width: 200px;
 				height: $buttonHeight * 2.5;
-				border-radius: $borderRadius;
+
+				&, .albumContent {
+					border-radius: $borderRadius;
+				}
 
 				&:hover {
 					cursor: pointer;

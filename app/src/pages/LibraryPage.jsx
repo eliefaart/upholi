@@ -1,5 +1,4 @@
 import React from "react";
-import queryString from "query-string";
 import PageBaseComponent from "../components/PageBaseComponent.jsx";
 import PhotoGallerySelectable from "../components/PhotoGallerySelectable.jsx";
 import ContentContainer from "../components/ContentContainer.jsx";
@@ -15,6 +14,8 @@ import UploadButton from "../components/UploadButton.jsx";
 import { IconDelete, IconAddToAlbum } from "../components/Icons.jsx";
 import { toast } from "react-toastify";
 import UrlHelper from "../helpers/UrlHelper.js";
+
+const queryStringParamNamePhotoId = "photoId";
 
 class LibraryPage extends PageBaseComponent {
 
@@ -99,11 +100,10 @@ class LibraryPage extends PageBaseComponent {
 		}
 
 		// Open photo, if indicated as such by query string
-		const queryStringParams = queryString.parse(location.search);
-		queryStringParams.photoId = queryStringParams.photoId || null;
-		if (this.state.openedPhotoId !== queryStringParams.photoId) {
+		const queryStringPhotoId = UrlHelper.getQueryStringParamValue(location.search, queryStringParamNamePhotoId);
+		if (this.state.openedPhotoId !== queryStringPhotoId) {
 			this.setState({
-				openedPhotoId: queryStringParams.photoId
+				openedPhotoId: queryStringPhotoId
 			});
 		}
 
@@ -315,7 +315,7 @@ class LibraryPage extends PageBaseComponent {
 				<ModalPhotoDetail
 					isOpen={!!this.state.openedPhotoId}
 					photoId={this.state.openedPhotoId}
-					onRequestClose={() => this.context.history.push(document.location.pathname + "?" + UrlHelper.removeQueryStringParam(document.location.search, "photoId"))}
+					onRequestClose={() => this.context.history.push(document.location.pathname + "?" + UrlHelper.removeQueryStringParam(document.location.search, queryStringParamNamePhotoId))}
 					/>
 
 				<ModalCreateAlbum

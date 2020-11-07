@@ -37,7 +37,7 @@ class AlbumsPage extends PageBaseComponent {
 		const history = this.context.history;
 
 		return (
-			<ContentContainer>
+			<ContentContainer paddingTop={true}>
 				<AllUserAlbums onClick={album => history.push("/album/" + album.id)}/>
 
 				<ModalCreateAlbum

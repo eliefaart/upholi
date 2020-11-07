@@ -1,11 +1,13 @@
 import React from "react";
-import queryString from "query-string";
 import PhotoGallerySelectable from "../components/PhotoGallerySelectable.jsx";
 import AppStateContext from "../contexts/AppStateContext.jsx";
 import PhotoService from "../services/PhotoService";
 import Albums from "../components/Albums.jsx";
 import ModalPhotoDetail from "../components/ModalPhotoDetail.jsx";
 import UrlHelper from "../helpers/UrlHelper.js";
+
+const queryStringParamNameAlbumId = "albumId";
+const queryStringParamNamePhotoId = "photoId";
 
 class CollectionView extends React.Component {
 
@@ -26,36 +28,34 @@ class CollectionView extends React.Component {
 	}
 
 	componentDidMount() {
-		let defaultActiveAlbumId = null;
-
-		// Parse from query string
-		const queryStringParams = queryString.parse(location.search);
-		if (queryStringParams["album"]) {
-			defaultActiveAlbumId = queryStringParams.album;
-		}
+		let initialActiveAlbumId = UrlHelper.getQueryStringParamValue(location.search, queryStringParamNameAlbumId);
 
 		// If there is only one album in collection, open it by default
-		if (!defaultActiveAlbumId && this.collectionHasOneAlbum) {
-			defaultActiveAlbumId = this.state.collection.albums[0].id;
+		if (!initialActiveAlbumId && this.collectionHasOneAlbum) {
+			initialActiveAlbumId = this.state.collection.albums[0].id;
 		}
 
-		if (defaultActiveAlbumId){
-			this.openAlbum(defaultActiveAlbumId);
+		if (initialActiveAlbumId){
+			this.loadAlbum(initialActiveAlbumId);
 		}
 	}
 
 	componentDidUpdate() {
 		// Open photo, if indicated as such by query string
-		const queryStringParams = queryString.parse(location.search);
-		queryStringParams.photoId = queryStringParams.photoId || null;
-		if (this.state.openedPhotoId !== queryStringParams.photoId) {
+		let queryStringPhotoId = UrlHelper.getQueryStringParamValue(location.search, queryStringParamNamePhotoId);
+		if (this.state.openedPhotoId !== queryStringPhotoId) {
 			this.setState({
-				openedPhotoId: queryStringParams.photoId
+				openedPhotoId: queryStringPhotoId
 			});
 		}
 	}
 
 	openAlbum(albumId) {
+		this.loadAlbum(albumId);
+		this.setLocationPath(albumId);
+	}
+
+	loadAlbum(albumId) {
 		let _this = this;
 		PhotoService.getAlbum(albumId)
 			.then((response) => {
@@ -74,20 +74,19 @@ class CollectionView extends React.Component {
 					}
 				});
 			});
-
-		this.setLocationPath(albumId);
 	}
 
 	/**
 	 * Update the current browser location to match the currently opened album.
 	 */
 	setLocationPath(albumId) {
-		let newUrl = location.pathname;
-		if (albumId) {
-			newUrl += "?album=" + albumId;
-		}
+		const initialQueryString = location.search;
+		const newQueryString = UrlHelper.setQueryStringParam(location.search, queryStringParamNameAlbumId, albumId);
 
-		this.context.history.replace(newUrl);
+		if (initialQueryString !== newQueryString) {
+			let newUrl = location.pathname + "?" + newQueryString;
+			this.context.history.replace(newUrl);
+		}
 	}
 
 	onAlbumClicked(album) {
@@ -109,7 +108,7 @@ class CollectionView extends React.Component {
 
 	onPhotoClicked(_, target) {
 		const photo = this.state.activeAlbum.photos[target.index];
-		const photoIdUrl = document.location.pathname + "?" + UrlHelper.addQueryStringParam(document.location.search, "photoId", photo.id);
+		const photoIdUrl = document.location.pathname + "?" + UrlHelper.setQueryStringParam(document.location.search, queryStringParamNamePhotoId, photo.id);
 		this.context.history.push(photoIdUrl);
 	}
 
@@ -144,7 +143,7 @@ class CollectionView extends React.Component {
 				<ModalPhotoDetail
 					isOpen={!!this.state.openedPhotoId}
 					photoId={this.state.openedPhotoId}
-					onRequestClose={() => this.context.history.push(document.location.pathname + "?" + UrlHelper.removeQueryStringParam(document.location.search, "photoId"))}
+					onRequestClose={() => this.context.history.push(document.location.pathname + "?" + UrlHelper.removeQueryStringParam(document.location.search, queryStringParamNamePhotoId))}
 					/>
 			</div>
 		);
