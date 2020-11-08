@@ -1,4 +1,4 @@
-import PhotoService from "../services/PhotoService.js"
+import PhotoService from "../services/PhotoService.ts"
 import CollectionPageBase from "./CollectionPageBase.jsx";
 
 class CollectionPage extends CollectionPageBase {

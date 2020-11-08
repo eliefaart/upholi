@@ -7,7 +7,7 @@ import ModalAddAlbumToCollection from "../components/ModalAddAlbumToCollection.j
 import ModalConfirmation from "../components/ModalConfirmation.jsx"
 import ModalShareCollection from "../components/ModalShareCollection.jsx"
 import { IconCreate, IconDelete, IconShare, IconClose } from "../components/Icons.jsx";
-import PhotoService from "../services/PhotoService.js";
+import PhotoService from "../services/PhotoService.ts";
 
 class CollectionsPage extends PageBaseComponent {
 	constructor(props) {

@@ -1,6 +1,6 @@
 import React from "react";
 import PageBaseComponent from "../components/PageBaseComponent.jsx";
-import PhotoService from "../services/PhotoService";
+import PhotoService from "../services/PhotoService.ts";
 import PhotoDetail from "../components/PhotoDetail.jsx";
 import ContentContainer from "../components/ContentContainer.jsx"
 import AppStateContext from "../contexts/AppStateContext.jsx";

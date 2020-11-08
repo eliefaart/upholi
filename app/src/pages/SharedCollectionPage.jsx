@@ -1,4 +1,4 @@
-import PhotoService from "../services/PhotoService";
+import PhotoService from "../services/PhotoService.ts";
 import CollectionPageBase from "./CollectionPageBase.jsx";
 
 class SharedCollectionPage extends CollectionPageBase {

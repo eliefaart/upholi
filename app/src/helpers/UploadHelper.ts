@@ -1,8 +1,4 @@
-interface File {
-	name: string,
-	status: string,
-	objectUrl: string
-}
+import File from "../entities/File";
 
 export default class UploadHelper {
 

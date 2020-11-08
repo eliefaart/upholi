@@ -71,6 +71,7 @@ mod responses {
 	#[derive(Serialize)]
 	#[serde(rename_all = "camelCase")]
 	pub struct ClientAlbum {
+		pub id: String,
 		pub title: String,
 		pub thumb_photo: Option<PhotoSmall>,
 		pub photos: Vec<PhotoSmall>
@@ -113,13 +114,14 @@ mod responses {
 
 	impl From<Album> for ClientAlbum {
 		fn from(album: Album) -> Self {
-			let mut ids: Vec<&str> = Vec::new();
+			let mut photo_ids: Vec<&str> = Vec::new();
 
 			for id in album.photos.iter() {
-				ids.push(&id[..]);
+				photo_ids.push(&id[..]);
 			}
 
 			Self {
+				id: album.id,
 				title: album.title,
 				thumb_photo: {
 					if let Some(thumb_photo_id) = album.thumb_photo_id {
@@ -137,7 +139,7 @@ mod responses {
 					}
 				},
 				photos: {
-					match Photo::get_with_ids(&ids) {
+					match Photo::get_with_ids(&photo_ids) {
 						Ok(photos) => {
 							let mut result_photos = Vec::new();
 							for photo in photos {

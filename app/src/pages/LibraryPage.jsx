@@ -2,7 +2,7 @@ import React from "react";
 import PageBaseComponent from "../components/PageBaseComponent.jsx";
 import PhotoGallerySelectable from "../components/PhotoGallerySelectable.jsx";
 import ContentContainer from "../components/ContentContainer.jsx";
-import PhotoService from "../services/PhotoService.js";
+import PhotoService from "../services/PhotoService.ts";
 import UploadHelper from "../helpers/UploadHelper.ts";
 import AppStateContext from "../contexts/AppStateContext.jsx";
 import ModalPhotoDetail from "../components/ModalPhotoDetail.jsx";
@@ -169,7 +169,7 @@ class LibraryPage extends PageBaseComponent {
 
 				if (photoElement && photoInfo && fnElementIsInViewport(photoElement)) {
 					anyPhotosLoaded = true;
-					statePhoto.src = photoInfo.getThumbUrl();
+					statePhoto.src = PhotoService.getThumbUrl(photoInfo.id);
 				}
 			}
 		}

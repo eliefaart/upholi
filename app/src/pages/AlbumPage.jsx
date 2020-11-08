@@ -3,7 +3,7 @@ import PageBaseComponent from "../components/PageBaseComponent.jsx";
 import PhotoGallerySelectable from "../components/PhotoGallerySelectable.jsx";
 import ContentContainer from "../components/ContentContainer.jsx"
 import AppStateContext from "../contexts/AppStateContext.jsx";
-import PhotoService from "../services/PhotoService";
+import PhotoService from "../services/PhotoService.ts";
 import UploadHelper from "../helpers/UploadHelper.ts"
 import ModalPhotoDetail from "../components/ModalPhotoDetail.jsx";
 import ModalConfirmation from "../components/ModalConfirmation.jsx";

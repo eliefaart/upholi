@@ -1,5 +1,5 @@
 import React from "react";
-import PhotoService from "../services/PhotoService.js"
+import PhotoService from "../services/PhotoService.ts"
 import AppStateContext from "../contexts/AppStateContext.jsx";
 
 class Albums extends React.Component {

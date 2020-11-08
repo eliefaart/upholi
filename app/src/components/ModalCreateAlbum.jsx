@@ -1,7 +1,7 @@
 import React from "react";
 import Modal from "../components/Modal.jsx";
 import AppStateContext from "../contexts/AppStateContext.jsx";
-import PhotoService from "../services/PhotoService.js";
+import PhotoService from "../services/PhotoService.ts";
 import { toast } from "react-toastify";
 
 class ModalCreateAlbum extends React.Component {
@@ -18,7 +18,7 @@ class ModalCreateAlbum extends React.Component {
 		PhotoService.createAlbum(title, this.props.createWithPhotos)
 			.then(albumId => {
 				toast.info("Album '" + title + "' created.");
-				
+
 				if (history) {
 					history.push("/album/" + albumId);
 				}

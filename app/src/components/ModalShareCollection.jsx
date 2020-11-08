@@ -4,7 +4,7 @@ import AppStateContext from "../contexts/AppStateContext.jsx";
 import { IconCopy } from "../components/Icons.jsx";
 import { toast } from "react-toastify";
 import Switch from "react-switch";
-import PhotoService from "../services/PhotoService.js";
+import PhotoService from "../services/PhotoService.ts";
 
 class ModalShareCollection extends React.Component {
 
