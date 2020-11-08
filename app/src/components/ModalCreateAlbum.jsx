@@ -1,6 +1,6 @@
 import React from "react";
 import Modal from "../components/Modal.jsx";
-import AppStateContext from "../contexts/AppStateContext.jsx";
+import AppStateContext from "../contexts/AppStateContext.ts";
 import PhotoService from "../services/PhotoService.ts";
 import { toast } from "react-toastify";
 

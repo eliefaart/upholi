@@ -1,7 +1,7 @@
 import React from "react";
 import Modal from "./Modal.jsx";
-import AppStateContext from "../contexts/AppStateContext.jsx";
-import { IconCopy } from "../components/Icons.jsx";
+import AppStateContext from "../contexts/AppStateContext.ts";
+import { IconCopy } from "../components/Icons.tsx";
 import { toast } from "react-toastify";
 import Switch from "react-switch";
 import PhotoService from "../services/PhotoService.ts";

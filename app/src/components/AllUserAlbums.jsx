@@ -1,6 +1,6 @@
 import React from "react";
 import PhotoService from "../services/PhotoService.ts"
-import Albums from "../components/Albums.jsx";
+import Albums from "../components/Albums.tsx";
 
 class AllUserAlbums extends React.Component {
 

@@ -1,7 +1,7 @@
 import React from "react";
 import PageBaseComponent from "../components/PageBaseComponent.jsx";
 import ContentContainer from "../components/ContentContainer.jsx"
-import AppStateContext from "../contexts/AppStateContext.jsx";
+import AppStateContext from "../contexts/AppStateContext.ts";
 import CollectionView from "./CollectionView.jsx";
 
 class CollectionPageBase extends PageBaseComponent {

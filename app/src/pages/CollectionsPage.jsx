@@ -1,12 +1,12 @@
 import React from "react";
 import PageBaseComponent from "../components/PageBaseComponent.jsx";
 import ContentContainer from "../components/ContentContainer.jsx"
-import AppStateContext from "../contexts/AppStateContext.jsx";
+import AppStateContext from "../contexts/AppStateContext.ts";
 import ModalCreateCollection from "../components/ModalCreateCollection.jsx"
 import ModalAddAlbumToCollection from "../components/ModalAddAlbumToCollection.jsx"
 import ModalConfirmation from "../components/ModalConfirmation.jsx"
 import ModalShareCollection from "../components/ModalShareCollection.jsx"
-import { IconCreate, IconDelete, IconShare, IconClose } from "../components/Icons.jsx";
+import { IconCreate, IconDelete, IconShare, IconClose } from "../components/Icons.tsx";
 import PhotoService from "../services/PhotoService.ts";
 
 class CollectionsPage extends PageBaseComponent {

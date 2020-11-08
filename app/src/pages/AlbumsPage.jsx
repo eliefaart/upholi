@@ -3,7 +3,7 @@ import PageBaseComponent from "../components/PageBaseComponent.jsx";
 import AllUserAlbums from "../components/AllUserAlbums.jsx";
 import ContentContainer from "../components/ContentContainer.jsx"
 import ModalCreateAlbum from "../components/ModalCreateAlbum.jsx"
-import AppStateContext from "../contexts/AppStateContext.jsx";
+import AppStateContext from "../contexts/AppStateContext.ts";
 
 class AlbumsPage extends PageBaseComponent {
 

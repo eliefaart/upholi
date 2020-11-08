@@ -6,7 +6,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import AppBody from "../components/AppBody.jsx";
 import { default as ReactModal } from "react-modal";
 
-import AppStateContext from "../contexts/AppStateContext.jsx";
+import AppStateContext from "../contexts/AppStateContext.ts";
 
 /**
  * Highest component in hierarchy, initializes history/router, context, modals and toast messages.
@@ -16,7 +16,6 @@ class AppContainer extends React.Component {
 	constructor(props) {
 		super(props);
 
-		this.context = React.createContext();
 		this.state = {
 			ready: false
 		}

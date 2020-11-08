@@ -2,7 +2,7 @@ import React from "react";
 import Modal from "./Modal.jsx";
 import PhotoService from "../services/PhotoService.ts";
 import PhotoDetail from "../components/PhotoDetail.jsx";
-import { IconDownload } from "../components/Icons.jsx";
+import { IconDownload } from "../components/Icons.tsx";
 
 class ModalPhotoDetail extends React.Component {
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { IconUpload } from "../components/Icons.jsx";
+import { IconUpload } from "../components/Icons.tsx";
 
 class UploadButton extends React.Component {
 

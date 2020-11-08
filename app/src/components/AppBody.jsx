@@ -8,7 +8,7 @@ import AlbumPage from "../pages/AlbumPage.jsx";
 import PhotoPage from "../pages/PhotoPage.jsx";
 import CollectionPage from "../pages/CollectionPage.jsx";
 import SharedCollectionPage from "../pages/SharedCollectionPage.jsx";
-import Header from "./Header.jsx";
+import Header from "./Header.tsx";
 
 /**
  * Renders headers and route components.

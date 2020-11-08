@@ -1,8 +1,8 @@
 import React from "react";
 import PhotoGallerySelectable from "../components/PhotoGallerySelectable.jsx";
-import AppStateContext from "../contexts/AppStateContext.jsx";
+import AppStateContext from "../contexts/AppStateContext.ts";
 import PhotoService from "../services/PhotoService.ts";
-import Albums from "../components/Albums.jsx";
+import Albums from "../components/Albums.tsx";
 import ModalPhotoDetail from "../components/ModalPhotoDetail.jsx";
 import UrlHelper from "../helpers/UrlHelper.ts";
 

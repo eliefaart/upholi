@@ -1,5 +1,5 @@
 import React from "react";
-import AppStateContext from "../contexts/AppStateContext.jsx";
+import AppStateContext from "../contexts/AppStateContext.ts";
 
 /**
  * Base class for a 'page components'.

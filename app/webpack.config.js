@@ -1,8 +1,11 @@
 module.exports = {
 	watch: false,
-	entry: './src/index.jsx',
+	entry: "./src/index.jsx",
 	output: {
-		filename: '../wwwroot/dist/main.js'
+		filename: "../wwwroot/dist/main.js"
+	},
+	resolve: {
+		extensions: [".js", ".jsx", ".ts", ".tsx"]
 	},
 	module: {
 		rules: [
@@ -23,11 +26,11 @@ module.exports = {
 			},
 			{
 				test: /\.scss$/,
-				use: ['style-loader', 'css-loader', 'sass-loader']
+				use: ["style-loader", "css-loader", "sass-loader"]
 			},
 			{
 				test: /\.css$/,
-				use: ['style-loader', 'css-loader']
+				use: ["style-loader", "css-loader"]
 			}
 		]
 	}

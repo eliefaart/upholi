@@ -13,6 +13,7 @@
     "build-prd": "webpack --mode production"
   },
   "dependencies": {
+    "@types/history": "^4.7.8",
     "@types/react": "^16.9.56",
     "@types/react-dom": "^16.9.9",
     "babel-cli": "^6.26.0",
