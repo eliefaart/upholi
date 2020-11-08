@@ -1,6 +1,6 @@
 import PhotoService from "../services/PhotoService.js";
 
-class Photo {
+export default class Photo {
 
 	constructor(id, width, height) {
 		this.id = id;
@@ -24,5 +24,3 @@ class Photo {
 		return PhotoService.baseUrl() + "/photo/" + this.id + "/" + variant;
 	}
 }
-
-export default Photo;

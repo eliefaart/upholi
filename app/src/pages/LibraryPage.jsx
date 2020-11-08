@@ -3,7 +3,7 @@ import PageBaseComponent from "../components/PageBaseComponent.jsx";
 import PhotoGallerySelectable from "../components/PhotoGallerySelectable.jsx";
 import ContentContainer from "../components/ContentContainer.jsx";
 import PhotoService from "../services/PhotoService.js";
-import UploadHelper from "../helpers/UploadHelper.js";
+import UploadHelper from "../helpers/UploadHelper.ts";
 import AppStateContext from "../contexts/AppStateContext.jsx";
 import ModalPhotoDetail from "../components/ModalPhotoDetail.jsx";
 import ModalConfirmation from "../components/ModalConfirmation.jsx";
@@ -13,7 +13,7 @@ import ModalAddToAlbum from "../components/ModalAddToAlbum.jsx";
 import UploadButton from "../components/UploadButton.jsx";
 import { IconDelete, IconAddToAlbum } from "../components/Icons.jsx";
 import { toast } from "react-toastify";
-import UrlHelper from "../helpers/UrlHelper.js";
+import UrlHelper from "../helpers/UrlHelper.ts";
 
 const queryStringParamNamePhotoId = "photoId";
 

@@ -4,14 +4,14 @@ import PhotoGallerySelectable from "../components/PhotoGallerySelectable.jsx";
 import ContentContainer from "../components/ContentContainer.jsx"
 import AppStateContext from "../contexts/AppStateContext.jsx";
 import PhotoService from "../services/PhotoService";
-import UploadHelper from "../helpers/UploadHelper.js"
+import UploadHelper from "../helpers/UploadHelper.ts"
 import ModalPhotoDetail from "../components/ModalPhotoDetail.jsx";
 import ModalConfirmation from "../components/ModalConfirmation.jsx";
 import ModalUploadProgress from "../components/ModalUploadProgress.jsx";
 import UploadButton from "../components/UploadButton.jsx";
 import { IconRemove, IconImage } from "../components/Icons.jsx";
 import { toast } from "react-toastify";
-import UrlHelper from "../helpers/UrlHelper.js";
+import UrlHelper from "../helpers/UrlHelper.ts";
 
 const queryStringParamNamePhotoId = "photoId";
 

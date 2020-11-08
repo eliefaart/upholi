@@ -5,12 +5,21 @@ module.exports = {
 		filename: '../wwwroot/dist/main.js'
 	},
 	module: {
-		rules: [{
+		rules: [
+			{
+				test: /\.tsx$/,
+				exclude: /node_modules/,
+				use: ["babel-loader", "ts-loader"]
+			},
+			{
+				test: /\.ts$/,
+				exclude: /node_modules/,
+				use: ["ts-loader"]
+			},
+			{
 				test: /\.jsx$/,
 				exclude: /node_modules/,
-				use: {
-					loader: "babel-loader"
-				}
+				use: [ "babel-loader" ]
 			},
 			{
 				test: /\.scss$/,

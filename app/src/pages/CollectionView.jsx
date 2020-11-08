@@ -4,7 +4,7 @@ import AppStateContext from "../contexts/AppStateContext.jsx";
 import PhotoService from "../services/PhotoService";
 import Albums from "../components/Albums.jsx";
 import ModalPhotoDetail from "../components/ModalPhotoDetail.jsx";
-import UrlHelper from "../helpers/UrlHelper.js";
+import UrlHelper from "../helpers/UrlHelper.ts";
 
 const queryStringParamNameAlbumId = "albumId";
 const queryStringParamNamePhotoId = "photoId";

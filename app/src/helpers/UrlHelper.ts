@@ -1,4 +1,4 @@
-import queryString from "query-string";
+import * as queryString from "query-string";
 
 export default class UrlHelper {
 
@@ -6,21 +6,21 @@ export default class UrlHelper {
 
 	/**
 	 * Get the value of a query string parameter. Returns null if parameter is not present in query string.
-	 * @param {string} qs Query string
-	 * @param {string} name Name of query string parameter
+	 * @param qs Query string
+	 * @param name Name of query string parameter
 	 */
-	static getQueryStringParamValue(qs, name) {
+	static getQueryStringParamValue(qs: string, name: string) : string {
 		const parsed = queryString.parse(qs);
-		return parsed[name] || null;
+		return parsed[name] as string;
 	}
 
 	/**
 	 * Set a query string parameter to some value in a query string
-	 * @param {string} qs Query string
-	 * @param {string} name Name of query string parameter
-	 * @param {string} value Value of query string parameter
+	 * @param qs Query string
+	 * @param name Name of query string parameter
+	 * @param value Value of query string parameter
 	 */
-	static setQueryStringParam(qs, name, value) {
+	static setQueryStringParam(qs: string, name: string, value: string) : string {
 		const parsed = queryString.parse(qs);
 		parsed[name] = value;
 
@@ -29,10 +29,10 @@ export default class UrlHelper {
 
 	/**
 	 * Remove a query string parameter from a query string
-	 * @param {string} qs Query string
-	 * @param {string} name Name of query string parameter
+	 * @param qs Query string
+	 * @param name Name of query string parameter
 	 */
-	static removeQueryStringParam(qs, name) {
+	static removeQueryStringParam(qs: string, name: string) : string {
 		const parsed = queryString.parse(qs);
 		delete parsed[name];
 
