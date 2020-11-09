@@ -1,16 +1,23 @@
-import React from "react";
+import * as React from "react";
+
+interface ContentContainerProps {
+	className: string,
+	paddingTop: boolean,
+	onDrop: (event: React.DragEvent<HTMLElement>) => void,
+	onDragOver: (event: React.DragEvent<HTMLElement>) => void,
+}
 
 /**
  * I feel like I don't really need this class..
  * Perhaps I can include this functionality in PageBaseComponent somehow? Or AppBody?
  */
-class ContentContainer extends React.Component {
+class ContentContainer extends React.Component<ContentContainerProps> {
 
-	constructor(props) {
+	constructor(props: ContentContainerProps) {
 		super(props);
 	}
 
-	getClassName() {
+	getClassName(): string | undefined {
 		let className = "";
 
 		if (this.props.paddingTop === true){
@@ -18,10 +25,11 @@ class ContentContainer extends React.Component {
 		}
 
 		if (className.trim() === ""){
-			className = null;
+			return undefined;
 		}
-
-		return className;
+		else {
+			return className;
+		}
 	}
 
 	render() {

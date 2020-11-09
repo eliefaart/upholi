@@ -1,7 +1,7 @@
 import React from "react";
 import PageBaseComponent from "../components/PageBaseComponent.jsx";
 import PhotoGallerySelectable from "../components/PhotoGallerySelectable.jsx";
-import ContentContainer from "../components/ContentContainer.jsx";
+import ContentContainer from "../components/ContentContainer.tsx";
 import PhotoService from "../services/PhotoService.ts";
 import UploadHelper from "../helpers/UploadHelper.ts";
 import AppStateContext from "../contexts/AppStateContext.ts";
@@ -10,7 +10,7 @@ import ModalConfirmation from "../components/ModalConfirmation.jsx";
 import ModalUploadProgress from "../components/ModalUploadProgress.jsx";
 import ModalCreateAlbum from "../components/ModalCreateAlbum.jsx";
 import ModalAddToAlbum from "../components/ModalAddToAlbum.jsx";
-import UploadButton from "../components/UploadButton.jsx";
+import UploadButton from "../components/UploadButton.tsx";
 import { IconDelete, IconAddToAlbum } from "../components/Icons.tsx";
 import { toast } from "react-toastify";
 import UrlHelper from "../helpers/UrlHelper.ts";

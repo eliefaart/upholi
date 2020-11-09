@@ -1,7 +1,7 @@
 import React from "react";
 import PageBaseComponent from "../components/PageBaseComponent.jsx";
-import AllUserAlbums from "../components/AllUserAlbums.jsx";
-import ContentContainer from "../components/ContentContainer.jsx"
+import AllUserAlbums from "../components/AllUserAlbums.tsx";
+import ContentContainer from "../components/ContentContainer.tsx"
 import ModalCreateAlbum from "../components/ModalCreateAlbum.jsx"
 import AppStateContext from "../contexts/AppStateContext.ts";
 

@@ -5,8 +5,8 @@ import AppStateContext from "../contexts/AppStateContext";
 
 interface AlbumProps {
 	onClick: any,
-	activeAlbumId: string | null,
-	albumUrl: (albumUrl: string) => string,
+	activeAlbumId?: string,
+	albumUrl?: (albumUrl: string) => string,
 	albums: Album[]
 }
 
@@ -27,7 +27,11 @@ class Albums extends React.Component<AlbumProps> {
 		const anyAlbumActive = this.props.albums.some(album => album.id === this.props.activeAlbumId);
 
 		const history = this.context.history;
-		const fnOnClick = this.props.onClick || ((album: Album) => { history.push(this.props.albumUrl(album.id)) });
+		const fnOnClick = this.props.onClick || ((album: Album) => {
+			if (this.props.albumUrl) {
+				history.push(this.props.albumUrl(album.id));
+			}
+		});
 
 		// Inline child component. TODO: Just make this a proper component, but only needs to be known within this module.
 		const AlbumElement = function (props: AlbumElementProps) {

@@ -1,6 +1,6 @@
 import React from "react";
 import PageBaseComponent from "../components/PageBaseComponent.jsx";
-import ContentContainer from "../components/ContentContainer.jsx"
+import ContentContainer from "../components/ContentContainer.tsx"
 import AppStateContext from "../contexts/AppStateContext.ts";
 import ModalCreateCollection from "../components/ModalCreateCollection.jsx"
 import ModalAddAlbumToCollection from "../components/ModalAddAlbumToCollection.jsx"

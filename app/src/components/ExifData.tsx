@@ -1,22 +1,27 @@
-import React from "react";
+import * as React from "react";
+import Exif from "../entities/Exif";
 
-class ExifData extends React.Component {
-	constructor(props) {
+interface ExifDataProps {
+	exif: Exif
+}
+
+class ExifData extends React.Component<ExifDataProps> {
+	constructor(props: ExifDataProps) {
 		super(props);
 	}
 
-	createLocationUri(lat, lon) {
+	createLocationUri(lat: number, lon: number) {
 		return "https://www.openstreetmap.org/#map=18/" + lat + "/" + lon;
 	}
 
 	render() {
 		// Prepare exposure display text
 		let exposureText = "";
-		if (!!this.props.exif.aperture) 
+		if (!!this.props.exif.aperture)
 			exposureText += this.props.exif.aperture + " ";
-		if (!!this.props.exif.exposureTime) 
+		if (!!this.props.exif.exposureTime)
 			exposureText += this.props.exif.exposureTime + " ";
-		if (!!this.props.exif.iso) 
+		if (!!this.props.exif.iso)
 			exposureText += "ISO-" + this.props.exif.iso;
 
 		// Prepare focal length display text
@@ -26,7 +31,7 @@ class ExifData extends React.Component {
 			if (!!this.props.exif.focalLength35mmEquiv) {
 				focalLengthText += " (" + this.props.exif.focalLength35mmEquiv + "mm in 35mm equivalent)";
 			}
-			
+
 		}
 
 		// Prepare date taken display text
@@ -69,7 +74,7 @@ class ExifData extends React.Component {
 
 			{!!locationText && <div className="property">
 				<span className="name">Location</span>
-				<a className="value" target="_blank" href={locationUri}>{locationText}</a>
+				<a className="value" target="_blank" href={locationUri as string}>{locationText}</a>
 			</div>}
 		</div>;
 	}

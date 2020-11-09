@@ -1,5 +1,5 @@
 import React from "react";
-import ExifData from "../components/ExifData.jsx";
+import ExifData from "../components/ExifData.tsx";
 
 const ZoomStyleEnum = {
 	// Using delta in pixels
