@@ -1,10 +1,20 @@
-import React from "react";
-import { default as ReactModal } from "react-modal";
-import { IconClose } from "../components/Icons.tsx";
+import * as React from "react";
+import * as ReactModal from "react-modal";
+import { IconClose } from "../components/Icons";
 
-class Modal extends React.Component {
+interface ModalProps {
+	isOpen: boolean,
+	className?: string,
+	title: string,
+	okButtonText?: string | null,
+	headerActions: JSX.Element,
+	onRequestClose: (event: React.MouseEvent<Element, MouseEvent> | React.KeyboardEvent<Element>) => void,
+	onOkButtonClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void
+}
 
-	constructor(props) {
+class Modal extends React.Component<ModalProps> {
+
+	constructor(props: ModalProps) {
 		super(props);
 	}
 
@@ -19,7 +29,7 @@ class Modal extends React.Component {
 				<div className="modalHeader">
 					<span className="title">{this.props.title}</span>
 					{this.props.headerActions}
-					<button className="iconOnly" onClick={() => this.props.onRequestClose()}>
+					<button className="iconOnly" onClick={(event) => this.props.onRequestClose(event)}>
 						<IconClose/>
 					</button>
 				</div>

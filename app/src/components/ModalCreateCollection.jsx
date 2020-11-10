@@ -1,5 +1,5 @@
 import React from "react";
-import Modal from "../components/Modal.jsx";
+import Modal from "../components/Modal.tsx";
 import AppStateContext from "../contexts/AppStateContext.ts";
 
 class ModalCreateCollection extends React.Component {

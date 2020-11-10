@@ -1,5 +1,5 @@
 import React from "react";
-import Modal from "./Modal.jsx";
+import Modal from "./Modal.tsx";
 import AppStateContext from "../contexts/AppStateContext.ts";
 import AllUserAlbums from "../components/AllUserAlbums.tsx";
 

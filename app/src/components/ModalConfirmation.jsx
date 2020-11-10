@@ -1,12 +1,12 @@
 import React from "react";
-import Modal from "./Modal.jsx";
+import Modal from "./Modal.tsx";
 
 class ModalConfirmation extends React.Component {
 
 	constructor(props) {
 		super(props);
 	}
-	
+
 	componentDidMount() {
 	}
 

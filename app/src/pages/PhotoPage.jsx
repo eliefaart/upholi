@@ -1,7 +1,7 @@
 import React from "react";
 import PageBaseComponent from "../components/PageBaseComponent.jsx";
 import PhotoService from "../services/PhotoService.ts";
-import PhotoDetail from "../components/PhotoDetail.jsx";
+import PhotoDetail from "../components/PhotoDetail.tsx";
 import ContentContainer from "../components/ContentContainer.tsx"
 import AppStateContext from "../contexts/AppStateContext.ts";
 import { IconClose, IconDownload } from "../components/Icons.tsx";
