@@ -1,25 +1,41 @@
-import React from "react";
-import Modal from "./Modal.tsx";
-import AppStateContext from "../contexts/AppStateContext.ts";
-import { IconCopy } from "../components/Icons.tsx";
+import * as React from "react";
+import Modal from "./Modal";
+import AppStateContext from "../contexts/AppStateContext";
+import { IconCopy } from "../components/Icons";
 import { toast } from "react-toastify";
 import Switch from "react-switch";
-import PhotoService from "../services/PhotoService.ts";
+import { default as PhotoService, UpdateCollection } from "../services/PhotoService";
+import ModalPropsBase from "../entities/ModalPropsBase";
+import Collection from "../entities/Collection";
 
-class ModalShareCollection extends React.Component {
+interface ModalShareCollectionProps extends ModalPropsBase {
+	collection: Collection,
+	onOptionsChanged: () => void
+}
 
-	constructor(props) {
+interface ModalShareCollectionState {
+	shared: boolean,
+	requirePassword: boolean,
+	isChangingPassword: boolean,
+	password: string
+}
+
+
+class ModalShareCollection extends React.Component<ModalShareCollectionProps, ModalShareCollectionState> {
+
+	constructor(props: ModalShareCollectionProps) {
 		super(props);
 
 		this.state = {
 			shared: this.props.collection.sharing.shared,
 			requirePassword: this.props.collection.sharing.requirePassword,
-			isChangingPassword: false
+			isChangingPassword: false,
+			password: ""
 		};
 	}
 
 	copyUrlToClipboard() {
-		let publicUrlElement = document.getElementsByClassName("urlToCopy")[0];
+		let publicUrlElement = document.getElementsByClassName("urlToCopy")[0] as HTMLInputElement;
 
 		// Select text
 		publicUrlElement.select();
@@ -34,7 +50,7 @@ class ModalShareCollection extends React.Component {
 		toast.info("URL copied to clipboard.");
 	}
 
-	onPasswordUpdated (password) {
+	onPasswordUpdated (password: string) {
 		this.setState({
 			isChangingPassword: false,
 			password: password
@@ -44,7 +60,10 @@ class ModalShareCollection extends React.Component {
 	}
 
 	updateSharingOptions() {
-		const updateOptions = {
+		const updateOptions: UpdateCollection = {
+			title: null,
+			albums: null,
+			public: null,
 			sharing: {
 				shared: this.state.shared,
 				requirePassword: this.state.requirePassword
@@ -52,7 +71,7 @@ class ModalShareCollection extends React.Component {
 		};
 
 		if (this.state.requirePassword && !!this.state.password) {
-			updateOptions.sharing.password = this.state.password;
+			updateOptions.sharing!.password = this.state.password;
 		}
 
 		PhotoService.updateCollection(this.props.collection.id, updateOptions)
@@ -145,31 +164,38 @@ class ModalShareCollection extends React.Component {
 				</div>}
 
 			{this.state.isChangingPassword && <ModalSetPassword
-				onOkButtonClick={(password) => this.onPasswordUpdated(password)}/>}
+				onOkButtonClick={(password: string) => this.onPasswordUpdated(password)}/>}
 		</Modal>;
 	}
 }
 
-class ModalSetPassword extends React.Component {
-	constructor(props) {
+interface ModalSetPasswordProps {
+	onOkButtonClick: (password: string) => void
+}
+
+
+class ModalSetPassword extends React.Component<ModalSetPasswordProps> {
+	constructor(props:ModalSetPasswordProps) {
 		super(props);
 
 		this.state = {};
 	}
 
 	onOkButtonClick() {
-		const input = document.getElementById("password");
-		this.props.onOkButtonClick(input.value);
+		const input = document.getElementById("password") as HTMLInputElement;
+		if (input) {
+			this.props.onOkButtonClick(input.value);
+		}
 	}
 
 	render() {
 		return <Modal
 			title="Set password"
-			className={this.props.className + " modalSetPassword"}
+			className="modalSetPassword"
 			isOpen={true}
 			onRequestClose={() => {}}
 			okButtonText="Save"
-			onOkButtonClick={(event) => this.onOkButtonClick(event)}
+			onOkButtonClick={() => this.onOkButtonClick()}
 			>
 				<input id="password" type="password"/>
 		</Modal>;

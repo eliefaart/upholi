@@ -2,7 +2,7 @@ import React from "react";
 import PageBaseComponent from "../components/PageBaseComponent.jsx";
 import AllUserAlbums from "../components/AllUserAlbums.tsx";
 import ContentContainer from "../components/ContentContainer.tsx"
-import ModalCreateAlbum from "../components/ModalCreateAlbum.jsx"
+import ModalCreateAlbum from "../components/ModalCreateAlbum.tsx"
 import AppStateContext from "../contexts/AppStateContext.ts";
 
 class AlbumsPage extends PageBaseComponent {

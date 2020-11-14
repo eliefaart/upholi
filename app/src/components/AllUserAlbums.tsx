@@ -4,7 +4,7 @@ import Albums from "../components/Albums";
 import Album from "../entities/Album";
 
 interface AllUserAlbumsProps {
-	onClick: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
+	onClick: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void
 }
 
 interface AllUserAlbumsState {

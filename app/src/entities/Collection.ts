@@ -6,7 +6,7 @@ interface Album {
 
 interface SharingOptions {
 	shared: boolean,
-	require_password: boolean,
+	requirePassword: boolean,
 	token: string
 }
 

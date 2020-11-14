@@ -1,15 +1,13 @@
 import * as React from "react";
 import * as ReactModal from "react-modal";
 import { IconClose } from "../components/Icons";
+import ModalPropsBase from "../entities/ModalPropsBase";
 
-interface ModalProps {
-	isOpen: boolean,
-	className?: string,
+interface ModalProps extends ModalPropsBase {
 	title: string,
 	okButtonText?: string | null,
-	headerActions: JSX.Element,
-	onRequestClose: (event: React.MouseEvent<Element, MouseEvent> | React.KeyboardEvent<Element>) => void,
-	onOkButtonClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void
+	headerActions?: JSX.Element,
+	onOkButtonClick?: () => void
 }
 
 class Modal extends React.Component<ModalProps> {
@@ -29,7 +27,7 @@ class Modal extends React.Component<ModalProps> {
 				<div className="modalHeader">
 					<span className="title">{this.props.title}</span>
 					{this.props.headerActions}
-					<button className="iconOnly" onClick={(event) => this.props.onRequestClose(event)}>
+					<button className="iconOnly" onClick={() => this.props.onRequestClose()}>
 						<IconClose/>
 					</button>
 				</div>

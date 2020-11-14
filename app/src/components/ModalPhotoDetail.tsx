@@ -1,20 +1,32 @@
-import React from "react";
-import Modal from "./Modal.tsx";
-import PhotoService from "../services/PhotoService.ts";
-import PhotoDetail from "../components/PhotoDetail.tsx";
-import { IconDownload } from "../components/Icons.tsx";
+import * as React from "react";
+import Modal from "./Modal";
+import PhotoService from "../services/PhotoService";
+import PhotoDetail from "../components/PhotoDetail";
+import { IconDownload } from "../components/Icons";
+import ModalPropsBase from "../entities/ModalPropsBase";
+import Photo from "../entities/Photo";
 
-class ModalPhotoDetail extends React.Component {
+interface ModalPhotoDetailProps extends ModalPropsBase {
+	photoId: string
+}
 
-	constructor(props) {
+interface ModalPhotoDetailState {
+	photo: Photo | null
+}
+
+class ModalPhotoDetail extends React.Component<ModalPhotoDetailProps, ModalPhotoDetailState> {
+
+	constructor(props: ModalPhotoDetailProps) {
 		super(props);
 
-		this.state = {};
+		this.state = {
+			photo: null
+		};
 	}
 
-	componentDidUpdate(prevProps) {
+	componentDidUpdate(prevProps: ModalPhotoDetailProps) {
 		if (this.props.photoId && prevProps.photoId !== this.props.photoId) {
-			const fnOnPhotoDataReceived = (photo) => {
+			const fnOnPhotoDataReceived = (photo: Photo) => {
 				this.setState({ photo });
 			};
 

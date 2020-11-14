@@ -1,18 +1,24 @@
-import React from "react";
-import Modal from "../components/Modal.tsx";
-import AppStateContext from "../contexts/AppStateContext.ts";
+import * as React from "react";
+import Modal from "../components/Modal";
+import AppStateContext from "../contexts/AppStateContext";
+import ModalPropsBase from "../entities/ModalPropsBase";
 
-class ModalCreateCollection extends React.Component {
+interface ModalCreateCollectionProps extends ModalPropsBase {
+	onOkButtonClick: (title: string) => void
+}
 
-	constructor(props) {
+class ModalCreateCollection extends React.Component<ModalCreateCollectionProps> {
+
+	constructor(props: ModalCreateCollectionProps) {
 		super(props);
 	}
 
 	onOkButtonClick() {
 		const form = document.getElementById("form-create-collection");
-		const title = form.getElementsByTagName("input")[0].value;
-
-		this.props.onOkButtonClick(title);
+		if (form) {
+			const title = form.getElementsByTagName("input")[0].value;
+			this.props.onOkButtonClick(title);
+		}
 	}
 
 	render() {

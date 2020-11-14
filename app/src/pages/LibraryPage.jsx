@@ -5,11 +5,11 @@ import ContentContainer from "../components/ContentContainer.tsx";
 import PhotoService from "../services/PhotoService.ts";
 import UploadHelper from "../helpers/UploadHelper.ts";
 import AppStateContext from "../contexts/AppStateContext.ts";
-import ModalPhotoDetail from "../components/ModalPhotoDetail.jsx";
-import ModalConfirmation from "../components/ModalConfirmation.jsx";
-import ModalUploadProgress from "../components/ModalUploadProgress.jsx";
-import ModalCreateAlbum from "../components/ModalCreateAlbum.jsx";
-import ModalAddToAlbum from "../components/ModalAddToAlbum.jsx";
+import ModalPhotoDetail from "../components/ModalPhotoDetail.tsx";
+import ModalConfirmation from "../components/ModalConfirmation.tsx";
+import ModalUploadProgress from "../components/ModalUploadProgress.tsx";
+import ModalCreateAlbum from "../components/ModalCreateAlbum.tsx";
+import ModalAddToAlbum from "../components/ModalAddToAlbum.tsx";
 import UploadButton from "../components/UploadButton.tsx";
 import { IconDelete, IconAddToAlbum } from "../components/Icons.tsx";
 import { toast } from "react-toastify";
@@ -321,7 +321,7 @@ class LibraryPage extends PageBaseComponent {
 				<ModalCreateAlbum
 					isOpen={this.state.newAlbumDialogOpen}
 					onRequestClose={() => this.setState({newAlbumDialogOpen: false})}
-					createWithPhotos={this.state.selectedPhotos}
+					createWithPhotoIds={this.state.selectedPhotos}
 					/>
 
 				<ModalAddToAlbum

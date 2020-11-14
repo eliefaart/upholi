@@ -5,9 +5,9 @@ import ContentContainer from "../components/ContentContainer.tsx"
 import AppStateContext from "../contexts/AppStateContext.ts";
 import PhotoService from "../services/PhotoService.ts";
 import UploadHelper from "../helpers/UploadHelper.ts"
-import ModalPhotoDetail from "../components/ModalPhotoDetail.jsx";
-import ModalConfirmation from "../components/ModalConfirmation.jsx";
-import ModalUploadProgress from "../components/ModalUploadProgress.jsx";
+import ModalPhotoDetail from "../components/ModalPhotoDetail.tsx";
+import ModalConfirmation from "../components/ModalConfirmation.tsx";
+import ModalUploadProgress from "../components/ModalUploadProgress.tsx";
 import UploadButton from "../components/UploadButton.tsx";
 import { IconRemove, IconImage } from "../components/Icons.tsx";
 import { toast } from "react-toastify";

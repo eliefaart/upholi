@@ -5,28 +5,33 @@ import Collection from "../entities/Collection";
 /**
  * Response from server on calls that create new entities such as albums
  */
-interface CreatedResult {
+export interface CreatedResult {
 	id: string
 }
 
-interface CreateAlbum {
+export interface CreateAlbum {
 	title: string
 }
 
-interface UpdateAlbum {
+export interface UpdateAlbum {
 	title: string | null,
 	thumbPhotoId: string | null,
 	photos: string[] | null
 }
 
-interface CreateCollection {
+export interface CreateCollection {
 	title: string
 }
 
-interface UpdateCollection {
+export interface UpdateCollection {
 	title: string | null,
 	public: boolean | null,
-	albums: string[] | null
+	albums: string[] | null,
+	sharing?: {
+		shared: boolean
+		requirePassword: boolean,
+		password?: string
+	}
 }
 
 /**

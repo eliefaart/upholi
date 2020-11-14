@@ -1,9 +1,15 @@
-import React from "react";
-import Modal from "./Modal.tsx";
+import * as React from "react";
+import Modal from "./Modal";
+import ModalPropsBase from "../entities/ModalPropsBase";
+import File from "../entities/File";
 
-class ModalUploadProgress extends React.Component {
+interface ModalUploadProgressProps extends ModalPropsBase {
+	files: File[]
+}
 
-	constructor(props) {
+class ModalUploadProgress extends React.Component<ModalUploadProgressProps> {
+
+	constructor(props: ModalUploadProgressProps) {
 		super(props);
 	}
 

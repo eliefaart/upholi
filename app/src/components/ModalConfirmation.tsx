@@ -1,9 +1,17 @@
-import React from "react";
-import Modal from "./Modal.tsx";
+import * as React from "react";
+import Modal from "./Modal";
+import ModalPropsBase from "../entities/ModalPropsBase";
 
-class ModalConfirmation extends React.Component {
+interface ModalConfirmationProps extends ModalPropsBase {
+	title?: string,
+	onOkButtonClick: () => void,
+	okButtonText?: string
+	confirmationText: string
+}
 
-	constructor(props) {
+class ModalConfirmation extends React.Component<ModalConfirmationProps> {
+
+	constructor(props: ModalConfirmationProps) {
 		super(props);
 	}
 

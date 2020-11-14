@@ -2,10 +2,10 @@ import React from "react";
 import PageBaseComponent from "../components/PageBaseComponent.jsx";
 import ContentContainer from "../components/ContentContainer.tsx"
 import AppStateContext from "../contexts/AppStateContext.ts";
-import ModalCreateCollection from "../components/ModalCreateCollection.jsx"
-import ModalAddAlbumToCollection from "../components/ModalAddAlbumToCollection.jsx"
-import ModalConfirmation from "../components/ModalConfirmation.jsx"
-import ModalShareCollection from "../components/ModalShareCollection.jsx"
+import ModalCreateCollection from "../components/ModalCreateCollection.tsx"
+import ModalAddAlbumToCollection from "../components/ModalAddAlbumToCollection.tsx"
+import ModalConfirmation from "../components/ModalConfirmation.tsx"
+import ModalShareCollection from "../components/ModalShareCollection.tsx"
 import { IconCreate, IconDelete, IconShare, IconClose } from "../components/Icons.tsx";
 import PhotoService from "../services/PhotoService.ts";
 
