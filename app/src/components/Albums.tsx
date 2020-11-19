@@ -37,13 +37,13 @@ class Albums extends React.Component<AlbumProps> {
 		const AlbumElement = function (props: AlbumElementProps) {
 			const album = props.album;
 			if (album) {
-				const thumbUrl = "url('" + PhotoService.baseUrl() + "/photo/" + album.thumbPhotoId + "/thumb')";
+				const thumbUrl = !!album.thumbPhotoId ?"url('" + PhotoService.baseUrl() + "/photo/" + album.thumbPhotoId + "/thumb')" : "";
 				const isActive = album.id === activeAlbumId;
 
 				return <div
 					onClick={() => fnOnClick(album)}
 					className={"album " + (props.className || "") + (isActive ? " active" : "")}
-					style={{ backgroundImage: !!album.thumbPhotoId && thumbUrl } as any}>
+					style={{ backgroundImage: thumbUrl }}>
 					<span>{album.title}</span>
 				</div>;
 			}
