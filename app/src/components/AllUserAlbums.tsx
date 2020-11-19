@@ -19,7 +19,6 @@ class AllUserAlbums extends React.Component<AllUserAlbumsProps, AllUserAlbumsSta
 		let _this = this;
 		PhotoService.getAlbums()
 			.then((albums) => {
-				console.log(albums);
 				_this.setState({
 					albums: albums
 				})

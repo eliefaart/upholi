@@ -18,6 +18,7 @@ import Photo from "../entities/Photo";
 import Album from "../entities/Album";
 import File from "../entities/File";
 import GalleryPhoto from "../entities/GalleryPhoto";
+import AlbumInfo from "../entities/AlbumInfo";
 
 const queryStringParamNamePhotoId = "photoId";
 
@@ -28,7 +29,7 @@ interface LibraryPageState {
 	newAlbumDialogOpen: boolean,
 	confirmDeletePhotosOpen: boolean,
 	addPhotosToAlbumDialogOpen: boolean,
-	albums: Album[],
+	albums: AlbumInfo[],
 	uploadInProgress: boolean,
 	uploadFiles: File[]
 }
