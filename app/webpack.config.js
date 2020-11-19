@@ -1,24 +1,31 @@
 module.exports = {
 	watch: false,
-	entry: './src/index.jsx',
+	entry: "./src/index.tsx",
 	output: {
-		filename: '../wwwroot/dist/main.js'
+		filename: "../wwwroot/dist/main.js"
+	},
+	resolve: {
+		extensions: [".js", ".ts", ".tsx"]
 	},
 	module: {
-		rules: [{
-				test: /\.jsx$/,
+		rules: [
+			{
+				test: /\.tsx$/,
 				exclude: /node_modules/,
-				use: {
-					loader: "babel-loader"
-				}
+				use: ["babel-loader", "ts-loader"]
+			},
+			{
+				test: /\.ts$/,
+				exclude: /node_modules/,
+				use: ["ts-loader"]
 			},
 			{
 				test: /\.scss$/,
-				use: ['style-loader', 'css-loader', 'sass-loader']
+				use: ["style-loader", "css-loader", "sass-loader"]
 			},
 			{
 				test: /\.css$/,
-				use: ['style-loader', 'css-loader']
+				use: ["style-loader", "css-loader"]
 			}
 		]
 	}
