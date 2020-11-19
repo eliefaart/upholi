@@ -1,13 +1,17 @@
-import React from "react";
-import PageBaseComponent from "../components/PageBaseComponent.tsx";
-import AllUserAlbums from "../components/AllUserAlbums.tsx";
-import ContentContainer from "../components/ContentContainer.tsx"
-import ModalCreateAlbum from "../components/ModalCreateAlbum.tsx"
-import AppStateContext from "../contexts/AppStateContext.ts";
+import * as React from "react";
+import { PageBaseComponent, PageBaseComponentProps } from "../components/PageBaseComponent";
+import AllUserAlbums from "../components/AllUserAlbums";
+import ContentContainer from "../components/ContentContainer";
+import ModalCreateAlbum from "../components/ModalCreateAlbum";
+import AppStateContext from "../contexts/AppStateContext";
 
-class AlbumsPage extends PageBaseComponent {
+interface AlbumsPageState {
+	newAlbumDialogOpen: boolean
+}
 
-	constructor(props) {
+class AlbumsPage extends PageBaseComponent<AlbumsPageState> {
+
+	constructor(props: PageBaseComponentProps) {
 		super(props);
 
 		this.state = {
@@ -15,12 +19,12 @@ class AlbumsPage extends PageBaseComponent {
 		}
 	}
 
-	getHeaderActions() {
-		return (<React.Fragment>
+	getHeaderActions(): JSX.Element {
+		return <React.Fragment>
 			{<button onClick={(e) => this.onCreateAlbumClick()} title="Create album">
 				New album
 			</button>}
-		</React.Fragment>);
+		</React.Fragment>;
 	}
 
 	getTitle() {

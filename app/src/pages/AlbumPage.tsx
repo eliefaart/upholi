@@ -1,23 +1,38 @@
-import React from "react";
-import PageBaseComponent from "../components/PageBaseComponent.tsx";
-import PhotoGallerySelectable from "../components/PhotoGallerySelectable.tsx";
-import ContentContainer from "../components/ContentContainer.tsx"
-import AppStateContext from "../contexts/AppStateContext.ts";
-import PhotoService from "../services/PhotoService.ts";
-import UploadHelper from "../helpers/UploadHelper.ts"
-import ModalPhotoDetail from "../components/ModalPhotoDetail.tsx";
-import ModalConfirmation from "../components/ModalConfirmation.tsx";
-import ModalUploadProgress from "../components/ModalUploadProgress.tsx";
-import UploadButton from "../components/UploadButton.tsx";
-import { IconRemove, IconImage } from "../components/Icons.tsx";
+import * as React from "react";
+import { PageBaseComponent, PageBaseComponentProps } from "../components/PageBaseComponent";
+import PhotoGallerySelectable from "../components/PhotoGallerySelectable";
+import ContentContainer from "../components/ContentContainer";
+import AppStateContext from "../contexts/AppStateContext";
+import PhotoService from "../services/PhotoService";
+import UploadHelper from "../helpers/UploadHelper";
+import ModalPhotoDetail from "../components/ModalPhotoDetail";
+import ModalConfirmation from "../components/ModalConfirmation";
+import ModalUploadProgress from "../components/ModalUploadProgress";
+import UploadButton from "../components/UploadButton";
+import { IconRemove, IconImage } from "../components/Icons";
 import { toast } from "react-toastify";
-import UrlHelper from "../helpers/UrlHelper.ts";
+import UrlHelper from "../helpers/UrlHelper";
+import Photo from "../entities/Photo";
+import File from "../entities/File";
+import GalleryPhoto from "../entities/GalleryPhoto";
 
 const queryStringParamNamePhotoId = "photoId";
 
-class AlbumPage extends PageBaseComponent {
+interface AlbumPageState {
+	albumId: string,
+	title: string,
+	photos: GalleryPhoto[],
+	selectedPhotos: string[],
+	openedPhotoId: string | null,
+	confirmDeleteAlbumOpen: boolean,
+	confirmRemovePhotosOpen: boolean,
+	uploadInProgress: boolean,
+	uploadFiles: File[]
+}
 
-	constructor(props) {
+class AlbumPage extends PageBaseComponent<AlbumPageState> {
+
+	constructor(props: PageBaseComponentProps) {
 		super(props);
 
 		this.state = {
@@ -41,7 +56,7 @@ class AlbumPage extends PageBaseComponent {
 			{this.state.selectedPhotos.length > 0 && <button className="iconOnly" onClick={(e) => this.onRemovePhotosClick()} title="Remove from album">
 				<IconRemove/>
 			</button>}
-			{this.state.selectedPhotos.length === 0 && <button onClick={() => document.getElementById("select-photos").click()} title="Upload photos">
+			{this.state.selectedPhotos.length === 0 && <button onClick={() => document.getElementById("select-photos")!.click()} title="Upload photos">
 				Upload
 			</button>}
 		</React.Fragment>);
@@ -80,7 +95,7 @@ class AlbumPage extends PageBaseComponent {
 			.then((response) => {
 				_this.setState({
 					title: response.title,
-					photos: response.photos.map((photo) => {
+					photos: response.photos.map((photo): GalleryPhoto => {
 						return {
 							id: photo.id,
 							src: PhotoService.baseUrl() + "/photo/" + photo.id + "/thumb",
@@ -111,8 +126,8 @@ class AlbumPage extends PageBaseComponent {
 			.catch(console.error);
 	}
 
-	onPhotoClicked(event, target) {
-		let photo = this.state.photos[target.index];
+	onPhotoClicked(index: number) {
+		let photo = this.state.photos[index];
 		this.context.history.push(document.location.pathname + "?photoId=" + photo.id);
 	}
 
@@ -152,7 +167,7 @@ class AlbumPage extends PageBaseComponent {
 			.catch(console.error);
 	}
 
-	onPhotoSelectedChange(photoId, selected) {
+	onPhotoSelectedChange(photoId: string, selected: boolean) {
 		let selectedPhotos = this.state.selectedPhotos;
 
 		if (selected) {
@@ -169,7 +184,7 @@ class AlbumPage extends PageBaseComponent {
 		});
 	}
 
-	onFilesDropped(event) {
+	onFilesDropped(event: React.DragEvent<HTMLElement>) {
 		event.preventDefault();
 		if (!event.dataTransfer.files || event.dataTransfer.files.length === 0)
 			return; // no files
@@ -177,13 +192,13 @@ class AlbumPage extends PageBaseComponent {
 		this.uploadFilesList(event.dataTransfer.files);
 	}
 
-	uploadFilesList (filesList) {
+	uploadFilesList (fileList: FileList) {
 		let albumId = this.state.albumId;
 		let photoIds = this.state.photos.map(p => p.id)
 
-		let files = UploadHelper.convertFileListToFileArrayForUploadDialog(filesList);
+		let files = UploadHelper.convertFileListToFileArrayForUploadDialog(fileList);
 
-		let fnOnUploadFinished = (uploadedPhotoIds) => {
+		let fnOnUploadFinished = (uploadedPhotoIds: string[]) => {
 			this.setState({
 				uploadInProgress: false,
 				uploadFiles: []
@@ -199,16 +214,18 @@ class AlbumPage extends PageBaseComponent {
 					.then(fnRefreshPhotos);
 			}
 		};
-		let fnUpdateFileUploadState = (file, newState) => {
+		let fnUpdateFileUploadState = (file: File, newState: string) => {
 			let stateFile = files.find(f => f.name === file.name);
-			stateFile.status = newState;
+			if (stateFile) {
+				stateFile.status = newState;
 
-			this.setState({
-				uploadFiles: files
-			});
+				this.setState({
+					uploadFiles: files
+				});
+			}
 		};
 
-		PhotoService.uploadPhotos(filesList, fnUpdateFileUploadState)
+		PhotoService.uploadPhotos(fileList, fnUpdateFileUploadState)
 			.then(fnOnUploadFinished)
 			.catch(console.error);
 
@@ -230,17 +247,17 @@ class AlbumPage extends PageBaseComponent {
 				}
 
 				{this.state.photos.length > 0 && <PhotoGallerySelectable
-					onClick={(event, target) => this.onPhotoClicked(event, target)}
+					onClick={(_, target) => this.onPhotoClicked(target.index)}
 					photos={this.state.photos}
 					selectedItems={this.state.selectedPhotos}
 					onPhotoSelectedChange={(photoId, selected) => this.onPhotoSelectedChange(photoId, selected)}/>
 				}
 
-				<ModalPhotoDetail
+				{this.state.openedPhotoId && <ModalPhotoDetail
 					isOpen={!!this.state.openedPhotoId}
 					photoId={this.state.openedPhotoId}
 					onRequestClose={() => this.context.history.push(document.location.pathname + "?" + UrlHelper.removeQueryStringParam(document.location.search, queryStringParamNamePhotoId))}
-					/>
+				/>}
 
 				<ModalConfirmation
 					title="Delete album"

@@ -1,27 +1,39 @@
-import React from "react";
-import PageBaseComponent from "../components/PageBaseComponent.tsx";
-import ContentContainer from "../components/ContentContainer.tsx"
-import AppStateContext from "../contexts/AppStateContext.ts";
-import ModalCreateCollection from "../components/ModalCreateCollection.tsx"
-import ModalAddAlbumToCollection from "../components/ModalAddAlbumToCollection.tsx"
-import ModalConfirmation from "../components/ModalConfirmation.tsx"
-import ModalShareCollection from "../components/ModalShareCollection.tsx"
-import { IconCreate, IconDelete, IconShare, IconClose } from "../components/Icons.tsx";
-import PhotoService from "../services/PhotoService.ts";
+import * as React from "react";
+import { PageBaseComponent, PageBaseComponentProps } from "../components/PageBaseComponent";
+import ContentContainer from "../components/ContentContainer"
+import AppStateContext from "../contexts/AppStateContext";
+import ModalCreateCollection from "../components/ModalCreateCollection"
+import ModalAddAlbumToCollection from "../components/ModalAddAlbumToCollection"
+import ModalConfirmation from "../components/ModalConfirmation"
+import ModalShareCollection from "../components/ModalShareCollection"
+import { IconCreate, IconDelete, IconShare, IconClose } from "../components/Icons";
+import PhotoService from "../services/PhotoService";
+import Collection from "../entities/Collection";
 
-class CollectionsPage extends PageBaseComponent {
-	constructor(props) {
+interface CollectionsPageState {
+	collections: Collection[],
+	// Modal state
+	collectionSharingOptionsDialoOpen: boolean,
+	newCollectionDialogOpen: boolean,
+	addAlbumToCollectionDialogOpen: boolean,
+	confirmDeleteCollectionOpen: boolean,
+	confirmRemoveAlbumFromCollectionOpen: boolean,
+	// Temp variables during confirm modals
+	activeCollectionId: string | null,
+	activeAlbumId: string | null,
+}
+
+class CollectionsPage extends PageBaseComponent<CollectionsPageState> {
+	constructor(props: PageBaseComponentProps) {
 		super(props);
 
 		this.state = {
 			collections: [],
-			// Modal state
 			collectionSharingOptionsDialoOpen: false,
 			newCollectionDialogOpen: false,
 			addAlbumToCollectionDialogOpen: false,
 			confirmDeleteCollectionOpen: false,
 			confirmRemoveAlbumFromCollectionOpen: false,
-			// Temp variables during confirm modals
 			activeCollectionId: null,
 			activeAlbumId: null,
 		}
@@ -45,43 +57,36 @@ class CollectionsPage extends PageBaseComponent {
 	}
 
 	refreshCollections() {
-		const fnSetCollections = (collections) => this.setState({ collections });
+		const fnSetCollections = (collections: Collection[]) => this.setState({ collections });
 
 		PhotoService.getCollections()
 			.then(fnSetCollections)
 			.catch(console.error);
 	}
 
-	openAlbum(albumId) {
+	openAlbum(albumId: string) {
 		this.context.history.push("/album/" + albumId);
 	}
 
-	openCollection(collectionId) {
+	openCollection(collectionId: string) {
 		this.context.history.push("/collection/" + collectionId);
 	}
 
-	createCollection(title) {
-		PhotoService.createCollection(title)
-			.then(() => this.refreshCollections())
-			.catch(console.error)
-			.finally(() => this.setState({newCollectionDialogOpen: false}))
-	}
-
-	deleteCollection(collectionId) {
+	deleteCollection(collectionId: string) {
 		PhotoService.deleteCollection(collectionId)
 			.then(() => this.refreshCollections())
 			.catch(console.error)
 			.finally(() => this.setState({confirmDeleteCollectionOpen: false}));
 	}
 
-	addAlbumToCollection(collectionId, albumId) {
+	addAlbumToCollection(collectionId: string, albumId: string) {
 		PhotoService.addAlbumToCollection(collectionId, albumId)
 			.then(() => this.refreshCollections())
 			.catch(console.error)
 			.finally(() => this.setState({addAlbumToCollectionDialogOpen: false}));
 	}
 
-	removeAlbumFromCollection(collectionId, albumId) {
+	removeAlbumFromCollection(collectionId: string, albumId: string) {
 		PhotoService.removeAlbumFromCollection(collectionId, albumId)
 			.then(() => this.refreshCollections())
 			.catch(console.error)
@@ -94,35 +99,35 @@ class CollectionsPage extends PageBaseComponent {
 		});
 	}
 
-	createCollection(title) {
+	createCollection(title: string) {
 		PhotoService.createCollection(title)
 			.then((id) => this.refreshCollections())
 			.catch(console.error)
 			.finally(() => this.setState({newCollectionDialogOpen: false}));
 	}
 
-	openShareModal(collectionId) {
+	openShareModal(collectionId: string) {
 		this.setState({
 			collectionSharingOptionsDialoOpen: true,
 			activeCollectionId: collectionId
 		});
 	}
 
-	onClickDeleteCollection(collectionId) {
+	onClickDeleteCollection(collectionId: string) {
 		this.setState({
 			confirmDeleteCollectionOpen: true,
 			activeCollectionId: collectionId
 		});
 	}
 
-	onAddAlbumToCollectionClick(collectionId) {
+	onAddAlbumToCollectionClick(collectionId: string) {
 		this.setState({
 			addAlbumToCollectionDialogOpen: true,
 			activeCollectionId: collectionId
 		});
 	}
 
-	onRemoveAlbumFromCollectionClick(collectionId, albumId) {
+	onRemoveAlbumFromCollectionClick(collectionId: string, albumId: string) {
 		this.setState({
 			confirmRemoveAlbumFromCollectionOpen: true,
 			activeCollectionId: collectionId,
@@ -156,11 +161,13 @@ class CollectionsPage extends PageBaseComponent {
 							<div className="body">
 								{/* Albums inside this collection */}
 								{collection.albums.map(album => {
-									let albumThumbUrl = "url('" + PhotoService.baseUrl() + "/photo/" + album.thumbPhotoId + "/thumb')";
+									let albumThumbUrl = album.thumbPhotoId
+										? "url('" + PhotoService.baseUrl() + "/photo/" + album.thumbPhotoId + "/thumb')"
+										: "";
 
 									return (<div key={album.id}
 										className="album"
-										style={{ backgroundImage: !!album.thumbPhotoId && albumThumbUrl }}
+										style={{ backgroundImage: albumThumbUrl }}
 										onClick={() => this.openAlbum(album.id)}>
 										<div className="albumContent">
 											<span className="title">{album.title}</span>
@@ -178,13 +185,13 @@ class CollectionsPage extends PageBaseComponent {
 				{this.state.collectionSharingOptionsDialoOpen && <ModalShareCollection
 					isOpen={true}
 					onRequestClose={() => this.setState({collectionSharingOptionsDialoOpen: false})}
-					collection={activeCollection}
+					collection={activeCollection!}
 					onOptionsChanged={() => this.refreshCollections()}
 					/>}
 				{this.state.addAlbumToCollectionDialogOpen && <ModalAddAlbumToCollection
 					isOpen={true}
 					onRequestClose={() => this.setState({addAlbumToCollectionDialogOpen: false})}
-					onAlbumSelected={(album) => this.addAlbumToCollection(this.state.activeCollectionId, album.id)}
+					onAlbumSelected={(album) => this.addAlbumToCollection(this.state.activeCollectionId!, album.id)}
 					/>}
 				{this.state.newCollectionDialogOpen && <ModalCreateCollection
 					isOpen={true}
@@ -195,20 +202,20 @@ class CollectionsPage extends PageBaseComponent {
 					title="Delete collection"
 					isOpen={true}
 					onRequestClose={() => this.setState({confirmDeleteCollectionOpen: false})}
-					onOkButtonClick={() => this.deleteCollection(this.state.activeCollectionId)}
+					onOkButtonClick={() => this.deleteCollection(this.state.activeCollectionId!)}
 					okButtonText="Delete"
-					confirmationText={"Collection '" + activeCollection.title + "' will be deleted."}
+					confirmationText={"Collection '" + activeCollection!.title + "' will be deleted."}
 					/>}
 				{this.state.confirmRemoveAlbumFromCollectionOpen && <ModalConfirmation
 					title="Remove album from collection"
 					isOpen={true}
 					onRequestClose={() => this.setState({confirmRemoveAlbumFromCollectionOpen: false})}
-					onOkButtonClick={() => this.removeAlbumFromCollection(this.state.activeCollectionId, this.state.activeAlbumId)}
+					onOkButtonClick={() => this.removeAlbumFromCollection(this.state.activeCollectionId!, this.state.activeAlbumId!)}
 					okButtonText="Remove"
 					confirmationText={"Album '"
-						+ activeCollection.title
+						+ activeCollection!.title
 						+ "' will be remove from collection '"
-						+ activeAlbum.title + "'."}
+						+ activeAlbum!.title + "'."}
 					/>}
 			</ContentContainer>
 		);

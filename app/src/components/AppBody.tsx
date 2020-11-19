@@ -1,20 +1,32 @@
-import React from "react";
+import * as React from "react";
 import { Route } from "react-router-dom";
 import 'react-toastify/dist/ReactToastify.css';
-import LibraryPage from "../pages/LibraryPage.jsx";
-import AlbumsPage from "../pages/AlbumsPage.jsx";
-import CollectionsPage from "../pages/CollectionsPage.jsx";
-import AlbumPage from "../pages/AlbumPage.jsx";
-import PhotoPage from "../pages/PhotoPage.jsx";
-import CollectionPage from "../pages/CollectionPage.jsx";
-import SharedCollectionPage from "../pages/SharedCollectionPage.jsx";
-import Header from "./Header.tsx";
+import LibraryPage from "../pages/LibraryPage";
+import AlbumsPage from "../pages/AlbumsPage";
+import CollectionsPage from "../pages/CollectionsPage";
+import AlbumPage from "../pages/AlbumPage";
+import PhotoPage from "../pages/PhotoPage";
+import CollectionPage from "../pages/CollectionPage";
+import SharedCollectionPage from "../pages/SharedCollectionPage";
+import Header from "./Header";
+
+interface AppBodyProps {
+
+}
+
+interface AppBodyState {
+	header: {
+		renderMenu: boolean,
+		actions: JSX.Element | null,
+		contextMenu: JSX.Element | null
+	}
+}
 
 /**
  * Renders headers and route components.
  */
-class AppBody extends React.Component {
-	constructor(props) {
+class AppBody extends React.Component<AppBodyProps, AppBodyState> {
+	constructor(props: AppBodyProps) {
 		super(props);
 
 		this.state = {
@@ -29,7 +41,7 @@ class AppBody extends React.Component {
 	/**
 	 * Handle updated header content received from child component
 	 */
-	updateHeader(renderNavMenu, actions, contextMenu) {
+	updateHeader(renderNavMenu: boolean, actions: JSX.Element | null, contextMenu: JSX.Element | null) {
 		this.setState({
 			header: {
 				renderMenu: renderNavMenu,
@@ -40,9 +52,9 @@ class AppBody extends React.Component {
 	}
 
 	render() {
-		const fnRenderRoute = (path, component, requiresAuthentication) => {
-			return <Route path={path} exact render={props => {
-				props.onHeaderUpdated = (renderNavMenu, actions, contextMenu) => this.updateHeader(renderNavMenu, actions, contextMenu);
+		const fnRenderRoute = (path: string, component: any /* Correct type = ? */, requiresAuthentication: boolean) => {
+			return <Route path={path} exact render={(props: any) => {
+				props.onHeaderUpdated = (renderNavMenu: boolean, actions: JSX.Element | null, contextMenu: JSX.Element | null) => this.updateHeader(renderNavMenu, actions, contextMenu);
 				props.requiresAuthentication = requiresAuthentication;
 				props.renderHeaderNavMenu = requiresAuthentication;	// Can determine this based on wether auth is required for now
 

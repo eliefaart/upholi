@@ -4,8 +4,8 @@ import { IconContextMenu } from "./Icons";
 
 interface HeaderProps {
 	renderMenu: boolean,
-	actions: JSX.Element,
-	contextMenu: JSX.Element
+	actions: JSX.Element | null,
+	contextMenu: JSX.Element | null
 }
 
 interface HeaderState {

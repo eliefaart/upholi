@@ -5,14 +5,14 @@ import AllUserAlbums from "../components/AllUserAlbums";
 import ModalPropsBase from "../entities/ModalPropsBase";
 import AlbumInfo from "../entities/AlbumInfo";
 
-interface ModalAddToAlbum extends ModalPropsBase {
+interface ModalAddToAlbumProps extends ModalPropsBase {
 	onClickNewAlbum: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void
 	onClickExistingAlbum: (album: AlbumInfo) => void
 }
 
-class ModalAddToAlbum extends React.Component<ModalAddToAlbum> {
+class ModalAddToAlbum extends React.Component<ModalAddToAlbumProps> {
 
-	constructor(props: ModalAddToAlbum) {
+	constructor(props: ModalAddToAlbumProps) {
 		super(props);
 	}
 

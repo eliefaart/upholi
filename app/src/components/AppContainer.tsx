@@ -1,19 +1,24 @@
-import React from "react";
+import * as React from "react";
+import * as ReactModal from "react-modal";
 import { Router } from "react-router-dom";
 import { createBrowserHistory as createHistory } from "history";
 import { ToastContainer, Zoom } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
-import AppBody from "../components/AppBody.jsx";
-import { default as ReactModal } from "react-modal";
+import AppBody from "../components/AppBody";
+import AppStateContext from "../contexts/AppStateContext";
 
-import AppStateContext from "../contexts/AppStateContext.ts";
+interface AppContainerProps {}
+
+interface AppContainerState {
+	ready: boolean
+}
 
 /**
  * Highest component in hierarchy, initializes history/router, context, modals and toast messages.
  */
-class AppContainer extends React.Component {
+class AppContainer extends React.Component<AppContainerProps, AppContainerState> {
 
-	constructor(props) {
+	constructor(props: AppContainerProps) {
 		super(props);
 
 		this.state = {

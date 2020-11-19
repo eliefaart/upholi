@@ -1,8 +1,8 @@
 import Exif from "./Exif";
 
 export default interface Photo {
-	id: String;
-	name: String;
+	id: string;
+	name: string;
 	width: number;
 	height: number;
 	createdOn: Date;

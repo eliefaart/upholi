@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 import ModalPropsBase from "../entities/ModalPropsBase";
 
 interface ModalCreateAlbumProps extends ModalPropsBase {
-	createWithPhotoIds: string[]
+	createWithPhotoIds?: string[]
 }
 
 class ModalCreateAlbum extends React.Component<ModalCreateAlbumProps> {
@@ -22,7 +22,7 @@ class ModalCreateAlbum extends React.Component<ModalCreateAlbumProps> {
 		if (form) {
 			const title = form.getElementsByTagName("input")[0].value;
 
-			PhotoService.createAlbum(title, this.props.createWithPhotoIds)
+			PhotoService.createAlbum(title, this.props.createWithPhotoIds ?? [])
 				.then(albumId => {
 					toast.info("Album '" + title + "' created.");
 

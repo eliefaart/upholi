@@ -1,10 +1,10 @@
 import * as React from "react";
 
 interface ContentContainerProps {
-	className: string,
-	paddingTop: boolean,
-	onDrop: (event: React.DragEvent<HTMLElement>) => void,
-	onDragOver: (event: React.DragEvent<HTMLElement>) => void,
+	className?: string,
+	paddingTop?: boolean,
+	onDrop?: (event: React.DragEvent<HTMLElement>) => void,
+	onDragOver?: (event: React.DragEvent<HTMLElement>) => void,
 }
 
 /**

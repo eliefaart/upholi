@@ -1,11 +1,11 @@
 module.exports = {
 	watch: false,
-	entry: "./src/index.jsx",
+	entry: "./src/index.tsx",
 	output: {
 		filename: "../wwwroot/dist/main.js"
 	},
 	resolve: {
-		extensions: [".js", ".jsx", ".ts", ".tsx"]
+		extensions: [".js", ".ts", ".tsx"]
 	},
 	module: {
 		rules: [
@@ -18,11 +18,6 @@ module.exports = {
 				test: /\.ts$/,
 				exclude: /node_modules/,
 				use: ["ts-loader"]
-			},
-			{
-				test: /\.jsx$/,
-				exclude: /node_modules/,
-				use: [ "babel-loader" ]
 			},
 			{
 				test: /\.scss$/,

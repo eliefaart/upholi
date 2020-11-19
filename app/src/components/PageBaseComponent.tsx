@@ -1,17 +1,18 @@
 import * as React from "react";
 import AppStateContext from "../contexts/AppStateContext";
 
-interface PageBaseComponentProps {
+export interface PageBaseComponentProps {
 	requiresAuthentication: boolean,
 	renderHeaderNavMenu: boolean,
-	onHeaderUpdated: (renderHeaderNavMenu: boolean, headerActions: JSX.Element | null, headerContextMenu: JSX.Element | null) => void
+	onHeaderUpdated: (renderHeaderNavMenu: boolean, headerActions: JSX.Element | null, headerContextMenu: JSX.Element | null) => void,
+	match: any	// TODO: Find type. This is the 'react-router' match info
 }
 
 /**
  * Base class for a 'page components'.
  * Handles notifying parent component of updates to header state.
  */
-class PageBaseComponent extends React.Component<PageBaseComponentProps> {
+export class PageBaseComponent<TState> extends React.Component<PageBaseComponentProps, TState> {
 
 	lastHeaderJson: string | null;
 
@@ -55,7 +56,7 @@ class PageBaseComponent extends React.Component<PageBaseComponentProps> {
 		this.updateAllPageElement();
 	}
 
-	componentDidUpdate() {
+	componentDidUpdate(prevProps?: PageBaseComponentProps, prevState?: TState) {
 		this.updateAllPageElement();
 	}
 
@@ -94,4 +95,3 @@ class PageBaseComponent extends React.Component<PageBaseComponentProps> {
 }
 
 PageBaseComponent.contextType = AppStateContext;
-export default PageBaseComponent;
