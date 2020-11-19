@@ -1,5 +1,5 @@
 /**
- * A light/small version of Album, since many components don't need to know/load all photos contained in an album
+ * A light/small version of Album, which does not contain detailed information about the photos contained in it.
  */
 export default interface AlbumInfo {
 	id: string,

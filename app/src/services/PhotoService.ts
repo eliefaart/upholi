@@ -1,6 +1,7 @@
 import Album from "../entities/Album";
 import Photo from "../entities/Photo";
 import Collection from "../entities/Collection";
+import AlbumInfo from "../entities/AlbumInfo";
 
 /**
  * Response from server on calls that create new entities such as albums
@@ -213,8 +214,8 @@ class PhotoService {
 		});
 	}
 
-	static getAlbums(): Promise<Album[]> {
-		return PhotoService.getJson<Album[]>("GET", PhotoService.baseUrl() + "/albums", null);
+	static getAlbums(): Promise<AlbumInfo[]> {
+		return PhotoService.getJson<AlbumInfo[]>("GET", PhotoService.baseUrl() + "/albums", null);
 	}
 
 	static getAlbum(albumId: string): Promise<Album> {
