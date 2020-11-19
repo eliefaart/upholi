@@ -1,10 +1,6 @@
-interface Album {
-	id: string,
-	title: string,
-	thumbPhotoId: string[]
-}
+import AlbumInfo from "./AlbumInfo";
 
-interface SharingOptions {
+interface CollectionSharingOptions {
 	shared: boolean,
 	requirePassword: boolean,
 	token: string
@@ -13,6 +9,6 @@ interface SharingOptions {
 export default interface Collection {
 	id: string,
 	title: string,
-	albums: Album[],
-	sharing: SharingOptions
+	albums: AlbumInfo[],
+	sharing: CollectionSharingOptions
 }

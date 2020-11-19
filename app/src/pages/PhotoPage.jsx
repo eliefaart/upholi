@@ -1,5 +1,5 @@
 import React from "react";
-import PageBaseComponent from "../components/PageBaseComponent.jsx";
+import PageBaseComponent from "../components/PageBaseComponent.tsx";
 import PhotoService from "../services/PhotoService.ts";
 import PhotoDetail from "../components/PhotoDetail.tsx";
 import ContentContainer from "../components/ContentContainer.tsx"

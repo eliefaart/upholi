@@ -1,18 +1,18 @@
 import * as React from "react";
-import Album from "../entities/Album";
+import AlbumInfo from "../entities/AlbumInfo";
 import PhotoService from "../services/PhotoService"
 import AppStateContext from "../contexts/AppStateContext";
 
 interface AlbumProps {
-	onClick: any,
+	onClick: (album: AlbumInfo) => void,
 	activeAlbumId?: string,
 	albumUrl?: (albumUrl: string) => string,
-	albums: Album[]
+	albums: AlbumInfo[]
 }
 
 interface AlbumElementProps {
 	className?: string,
-	album: Album
+	album: AlbumInfo
 }
 
 class Albums extends React.Component<AlbumProps> {
@@ -27,7 +27,7 @@ class Albums extends React.Component<AlbumProps> {
 		const anyAlbumActive = this.props.albums.some(album => album.id === this.props.activeAlbumId);
 
 		const history = this.context.history;
-		const fnOnClick = this.props.onClick || ((album: Album) => {
+		const fnOnClick = this.props.onClick || ((album: AlbumInfo) => {
 			if (this.props.albumUrl) {
 				history.push(this.props.albumUrl(album.id));
 			}
@@ -37,13 +37,13 @@ class Albums extends React.Component<AlbumProps> {
 		const AlbumElement = function (props: AlbumElementProps) {
 			const album = props.album;
 			if (album) {
-				const thumbUrl = "url('" + PhotoService.baseUrl() + "/photo/" + album.thumbPhoto?.id + "/thumb')";
+				const thumbUrl = "url('" + PhotoService.baseUrl() + "/photo/" + album.thumbPhotoId + "/thumb')";
 				const isActive = album.id === activeAlbumId;
 
 				return <div
 					onClick={() => fnOnClick(album)}
 					className={"album " + (props.className || "") + (isActive ? " active" : "")}
-					style={{ backgroundImage: !!album.thumbPhoto?.id && thumbUrl } as any}>
+					style={{ backgroundImage: !!album.thumbPhotoId && thumbUrl } as any}>
 					<span>{album.title}</span>
 				</div>;
 			}

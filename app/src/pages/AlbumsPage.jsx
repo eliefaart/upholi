@@ -1,5 +1,5 @@
 import React from "react";
-import PageBaseComponent from "../components/PageBaseComponent.jsx";
+import PageBaseComponent from "../components/PageBaseComponent.tsx";
 import AllUserAlbums from "../components/AllUserAlbums.tsx";
 import ContentContainer from "../components/ContentContainer.tsx"
 import ModalCreateAlbum from "../components/ModalCreateAlbum.tsx"

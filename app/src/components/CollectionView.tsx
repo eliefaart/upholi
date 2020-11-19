@@ -1,28 +1,44 @@
-import React from "react";
-import PhotoGallerySelectable from "../components/PhotoGallerySelectable.jsx";
-import AppStateContext from "../contexts/AppStateContext.ts";
-import PhotoService from "../services/PhotoService.ts";
-import Albums from "../components/Albums.tsx";
-import ModalPhotoDetail from "../components/ModalPhotoDetail.tsx";
-import UrlHelper from "../helpers/UrlHelper.ts";
+import * as React from "react";
+import PhotoGallerySelectable from "../components/PhotoGallerySelectable";
+import AppStateContext from "../contexts/AppStateContext";
+import PhotoService from "../services/PhotoService";
+import Albums from "../components/Albums";
+import ModalPhotoDetail from "../components/ModalPhotoDetail";
+import UrlHelper from "../helpers/UrlHelper";
+import Collection from "../entities/Collection";
+import GalleryPhoto from "../entities/GalleryPhoto";
 
 const queryStringParamNameAlbumId = "albumId";
 const queryStringParamNamePhotoId = "photoId";
 
-class CollectionView extends React.Component {
+interface CollectionViewProps {
+	collection: Collection
+}
 
-	constructor(props) {
+interface CollectionViewState {
+	collection: Collection,
+	activeAlbum: ActiveAlbum | null,
+	openedPhotoId: string | null
+}
+
+interface ActiveAlbum {
+	id: string,
+	title: string,
+	photos: GalleryPhoto[]
+}
+
+class CollectionView extends React.Component<CollectionViewProps, CollectionViewState> {
+
+	collectionHasOneAlbum: boolean;
+
+	constructor(props:CollectionViewProps) {
 		super(props);
 
 		this.collectionHasOneAlbum = props.collection.albums.length === 1;
 
 		this.state = {
 			collection: props.collection,
-			activeAlbum: {
-				id: null,
-				title: null,
-				photos: []
-			},
+			activeAlbum: null,
 			openedPhotoId: null,
 		};
 	}
@@ -50,12 +66,12 @@ class CollectionView extends React.Component {
 		}
 	}
 
-	openAlbum(albumId) {
+	openAlbum(albumId: string) {
 		this.loadAlbum(albumId);
 		this.setLocationPath(albumId);
 	}
 
-	loadAlbum(albumId) {
+	loadAlbum(albumId:string) {
 		let _this = this;
 		PhotoService.getAlbum(albumId)
 			.then((response) => {
@@ -79,7 +95,7 @@ class CollectionView extends React.Component {
 	/**
 	 * Update the current browser location to match the currently opened album.
 	 */
-	setLocationPath(albumId) {
+	setLocationPath(albumId: string) {
 		const initialQueryString = location.search;
 		const newQueryString = UrlHelper.setQueryStringParam(location.search, queryStringParamNameAlbumId, albumId);
 
@@ -89,27 +105,25 @@ class CollectionView extends React.Component {
 		}
 	}
 
-	onAlbumClicked(album) {
-		if (album.id === this.state.activeAlbum.id) {
+	onAlbumClicked(albumId: string) {
+		if (this.state.activeAlbum && albumId === this.state.activeAlbum.id) {
 			this.setState({
-				activeAlbum: {
-					id: null,
-					title: null,
-					photos: []
-				}
+				activeAlbum: null
 			});
 
-			this.setLocationPath(null);
+			this.setLocationPath("");
 		}
 		else {
-			this.openAlbum(album.id);
+			this.openAlbum(albumId);
 		}
 	}
 
-	onPhotoClicked(_, target) {
-		const photo = this.state.activeAlbum.photos[target.index];
-		const photoIdUrl = document.location.pathname + "?" + UrlHelper.setQueryStringParam(document.location.search, queryStringParamNamePhotoId, photo.id);
-		this.context.history.push(photoIdUrl);
+	onPhotoClicked(index: number) {
+		if (this.state.activeAlbum) {
+			const photo = this.state.activeAlbum.photos[index];
+			const photoIdUrl = document.location.pathname + "?" + UrlHelper.setQueryStringParam(document.location.search, queryStringParamNamePhotoId, photo.id);
+			this.context.history.push(photoIdUrl);
+		}
 	}
 
 	render() {
@@ -119,32 +133,32 @@ class CollectionView extends React.Component {
 		return (
 			<div className="collection">
 				<div className="topBar">
-					<h1>{this.collectionHasOneAlbum ? this.state.activeAlbum.title : this.state.collection.title}</h1>
+					<h1>{this.collectionHasOneAlbum ? this.state.activeAlbum!.title : this.state.collection.title}</h1>
 				</div>
 
 				{/* Albums in this collection */}
 				{!this.collectionHasOneAlbum && <Albums
 					albums={this.state.collection.albums}
-					activeAlbumId={this.state.activeAlbum.id}
-					onClick={album => this.onAlbumClicked(album)}/>
+					activeAlbumId={this.state.activeAlbum?.id}
+					onClick={album => this.onAlbumClicked(album.id)}/>
 				}
 
 				{/* Photos inside selected/active album */}
-				{!!this.state.activeAlbum.id && <div className="photos">
+				{!!this.state.activeAlbum && <div className="photos">
 					{!this.collectionHasOneAlbum && <h2>{this.state.activeAlbum.title}</h2>}
 					{this.state.activeAlbum.photos.length > 0 && <PhotoGallerySelectable
-						onClick={(event, target) => this.onPhotoClicked(event, target)}
+						onClick={(_, target) => this.onPhotoClicked(target.index)}
 						photos={this.state.activeAlbum.photos}
 						selectedItems={[]}
 						onPhotoSelectedChange={() => {}}/>
 					}
 				</div>}
 
-				<ModalPhotoDetail
+				{this.state.openedPhotoId && <ModalPhotoDetail
 					isOpen={!!this.state.openedPhotoId}
 					photoId={this.state.openedPhotoId}
 					onRequestClose={() => this.context.history.push(document.location.pathname + "?" + UrlHelper.removeQueryStringParam(document.location.search, queryStringParamNamePhotoId))}
-					/>
+				/>}
 			</div>
 		);
 	}

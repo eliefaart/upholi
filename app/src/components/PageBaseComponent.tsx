@@ -1,13 +1,21 @@
-import React from "react";
-import AppStateContext from "../contexts/AppStateContext.ts";
+import * as React from "react";
+import AppStateContext from "../contexts/AppStateContext";
+
+interface PageBaseComponentProps {
+	requiresAuthentication: boolean,
+	renderHeaderNavMenu: boolean,
+	onHeaderUpdated: (renderHeaderNavMenu: boolean, headerActions: JSX.Element | null, headerContextMenu: JSX.Element | null) => void
+}
 
 /**
  * Base class for a 'page components'.
  * Handles notifying parent component of updates to header state.
  */
-class PageBaseComponent extends React.Component {
+class PageBaseComponent extends React.Component<PageBaseComponentProps> {
 
-	constructor(props) {
+	lastHeaderJson: string | null;
+
+	constructor(props: PageBaseComponentProps) {
 		super(props);
 
 		// Contains the json string of the last header content provided to props.onHeaderUpdated
@@ -20,7 +28,7 @@ class PageBaseComponent extends React.Component {
 	 * Returns all actions to render in header.
 	 * This function is intended to be overwritten in sub classes
 	 */
-	getHeaderActions() {
+	getHeaderActions(): JSX.Element | null {
 		return null;
 	}
 
@@ -28,7 +36,7 @@ class PageBaseComponent extends React.Component {
 	 * Returns context menu content to render in header.
 	 * This function is intended to be overwritten in sub classes
 	 */
-	getHeaderContextMenu() {
+	getHeaderContextMenu(): JSX.Element | null {
 		return null;
 	}
 
@@ -41,7 +49,7 @@ class PageBaseComponent extends React.Component {
 			// TODO: This is a temporary implementation,
 			// should redirect to a Welcome component or something,
 			// which would have a login button that starts the login flow
-			document.location = "/oauth/start";
+			document.location.pathname = "/oauth/start";
 		}
 
 		this.updateAllPageElement();

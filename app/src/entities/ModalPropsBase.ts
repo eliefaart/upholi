@@ -1,5 +1,5 @@
 export default interface ModalPropsBase {
-	isOpen: true,
+	isOpen: boolean,
 	className?: string,
 	onRequestClose: () => void
 }
