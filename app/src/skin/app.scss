@@ -3,9 +3,9 @@
 
 $colorBackground: #121212;
 $colorBackgroundAlt: #1a1922;
-$colorAccent: #d1b440; //#437dec;	// #26bf84
-$colorSecondaryAccent: #2e75ab; //#bb8736;	// #c9436b
-$colorSpecial: #53c253;
+$colorAccent: #49c462; //#437dec;	// #26bf84
+$colorSecondaryAccent: #e35130; //#bb8736;	// #c9436b
+$colorSpecial: #b5a238;
 $colorTextDark: #161f21;
 $colorTextLight: #eee;
 $colorDisabled: gray;
@@ -13,7 +13,7 @@ $colorDisabled: gray;
 $fontSizeNormal: 0.8em;
 $fontSizeLarge: 1.2em;
 $spacing: 5px;
-$transitionSpeed: 0.2s;
+$transitionSpeed: 0.1s;
 $borderRadius: 2px;
 $headerHeight: 50px;
 $buttonHeight: 40px;
@@ -26,6 +26,8 @@ html {
 	& * {
 		box-sizing: border-box;
 		outline: none;
+		transition-property: none;
+		transition-duration: $transitionSpeed;
 	}
 
 	body {

@@ -133,7 +133,7 @@ class CollectionView extends React.Component<CollectionViewProps, CollectionView
 		return (
 			<div className="collection">
 				<div className="topBar">
-					<h1>{this.collectionHasOneAlbum ? this.state.activeAlbum!.title : this.state.collection.title}</h1>
+					<h1>{this.collectionHasOneAlbum ? this.state.activeAlbum?.title : this.state.collection.title}</h1>
 				</div>
 
 				{/* Albums in this collection */}
