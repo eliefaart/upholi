@@ -28,18 +28,29 @@ class ModalPhotoDetail extends React.Component<ModalPhotoDetailProps, ModalPhoto
 		};
 	}
 
+	componentDidMount() {
+		this.getPhotoInfo();
+	}
+
 	componentDidUpdate(prevProps: ModalPhotoDetailProps) {
 		if (this.props.photoId && this.isRequestingPhotoId !== this.props.photoId && (this.state.photo == null || this.state.photo?.id !== prevProps.photoId)) {
+			this.getPhotoInfo();
+		}
+	}
+
+	getPhotoInfo() {
+		if (this.props.photoId) {
 			const fnOnPhotoDataReceived = (photo: Photo) => {
-				this.isRequestingPhotoId = null;
 				this.setState({ photo });
 			};
 
 			this.isRequestingPhotoId = this.props.photoId;
 			PhotoService.getPhotoInfo(this.props.photoId)
 				.then(fnOnPhotoDataReceived)
-				.catch(console.error);
+				.catch(console.error)
+				.finally(() => this.isRequestingPhotoId = null);
 		}
+
 	}
 
 	render() {
