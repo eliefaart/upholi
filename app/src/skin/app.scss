@@ -1,21 +1,24 @@
 @import "_cssreset";
 @import "_fonts";
 
-$colorBackground: #121212;
-$colorBackgroundAlt: #1a1922;
-$colorAccent: #49c462; //#437dec;	// #26bf84
-$colorSecondaryAccent: #e35130; //#bb8736;	// #c9436b
+$colorBackground: #1c1c1c;
+$colorBackgroundAlt: #494949;
+$colorAccent: #00aeff; //#437dec;	// #26bf84
+$colorSecondaryAccent: #d6d12f; //#bb8736;	// #c9436b
 $colorSpecial: #b5a238;
-$colorTextDark: #161f21;
-$colorTextLight: #eee;
+$colorText: #eee;
+$colorTextContrast: #161f21;
 $colorDisabled: gray;
+$colorHeaderBackground: transparent; //$colorBackgroundAlt;
+// $colorHeaderBackground: linear-gradient(120deg, rgba(117,66,179,1) 0%, rgba(46,110,165,1) 45%, rgba(198,135,51,1) 100%);
+// $colorHeaderBackground: linear-gradient(25deg, $colorBackground 0%, $colorBackground 35%, $colorSecondaryAccent 120%);
 
 $fontSizeNormal: 0.8em;
 $fontSizeLarge: 1.2em;
 $spacing: 5px;
 $transitionSpeed: 0.1s;
 $borderRadius: 2px;
-$headerHeight: 50px;
+$headerHeight: 65px;
 $buttonHeight: 40px;
 
 $breakpointMobile: 768px;
@@ -36,7 +39,7 @@ html {
 		font-weight: 500;
 
 		background: $colorBackground;
-		color: $colorTextLight;
+		color: $colorText;
 
 		#appRoot {
 			display: flex;
@@ -91,7 +94,7 @@ a[href]:not(.asButton) {
 
 input, select {
 	background-color: $colorBackgroundAlt;
-	color: $colorTextLight;
+	color: $colorText;
 	border: 2px solid $colorSecondaryAccent;
 
 	&:focus {

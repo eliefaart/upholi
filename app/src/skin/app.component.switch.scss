@@ -18,10 +18,10 @@
 
 	.checkedIcon {
 		padding-left: $spacing * 4;
-		color: $colorTextDark;
+		color: $colorTextContrast;
 	}
 	.uncheckedIcon {
 		padding-right: $spacing * 3;
-		color: $colorTextLight;
+		color: $colorText;
 	}
 }
