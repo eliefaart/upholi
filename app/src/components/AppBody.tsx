@@ -71,7 +71,7 @@ class AppBody extends React.Component<AppBodyProps, AppBodyState> {
 
 				{fnRenderRoute("/", LibraryPage, true)}
 				{fnRenderRoute("/albums", AlbumsPage, true)}
-				{fnRenderRoute("/collections", CollectionsPage, true)}
+				{fnRenderRoute("/shared", CollectionsPage, true)}
 				{fnRenderRoute("/collection/:collectionId", CollectionPage, true)}
 				{fnRenderRoute("/photo/:photoId", PhotoPage, false)}
 				{fnRenderRoute("/album/:albumId", AlbumPage, true)}
