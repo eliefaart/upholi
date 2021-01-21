@@ -93,7 +93,7 @@ class ModalShareCollection extends React.Component<ModalShareCollectionProps, Mo
 				: "This collection is visible to anyone who has the link, and knows the password.";
 		}
 
-		const shareUrl = document.location.origin + "/shared/collection/" + this.props.collection.sharing.token;
+		const shareUrl = document.location.origin + "/s/" + this.props.collection.sharing.token;
 
 		return <Modal
 			title="Sharing options"

@@ -3,10 +3,9 @@ import { Route } from "react-router-dom";
 import 'react-toastify/dist/ReactToastify.css';
 import LibraryPage from "../pages/LibraryPage";
 import AlbumsPage from "../pages/AlbumsPage";
-import CollectionsPage from "../pages/CollectionsPage";
 import AlbumPage from "../pages/AlbumPage";
 import PhotoPage from "../pages/PhotoPage";
-import CollectionPage from "../pages/CollectionPage";
+import SharedPage from "../pages/SharedPage";
 import SharedCollectionPage from "../pages/SharedCollectionPage";
 import Header from "./Header";
 
@@ -71,11 +70,11 @@ class AppBody extends React.Component<AppBodyProps, AppBodyState> {
 
 				{fnRenderRoute("/", LibraryPage, true)}
 				{fnRenderRoute("/albums", AlbumsPage, true)}
-				{fnRenderRoute("/shared", CollectionsPage, true)}
-				{fnRenderRoute("/collection/:collectionId", CollectionPage, true)}
+				{fnRenderRoute("/shared", SharedPage, true)}
 				{fnRenderRoute("/photo/:photoId", PhotoPage, false)}
 				{fnRenderRoute("/album/:albumId", AlbumPage, true)}
-				{fnRenderRoute("/shared/collection/:token", SharedCollectionPage, false)}
+
+				{fnRenderRoute("/s/:token", SharedCollectionPage, false)}
 			</React.Fragment>
 		);
 	}

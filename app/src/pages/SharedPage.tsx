@@ -10,7 +10,7 @@ import { IconCreate, IconDelete, IconShare, IconClose } from "../components/Icon
 import PhotoService from "../services/PhotoService";
 import Collection from "../entities/Collection";
 
-interface CollectionsPageState {
+interface SharedPageState {
 	collections: Collection[],
 	// Modal state
 	collectionSharingOptionsDialoOpen: boolean,
@@ -23,7 +23,7 @@ interface CollectionsPageState {
 	activeAlbumId: string | null,
 }
 
-class CollectionsPage extends PageBaseComponent<CollectionsPageState> {
+class SharedPage extends PageBaseComponent<SharedPageState> {
 	constructor(props: PageBaseComponentProps) {
 		super(props);
 
@@ -66,10 +66,6 @@ class CollectionsPage extends PageBaseComponent<CollectionsPageState> {
 
 	openAlbum(albumId: string) {
 		this.context.history.push("/album/" + albumId);
-	}
-
-	openCollection(collectionId: string) {
-		this.context.history.push("/collection/" + collectionId);
 	}
 
 	deleteCollection(collectionId: string) {
@@ -147,7 +143,7 @@ class CollectionsPage extends PageBaseComponent<CollectionsPageState> {
 						<div key={collection.id} className="collection">
 							<div className="head">
 								{/* Collection title and some actions/buttons */}
-								<h2 className="title" onClick={() => this.openCollection(collection.id)}>{collection.title}</h2>
+								<h2 className="title">{collection.title}</h2>
 								<button className={"iconOnly" + (collection.sharing.shared ? " shared" : "")} onClick={() => this.openShareModal(collection.id)} title="Collection sharing options">
 									<IconShare/>
 								</button>
@@ -222,5 +218,5 @@ class CollectionsPage extends PageBaseComponent<CollectionsPageState> {
 	}
 }
 
-CollectionsPage.contextType = AppStateContext;
-export default CollectionsPage;
+SharedPage.contextType = AppStateContext;
+export default SharedPage;
