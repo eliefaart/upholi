@@ -5,8 +5,8 @@ import { IconCopy } from "../components/Icons";
 import { toast } from "react-toastify";
 import Switch from "react-switch";
 import { default as PhotoService, UpdateCollection } from "../services/PhotoService";
-import ModalPropsBase from "../entities/ModalPropsBase";
-import Collection from "../entities/Collection";
+import ModalPropsBase from "../models/ModalPropsBase";
+import Collection from "../models/Collection";
 
 interface ModalShareCollectionProps extends ModalPropsBase {
 	collection: Collection,

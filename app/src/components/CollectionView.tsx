@@ -5,8 +5,8 @@ import PhotoService from "../services/PhotoService";
 import Albums from "../components/Albums";
 import ModalPhotoDetail from "../components/ModalPhotoDetail";
 import UrlHelper from "../helpers/UrlHelper";
-import Collection from "../entities/Collection";
-import GalleryPhoto from "../entities/GalleryPhoto";
+import Collection from "../models/Collection";
+import GalleryPhoto from "../models/GalleryPhoto";
 
 const queryStringParamNameAlbumId = "albumId";
 const queryStringParamNamePhotoId = "photoId";

@@ -3,8 +3,8 @@ import Modal from "./Modal";
 import PhotoService from "../services/PhotoService";
 import PhotoDetail from "../components/PhotoDetail";
 import { IconDownload } from "../components/Icons";
-import ModalPropsBase from "../entities/ModalPropsBase";
-import Photo from "../entities/Photo";
+import ModalPropsBase from "../models/ModalPropsBase";
+import Photo from "../models/Photo";
 
 interface ModalPhotoDetailProps extends ModalPropsBase {
 	photoId: string

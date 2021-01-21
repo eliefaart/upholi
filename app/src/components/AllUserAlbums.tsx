@@ -1,7 +1,7 @@
 import * as React from "react";
 import PhotoService from "../services/PhotoService"
 import Albums from "../components/Albums";
-import AlbumInfo from "../entities/AlbumInfo";
+import AlbumInfo from "../models/AlbumInfo";
 
 interface AllUserAlbumsProps {
 	onClick: (album: AlbumInfo) => void

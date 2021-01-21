@@ -14,11 +14,11 @@ import UploadButton from "../components/UploadButton";
 import { IconDelete, IconAddToAlbum } from "../components/Icons";
 import { toast } from "react-toastify";
 import UrlHelper from "../helpers/UrlHelper";
-import Photo from "../entities/Photo";
-import Album from "../entities/Album";
-import File from "../entities/File";
-import GalleryPhoto from "../entities/GalleryPhoto";
-import AlbumInfo from "../entities/AlbumInfo";
+import Photo from "../models/Photo";
+import Album from "../models/Album";
+import File from "../models/File";
+import GalleryPhoto from "../models/GalleryPhoto";
+import AlbumInfo from "../models/AlbumInfo";
 
 const queryStringParamNamePhotoId = "photoId";
 

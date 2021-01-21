@@ -8,7 +8,7 @@ import ModalConfirmation from "../components/ModalConfirmation"
 import ModalShareCollection from "../components/ModalShareCollection"
 import { IconCreate, IconDelete, IconShare, IconClose } from "../components/Icons";
 import PhotoService from "../services/PhotoService";
-import Collection from "../entities/Collection";
+import Collection from "../models/Collection";
 
 interface SharedPageState {
 	collections: Collection[],

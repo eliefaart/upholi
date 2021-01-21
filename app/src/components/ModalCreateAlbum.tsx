@@ -3,7 +3,7 @@ import Modal from "../components/Modal";
 import AppStateContext from "../contexts/AppStateContext";
 import PhotoService from "../services/PhotoService";
 import { toast } from "react-toastify";
-import ModalPropsBase from "../entities/ModalPropsBase";
+import ModalPropsBase from "../models/ModalPropsBase";
 
 interface ModalCreateAlbumProps extends ModalPropsBase {
 	createWithPhotoIds?: string[]

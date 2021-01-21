@@ -12,9 +12,9 @@ import UploadButton from "../components/UploadButton";
 import { IconRemove, IconImage } from "../components/Icons";
 import { toast } from "react-toastify";
 import UrlHelper from "../helpers/UrlHelper";
-import Photo from "../entities/Photo";
-import File from "../entities/File";
-import GalleryPhoto from "../entities/GalleryPhoto";
+import Photo from "../models/Photo";
+import File from "../models/File";
+import GalleryPhoto from "../models/GalleryPhoto";
 
 const queryStringParamNamePhotoId = "photoId";
 

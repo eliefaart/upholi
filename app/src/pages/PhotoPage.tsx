@@ -5,7 +5,7 @@ import PhotoDetail from "../components/PhotoDetail";
 import ContentContainer from "../components/ContentContainer"
 import AppStateContext from "../contexts/AppStateContext";
 import { IconClose, IconDownload } from "../components/Icons";
-import Photo from "../entities/Photo";
+import Photo from "../models/Photo";
 
 interface PhotoPageState {
 	photo: Photo | null,

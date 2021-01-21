@@ -4,7 +4,7 @@ import PhotoService from "../services/PhotoService";
 import ContentContainer from "../components/ContentContainer"
 import AppStateContext from "../contexts/AppStateContext";
 import CollectionView from "../components/CollectionView";
-import Collection from "../entities/Collection";
+import Collection from "../models/Collection";
 
 interface CollectionPageBaseState {
 	collection: Collection | null
