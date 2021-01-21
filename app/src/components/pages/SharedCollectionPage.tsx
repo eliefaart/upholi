@@ -1,10 +1,10 @@
 import * as React from "react";
-import { PageBaseComponent, PageBaseComponentProps } from "../components/PageBaseComponent";
-import PhotoService from "../services/PhotoService";
-import ContentContainer from "../components/ContentContainer"
-import AppStateContext from "../contexts/AppStateContext";
-import CollectionView from "../components/CollectionView";
-import Collection from "../models/Collection";
+import { PageBaseComponent, PageBaseComponentProps } from "./PageBaseComponent";
+import PhotoService from "../../services/PhotoService";
+import ContentContainer from "../ContentContainer"
+import AppStateContext from "../../contexts/AppStateContext";
+import CollectionView from "../CollectionView";
+import Collection from "../../models/Collection";
 
 interface CollectionPageBaseState {
 	collection: Collection | null

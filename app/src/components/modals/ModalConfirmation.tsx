@@ -1,6 +1,6 @@
 import * as React from "react";
 import Modal from "./Modal";
-import ModalPropsBase from "../models/ModalPropsBase";
+import ModalPropsBase from "../../models/ModalPropsBase";
 
 interface ModalConfirmationProps extends ModalPropsBase {
 	title?: string,

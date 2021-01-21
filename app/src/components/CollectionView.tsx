@@ -3,7 +3,7 @@ import PhotoGallerySelectable from "../components/PhotoGallerySelectable";
 import AppStateContext from "../contexts/AppStateContext";
 import PhotoService from "../services/PhotoService";
 import Albums from "../components/Albums";
-import ModalPhotoDetail from "../components/ModalPhotoDetail";
+import ModalPhotoDetail from "./modals/ModalPhotoDetail";
 import UrlHelper from "../helpers/UrlHelper";
 import Collection from "../models/Collection";
 import GalleryPhoto from "../models/GalleryPhoto";

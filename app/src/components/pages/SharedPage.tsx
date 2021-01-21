@@ -1,14 +1,14 @@
 import * as React from "react";
-import { PageBaseComponent, PageBaseComponentProps } from "../components/PageBaseComponent";
-import ContentContainer from "../components/ContentContainer"
-import AppStateContext from "../contexts/AppStateContext";
-import ModalCreateCollection from "../components/ModalCreateCollection"
-import ModalAddAlbumToCollection from "../components/ModalAddAlbumToCollection"
-import ModalConfirmation from "../components/ModalConfirmation"
-import ModalShareCollection from "../components/ModalShareCollection"
-import { IconCreate, IconDelete, IconShare, IconClose } from "../components/Icons";
-import PhotoService from "../services/PhotoService";
-import Collection from "../models/Collection";
+import { PageBaseComponent, PageBaseComponentProps } from "./PageBaseComponent";
+import ContentContainer from "../ContentContainer"
+import AppStateContext from "../../contexts/AppStateContext";
+import ModalCreateCollection from "../modals/ModalCreateCollection"
+import ModalAddAlbumToCollection from "../modals/ModalAddAlbumToCollection"
+import ModalConfirmation from "../modals/ModalConfirmation"
+import ModalShareCollection from "../modals/ModalShareCollection"
+import { IconCreate, IconDelete, IconShare, IconClose } from "../Icons";
+import PhotoService from "../../services/PhotoService";
+import Collection from "../../models/Collection";
 
 interface SharedPageState {
 	collections: Collection[],

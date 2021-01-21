@@ -1,20 +1,20 @@
 import * as React from "react";
-import { PageBaseComponent, PageBaseComponentProps } from "../components/PageBaseComponent";
-import PhotoGallerySelectable from "../components/PhotoGallerySelectable";
-import ContentContainer from "../components/ContentContainer";
-import AppStateContext from "../contexts/AppStateContext";
-import PhotoService from "../services/PhotoService";
-import UploadHelper from "../helpers/UploadHelper";
-import ModalPhotoDetail from "../components/ModalPhotoDetail";
-import ModalConfirmation from "../components/ModalConfirmation";
-import ModalUploadProgress from "../components/ModalUploadProgress";
-import UploadButton from "../components/UploadButton";
-import { IconRemove, IconImage } from "../components/Icons";
+import { PageBaseComponent, PageBaseComponentProps } from "./PageBaseComponent";
+import PhotoGallerySelectable from "../PhotoGallerySelectable";
+import ContentContainer from "../ContentContainer";
+import AppStateContext from "../../contexts/AppStateContext";
+import PhotoService from "../../services/PhotoService";
+import UploadHelper from "../../helpers/UploadHelper";
+import ModalPhotoDetail from "../modals/ModalPhotoDetail";
+import ModalConfirmation from "../modals/ModalConfirmation";
+import ModalUploadProgress from "../modals/ModalUploadProgress";
+import UploadButton from "../UploadButton";
+import { IconRemove, IconImage } from "../Icons";
 import { toast } from "react-toastify";
-import UrlHelper from "../helpers/UrlHelper";
-import Photo from "../models/Photo";
-import File from "../models/File";
-import GalleryPhoto from "../models/GalleryPhoto";
+import UrlHelper from "../../helpers/UrlHelper";
+import Photo from "../../models/Photo";
+import File from "../../models/File";
+import GalleryPhoto from "../../models/GalleryPhoto";
 
 const queryStringParamNamePhotoId = "photoId";
 

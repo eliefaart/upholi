@@ -1,12 +1,12 @@
 import * as React from "react";
 import { Route } from "react-router-dom";
 import 'react-toastify/dist/ReactToastify.css';
-import LibraryPage from "../pages/LibraryPage";
-import AlbumsPage from "../pages/AlbumsPage";
-import AlbumPage from "../pages/AlbumPage";
-import PhotoPage from "../pages/PhotoPage";
-import SharedPage from "../pages/SharedPage";
-import SharedCollectionPage from "../pages/SharedCollectionPage";
+import LibraryPage from "./pages/LibraryPage";
+import AlbumsPage from "./pages/AlbumsPage";
+import AlbumPage from "./pages/AlbumPage";
+import PhotoPage from "./pages/PhotoPage";
+import SharedPage from "./pages/SharedPage";
+import SharedCollectionPage from "./pages/SharedCollectionPage";
 import Header from "./Header";
 
 interface AppBodyProps {

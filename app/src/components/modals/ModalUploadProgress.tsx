@@ -1,7 +1,7 @@
 import * as React from "react";
 import Modal from "./Modal";
-import ModalPropsBase from "../models/ModalPropsBase";
-import File from "../models/File";
+import ModalPropsBase from "../../models/ModalPropsBase";
+import File from "../../models/File";
 
 interface ModalUploadProgressProps extends ModalPropsBase {
 	files: File[]

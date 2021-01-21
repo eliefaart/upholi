@@ -1,12 +1,12 @@
 import * as React from "react";
 import Modal from "./Modal";
-import AppStateContext from "../contexts/AppStateContext";
-import { IconCopy } from "../components/Icons";
+import AppStateContext from "../../contexts/AppStateContext";
+import { IconCopy } from "../Icons";
 import { toast } from "react-toastify";
 import Switch from "react-switch";
-import { default as PhotoService, UpdateCollection } from "../services/PhotoService";
-import ModalPropsBase from "../models/ModalPropsBase";
-import Collection from "../models/Collection";
+import { default as PhotoService, UpdateCollection } from "../../services/PhotoService";
+import ModalPropsBase from "../../models/ModalPropsBase";
+import Collection from "../../models/Collection";
 
 interface ModalShareCollectionProps extends ModalPropsBase {
 	collection: Collection,

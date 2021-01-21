@@ -1,10 +1,10 @@
 import * as React from "react";
 import Modal from "./Modal";
-import PhotoService from "../services/PhotoService";
-import PhotoDetail from "../components/PhotoDetail";
-import { IconDownload } from "../components/Icons";
-import ModalPropsBase from "../models/ModalPropsBase";
-import Photo from "../models/Photo";
+import PhotoService from "../../services/PhotoService";
+import PhotoDetail from "../PhotoDetail";
+import { IconDownload } from "../Icons";
+import ModalPropsBase from "../../models/ModalPropsBase";
+import Photo from "../../models/Photo";
 
 interface ModalPhotoDetailProps extends ModalPropsBase {
 	photoId: string

@@ -1,7 +1,7 @@
 import * as React from "react";
-import Modal from "../components/Modal";
-import AppStateContext from "../contexts/AppStateContext";
-import ModalPropsBase from "../models/ModalPropsBase";
+import Modal from "./Modal";
+import AppStateContext from "../../contexts/AppStateContext";
+import ModalPropsBase from "../../models/ModalPropsBase";
 
 interface ModalCreateCollectionProps extends ModalPropsBase {
 	onOkButtonClick: (title: string) => void

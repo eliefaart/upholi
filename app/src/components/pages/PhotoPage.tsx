@@ -1,11 +1,11 @@
 import * as React from "react";
-import { PageBaseComponent, PageBaseComponentProps } from "../components/PageBaseComponent";
-import PhotoService from "../services/PhotoService";
-import PhotoDetail from "../components/PhotoDetail";
-import ContentContainer from "../components/ContentContainer"
-import AppStateContext from "../contexts/AppStateContext";
-import { IconClose, IconDownload } from "../components/Icons";
-import Photo from "../models/Photo";
+import { PageBaseComponent, PageBaseComponentProps } from "./PageBaseComponent";
+import PhotoService from "../../services/PhotoService";
+import PhotoDetail from "../PhotoDetail";
+import ContentContainer from "../ContentContainer"
+import AppStateContext from "../../contexts/AppStateContext";
+import { IconClose, IconDownload } from "../Icons";
+import Photo from "../../models/Photo";
 
 interface PhotoPageState {
 	photo: Photo | null,
