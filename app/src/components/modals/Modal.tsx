@@ -23,6 +23,7 @@ class Modal extends React.Component<ModalProps> {
 				onRequestClose={this.props.onRequestClose}
 				className={this.props.className + " modal"}
 				overlayClassName="modalOverlay"
+				shouldCloseOnOverlayClick={false}
 			>
 				<div className="modalHeader">
 					<span className="title">{this.props.title}</span>
