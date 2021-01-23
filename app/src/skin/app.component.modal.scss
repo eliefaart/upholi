@@ -9,14 +9,14 @@ $modalHeaderHeight: $buttonHeight;
 	z-index: 3;
 	display: flex;
 	justify-content: center;
-	background: rgba(0,0,0,.85);
+	background: rgba(70, 70, 70,.85);
 }
 
 .modal {
 	position: absolute;
 	background: $colorBackground;
 	overflow: auto;
-	border: 1px solid $colorAccent;
+	box-shadow: 0 0 5px $colorAccent;
 	border-radius: $borderRadius;
 	min-width: 250px;
 	margin: 5%;
@@ -68,7 +68,7 @@ $modalHeaderHeight: $buttonHeight;
 				position: absolute;
 				left: 5%;
 				width: 90%;
-				border-top: 1px solid $colorSecondaryAccent;
+				border-top: 1px solid $colorAccent;
 			}
 		}
 	}
