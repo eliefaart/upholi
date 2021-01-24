@@ -79,7 +79,7 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 	getHeaderActions() {
 		return (<React.Fragment>
 			{this.state.selectedPhotos.length === 0 && <button onClick={() => document.getElementById("select-photos")!.click()} title="Upload photos">
-				Upload
+				Upload photos
 			</button>}
 			{this.state.selectedPhotos.length > 0 && <button className="iconOnly" onClick={() => this.onClickAddSelectedPhotosToAlbum()} title="Add to album">
 				<IconAddToAlbum/>

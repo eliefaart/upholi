@@ -5,15 +5,15 @@ import AppStateContext from "../../contexts/AppStateContext";
 import ModalCreateCollection from "../modals/ModalCreateCollection"
 import ModalAddAlbumToCollection from "../modals/ModalAddAlbumToCollection"
 import ModalConfirmation from "../modals/ModalConfirmation"
-import ModalShareCollection from "../modals/ModalShareCollection"
 import { IconCreate, IconDelete, IconShare, IconClose } from "../Icons";
 import PhotoService from "../../services/PhotoService";
 import Collection from "../../models/Collection";
+import CollectionSharingSettings from "../CollectionSharingSettings";
 
 interface SharedPageState {
 	collections: Collection[],
+	settingsOpenCollectionIds: string[],
 	// Modal state
-	collectionSharingOptionsDialoOpen: boolean,
 	newCollectionDialogOpen: boolean,
 	addAlbumToCollectionDialogOpen: boolean,
 	confirmDeleteCollectionOpen: boolean,
@@ -29,7 +29,7 @@ class SharedPage extends PageBaseComponent<SharedPageState> {
 
 		this.state = {
 			collections: [],
-			collectionSharingOptionsDialoOpen: false,
+			settingsOpenCollectionIds: [],
 			newCollectionDialogOpen: false,
 			addAlbumToCollectionDialogOpen: false,
 			confirmDeleteCollectionOpen: false,
@@ -75,6 +75,23 @@ class SharedPage extends PageBaseComponent<SharedPageState> {
 			.finally(() => this.setState({confirmDeleteCollectionOpen: false}));
 	}
 
+	toggleSettings(collectionId: string) {
+		let collectionIds = this.state.settingsOpenCollectionIds;
+		const collectionIdIndex = collectionIds.indexOf(collectionId);
+		const collectionIdOpened = collectionIdIndex !== -1;
+
+		if (collectionIdOpened) {
+			collectionIds.splice(collectionIdIndex, 1);
+		}
+		else {
+			collectionIds.push(collectionId);
+		}
+
+		this.setState({
+			settingsOpenCollectionIds: collectionIds
+		});
+	}
+
 	addAlbumToCollection(collectionId: string, albumId: string) {
 		PhotoService.addAlbumToCollection(collectionId, albumId)
 			.then(() => this.refreshCollections())
@@ -100,13 +117,6 @@ class SharedPage extends PageBaseComponent<SharedPageState> {
 			.then((id) => this.refreshCollections())
 			.catch(console.error)
 			.finally(() => this.setState({newCollectionDialogOpen: false}));
-	}
-
-	openShareModal(collectionId: string) {
-		this.setState({
-			collectionSharingOptionsDialoOpen: true,
-			activeCollectionId: collectionId
-		});
 	}
 
 	onClickDeleteCollection(collectionId: string) {
@@ -138,52 +148,56 @@ class SharedPage extends PageBaseComponent<SharedPageState> {
 		return (
 			<ContentContainer paddingTop={true}>
 				<div className="collections">
-					{this.state.collections.map(collection => (
+					{this.state.collections.map(collection => {
+						const settingsOpened = this.state.settingsOpenCollectionIds.indexOf(collection.id) !== -1;
+
 						// Collection container
-						<div key={collection.id} className="collection">
+						return <div key={collection.id} className="collection">
 							<div className="head">
 								{/* Collection title and some actions/buttons */}
 								<h2 className="title">{collection.title}</h2>
-								<button className={"iconOnly" + (collection.sharing.shared ? " shared" : "")} onClick={() => this.openShareModal(collection.id)} title="Collection sharing options">
+								<button className={"iconOnly" + (collection.sharing.shared ? " shared" : "")} onClick={() => this.toggleSettings(collection.id)} title="Collection sharing options">
 									<IconShare/>
-								</button>
-								<button className="iconOnly" onClick={() => this.onAddAlbumToCollectionClick(collection.id)} title="Add album to collection">
-									<IconCreate/>
 								</button>
 								<button className="iconOnly" onClick={() => this.onClickDeleteCollection(collection.id)} title="Delete collection">
 									<IconDelete/>
 								</button>
 							</div>
-							<div className="body">
-								{/* Albums inside this collection */}
-								{collection.albums.map(album => {
-									let albumThumbUrl = album.thumbPhotoId
-										? "url('" + PhotoService.baseUrl() + "/photo/" + album.thumbPhotoId + "/thumb')"
-										: "";
 
-									return (<div key={album.id}
-										className="album"
-										style={{ backgroundImage: albumThumbUrl }}
-										onClick={() => this.openAlbum(album.id)}>
-										<div className="albumContent">
-											<span className="title">{album.title}</span>
-											<button className="iconOnly" onClick={() => this.onRemoveAlbumFromCollectionClick(collection.id, album.id)} title="Remove album from collection">
-												<IconClose/>
-											</button>
-										</div>
-									</div>);
-								})}
+
+
+							<div className="body">
+								<div className={"settings" + (settingsOpened ? " open" : "")}>
+									{settingsOpened && <CollectionSharingSettings collection={collection} onOptionsChanged={() => this.refreshCollections()}/>}
+								</div>
+								{/* Albums inside this collection */}
+								<div className="collection-albums">
+									{collection.albums.map(album => {
+										let albumThumbUrl = album.thumbPhotoId
+											? "url('" + PhotoService.baseUrl() + "/photo/" + album.thumbPhotoId + "/thumb')"
+											: "";
+
+										return (<div key={album.id}
+											className="album"
+											style={{ backgroundImage: albumThumbUrl }}
+											onClick={() => this.openAlbum(album.id)}>
+											<div className="albumContent">
+												<span className="title">{album.title}</span>
+												<button className="iconOnly" onClick={() => this.onRemoveAlbumFromCollectionClick(collection.id, album.id)} title="Remove album from collection">
+													<IconClose/>
+												</button>
+											</div>
+										</div>);
+									})}
+									<button className="iconOnly" onClick={() => this.onAddAlbumToCollectionClick(collection.id)} title="Add album to collection">
+										<IconCreate/>
+									</button>
+								</div>
 							</div>
-						</div>
-					))}
+						</div>;
+					})}
 				</div>
 
-				{this.state.collectionSharingOptionsDialoOpen && <ModalShareCollection
-					isOpen={true}
-					onRequestClose={() => this.setState({collectionSharingOptionsDialoOpen: false})}
-					collection={activeCollection!}
-					onOptionsChanged={() => this.refreshCollections()}
-					/>}
 				{this.state.addAlbumToCollectionDialogOpen && <ModalAddAlbumToCollection
 					isOpen={true}
 					onRequestClose={() => this.setState({addAlbumToCollectionDialogOpen: false})}

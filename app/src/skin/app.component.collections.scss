@@ -25,36 +25,49 @@
 		}
 
 		.body {
-			display: flex;
-			flex-direction: row;
-			flex-wrap: wrap;
-			gap: $spacing * 2;
-			margin-top: $spacing * 2;
 
-			.album {
-				background-size: cover;
-				background-position: center center;
-				background-repeat: no-repeat;
-				width: 200px;
-				height: $buttonHeight * 2.5;
+			.settings {
+				// Will need JS to do this animation properly..
+				max-height: 0px;
+				transition: max-height $transitionSpeed;
 
-				&, .albumContent {
-					border-radius: $borderRadius;
+				&.open {
+					max-height: 200px;
 				}
+			}
 
-				&:hover {
-					cursor: pointer;
-				}
+			.collection-albums {
+				display: flex;
+				flex-direction: row;
+				flex-wrap: wrap;
+				gap: $spacing * 2;
+				margin-top: $spacing * 2;
 
-				.albumContent {
-					display: flex;
-					height: 100%;
-					line-height: $buttonHeight;
-					background-color: rgba(black, 0.75);
+				.album {
+					background-size: cover;
+					background-position: center center;
+					background-repeat: no-repeat;
+					width: 200px;
+					height: $buttonHeight * 1;
 
-					.title {
-						flex: 1;
-						margin-left: $spacing;
+					&, .albumContent {
+						border-radius: $borderRadius;
+					}
+
+					&:hover {
+						cursor: pointer;
+					}
+
+					.albumContent {
+						display: flex;
+						height: 100%;
+						line-height: $buttonHeight;
+						background-color: rgba(black, 0.55);
+
+						.title {
+							flex: 1;
+							margin-left: $spacing;
+						}
 					}
 				}
 			}

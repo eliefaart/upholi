@@ -57,7 +57,7 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 				<IconRemove/>
 			</button>}
 			{this.state.selectedPhotos.length === 0 && <button onClick={() => document.getElementById("select-photos")!.click()} title="Upload photos">
-				Upload
+				Upload photos
 			</button>}
 		</React.Fragment>);
 	}

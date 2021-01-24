@@ -3,6 +3,7 @@
 
 $colorBackground: #1c1c1c;
 $colorBackgroundAlt: #303030;
+$colorBackgroundShadow: rgba(70, 70, 70,.85);
 $colorAccent: #20aced; //#437dec;	// #26bf84
 $colorSecondaryAccent: #d6d12f; //#bb8736;	// #c9436b
 $colorSpecial: #b5a238;
@@ -16,7 +17,7 @@ $colorHeaderBackground: transparent; //$colorBackgroundAlt;
 $fontSizeNormal: 0.8em;
 $fontSizeLarge: 1.2em;
 $spacing: 5px;
-$transitionSpeed: 0.1s;
+$transitionSpeed: 0.2s;
 $borderRadius: 2px;
 $headerHeight: 65px;
 $buttonHeight: 40px;
@@ -68,7 +69,6 @@ html {
 @import "app.component.photoGallery";
 @import "app.component.photoDetail";
 @import "app.component.modalUploadProgress";
-@import "app.component.modalCreateAlbum";
 @import "app.component.modalAddToAlbum";
 @import "app.component.modalShareCollection";
 @import "app.component.exif";
@@ -95,10 +95,10 @@ a[href]:not(.asButton) {
 input, select {
 	background-color: $colorBackgroundAlt;
 	color: $colorText;
-	border: 2px solid $colorSecondaryAccent;
+	border: 2px solid $colorBackgroundShadow;
 
 	&:focus {
-		border-color: $colorAccent;
+		border-color: $colorSecondaryAccent;
 	}
 }
 
