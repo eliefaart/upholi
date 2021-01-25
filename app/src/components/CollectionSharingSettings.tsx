@@ -1,29 +1,27 @@
 import * as React from "react";
-import Modal from "./Modal";
 import AppStateContext from "../contexts/AppStateContext";
-import { IconCopy } from "../components/Icons";
+import { IconCopy, IconRefresh } from "./Icons";
 import { toast } from "react-toastify";
 import Switch from "react-switch";
 import { default as PhotoService, UpdateCollection } from "../services/PhotoService";
-import ModalPropsBase from "../entities/ModalPropsBase";
-import Collection from "../entities/Collection";
+import Collection from "../models/Collection";
+import Modal from "./modals/Modal";
 
-interface ModalShareCollectionProps extends ModalPropsBase {
+interface Props {
 	collection: Collection,
 	onOptionsChanged: () => void
 }
 
-interface ModalShareCollectionState {
+interface State {
 	shared: boolean,
 	requirePassword: boolean,
 	isChangingPassword: boolean,
 	password: string
 }
 
+class CollectionSharingSettings extends React.Component<Props, State> {
 
-class ModalShareCollection extends React.Component<ModalShareCollectionProps, ModalShareCollectionState> {
-
-	constructor(props: ModalShareCollectionProps) {
+	constructor(props: Props) {
 		super(props);
 
 		this.state = {
@@ -86,93 +84,85 @@ class ModalShareCollection extends React.Component<ModalShareCollectionProps, Mo
 	}
 
 	render() {
-		let statusText = "This collection is private, only you can see it.";
+		let statusText = "This collection is currently not shared, only you can see it.";
 		if (this.state.shared) {
 			statusText = !this.state.requirePassword
 				? "This collection is visible to anyone who has the link."
 				: "This collection is visible to anyone who has the link, and knows the password.";
 		}
 
-		const shareUrl = document.location.origin + "/shared/collection/" + this.props.collection.sharing.token;
+		const shareUrl = document.location.origin + "/s/" + this.props.collection.sharing.token;
 
-		return <Modal
-			title="Sharing options"
-			className={this.props.className + " modalShareCollection"}
-			isOpen={this.props.isOpen}
-			onRequestClose={this.props.onRequestClose}
-			okButtonText="Done"
-			onOkButtonClick={this.props.onRequestClose}
-			>
-				<p>
-					{statusText}
-				</p>
-				<label className="switch">
-					<span>Status</span>
-					<Switch checked={this.state.shared}
-						width={80}
-						onColor="#53c253"
-						checkedIcon={<span className="checkedIcon">Shared</span>}
-						uncheckedIcon={<span className="uncheckedIcon">Private</span>}
-						onChange={(bShared) => {
-							this.setState({
-								shared: bShared
-							}, () => {
+		return <React.Fragment>
+			<p>
+				{statusText}
+			</p>
+			<label className="switch">
+				<span>Status</span>
+				<Switch checked={this.state.shared}
+					width={80}
+					onColor="#53c253"
+					checkedIcon={<span className="checkedIcon">Shared</span>}
+					uncheckedIcon={<span className="uncheckedIcon">Private</span>}
+					onChange={(bShared) => {
+						this.setState({
+							shared: bShared
+						}, () => {
+							this.updateSharingOptions();
+						});
+					}}/>
+			</label>
+
+			{/* Password */}
+			{/* {this.state.shared && <label className="switch">
+				<span>Require password</span>
+				<Switch checked={this.state.requirePassword}
+					width={80}
+					onColor="#53c253"
+					checkedIcon={<span className="checkedIcon">Yes</span>}
+					uncheckedIcon={<span className="uncheckedIcon">No</span>}
+					onChange={(bRequirePassword) => {
+						this.setState({
+							requirePassword: bRequirePassword,
+							isChangingPassword: bRequirePassword
+						}, () => {
+							if (!bRequirePassword) {
 								this.updateSharingOptions();
-							});
-						}}/>
-				</label>
+							}
+						});
+					}}/>
+			</label>}
+			{this.state.shared && this.state.requirePassword &&
+				<button onClick={() => this.setState({ isChangingPassword: true })}>
+					Change password
+				</button>
+			} */}
 
-				{/* Password */}
-				{/* {this.state.shared && <label className="switch">
-					<span>Require password</span>
-					<Switch checked={this.state.requirePassword}
-						width={80}
-						onColor="#53c253"
-						checkedIcon={<span className="checkedIcon">Yes</span>}
-						uncheckedIcon={<span className="uncheckedIcon">No</span>}
-						onChange={(bRequirePassword) => {
-							this.setState({
-								requirePassword: bRequirePassword,
-								isChangingPassword: bRequirePassword
-							}, () => {
-								if (!bRequirePassword) {
-									this.updateSharingOptions();
-								}
-							});
-						}}/>
-				</label>}
-				{this.state.shared && this.state.requirePassword &&
-					<button onClick={() => this.setState({ isChangingPassword: true })}>
-						Change password
+			{/* URL */}
+			{this.state.shared && <div className="url">
+				<div className="copyUrl">
+					<input className="urlToCopy" type="text" value={shareUrl}
+						// Prevent changes to the value of this input by resetting value in onchange event.
+						// I cannot make it 'disabled', because then I cannot copy the text using JS
+						onChange={(event) => event.target.value = shareUrl}/>
+					<button className="iconOnly" onClick={() => this.generateNewUrl()}>
+						<IconRefresh/>
 					</button>
-				} */}
-
-				{/* URL */}
-				{this.state.shared && <div className="url">
-					<div className="copyUrl">
-						<input className="urlToCopy" type="text" value={shareUrl}
-							// Prevent changes to the value of this input by resetting value in onchange event.
-							// I cannot make it 'disabled', because then I cannot copy the text using JS
-							onChange={(event) => event.target.value = shareUrl}/>
-						<button className="iconOnly" onClick={() => this.copyUrlToClipboard()} title="Copy URL">
-							<IconCopy/>
-						</button>
-					</div>
-					<button onClick={() => this.generateNewUrl()}>
-						Generate new URL
+					<button className="iconOnly" onClick={() => this.copyUrlToClipboard()} title="Copy URL">
+						<IconCopy/>
 					</button>
-				</div>}
+				</div>
+			</div>}
 
 			{this.state.isChangingPassword && <ModalSetPassword
 				onOkButtonClick={(password: string) => this.onPasswordUpdated(password)}/>}
-		</Modal>;
+		</React.Fragment>;
 	}
 }
 
 interface ModalSetPasswordProps {
 	onOkButtonClick: (password: string) => void
 }
-
 
 class ModalSetPassword extends React.Component<ModalSetPasswordProps> {
 	constructor(props:ModalSetPasswordProps) {
@@ -202,5 +192,5 @@ class ModalSetPassword extends React.Component<ModalSetPasswordProps> {
 	}
 }
 
-ModalShareCollection.contextType = AppStateContext;
-export default ModalShareCollection;
+CollectionSharingSettings.contextType = AppStateContext;
+export default CollectionSharingSettings;

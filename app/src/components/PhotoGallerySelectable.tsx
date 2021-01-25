@@ -1,6 +1,6 @@
 import * as React from "react";
 import { default as Gallery, RenderImageProps, PhotoProps} from "react-photo-gallery";
-import GalleryPhoto from "../entities/GalleryPhoto";
+import GalleryPhoto from "../models/GalleryPhoto";
 
 interface PhotoGallerySelectableProps {
 	photos: GalleryPhoto[],

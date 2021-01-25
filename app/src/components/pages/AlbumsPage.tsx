@@ -1,9 +1,9 @@
 import * as React from "react";
-import { PageBaseComponent, PageBaseComponentProps } from "../components/PageBaseComponent";
-import AllUserAlbums from "../components/AllUserAlbums";
-import ContentContainer from "../components/ContentContainer";
-import ModalCreateAlbum from "../components/ModalCreateAlbum";
-import AppStateContext from "../contexts/AppStateContext";
+import { PageBaseComponent, PageBaseComponentProps } from "./PageBaseComponent";
+import AllUserAlbums from "../AllUserAlbums";
+import ContentContainer from "../ContentContainer";
+import ModalCreateAlbum from "../modals/ModalCreateAlbum";
+import AppStateContext from "../../contexts/AppStateContext";
 
 interface AlbumsPageState {
 	newAlbumDialogOpen: boolean

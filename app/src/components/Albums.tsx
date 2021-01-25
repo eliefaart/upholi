@@ -1,5 +1,5 @@
 import * as React from "react";
-import AlbumInfo from "../entities/AlbumInfo";
+import AlbumInfo from "../models/AlbumInfo";
 import PhotoService from "../services/PhotoService"
 import AppStateContext from "../contexts/AppStateContext";
 

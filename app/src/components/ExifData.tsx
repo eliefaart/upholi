@@ -1,5 +1,5 @@
 import * as React from "react";
-import Exif from "../entities/Exif";
+import Exif from "../models/Exif";
 
 interface ExifDataProps {
 	exif: Exif

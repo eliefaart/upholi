@@ -33,7 +33,7 @@ class Header extends React.Component<HeaderProps, HeaderState> {
 		const menuItems = [
 			{ path: "/", title: "Library" },
 			{ path: "/albums", title: "Albums" },
-			{ path: "/collections", title: "Collections" }
+			{ path: "/shared", title: "Shared" }
 		];
 
 		return <header id="header">

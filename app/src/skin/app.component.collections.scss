@@ -17,10 +17,6 @@
 			.title {
 				flex: 1;
 				text-align: unset;
-
-				&:hover {
-					cursor: pointer;
-				}
 			}
 
 			.shared {
@@ -29,36 +25,55 @@
 		}
 
 		.body {
-			display: flex;
-			flex-direction: row;
-			flex-wrap: wrap;
-			gap: $spacing * 2;
-			margin-top: $spacing * 2;
 
-			.album {
-				background-size: cover;
-				background-position: center center;
-				background-repeat: no-repeat;
-				width: 200px;
-				height: $buttonHeight * 2.5;
+			.settings {
 
-				&, .albumContent {
-					border-radius: $borderRadius;
+				// Will need JS to do this animation properly..
+				padding: 0px;
+				max-height: 0px;
+				transition: padding $transitionSpeed, max-height $transitionSpeed;
+
+				&.open {
+					max-height: 200px;
 				}
 
-				&:hover {
-					cursor: pointer;
+				&:not(:empty) {
+					padding: $spacing * 5 0px;
 				}
+			}
 
-				.albumContent {
-					display: flex;
-					height: 100%;
-					line-height: $buttonHeight;
-					background-color: rgba(black, 0.75);
+			.collection-albums {
+				display: flex;
+				flex-direction: row;
+				flex-wrap: wrap;
+				gap: $spacing * 2;
+				margin-top: $spacing * 2;
 
-					.title {
-						flex: 1;
-						margin-left: $spacing;
+				.album {
+					background-size: cover;
+					background-position: center center;
+					background-repeat: no-repeat;
+					width: 200px;
+					height: $buttonHeight * 1;
+
+					&, .albumContent {
+						border-radius: $borderRadius;
+					}
+
+					&:hover {
+						cursor: pointer;
+					}
+
+					.albumContent {
+						display: flex;
+						height: 100%;
+						line-height: $buttonHeight;
+						background-color: rgba(black, 0.55);
+
+						.title {
+							flex: 1;
+							margin-left: $spacing;
+						}
 					}
 				}
 			}

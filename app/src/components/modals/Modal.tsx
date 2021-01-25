@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as ReactModal from "react-modal";
-import { IconClose } from "../components/Icons";
-import ModalPropsBase from "../entities/ModalPropsBase";
+import { IconClose } from "../Icons";
+import ModalPropsBase from "../../models/ModalPropsBase";
 
 interface ModalProps extends ModalPropsBase {
 	title: string,
@@ -23,6 +23,7 @@ class Modal extends React.Component<ModalProps> {
 				onRequestClose={this.props.onRequestClose}
 				className={this.props.className + " modal"}
 				overlayClassName="modalOverlay"
+				shouldCloseOnOverlayClick={false}
 			>
 				<div className="modalHeader">
 					<span className="title">{this.props.title}</span>

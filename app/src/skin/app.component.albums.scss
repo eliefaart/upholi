@@ -4,7 +4,6 @@
 	flex-wrap: wrap;
 	gap: $spacing * 2;
 	padding: $spacing * 2;
-	justify-content: center;
 
 	.album {
 		position: relative;
@@ -13,7 +12,7 @@
 
 		width: 200px;
 		height: 150px;
-		max-width: 40vw;
+		max-width: 46vw;
 		max-height: 30vw;
 		background-size:cover;
 		background-position:center center;
@@ -23,7 +22,7 @@
 		&:hover, &.active {
 			span {
 				background-color: rgba($colorAccent, 1);
-				color: $colorTextDark;
+				color: $colorTextContrast;
 			}
 		}
 
@@ -47,7 +46,7 @@
 			width: 100%;
 			padding: 0 $spacing;
 			background-color: rgba($colorBackground, $alpha: 0.7);
-			color: $colorTextLight;
+			color: $colorText;
 			text-align: center;
 			overflow: hidden;
 			text-overflow: ellipsis;
