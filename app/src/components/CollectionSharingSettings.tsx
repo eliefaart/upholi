@@ -1,6 +1,6 @@
 import * as React from "react";
 import AppStateContext from "../contexts/AppStateContext";
-import { IconCopy } from "./Icons";
+import { IconCopy, IconRefresh } from "./Icons";
 import { toast } from "react-toastify";
 import Switch from "react-switch";
 import { default as PhotoService, UpdateCollection } from "../services/PhotoService";
@@ -145,11 +145,11 @@ class CollectionSharingSettings extends React.Component<Props, State> {
 						// Prevent changes to the value of this input by resetting value in onchange event.
 						// I cannot make it 'disabled', because then I cannot copy the text using JS
 						onChange={(event) => event.target.value = shareUrl}/>
+					<button className="iconOnly" onClick={() => this.generateNewUrl()}>
+						<IconRefresh/>
+					</button>
 					<button className="iconOnly" onClick={() => this.copyUrlToClipboard()} title="Copy URL">
 						<IconCopy/>
-					</button>
-					<button onClick={() => this.generateNewUrl()}>
-						new URL
 					</button>
 				</div>
 			</div>}

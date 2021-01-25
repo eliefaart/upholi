@@ -27,12 +27,18 @@
 		.body {
 
 			.settings {
+
 				// Will need JS to do this animation properly..
+				padding: 0px;
 				max-height: 0px;
-				transition: max-height $transitionSpeed;
+				transition: padding $transitionSpeed, max-height $transitionSpeed;
 
 				&.open {
 					max-height: 200px;
+				}
+
+				&:not(:empty) {
+					padding: $spacing * 5 0px;
 				}
 			}
 
