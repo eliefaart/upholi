@@ -1,5 +1,5 @@
 import * as React from "react";
-import AppStateContext from "../contexts/AppStateContext";
+import AppStateContext from "../../contexts/AppStateContext";
 
 export interface PageBaseComponentProps {
 	requiresAuthentication: boolean,

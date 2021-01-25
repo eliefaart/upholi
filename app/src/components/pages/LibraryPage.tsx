@@ -1,24 +1,24 @@
 import * as React from "react";
-import { PageBaseComponent, PageBaseComponentProps } from "../components/PageBaseComponent";
-import PhotoGallerySelectable from "../components/PhotoGallerySelectable";
-import ContentContainer from "../components/ContentContainer";
-import PhotoService from "../services/PhotoService";
-import UploadHelper from "../helpers/UploadHelper";
-import AppStateContext from "../contexts/AppStateContext";
-import ModalPhotoDetail from "../components/ModalPhotoDetail";
-import ModalConfirmation from "../components/ModalConfirmation";
-import ModalUploadProgress from "../components/ModalUploadProgress";
-import ModalCreateAlbum from "../components/ModalCreateAlbum";
-import ModalAddToAlbum from "../components/ModalAddToAlbum";
-import UploadButton from "../components/UploadButton";
-import { IconDelete, IconAddToAlbum } from "../components/Icons";
+import { PageBaseComponent, PageBaseComponentProps } from "./PageBaseComponent";
+import PhotoGallerySelectable from "../PhotoGallerySelectable";
+import ContentContainer from "../ContentContainer";
+import PhotoService from "../../services/PhotoService";
+import UploadHelper from "../../helpers/UploadHelper";
+import AppStateContext from "../../contexts/AppStateContext";
+import ModalPhotoDetail from "../modals/ModalPhotoDetail";
+import ModalConfirmation from "../modals/ModalConfirmation";
+import ModalUploadProgress from "../modals/ModalUploadProgress";
+import ModalCreateAlbum from "../modals/ModalCreateAlbum";
+import ModalAddToAlbum from "../modals/ModalAddToAlbum";
+import UploadButton from "../UploadButton";
+import { IconDelete, IconAddToAlbum } from "../Icons";
 import { toast } from "react-toastify";
-import UrlHelper from "../helpers/UrlHelper";
-import Photo from "../entities/Photo";
-import Album from "../entities/Album";
-import File from "../entities/File";
-import GalleryPhoto from "../entities/GalleryPhoto";
-import AlbumInfo from "../entities/AlbumInfo";
+import UrlHelper from "../../helpers/UrlHelper";
+import Photo from "../../models/Photo";
+import Album from "../../models/Album";
+import File from "../../models/File";
+import GalleryPhoto from "../../models/GalleryPhoto";
+import AlbumInfo from "../../models/AlbumInfo";
 
 const queryStringParamNamePhotoId = "photoId";
 
@@ -79,7 +79,7 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 	getHeaderActions() {
 		return (<React.Fragment>
 			{this.state.selectedPhotos.length === 0 && <button onClick={() => document.getElementById("select-photos")!.click()} title="Upload photos">
-				Upload
+				Upload photos
 			</button>}
 			{this.state.selectedPhotos.length > 0 && <button className="iconOnly" onClick={() => this.onClickAddSelectedPhotosToAlbum()} title="Add to album">
 				<IconAddToAlbum/>

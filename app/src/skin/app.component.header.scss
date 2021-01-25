@@ -1,10 +1,9 @@
-
-
 #header {
 	display: flex;
 	height: $headerHeight;
-	background-color: $colorBackground;
-	border-bottom: 3px solid $colorTextLight;
+	background: $colorHeaderBackground;
+	//background-color: $colorHeaderBackground;
+	//border-bottom: 3px solid $colorText;
 	width: 100%;
 	z-index: 1;
 
@@ -22,12 +21,12 @@
 			padding-left: $spacing * 4;
 
 			&:hover {
-				color: $colorSecondaryAccent;
+				color: $colorAccent;
 			}
 
 			&.active {
 				color: $colorAccent;
-				border-bottom: 4px solid $colorAccent;
+				//border-bottom: 4px solid $colorAccent;
 			}
 		}
 	}
@@ -42,7 +41,7 @@
 		width: $headerHeight;
 		min-width: $headerHeight;
 		background-color: transparent;
-		color: $colorTextLight;
+		color: $colorText;
 	}
 
 	.actions {
@@ -63,7 +62,7 @@
 
 				span {
 					margin-right: $spacing * 2;
-					color: $colorTextLight;
+					color: $colorText;
 				}
 			}
 		}
@@ -96,7 +95,7 @@
 			button {
 				border-radius: unset;
 				padding: 0 $spacing * 3;
-				color: $colorTextLight;
+				color: $colorText;
 				background-color: $colorBackgroundAlt;
 				width: 100%;
 				margin: 0;
@@ -106,7 +105,7 @@
 				&:hover {
 					&, * {
 						background-color: $colorAccent;
-						color: $colorTextDark;
+						color: $colorTextContrast;
 					}
 				}
 			}

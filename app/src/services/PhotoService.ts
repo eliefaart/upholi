@@ -1,7 +1,7 @@
-import Album from "../entities/Album";
-import Photo from "../entities/Photo";
-import Collection from "../entities/Collection";
-import AlbumInfo from "../entities/AlbumInfo";
+import Album from "../models/Album";
+import Photo from "../models/Photo";
+import Collection from "../models/Collection";
+import AlbumInfo from "../models/AlbumInfo";
 
 /**
  * Response from server on calls that create new entities such as albums

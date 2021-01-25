@@ -1,4 +1,4 @@
-import File from "../entities/File";
+import File from "../models/File";
 
 export default class UploadHelper {
 
