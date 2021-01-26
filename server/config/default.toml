@@ -8,12 +8,12 @@ address = "0.0.0.0:8000"
 connection_string = ""
 # Name of database to use
 # Can also by set using env var HB_DATABASE_NAME
-name = "hummingbird"
+name = "upholi"
 
 [storage]
 # Path to directory where photos will be stored
 # Can also by set using env var HB_STORAGE_DIRECTORYPHOTOS
-directory_photos = "/srv/hummingbird/photos"
+directory_photos = "/srv/upholi/photos"
 
 [[oauth_providers]]
 # Unique identifier to this OAuth provider

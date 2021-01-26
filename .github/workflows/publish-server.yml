@@ -8,7 +8,7 @@ on:
       - 'server/**'
 
 env:
-  IMAGE_NAME: hummingbird-server
+  IMAGE_NAME: upholi-server
 
 jobs:
   build:
@@ -44,7 +44,7 @@ jobs:
       run: |
         cd ./server
         IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/$IMAGE_NAME
-        
+
         # Change all uppercase to lowercase
         IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
 
