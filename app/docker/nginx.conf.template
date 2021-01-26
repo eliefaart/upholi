@@ -1,6 +1,6 @@
 server {
     listen 80;
-	root /srv/hummingbird;
+	root /srv/upholi;
 	index index.html;
 
 	# These paths are 'virtual' paths, routing is done client side.

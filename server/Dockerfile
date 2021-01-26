@@ -1,5 +1,5 @@
 FROM ubuntu
-# Cannot use 'alpine' as base, it doesn't work out of the box. 
+# Cannot use 'alpine' as base, it doesn't work out of the box.
 # Error I am getting is: standard_init_linux.go:211: exec user process caused "no such file or directory"
 
 EXPOSE 8000
@@ -12,13 +12,13 @@ RUN apt-get update &&\
 	apt-get -y install ca-certificates
 
 # Copy app folder
-COPY target/release/hummingbird /bin/
+COPY target/release/upholi /bin/
 
 # Copy configurations
 COPY config/ /config/
 
 # Add execution rights and create folder that a volume will be mounted to
-RUN chmod +x /bin/hummingbird &&\
-	mkdir /srv/hummingbird
+RUN chmod +x /bin/upholi &&\
+	mkdir /srv/upholi
 
-CMD ["./bin/hummingbird"]
+CMD ["./bin/upholi"]

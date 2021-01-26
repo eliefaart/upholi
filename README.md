@@ -1,4 +1,4 @@
-# Hummingbird
+# upholi
 Personal photo library. Upload and view photos, and sort them in albums.
 
 ## Docker
@@ -28,4 +28,4 @@ Settings of OAuth2 providers can also be overwritten using environment variables
  The ```XXX``` within each environment variable must be replaced with the ID of the OAuth2 provider, this is not case sensitive. So for OAuth2 provider with ID 'github' (the only one supported right now), you could for example set environment variable ```HB_OAUTH_GITHUB_CLIENTSECRET```.
 
 ## License
-This project is licensed under the MIT license. 
+This project is licensed under the MIT license.

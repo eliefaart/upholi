@@ -10,18 +10,18 @@ volumes:
 
 services:
   app:
-    image: docker.pkg.github.com/eliefaart/hummingbird/hummingbird-app:latest
+    image: docker.pkg.github.com/eliefaart/upholi/upholi-app:latest
     restart: always
     ports:
       - "29701:80"
     environment:
       API_URI: "http://server:8000"
   server:
-    image: docker.pkg.github.com/eliefaart/hummingbird/hummingbird-server:latest
+    image: docker.pkg.github.com/eliefaart/upholi/upholi-server:latest
     restart: always
     environment:
       HB_DATABASE_CONNECTIONSTRING: "XXX"
-      HB_DATABASE_NAME: "hummingbird"
+      HB_DATABASE_NAME: "upholi"
       HB_STORAGE_DIRECTORYPHOTOS: "/srv/photos"
       HB_OAUTH_GITHUB_CLIENTID: "XXX"
       HB_OAUTH_GITHUB_CLIENTSECRET: "XXX"

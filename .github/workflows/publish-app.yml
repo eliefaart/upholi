@@ -8,7 +8,7 @@ on:
       - 'app/**'
 
 env:
-  IMAGE_NAME: hummingbird-app
+  IMAGE_NAME: upholi-app
 
 jobs:
   build:
@@ -17,7 +17,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    # Authenticate 
+    # Authenticate
     - name: Log into GitHub registry
       run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
 
@@ -45,7 +45,7 @@ jobs:
       run: |
         cd ./app
         IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/$IMAGE_NAME
-        
+
         # Change all uppercase to lowercase
         IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
 
