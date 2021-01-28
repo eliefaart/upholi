@@ -6,6 +6,7 @@ import Switch from "react-switch";
 import { default as PhotoService, UpdateCollection } from "../services/PhotoService";
 import Collection from "../models/Collection";
 import Modal from "./modals/Modal";
+import ModalConfirmation from "./modals/ModalConfirmation";
 
 interface Props {
 	collection: Collection,
@@ -16,7 +17,8 @@ interface State {
 	shared: boolean,
 	requirePassword: boolean,
 	isChangingPassword: boolean,
-	password: string
+	password: string,
+	isConfirmingRefreshToken: boolean
 }
 
 class CollectionSharingSettings extends React.Component<Props, State> {
@@ -28,7 +30,8 @@ class CollectionSharingSettings extends React.Component<Props, State> {
 			shared: this.props.collection.sharing.shared,
 			requirePassword: this.props.collection.sharing.requirePassword,
 			isChangingPassword: false,
-			password: ""
+			password: "",
+			isConfirmingRefreshToken: false
 		};
 	}
 
@@ -48,7 +51,7 @@ class CollectionSharingSettings extends React.Component<Props, State> {
 		toast.info("URL copied to clipboard.");
 	}
 
-	onPasswordUpdated (password: string) {
+	onPasswordUpdated(password: string) {
 		this.setState({
 			isChangingPassword: false,
 			password: password
@@ -63,7 +66,7 @@ class CollectionSharingSettings extends React.Component<Props, State> {
 			albums: null,
 			public: null,
 			sharing: {
-				shared: this.state.shared,
+				shared: true,
 				requirePassword: this.state.requirePassword
 			}
 		};
@@ -93,26 +96,15 @@ class CollectionSharingSettings extends React.Component<Props, State> {
 
 		const shareUrl = document.location.origin + "/s/" + this.props.collection.sharing.token;
 
-		return <React.Fragment>
-			<p>
-				{statusText}
-			</p>
-			<label className="switch">
-				<span>Status</span>
-				<Switch checked={this.state.shared}
-					width={80}
-					onColor="#53c253"
-					checkedIcon={<span className="checkedIcon">Shared</span>}
-					uncheckedIcon={<span className="uncheckedIcon">Private</span>}
-					onChange={(bShared) => {
-						this.setState({
-							shared: bShared
-						}, () => {
-							this.updateSharingOptions();
-						});
-					}}/>
-			</label>
+		// Event handlers
+		const fnOpenConfirmRefreshShareToken = () => this.setState({isConfirmingRefreshToken: true});
+		const fnCloseConfirmRefreshShareToken = () => this.setState({isConfirmingRefreshToken: false});
+		const fnOnConfirmRefreshTokenOk = () => {
+			fnCloseConfirmRefreshShareToken();
+			this.generateNewUrl();
+		};
 
+		return <React.Fragment>
 			{/* Password */}
 			{/* {this.state.shared && <label className="switch">
 				<span>Require password</span>
@@ -145,10 +137,10 @@ class CollectionSharingSettings extends React.Component<Props, State> {
 						// Prevent changes to the value of this input by resetting value in onchange event.
 						// I cannot make it 'disabled', because then I cannot copy the text using JS
 						onChange={(event) => event.target.value = shareUrl}/>
-					<button className="iconOnly" onClick={() => this.generateNewUrl()}>
+					<button className="iconOnly" onClick={fnOpenConfirmRefreshShareToken} title="Update URL">
 						<IconRefresh/>
 					</button>
-					<button className="iconOnly" onClick={() => this.copyUrlToClipboard()} title="Copy URL">
+					<button className="iconOnly" onClick={this.copyUrlToClipboard} title="Copy URL">
 						<IconCopy/>
 					</button>
 				</div>
@@ -156,6 +148,15 @@ class CollectionSharingSettings extends React.Component<Props, State> {
 
 			{this.state.isChangingPassword && <ModalSetPassword
 				onOkButtonClick={(password: string) => this.onPasswordUpdated(password)}/>}
+
+			{this.state.isConfirmingRefreshToken && <ModalConfirmation
+					title="Update URL"
+					isOpen={true}
+					onRequestClose={fnCloseConfirmRefreshShareToken}
+					onOkButtonClick={fnOnConfirmRefreshTokenOk}
+					okButtonText="Ok"
+					confirmationText={"The old URL will no longer work."}
+					/>}
 		</React.Fragment>;
 	}
 }

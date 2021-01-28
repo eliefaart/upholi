@@ -162,9 +162,30 @@ class IconRefresh extends React.Component<IconProps> {
 	}
 }
 
+class IconChevronUp extends React.Component<IconProps> {
+	constructor(props: IconProps) { super(props); }
+
+	render() {
+		return (<Icon {...this.props}>
+			<path fill="currentColor" d="M7.41,15.41L12,10.83L16.59,15.41L18,14L12,8L6,14L7.41,15.41Z" />
+		</Icon>);
+	}
+}
+
+class IconChevronDown extends React.Component<IconProps> {
+	constructor(props: IconProps) { super(props); }
+
+	render() {
+		return (<Icon {...this.props}>
+			<path fill="currentColor" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" />
+		</Icon>);
+	}
+}
+
 export {
 	IconClose, IconCopy, IconDownload, IconUpload, IconContextMenu,
 	IconRemove, IconDelete, IconCreate,
 	IconLink, IconImage, IconAddToAlbum,
-	IconPublic, IconShare, IconBack, IconRefresh
+	IconPublic, IconShare, IconBack, IconRefresh,
+	IconChevronUp, IconChevronDown
 }

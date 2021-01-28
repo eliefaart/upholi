@@ -8,7 +8,7 @@ use crate::entities::AccessControl;
 use crate::entities::user::User;
 
 
-/// A Collection is a collection of 0..n albums 
+/// A Collection is a collection of 0..n albums
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Collection {
@@ -35,7 +35,7 @@ impl Collection {
 			title: title.to_string(),
 			albums: vec!{},
 			sharing: CollectionSharingOptions {
-				shared: false,
+				shared: true,
 				token: ids::create_unique_id(),
 				password_hash: Some(String::new()),
 			}
@@ -91,11 +91,11 @@ impl DatabaseUserEntity for Collection {
 	}
 
 	fn get_all_as_user(user_id: String) -> Result<Vec<Self>> {
-		database::get_database().find_many(database::COLLECTION_COLLECTIONS, Some(&user_id), None, None) 
+		database::get_database().find_many(database::COLLECTION_COLLECTIONS, Some(&user_id), None, None)
 	}
 
 	fn get_all_with_ids_as_user(ids: &[&str], user_id: String) -> Result<Vec<Self>> {
-		database::get_database().find_many(database::COLLECTION_COLLECTIONS, Some(&user_id), Some(ids), None) 
+		database::get_database().find_many(database::COLLECTION_COLLECTIONS, Some(&user_id), Some(ids), None)
 	}
 }
 
@@ -150,8 +150,8 @@ mod tests {
 
 	fn create_dummy_user() -> User {
 		User{
-			id: create_unique_id(), 
-			identity_provider: "".to_string(), 
+			id: create_unique_id(),
+			identity_provider: "".to_string(),
 			identity_provider_user_id: "".to_string()
 		}
 	}

@@ -5,7 +5,7 @@ import AppStateContext from "../../contexts/AppStateContext";
 import ModalCreateCollection from "../modals/ModalCreateCollection"
 import ModalAddAlbumToCollection from "../modals/ModalAddAlbumToCollection"
 import ModalConfirmation from "../modals/ModalConfirmation"
-import { IconCreate, IconDelete, IconShare, IconClose } from "../Icons";
+import { IconCreate, IconDelete, IconShare, IconClose, IconChevronDown, IconChevronUp } from "../Icons";
 import PhotoService from "../../services/PhotoService";
 import Collection from "../../models/Collection";
 import CollectionSharingSettings from "../CollectionSharingSettings";
@@ -156,20 +156,21 @@ class SharedPage extends PageBaseComponent<SharedPageState> {
 							<div className="head">
 								{/* Collection title and some actions/buttons */}
 								<h2 className="title">{collection.title}</h2>
-								<button className={"iconOnly" + (collection.sharing.shared ? " shared" : "")} onClick={() => this.toggleSettings(collection.id)} title="Collection sharing options">
-									<IconShare/>
+								<button className="iconOnly" onClick={() => this.toggleSettings(collection.id)} title="Collection sharing options">
+									{settingsOpened && <IconChevronUp/>}
+									{!settingsOpened && <IconChevronDown/>}
 								</button>
 								<button className="iconOnly" onClick={() => this.onClickDeleteCollection(collection.id)} title="Delete collection">
 									<IconDelete/>
 								</button>
 							</div>
 
-
-
 							<div className="body">
 								<div className={"settings" + (settingsOpened ? " open" : "")}>
 									{settingsOpened && <CollectionSharingSettings collection={collection} onOptionsChanged={() => this.refreshCollections()}/>}
 								</div>
+								{settingsOpened && <hr/>}
+
 								{/* Albums inside this collection */}
 								<div className="collection-albums">
 									{collection.albums.map(album => {
@@ -189,8 +190,8 @@ class SharedPage extends PageBaseComponent<SharedPageState> {
 											</div>
 										</div>);
 									})}
-									<button className="iconOnly" onClick={() => this.onAddAlbumToCollectionClick(collection.id)} title="Add album to collection">
-										<IconCreate/>
+									<button className="" onClick={() => this.onAddAlbumToCollectionClick(collection.id)} title="Add album to collection">
+										<IconCreate/> Add album
 									</button>
 								</div>
 							</div>
