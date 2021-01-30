@@ -184,7 +184,10 @@ class SharedPage extends PageBaseComponent<SharedPageState> {
 											onClick={() => this.openAlbum(album.id)}>
 											<div className="albumContent">
 												<span className="title">{album.title}</span>
-												<button className="iconOnly" onClick={() => this.onRemoveAlbumFromCollectionClick(collection.id, album.id)} title="Remove album from collection">
+												<button className="iconOnly" onClick={(event) => {
+													event.stopPropagation();
+													this.onRemoveAlbumFromCollectionClick(collection.id, album.id);
+												}} title="Remove album from collection">
 													<IconClose/>
 												</button>
 											</div>
