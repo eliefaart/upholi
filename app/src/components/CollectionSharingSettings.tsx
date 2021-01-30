@@ -14,7 +14,6 @@ interface Props {
 }
 
 interface State {
-	shared: boolean,
 	requirePassword: boolean,
 	isChangingPassword: boolean,
 	password: string,
@@ -27,7 +26,6 @@ class CollectionSharingSettings extends React.Component<Props, State> {
 		super(props);
 
 		this.state = {
-			shared: this.props.collection.sharing.shared,
 			requirePassword: this.props.collection.sharing.requirePassword,
 			isChangingPassword: false,
 			password: "",
@@ -87,13 +85,6 @@ class CollectionSharingSettings extends React.Component<Props, State> {
 	}
 
 	render() {
-		let statusText = "This collection is currently not shared, only you can see it.";
-		if (this.state.shared) {
-			statusText = !this.state.requirePassword
-				? "This collection is visible to anyone who has the link."
-				: "This collection is visible to anyone who has the link, and knows the password.";
-		}
-
 		const shareUrl = document.location.origin + "/s/" + this.props.collection.sharing.token;
 
 		// Event handlers
@@ -106,7 +97,7 @@ class CollectionSharingSettings extends React.Component<Props, State> {
 
 		return <React.Fragment>
 			{/* Password */}
-			{/* {this.state.shared && <label className="switch">
+			{/* <label className="switch">
 				<span>Require password</span>
 				<Switch checked={this.state.requirePassword}
 					width={80}
@@ -123,15 +114,15 @@ class CollectionSharingSettings extends React.Component<Props, State> {
 							}
 						});
 					}}/>
-			</label>}
-			{this.state.shared && this.state.requirePassword &&
+			</label>
+			{this.state.requirePassword &&
 				<button onClick={() => this.setState({ isChangingPassword: true })}>
 					Change password
 				</button>
 			} */}
 
 			{/* URL */}
-			{this.state.shared && <div className="url">
+			<div className="url">
 				<div className="copyUrl">
 					<input className="urlToCopy" type="text" value={shareUrl}
 						// Prevent changes to the value of this input by resetting value in onchange event.
@@ -144,7 +135,7 @@ class CollectionSharingSettings extends React.Component<Props, State> {
 						<IconCopy/>
 					</button>
 				</div>
-			</div>}
+			</div>
 
 			{this.state.isChangingPassword && <ModalSetPassword
 				onOkButtonClick={(password: string) => this.onPasswordUpdated(password)}/>}

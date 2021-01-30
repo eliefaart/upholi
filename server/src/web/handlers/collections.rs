@@ -76,8 +76,6 @@ pub async fn update_collection(user: User, collection_id: web::Path<String>, upd
 			collection.albums = albums.to_vec();
 		}
 		if let Some(sharing_options) = &updated_collection.sharing {
-			collection.sharing.shared = sharing_options.shared;
-			
 			// TODO: If password changes, then revoke access from all sessions that have been granted access to current collection
 
 			if sharing_options.require_password {
@@ -88,7 +86,7 @@ pub async fn update_collection(user: User, collection_id: web::Path<String>, upd
 					if password.len() == 0 {
 						return create_bad_request_response(Box::from("Empty password provided"));
 					}
-	
+
 					collection.sharing.password_hash = Some(password.to_string());
 				}
 				else {
@@ -96,7 +94,7 @@ pub async fn update_collection(user: User, collection_id: web::Path<String>, upd
 						create_bad_request_response(Box::from("Missing password in request"));
 					}
 				}
-			} 
+			}
 			else {
 				collection.sharing.password_hash = None;
 			}
@@ -123,7 +121,7 @@ pub async fn delete_collection(user: User, collection_id: web::Path<String>) -> 
 pub async fn rotate_collection_share_token(user: User, collection_id: web::Path<String>) -> impl Responder {
 	handle_collection_operation(user, collection_id, |collection| {
 		collection.rotate_share_token();
-		
+
 		match collection.update(){
 			Ok(_) => HttpResponse::Ok().json(RotateTokenResult{token: collection.sharing.token.to_string()}),
 			Err(error) => create_internal_server_error_response(Some(error))
@@ -142,7 +140,7 @@ async fn handle_collection_operation<F>(user: User, collection_id: web::Path<Str
 					if collection.user_has_access(&Some(user)) {
 						// Call the action for current collection and return its result
 						fn_collection_action(&mut collection)
-					} 
+					}
 					else {
 						create_unauthorized_response()
 					}

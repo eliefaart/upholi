@@ -7,8 +7,7 @@ use crate::error::*;
 use crate::entities::AccessControl;
 use crate::entities::user::User;
 
-
-/// A Collection is a collection of 0..n albums
+/// A Collection is a container of 0..n albums. It is publicly accessible, but may be protected by a password.
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Collection {
@@ -22,7 +21,6 @@ pub struct Collection {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CollectionSharingOptions {
-	pub shared: bool,
 	pub token: String,
 	pub password_hash: Option<String>
 }
@@ -35,7 +33,6 @@ impl Collection {
 			title: title.to_string(),
 			albums: vec!{},
 			sharing: CollectionSharingOptions {
-				shared: true,
 				token: ids::create_unique_id(),
 				password_hash: Some(String::new()),
 			}
@@ -100,14 +97,8 @@ impl DatabaseUserEntity for Collection {
 }
 
 impl AccessControl for Collection {
-	fn user_has_access(&self, user_opt: &Option<User>) -> bool {
-		// Access if one of the conditions has been met:
-		if let Some(user) = user_opt {
-			self.user_id == user.id || self.sharing.shared
-		}
-		else {
-			self.sharing.shared
-		}
+	fn user_has_access(&self, _user_opt: &Option<User>) -> bool {
+		true
 	}
 }
 
@@ -117,31 +108,45 @@ mod tests {
 	use crate::ids::create_unique_id;
 
 	#[test]
-	fn access_private() {
+	fn access_collection_without_password() {
 		let user_collection_owner = create_dummy_user();
 		let user_not_collection_owner = create_dummy_user();
 
 		let mut collection = create_dummy_collection_with_id("");
 		collection.user_id = user_collection_owner.id.to_string();
-
-		// Only the user that owns the collection may access it
-		assert_eq!(collection.user_has_access(&Some(user_collection_owner)), true);
-		assert_eq!(collection.user_has_access(&Some(user_not_collection_owner)), false);
-		assert_eq!(collection.user_has_access(&None), false);
-	}
-
-	#[test]
-	fn access_public() {
-		let user_collection_owner = create_dummy_user();
-		let user_not_collection_owner = create_dummy_user();
-
-		let mut collection = create_dummy_collection_with_id("");
-		collection.user_id = user_collection_owner.id.to_string();
-		collection.sharing.shared = true;
+		collection.sharing.password_hash = None;
 
 		assert_eq!(collection.user_has_access(&Some(user_collection_owner)), true);
 		assert_eq!(collection.user_has_access(&Some(user_not_collection_owner)), true);
 		assert_eq!(collection.user_has_access(&None), true);
+	}
+
+	#[test]
+	fn access_collection_with_password_provide_correct_password() {
+		// let user_collection_owner = create_dummy_user();
+		// let user_not_collection_owner = create_dummy_user();
+
+		// let mut collection = create_dummy_collection_with_id("");
+		// collection.user_id = user_collection_owner.id.to_string();
+		// collection.sharing.password_hash = Some(String::from("123"));
+
+		// assert_eq!(collection.user_has_access(&Some(user_collection_owner)), true);
+		// assert_eq!(collection.user_has_access(&Some(user_not_collection_owner)), true);
+		// assert_eq!(collection.user_has_access(&None), true);
+	}
+
+	#[test]
+	fn access_collection_with_password_provide_incorrect_password() {
+		// let user_collection_owner = create_dummy_user();
+		// let user_not_collection_owner = create_dummy_user();
+
+		// let mut collection = create_dummy_collection_with_id("");
+		// collection.user_id = user_collection_owner.id.to_string();
+		// collection.sharing.password_hash = Some(String::from("123"));
+
+		// assert_eq!(collection.user_has_access(&Some(user_collection_owner)), false);
+		// assert_eq!(collection.user_has_access(&Some(user_not_collection_owner)), false);
+		// assert_eq!(collection.user_has_access(&None), false);
 	}
 
 	fn create_dummy_collection_with_id(id: &str) -> Collection {

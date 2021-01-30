@@ -97,7 +97,6 @@ mod responses {
 	#[derive(Serialize)]
 	#[serde(rename_all = "camelCase")]
 	pub struct ClientCollectionSharingOptions {
-		pub shared: bool,
 		pub require_password: bool,
 		pub token: String
 	}
@@ -181,7 +180,6 @@ mod responses {
 				title: collection.title.to_string(),
 				albums: collection_albums,
 				sharing: ClientCollectionSharingOptions {
-					shared: collection.sharing.shared,
 					require_password: collection.sharing.password_hash.is_some(),
 					token: collection.sharing.token.to_string()
 				}
