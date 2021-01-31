@@ -29,20 +29,32 @@ pub async fn get_collections(user: User) -> impl Responder {
 }
 
 /// Get extended information of an collection
-pub async fn get_collection(user: User, collection_id: web::Path<String>) -> impl Responder {
-	handle_collection_operation(user, collection_id, |collection| {
-		let collection_ref: &Collection = &collection;
-		HttpResponse::Ok().json(ClientCollection::from(collection_ref))
-	}).await
+pub async fn get_collection(session: Session, collection_id: web::Path<String>) -> impl Responder {
+	match Collection::get(&collection_id) {
+		Ok(opt) => {
+			match opt {
+				Some(collection) => {
+					if collection.can_view(&Some(session)) {
+						HttpResponse::Ok().json(ClientCollection::from(&collection))
+					}
+					else {
+						create_unauthorized_response()
+					}
+				},
+				None => create_not_found_response()
+			}
+		},
+		Err(_) => create_unauthorized_response()
+	}
 }
 
 /// Get a single shared collection collection by its token
-pub async fn get_collections_by_share_token(_session: Session, token: web::Path<String>) -> impl Responder {
+pub async fn get_collections_by_share_token(session: Option<Session>, token: web::Path<String>) -> impl Responder {
 	match Collection::get_by_share_token(&token) {
 		Ok(opt) => {
 			match opt {
 				Some(collection) => {
-					if collection.user_has_access(&None) {
+					if collection.can_view(&session) {
 						HttpResponse::Ok().json(ClientCollection::from(&collection))
 					}
 					else {
@@ -67,8 +79,8 @@ pub async fn create_collection(user: User, collection: web::Json<CreateCollectio
 }
 
 /// Update an collection
-pub async fn update_collection(user: User, collection_id: web::Path<String>, updated_collection: web::Json<UpdateCollection>) -> impl Responder {
-	handle_collection_operation(user, collection_id, move |collection|{
+pub async fn update_collection(session: Session, collection_id: web::Path<String>, updated_collection: web::Json<UpdateCollection>) -> impl Responder {
+	handle_collection_update_operation(session, collection_id, move |collection|{
 		if let Some(title) = &updated_collection.title {
 			collection.title = title.to_string();
 		}
@@ -108,8 +120,8 @@ pub async fn update_collection(user: User, collection_id: web::Path<String>, upd
 }
 
 /// Delete an collection
-pub async fn delete_collection(user: User, collection_id: web::Path<String>) -> impl Responder {
-	handle_collection_operation(user, collection_id, |collection| {
+pub async fn delete_collection(session: Session, collection_id: web::Path<String>) -> impl Responder {
+	handle_collection_update_operation(session, collection_id, |collection| {
 		match collection.delete(){
 			Ok(_) => HttpResponse::Ok().finish(),
 			Err(error) => create_internal_server_error_response(Some(error))
@@ -118,8 +130,8 @@ pub async fn delete_collection(user: User, collection_id: web::Path<String>) -> 
 }
 
 /// Rotate the token with which a collection may be accessed by clients other than the user that owns a collection
-pub async fn rotate_collection_share_token(user: User, collection_id: web::Path<String>) -> impl Responder {
-	handle_collection_operation(user, collection_id, |collection| {
+pub async fn rotate_collection_share_token(session: Session, collection_id: web::Path<String>) -> impl Responder {
+	handle_collection_update_operation(session, collection_id, |collection| {
 		collection.rotate_share_token();
 
 		match collection.update(){
@@ -131,13 +143,13 @@ pub async fn rotate_collection_share_token(user: User, collection_id: web::Path<
 
 /// Perform some action on a collection, if it exists and the given user has access to it.
 /// The action (fn_collection_action) must return an appropriate HttpResponse
-async fn handle_collection_operation<F>(user: User, collection_id: web::Path<String>, fn_collection_action: F) -> impl Responder
+async fn handle_collection_update_operation<F>(session: Session, collection_id: web::Path<String>, fn_collection_action: F) -> impl Responder
 	where F: Fn(&mut Collection) -> HttpResponse {
 	match Collection::get(&collection_id) {
 		Ok(opt) => {
 			match opt {
 				Some(mut collection) => {
-					if collection.user_has_access(&Some(user)) {
+					if collection.can_update(&Some(session)) {
 						// Call the action for current collection and return its result
 						fn_collection_action(&mut collection)
 					}

@@ -1,3 +1,4 @@
+use crate::entities::session::Session;
 use actix_web::{web, HttpRequest, HttpResponse, Responder};
 use actix_multipart::Multipart;
 
@@ -47,14 +48,14 @@ pub async fn route_delete_photos(user: User, photo_ids: web::Json<Vec<String>>) 
 }
 
 /// Get info about a photo
-pub async fn route_get_photo(user: Option<User>, req: HttpRequest) -> impl Responder {
+pub async fn route_get_photo(session: Option<Session>, req: HttpRequest) -> impl Responder {
 	let photo_id = req.match_info().get("photo_id").unwrap();
 
 	match Photo::get(photo_id) {
 		Ok(photo_opt) => {
 			match photo_opt {
 				Some(photo) => {
-					if photo.user_has_access(&user) {
+					if photo.can_view(&session) {
 						HttpResponse::Ok().json(photo)
 					}
 					else {
@@ -69,25 +70,25 @@ pub async fn route_get_photo(user: Option<User>, req: HttpRequest) -> impl Respo
 }
 
 /// Get the thumbnail of a photo as file
-pub async fn route_download_photo_thumbnail(user: Option<User>, req: HttpRequest) -> impl Responder {
+pub async fn route_download_photo_thumbnail(session: Option<Session>, req: HttpRequest) -> impl Responder {
 	match req.match_info().get("photo_id") {
-		Some(photo_id) => create_response_for_photo(photo_id, user, false, |photo| &photo.path_thumbnail),
+		Some(photo_id) => create_response_for_photo(photo_id, session, false, |photo| &photo.path_thumbnail),
 		None => create_not_found_response()
 	}
 }
 
 /// Get the preview (large thumbnail) of a photo as file
-pub async fn route_download_photo_preview(user: Option<User>, req: HttpRequest) -> impl Responder {
+pub async fn route_download_photo_preview(session: Option<Session>, req: HttpRequest) -> impl Responder {
 	match req.match_info().get("photo_id") {
-		Some(photo_id) => create_response_for_photo(photo_id, user, false, |photo| &photo.path_preview),
+		Some(photo_id) => create_response_for_photo(photo_id, session, false, |photo| &photo.path_preview),
 		None => create_not_found_response()
 	}
 }
 
 /// Get the original of a photo as file
-pub async fn route_download_photo_original(user: Option<User>, req: HttpRequest) -> impl Responder {
+pub async fn route_download_photo_original(session: Option<Session>, req: HttpRequest) -> impl Responder {
 	match req.match_info().get("photo_id") {
-		Some(photo_id) => create_response_for_photo(photo_id, user, true, |photo| &photo.path_original),
+		Some(photo_id) => create_response_for_photo(photo_id, session, true, |photo| &photo.path_original),
 		None => create_not_found_response()
 	}
 }
@@ -166,16 +167,16 @@ pub fn delete_photos(user_id: String, ids: &[&str]) -> impl Responder {
 
 /// Get the HTTP response that returns a photo from disk by its id.
 /// Given user must have access to it.
-fn create_response_for_photo(photo_id: &str, user: Option<User>, offer_as_download: bool, select_path: fn(&Photo) -> &str) -> actix_http::Response {
+fn create_response_for_photo(photo_id: &str, session: Option<Session>, offer_as_download: bool, select_path: fn(&Photo) -> &str) -> actix_http::Response {
 	match Photo::get(photo_id) {
 		Ok(photo_opt) => {
 			match photo_opt {
 				Some(photo_info) => {
-					if photo_info.user_has_access(&user) {
+					if photo_info.can_view(&session) {
 						serve_photo(&select_path(&photo_info), &photo_info.name, offer_as_download)
 					}
 					else {
-						create_unauthorized_response()		
+						create_unauthorized_response()
 					}
 				},
 				None => create_not_found_response()
@@ -193,10 +194,10 @@ fn serve_photo(path: &str, file_name: &str, offer_as_download: bool) -> actix_ht
 				Some(file_bytes) => {
 					HttpResponse::Ok()
 						.content_type("image/jpeg")
-						.header(http::header::CONTENT_DISPOSITION, 
+						.header(http::header::CONTENT_DISPOSITION,
 							if offer_as_download {
-								format!("attachment; filename=\"{}\"", file_name) 
-							} else {  
+								format!("attachment; filename=\"{}\"", file_name)
+							} else {
 								"inline;".to_string()
 							})
 						.body(file_bytes)

@@ -1,3 +1,4 @@
+use crate::entities::Session;
 use serde::{Serialize, Deserialize};
 use rand::{thread_rng, Rng};
 use rand::distributions::Alphanumeric;
@@ -11,7 +12,6 @@ use crate::entities::exif;
 use crate::database;
 use crate::database::{Database, DatabaseEntity, DatabaseEntityBatch, DatabaseUserEntity, DatabaseExt};
 use crate::entities::AccessControl;
-use crate::entities::user::User;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -38,7 +38,7 @@ impl Photo {
 
 		// Verify if this photo doesn't already exist by checking hash in database
 		let exists = database::get_database().photo_exists_for_user(&user_id, &hash)?;
-		
+
 		if exists {
 			Err(Box::from(EntityError::AlreadyExists))
 		} else {
@@ -52,11 +52,11 @@ impl Photo {
 			// Store files
 			let thumbnail_file_name = format!("thumb_{}", filename);
 			let preview_file_name = format!("preview_{}", filename);
-					
+
 			let path_original = files::store_photo(&filename, photo_bytes)?;
 			let path_thumbnail = files::store_photo(&thumbnail_file_name, &image_info.bytes_thumbnail)?;
 			let path_preview = files::store_photo(&preview_file_name, &image_info.bytes_preview)?;
-			
+
 			// Decide 'created' date for the photo. Use 'taken on' field from exif if available, otherwise use current time
 			let created_on = {
 				match exif.date_taken {
@@ -119,7 +119,7 @@ impl Photo {
 				extension.insert(0, '.');
 			}
 		}
-		
+
 		// Concat
 		Ok(format!("{}{}", name, extension))
 	}
@@ -175,7 +175,7 @@ impl DatabaseUserEntity for Photo {
 
 	fn get_all_as_user(user_id: String) -> Result<Vec<Self>> {
 		let sort = database::SortField{
-			field: "createdOn", 
+			field: "createdOn",
 			ascending: false
 		};
 		database::get_database().find_many(database::COLLECTION_PHOTOS, Some(&user_id), None, Some(&sort))
@@ -183,7 +183,7 @@ impl DatabaseUserEntity for Photo {
 
 	fn get_all_with_ids_as_user(ids: &[&str], user_id: String) -> Result<Vec<Self>> {
 		let sort = database::SortField{
-			field: "createdOn", 
+			field: "createdOn",
 			ascending: false
 		};
 		database::get_database().find_many(database::COLLECTION_PHOTOS, Some(&user_id), Some(ids), Some(&sort))
@@ -191,19 +191,16 @@ impl DatabaseUserEntity for Photo {
 }
 
 impl AccessControl for Photo {
-	fn user_has_access(&self, user_opt: &Option<User>) -> bool {
-		// Check if photo is owned by current user
-		if let Some(user) = user_opt {
-			if self.user_id == user.id {
-				return true;
-			}
+	fn can_view(&self, session: &Option<Session>) -> bool {
+		if session_owns_photo(self, session) {
+			return true;
 		}
 
-		// Check if photo is part of any public albums,
+		// Check if photo is part of any collection,
 		// if so, photo is publically accessible too.
 		if let Ok(albums) = database::get_database().get_albums_with_photo(&self.id) {
 			for album in albums {
-				if album.user_has_access(user_opt) {
+				if album.can_view(session) {
 					return true;
 				}
 			}
@@ -211,6 +208,22 @@ impl AccessControl for Photo {
 
 		false
 	}
+    fn can_update(&self, session: &Option<Session>) -> bool {
+		session_owns_photo(self, session)
+	}
+}
+
+/// Check if Photo is owned by user of given session
+fn session_owns_photo(photo: &Photo, session_opt: &Option<Session>) -> bool {
+	if let Some(session) = session_opt {
+		if let Some(user_id) = &session.user_id {
+			if &photo.user_id == user_id {
+				return true;
+			}
+		}
+	}
+
+	false
 }
 
 #[cfg(test)]
@@ -275,19 +288,36 @@ mod tests {
 	}
 
 	#[test]
-	fn access_private() {
-		let user_photo_owner = create_dummy_user();
-		//let user_not_photo_owner = create_dummy_user();
+	fn can_view() {
+		let session_owner = create_dummy_session(true);
+		// let session_not_owner = create_dummy_session(true);
+		// let session_anonymous = create_dummy_session(false);
 
 		let mut photo = create_dummy_photo_with_id("");
-		photo.user_id = user_photo_owner.id.to_string();
+		photo.user_id = session_owner.user_id.to_owned().unwrap();
 
 		// Only the user that owns the photo may access it
-		assert_eq!(photo.user_has_access(&Some(user_photo_owner)), true);
-
+		assert_eq!(photo.can_view(&Some(session_owner)), true);
 		// Can't test the not-allowed situations without database..
-		// assert_eq!(photo.user_has_access(Some(user_not_photo_owner)), false);
-		// assert_eq!(photo.user_has_access(None), false);
+		// assert_eq!(photo.can_view(&Some(session_not_owner)), false);
+		// assert_eq!(photo.can_view(&Some(session_anonymous)), false);
+		// assert_eq!(photo.can_view(&None), false);
+	}
+
+	#[test]
+	fn can_update() {
+		let session_owner = create_dummy_session(true);
+		let session_not_owner = create_dummy_session(true);
+		let session_anonymous = create_dummy_session(false);
+
+		let mut photo = create_dummy_photo_with_id("");
+		photo.user_id = session_owner.user_id.to_owned().unwrap();
+
+		// Only the user that owns the photo may access it
+		assert_eq!(photo.can_update(&Some(session_owner)), true);
+		assert_eq!(photo.can_update(&Some(session_not_owner)), false);
+		assert_eq!(photo.can_update(&Some(session_anonymous)), false);
+		assert_eq!(photo.can_update(&None), false);
 	}
 
 	fn create_dummy_photo_with_id(id: &str) -> Photo {
@@ -318,11 +348,13 @@ mod tests {
 		}
 	}
 
-	fn create_dummy_user() -> User {
-		User{
-			id: create_unique_id(), 
-			identity_provider: "".to_string(), 
-			identity_provider_user_id: "".to_string()
+	fn create_dummy_session(with_user: bool) -> Session {
+		let mut session = Session::new();
+
+		if with_user {
+			session.user_id = Some(create_unique_id());
 		}
+
+		session
 	}
 }

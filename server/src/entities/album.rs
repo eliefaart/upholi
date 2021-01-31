@@ -1,3 +1,4 @@
+use crate::entities::Session;
 use serde::{Serialize, Deserialize};
 
 use crate::ids;
@@ -5,7 +6,6 @@ use crate::database;
 use crate::database::*;
 use crate::error::*;
 use crate::entities::AccessControl;
-use crate::entities::user::User;
 use crate::entities::collection::Collection;
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -98,26 +98,40 @@ impl DatabaseUserEntity for Album {
 }
 
 impl AccessControl for Album {
-	fn user_has_access(&self, user_opt: &Option<User>) -> bool {
-		if let Some(user) = user_opt {
-			// Check if user is owner of album
-			if self.user_id == user.id {
-				return true;
-			}
+	fn can_view(&self, session: &Option<Session>) -> bool {
+		// Check if user is owner of album
+		if session_owns_album(self, session) {
+			return true;
 		}
-		else {
-			// Check if album is part of any collection that user has access to
-			if let Ok(collections) = self.get_collections() {
-				for collection in collections {
-					if collection.user_has_access(user_opt) {
-						return true;
-					}
+
+		// Check if album is part of any collection that user has access to
+		if let Ok(collections) = self.get_collections() {
+			for collection in collections {
+				if collection.can_view(session) {
+					return true;
 				}
 			}
 		}
 
-		return false;
+		false
 	}
+
+    fn can_update(&self, session: &Option<Session>) -> bool {
+		session_owns_album(self, session)
+	}
+}
+
+/// Check if Album is owned by user of given session
+fn session_owns_album(album: &Album, session_opt: &Option<Session>) -> bool {
+	if let Some(session) = session_opt {
+		if let Some(user_id) = &session.user_id {
+			if &album.user_id == user_id {
+				return true;
+			}
+		}
+	}
+
+	false
 }
 
 #[cfg(test)]
@@ -147,18 +161,36 @@ mod tests {
 	}
 
 	#[test]
-	fn access_ownership() {
-		let user_album_owner = create_dummy_user();
-		let user_not_album_owner = create_dummy_user();
+	fn can_view() {
+		let session_owner = create_dummy_session(true);
+		// let session_not_owner = create_dummy_session(true);
+		// let session_anonymous = create_dummy_session(false);
 
 		let mut album = create_dummy_album_with_id("");
-		album.user_id = user_album_owner.id.to_string();
+		album.user_id = session_owner.user_id.to_owned().unwrap();
 
 		// Only the user that owns the album may access it
-		assert_eq!(album.user_has_access(&Some(user_album_owner)), true);
-		assert_eq!(album.user_has_access(&Some(user_not_album_owner)), false);
+		assert_eq!(album.can_view(&Some(session_owner)), true);
 		// TODO: can't test this anymore without DB connection
-		//assert_eq!(album.user_has_access(&None), false);
+		// assert_eq!(album.can_view(&Some(session_not_owner)), false);
+		// assert_eq!(album.can_view(&Some(session_anonymous)), false);
+		// assert_eq!(album.can_view(&None), false);
+	}
+
+	#[test]
+	fn can_update() {
+		let session_owner = create_dummy_session(true);
+		let session_not_owner = create_dummy_session(true);
+		let session_anonymous = create_dummy_session(false);
+
+		let mut album = create_dummy_album_with_id("");
+		album.user_id = session_owner.user_id.to_owned().unwrap();
+
+		// Only the user that owns the album may access it
+		assert_eq!(album.can_update(&Some(session_owner)), true);
+		assert_eq!(album.can_update(&Some(session_not_owner)), false);
+		assert_eq!(album.can_update(&Some(session_anonymous)), false);
+		assert_eq!(album.can_update(&None), false);
 	}
 
 	fn create_dummy_album_with_id(id: &str) -> Album {
@@ -175,11 +207,13 @@ mod tests {
 		}
 	}
 
-	fn create_dummy_user() -> User {
-		User{
-			id: create_unique_id(),
-			identity_provider: "".to_string(),
-			identity_provider_user_id: "".to_string()
+	fn create_dummy_session(with_user: bool) -> Session {
+		let mut session = Session::new();
+
+		if with_user {
+			session.user_id = Some(create_unique_id());
 		}
+
+		session
 	}
 }

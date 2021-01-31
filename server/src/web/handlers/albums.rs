@@ -1,3 +1,4 @@
+use crate::entities::session::Session;
 use actix_web::{web, HttpRequest, HttpResponse, Responder};
 
 use crate::database::{DatabaseEntity, DatabaseUserEntity};
@@ -20,14 +21,14 @@ pub async fn route_get_albums(user: User) -> impl Responder {
 }
 
 /// Get extended information of an album
-pub async fn route_get_album(user: Option<User>, req: HttpRequest) -> impl Responder {
+pub async fn route_get_album(session: Option<Session>, req: HttpRequest) -> impl Responder {
 	let album_id = req.match_info().get("album_id").unwrap();
 
 	match Album::get(album_id) {
 		Ok(album_opt) => {
 			match album_opt {
 				Some(album) => {
-					if album.user_has_access(&user) {
+					if album.can_view(&session) {
 						HttpResponse::Ok().json(ClientAlbum::from(album))
 					}
 					else {
@@ -56,57 +57,72 @@ pub async fn route_create_album(user: User, album: web::Json<CreateAlbum>) -> im
 }
 
 /// Update an album
-pub async fn route_update_album(user: User, req: HttpRequest, updated_album: web::Json<UpdateAlbum>) -> impl Responder {
+pub async fn route_update_album(session: Session, req: HttpRequest, updated_album: web::Json<UpdateAlbum>) -> impl Responder {
 	let album_id = req.match_info().get("album_id").unwrap();
 
-	match Album::get_as_user(&album_id, user.id.to_string()) {
-		Ok(album_opt) => {
-			match album_opt {
-				Some(mut album) => {
-					if album.user_id != user.id {
-						return create_unauthorized_response();
-					}
+	match &session.user_id {
+		Some(user_id) => {
+			match Album::get_as_user(&album_id, user_id.to_string()) {
+				Ok(album_opt) => {
+					match album_opt {
+						Some(mut album) => {
+							if !album.can_update(&Some(session)) {
+								return create_unauthorized_response();
+							}
 
-					// TODO: Verify if all photoIds & thumbPhotoId are valid.
+							// TODO: Verify if all photoIds & thumbPhotoId are valid.
 
-					if let Some(title) = &updated_album.title {
-						album.title = title.to_string();
-					}
-					if let Some(photos) = &updated_album.photos {
-						album.photos = photos.to_vec();
-					}
-					if let Some(thumb_photo_id) = &updated_album.thumb_photo_id {
-						album.thumb_photo_id = Some(thumb_photo_id.to_string());
-					}
+							if let Some(title) = &updated_album.title {
+								album.title = title.to_string();
+							}
+							if let Some(photos) = &updated_album.photos {
+								album.photos = photos.to_vec();
+							}
+							if let Some(thumb_photo_id) = &updated_album.thumb_photo_id {
+								album.thumb_photo_id = Some(thumb_photo_id.to_string());
+							}
 
-					match album.update() {
-						Ok(_) => create_ok_response(),
-						Err(error) => create_internal_server_error_response(Some(error))
+							match album.update() {
+								Ok(_) => create_ok_response(),
+								Err(error) => create_internal_server_error_response(Some(error))
+							}
+						},
+						None => create_not_found_response()
 					}
 				},
-				None => create_not_found_response()
+				Err(_) => create_unauthorized_response()
 			}
 		},
-		Err(_) => create_unauthorized_response()
+		None => create_unauthorized_response()
 	}
+
 }
 
 /// Delete an album
-pub async fn route_delete_album(user: User, req: HttpRequest) -> impl Responder {
+pub async fn route_delete_album(session: Session, req: HttpRequest) -> impl Responder {
 	let album_id = req.match_info().get("album_id").unwrap();
 
-	match Album::get_as_user(&album_id, user.id) {
-		Ok(album_opt) => {
-			match album_opt {
-				Some(album) => {
-					match album.delete() {
-						Ok(_) => create_ok_response(),
-						Err(error) => create_internal_server_error_response(Some(error))
+	match &session.user_id {
+		Some(user_id) => {
+			match Album::get_as_user(&album_id, user_id.to_string()) {
+				Ok(album_opt) => {
+					match album_opt {
+						Some(album) => {
+							if !album.can_delete(&Some(session)) {
+								return create_unauthorized_response();
+							}
+
+							match album.delete() {
+								Ok(_) => create_ok_response(),
+								Err(error) => create_internal_server_error_response(Some(error))
+							}
+						},
+						None => create_not_found_response()
 					}
 				},
-				None => create_not_found_response()
+				Err(_) => create_unauthorized_response()
 			}
 		},
-		Err(_) => create_unauthorized_response()
+		None => create_unauthorized_response()
 	}
 }

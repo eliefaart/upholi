@@ -1,3 +1,4 @@
+use crate::entities::Session;
 use serde::{Serialize, Deserialize};
 
 use crate::database;
@@ -5,7 +6,6 @@ use crate::database::{Database, DatabaseExt, DatabaseEntity, DatabaseUserEntity}
 use crate::ids;
 use crate::error::*;
 use crate::entities::AccessControl;
-use crate::entities::user::User;
 
 /// A Collection is a container of 0..n albums. It is publicly accessible, but may be protected by a password.
 #[derive(Debug, Serialize, Deserialize)]
@@ -97,8 +97,20 @@ impl DatabaseUserEntity for Collection {
 }
 
 impl AccessControl for Collection {
-	fn user_has_access(&self, _user_opt: &Option<User>) -> bool {
+	fn can_view(&self, _session: &Option<Session>) -> bool {
 		true
+	}
+
+    fn can_update(&self, session_opt: &Option<Session>) -> bool {
+		match session_opt {
+			Some(session) => {
+				match &session.user_id {
+					Some(user_id) => &self.user_id == user_id,
+					None => false
+				}
+			}
+			None => false
+		}
 	}
 }
 
@@ -108,56 +120,58 @@ mod tests {
 	use crate::ids::create_unique_id;
 
 	#[test]
-	fn access_collection_without_password() {
-		let user_collection_owner = create_dummy_user();
-		let user_not_collection_owner = create_dummy_user();
+	fn view_collection_without_password() {
+		let session_owner = create_dummy_session(true);
+		let session_not_owner = create_dummy_session(true);
+		let session_anonymous = create_dummy_session(false);
 
 		let mut collection = create_dummy_collection_with_id("");
-		collection.user_id = user_collection_owner.id.to_string();
+		collection.user_id = session_owner.user_id.to_owned().unwrap();
 		collection.sharing.password_hash = None;
 
-		assert_eq!(collection.user_has_access(&Some(user_collection_owner)), true);
-		assert_eq!(collection.user_has_access(&Some(user_not_collection_owner)), true);
-		assert_eq!(collection.user_has_access(&None), true);
+		assert_eq!(collection.can_view(&Some(session_owner)), true);
+		assert_eq!(collection.can_view(&Some(session_not_owner)), true);
+		assert_eq!(collection.can_view(&Some(session_anonymous)), true);
+		assert_eq!(collection.can_view(&None), true);
 	}
 
 	#[test]
-	fn access_collection_with_password_provide_correct_password() {
-		// let user_collection_owner = create_dummy_user();
-		// let user_not_collection_owner = create_dummy_user();
+	fn update_collection_without_password() {
+		let session_owner = create_dummy_session(true);
+		let session_not_owner = create_dummy_session(true);
+		let session_anonymous = create_dummy_session(false);
 
-		// let mut collection = create_dummy_collection_with_id("");
-		// collection.user_id = user_collection_owner.id.to_string();
-		// collection.sharing.password_hash = Some(String::from("123"));
+		let mut collection = create_dummy_collection_with_id("");
+		collection.user_id = session_owner.user_id.to_owned().unwrap();
+		collection.sharing.password_hash = None;
 
-		// assert_eq!(collection.user_has_access(&Some(user_collection_owner)), true);
-		// assert_eq!(collection.user_has_access(&Some(user_not_collection_owner)), true);
-		// assert_eq!(collection.user_has_access(&None), true);
+		assert_eq!(collection.can_update(&Some(session_owner)), true);
+		assert_eq!(collection.can_update(&Some(session_not_owner)), false);
+		assert_eq!(collection.can_update(&Some(session_anonymous)), false);
+		assert_eq!(collection.can_update(&None), false);
 	}
 
 	#[test]
-	fn access_collection_with_password_provide_incorrect_password() {
-		// let user_collection_owner = create_dummy_user();
-		// let user_not_collection_owner = create_dummy_user();
+	fn view_collection_with_password_provide_correct_password() {
+		// TODO
+	}
 
-		// let mut collection = create_dummy_collection_with_id("");
-		// collection.user_id = user_collection_owner.id.to_string();
-		// collection.sharing.password_hash = Some(String::from("123"));
-
-		// assert_eq!(collection.user_has_access(&Some(user_collection_owner)), false);
-		// assert_eq!(collection.user_has_access(&Some(user_not_collection_owner)), false);
-		// assert_eq!(collection.user_has_access(&None), false);
+	#[test]
+	fn view_collection_with_password_provide_incorrect_password() {
+		// TODO
 	}
 
 	fn create_dummy_collection_with_id(id: &str) -> Collection {
 		Collection::new(id, &create_unique_id())
 	}
 
-	fn create_dummy_user() -> User {
-		User{
-			id: create_unique_id(),
-			identity_provider: "".to_string(),
-			identity_provider_user_id: "".to_string()
+	fn create_dummy_session(with_user: bool) -> Session {
+		let mut session = Session::new();
+
+		if with_user {
+			session.user_id = Some(create_unique_id());
 		}
+
+		session
 	}
 }
