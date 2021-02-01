@@ -1,6 +1,6 @@
 use actix_web::{web, HttpResponse, Responder};
 
-use crate::database::DatabaseEntity;
+use crate::{database::DatabaseEntity, web::cookies::create_session_cookie};
 use crate::web::oauth2;
 use crate::web::oauth2::OAuth2Provider;
 use crate::web::http::*;
@@ -9,15 +9,40 @@ use crate::entities::session::Session;
 use crate::web::handlers::requests::*;
 
 /// OAuth: start login flow with an identity provider
-pub async fn oauth_start_login(mut session: Session) -> impl Responder {
+pub async fn oauth_start_login(session_opt: Option<Session>) -> impl Responder {
+	let request_has_session = session_opt.is_some();
+	let mut session: Session;
+
+	// Create a new session if request didn't have one
+	if let Some(existing_sesson) = session_opt {
+		session = existing_sesson;
+	}
+	else {
+		session = Session::new();
+		if let Err(error) = session.insert() {
+			return create_internal_server_error_response(Some(error));
+		}
+	}
+
 	match oauth2::get_provider().get_auth_url() {
 		Ok(url_info) => {
 			session.set_oauth_data(&url_info.csrf_token, &url_info.pkce_verifier);
 			match session.update() {
 				Ok(_) => {
-					HttpResponse::Found()
+					let mut response = HttpResponse::Found()
 						.header(http::header::LOCATION, url_info.auth_url)
-						.finish()
+						.finish();
+
+					// Append the new session cookie to the response
+					if !request_has_session {
+						let cookie = create_session_cookie(&session);
+
+						if let Err(error) = response.add_cookie(&cookie) {
+							return create_internal_server_error_response(Some(Box::new(error)));
+						}
+					}
+
+					response
 				},
 				Err(error) => create_internal_server_error_response(Some(error))
 			}

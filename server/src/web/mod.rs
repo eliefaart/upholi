@@ -1,17 +1,13 @@
 use std::time::Instant;
 use actix_cors::Cors;
 use actix_web::{App, HttpServer};
-use actix_web::http::header::{HeaderName,HeaderValue};
 use actix_service::Service;
 use futures::future::FutureExt;
-
-use crate::database::DatabaseEntity;
-use crate::entities::session::Session;
-use crate::web::http::SESSION_COOKIE_NAME;
 
 mod handlers;
 mod http;
 mod oauth2;
+mod cookies;
 
 /// Start and run the web server
 pub async fn run_server() -> std::io::Result<()>{
@@ -39,46 +35,6 @@ pub async fn run_server() -> std::io::Result<()>{
 					let elapsed_ms = now.elapsed().as_millis();
 					println!("<< {} {}ms", query_id, elapsed_ms);
 					res
-				})
-			})
-			.wrap_fn(|mut req, srv| {
-				let mut new_session: Option<Session> = None;
-				let request_session = http::get_session_cookie(&req.headers());
-
-				// If the request does not have a session, create a new session and modify the request to 'inject' the newly created session.
-				if request_session.is_none() {
-					let session = Session::new();
-
-					match session.insert() {
-						Ok(_) => {
-							let header_name = HeaderName::from_static("cookie");
-							let header_value = HeaderValue::from_str(&format!("{}={}", SESSION_COOKIE_NAME, &session.id)).unwrap();
-
-							req.headers_mut().insert(header_name, header_value);
-							new_session = Some(session);
-						},
-						Err(error) => {
-							// Now what?
-							panic!(format!("Failed to create session. {}", error));
-						}
-					}
-				}
-
-				srv.call(req).map(move |mut result| {
-
-					// If the request did originally not contain a session, then update the response to include the 'set-cookie' header.
-					if let Some(session) = new_session {
-						if let Ok(response) = result.as_mut() {
-
-							let session_max_age = 60 * 60 * 24 * 365;
-							let header_name = HeaderName::from_static("set-cookie");
-							let header_value = HeaderValue::from_str(&format!("{}={}; HttpOnly; Secure; Path=/; Max-Age={}", SESSION_COOKIE_NAME, &session.id, session_max_age)).unwrap();
-
-							response.headers_mut().insert(header_name, header_value);
-						}
-					}
-
-					result
 				})
 			})
 			.service(
