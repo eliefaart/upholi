@@ -11,38 +11,31 @@ use crate::web::handlers::requests::*;
 /// OAuth: start login flow with an identity provider
 pub async fn oauth_start_login(session_opt: Option<Session>) -> impl Responder {
 	let request_has_session = session_opt.is_some();
-	let mut session: Session;
 
-	// Create a new session if request didn't have one
-	if let Some(existing_sesson) = session_opt {
-		session = existing_sesson;
-	}
-	else {
-		session = Session::new();
-		if let Err(error) = session.insert() {
-			return create_internal_server_error_response(Some(error));
-		}
-	}
+	match get_session_or_create_new(session_opt) {
+		Ok(mut session) => {
+			match oauth2::get_provider().get_auth_url() {
+				Ok(url_info) => {
+					session.set_oauth_data(&url_info.csrf_token, &url_info.pkce_verifier);
+					match session.update() {
+						Ok(_) => {
+							let mut response = HttpResponse::Found()
+								.header(http::header::LOCATION, url_info.auth_url)
+								.finish();
 
-	match oauth2::get_provider().get_auth_url() {
-		Ok(url_info) => {
-			session.set_oauth_data(&url_info.csrf_token, &url_info.pkce_verifier);
-			match session.update() {
-				Ok(_) => {
-					let mut response = HttpResponse::Found()
-						.header(http::header::LOCATION, url_info.auth_url)
-						.finish();
+							// Append the new session cookie to the response
+							if !request_has_session {
+								let cookie = create_session_cookie(&session);
 
-					// Append the new session cookie to the response
-					if !request_has_session {
-						let cookie = create_session_cookie(&session);
+								if let Err(error) = response.add_cookie(&cookie) {
+									return create_internal_server_error_response(Some(Box::new(error)));
+								}
+							}
 
-						if let Err(error) = response.add_cookie(&cookie) {
-							return create_internal_server_error_response(Some(Box::new(error)));
-						}
+							response
+						},
+						Err(error) => create_internal_server_error_response(Some(error))
 					}
-
-					response
 				},
 				Err(error) => create_internal_server_error_response(Some(error))
 			}

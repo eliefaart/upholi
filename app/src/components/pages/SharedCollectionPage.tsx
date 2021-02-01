@@ -11,10 +11,15 @@ interface CollectionPageBaseState {
 }
 
 class SharedCollectionPage extends PageBaseComponent<CollectionPageBaseState> {
+
+	readonly collectionToken: string;
+
 	constructor(props: PageBaseComponentProps) {
 		super(props);
 
-		PhotoService.getCollectionByShareToken(props.match.params.token)
+		this.collectionToken = props.match.params.token;
+
+		PhotoService.getCollectionByShareToken(this.collectionToken)
 			.then((collection) => this.setState({ collection }))
 			.catch(console.error);
 
@@ -29,13 +34,17 @@ class SharedCollectionPage extends PageBaseComponent<CollectionPageBaseState> {
 			: super.getTitle();
 	}
 
-	render() {
-		if (this.state.collection == null)
-			return null;
+	authenticate(): void {
+		PhotoService.authenticateToCollectionByShareToken(this.collectionToken, "ac");
+	}
 
+	render() {
 		return (
 			<ContentContainer>
-				<CollectionView collection={this.state.collection}/>
+				<React.Fragment>
+					<button onClick={() => this.authenticate()}>authenticate</button>
+					{this.state.collection != null && <CollectionView collection={this.state.collection}/>}
+				</React.Fragment>
 			</ContentContainer>
 		);
 	}

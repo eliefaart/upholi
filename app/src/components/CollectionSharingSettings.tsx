@@ -97,7 +97,7 @@ class CollectionSharingSettings extends React.Component<Props, State> {
 
 		return <React.Fragment>
 			{/* Password */}
-			{/* <label className="switch">
+			<label className="switch">
 				<span>Require password</span>
 				<Switch checked={this.state.requirePassword}
 					width={80}
@@ -119,7 +119,7 @@ class CollectionSharingSettings extends React.Component<Props, State> {
 				<button onClick={() => this.setState({ isChangingPassword: true })}>
 					Change password
 				</button>
-			} */}
+			}
 
 			{/* URL */}
 			<div className="url">

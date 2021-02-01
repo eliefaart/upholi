@@ -1,4 +1,5 @@
 use crate::entities::Session;
+use oauth2::url::quirks::password;
 use serde::{Serialize, Deserialize};
 
 use crate::database;
@@ -52,6 +53,18 @@ impl Collection {
 	pub fn rotate_share_token(&mut self) {
 		self.sharing.token = crate::ids::create_unique_id();
 	}
+
+	/// Verify if given (unhashed) password matches the password set in the collection.
+	/// Returns false if collection has no password.
+	pub fn password_correct(&self, password: &str) -> bool {
+		// TODO: Hashing stuff
+		if let Some(actual_password) = &self.sharing.password_hash {
+			actual_password == password
+		}
+		else {
+			false
+		}
+	}
 }
 
 impl DatabaseEntity for Collection {
@@ -97,8 +110,28 @@ impl DatabaseUserEntity for Collection {
 }
 
 impl AccessControl for Collection {
-	fn can_view(&self, _session: &Option<Session>) -> bool {
-		true
+	fn can_view(&self, session_opt: &Option<Session>) -> bool {
+		// If there is no password on collection, everyone may view it.
+		// Otherwise user must own the collection, or be authenticated to it.
+
+		match &self.sharing.password_hash {
+			Some(_) => {
+				match session_opt {
+					Some(session) => {
+						if let Some(user_id) = &session.user_id {
+							if user_id == &self.user_id {
+								// Session user owns the collection
+								return true;
+							}
+						}
+
+						session.authenticated_for_collection_tokens.contains(&self.sharing.token)
+					},
+					None => false
+				}
+			}
+			None => true
+		}
 	}
 
     fn can_update(&self, session_opt: &Option<Session>) -> bool {
