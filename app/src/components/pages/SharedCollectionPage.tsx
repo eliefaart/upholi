@@ -5,13 +5,15 @@ import ContentContainer from "../ContentContainer"
 import AppStateContext from "../../contexts/AppStateContext";
 import CollectionView from "../CollectionView";
 import Collection from "../../models/Collection";
+import InputPassword from "../InputPassword";
 
 interface CollectionPageBaseState {
+	unauthorized: boolean,
+	lastPasswordIncorrect: boolean,
 	collection: Collection | null
 }
 
 class SharedCollectionPage extends PageBaseComponent<CollectionPageBaseState> {
-
 	readonly collectionToken: string;
 
 	constructor(props: PageBaseComponentProps) {
@@ -19,13 +21,34 @@ class SharedCollectionPage extends PageBaseComponent<CollectionPageBaseState> {
 
 		this.collectionToken = props.match.params.token;
 
-		PhotoService.getCollectionByShareToken(this.collectionToken)
-			.then((collection) => this.setState({ collection }))
-			.catch(console.error);
-
 		this.state = {
+			unauthorized: false,
+			lastPasswordIncorrect: false,
 			collection: null
 		};
+	}
+
+	componentDidMount() {
+		this.getCollection();
+	}
+
+	getCollection() {
+		this.setState({
+			unauthorized: false
+		});
+
+		PhotoService.getCollectionByShareToken(this.collectionToken)
+			.then((collection) => this.setState({ collection }))
+			.catch((response) => {
+				if (response.status === 401) {
+					this.setState({
+						unauthorized: true
+					});
+				}
+				else {
+					console.error(response);
+				}
+			});
 	}
 
 	getTitle() {
@@ -34,16 +57,47 @@ class SharedCollectionPage extends PageBaseComponent<CollectionPageBaseState> {
 			: super.getTitle();
 	}
 
-	authenticate(): void {
-		PhotoService.authenticateToCollectionByShareToken(this.collectionToken, "ac");
+	authenticate(password: string): void {
+		if (!!password) {
+			PhotoService.authenticateToCollectionByShareToken(this.collectionToken, password)
+				.then(() => {
+					this.setState({
+						lastPasswordIncorrect: false
+					});
+					this.getCollection();
+				})
+				.catch(response => {
+					if (response.status === 401) {
+						this.setState({
+							lastPasswordIncorrect: true
+						});
+					}
+					else {
+						console.error(response);
+					}
+				});
+		}
+		else {
+			this.setState({
+				lastPasswordIncorrect: false
+			});
+		}
 	}
 
 	render() {
 		return (
 			<ContentContainer>
 				<React.Fragment>
-					<button onClick={() => this.authenticate()}>authenticate</button>
-					{this.state.collection != null && <CollectionView collection={this.state.collection}/>}
+					{/* Password input box */}
+					{this.state.unauthorized && <InputPassword
+						className="padding-top-50px"
+						prompt="You need to provide a password to view this collection."
+						onSubmitPassword={(password) => this.authenticate(password)}
+						lastPasswordIncorrect={this.state.lastPasswordIncorrect}/>}
+
+					{/* Collection view  */}
+					{this.state.collection != null && <CollectionView
+						collection={this.state.collection}/>}
 				</React.Fragment>
 			</ContentContainer>
 		);

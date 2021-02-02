@@ -11,6 +11,7 @@ $colorText: #eee;
 $colorTextContrast: #161f21;
 $colorDisabled: gray;
 $colorHeaderBackground: transparent; //$colorBackgroundAlt;
+$colorError: #d74646;
 // $colorHeaderBackground: linear-gradient(120deg, rgba(117,66,179,1) 0%, rgba(46,110,165,1) 45%, rgba(198,135,51,1) 100%);
 // $colorHeaderBackground: linear-gradient(25deg, $colorBackground 0%, $colorBackground 35%, $colorSecondaryAccent 120%);
 
@@ -74,6 +75,7 @@ html {
 @import "app.component.exif";
 @import "app.component.toasts";
 @import "app.component.switch";
+@import "app.component.inputPassword";
 
 input, select, button, .asButton {
 	margin: 10px 0 10px 0;
@@ -84,6 +86,10 @@ input, select, button, .asButton {
 
 	&:disabled {
 		background-color: $colorDisabled;
+	}
+
+	&::-moz-focus-inner {
+		border: 0;
 	}
 }
 
@@ -96,6 +102,7 @@ input, select {
 	background-color: $colorBackgroundAlt;
 	color: $colorText;
 	border: 2px solid $colorBackgroundShadow;
+	text-indent: $spacing * 2;
 
 	&:focus {
 		border-color: $colorSecondaryAccent;

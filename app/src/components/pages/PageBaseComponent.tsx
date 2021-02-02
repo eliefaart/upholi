@@ -42,7 +42,7 @@ export class PageBaseComponent<TState> extends React.Component<PageBaseComponent
 	}
 
 	getTitle() {
-		return "Upholi";
+		return "upholi";
 	}
 
 	componentDidMount() {

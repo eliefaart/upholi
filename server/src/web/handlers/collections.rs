@@ -181,7 +181,7 @@ pub async fn authenticate_to_collection(session_opt: Option<Session>, token: web
 									}
 								},
 								false => {
-									create_bad_request_response(Box::from("Incorrect password"))
+									create_unauthorized_response()
 								}
 							}
 						},
