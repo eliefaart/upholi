@@ -1,4 +1,4 @@
-use crate::entities::Session;
+use crate::{entities::Session, passwords::verify_password_hash};
 use oauth2::url::quirks::password;
 use serde::{Serialize, Deserialize};
 
@@ -57,12 +57,9 @@ impl Collection {
 	/// Verify if given (unhashed) password matches the password set in the collection.
 	/// Returns false if collection has no password.
 	pub fn password_correct(&self, password: &str) -> bool {
-		// TODO: Hashing stuff
-		if let Some(actual_password) = &self.sharing.password_hash {
-			actual_password == password
-		}
-		else {
-			false
+		match &self.sharing.password_hash {
+			Some(phc_hash) => verify_password_hash(&password, &phc_hash),
+			None => false
 		}
 	}
 }

@@ -10,6 +10,7 @@ mod ids;
 mod settings;
 mod web;
 mod entities;
+mod passwords;
 
 lazy_static! {
 	/// Global application settings

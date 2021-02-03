@@ -1,7 +1,7 @@
 use actix_web::{web, HttpResponse, Responder};
 use serde::Serialize;
 
-use crate::{database::{DatabaseEntity, DatabaseUserEntity}, web::cookies::create_session_cookie};
+use crate::{constants::{PASSWORD_HASH_ITERATIONS, PASSWORD_HASH_LENGTH}, database::{DatabaseEntity, DatabaseUserEntity}, passwords::hash_password, web::cookies::create_session_cookie};
 use crate::web::http::*;
 use crate::entities::AccessControl;
 use crate::entities::user::User;
@@ -9,6 +9,7 @@ use crate::entities::session::Session;
 use crate::entities::collection::Collection;
 use crate::web::handlers::requests::*;
 use crate::web::handlers::responses::*;
+use crate::error::Result;
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -99,7 +100,12 @@ pub async fn update_collection(session: Session, collection_id: web::Path<String
 						return create_bad_request_response(Box::from("Empty password provided"));
 					}
 
-					collection.sharing.password_hash = Some(password.to_string());
+					match hash_password(&password, &collection.id) {
+						Ok(password_hash) => collection.sharing.password_hash = Some(password_hash),
+						Err(error) => {
+							return create_internal_server_error_response(Some(error));
+						}
+					}
 				}
 				else {
 					if collection.sharing.password_hash.is_none() {
