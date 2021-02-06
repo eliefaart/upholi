@@ -15,9 +15,10 @@ interface Props {
 
 interface State {
 	requirePassword: boolean,
-	isChangingPassword: boolean,
 	password: string,
-	isConfirmingRefreshToken: boolean
+	isEnablingPasswordRequired: boolean,
+	isSettingPassword: boolean,
+	isConfirmingResetRefreshToken: boolean
 }
 
 class CollectionSharingSettings extends React.Component<Props, State> {
@@ -25,11 +26,15 @@ class CollectionSharingSettings extends React.Component<Props, State> {
 	constructor(props: Props) {
 		super(props);
 
+		this.onSetPasswordCancelled = this.onSetPasswordCancelled.bind(this);
+		this.onSetPassword = this.onSetPassword.bind(this);
+
 		this.state = {
 			requirePassword: this.props.collection.sharing.requirePassword,
-			isChangingPassword: false,
 			password: "",
-			isConfirmingRefreshToken: false
+			isSettingPassword: false,
+			isEnablingPasswordRequired: false,
+			isConfirmingResetRefreshToken: false
 		};
 	}
 
@@ -49,9 +54,20 @@ class CollectionSharingSettings extends React.Component<Props, State> {
 		toast.info("URL copied to clipboard.");
 	}
 
-	onPasswordUpdated(password: string) {
+	onSetPasswordCancelled() {
 		this.setState({
-			isChangingPassword: false,
+			// If user was enabling password (first time setting password after checking 'require password'), but cancelled setting a password,
+			// then also disable 'require password' again.
+			requirePassword: this.state.isEnablingPasswordRequired ? false : this.state.requirePassword,
+			isEnablingPasswordRequired: false,
+			isSettingPassword: false
+		 });
+	}
+
+	onSetPassword(password: string) {
+		this.setState({
+			isSettingPassword: false,
+			isEnablingPasswordRequired: false,
 			password: password
 		 }, () => {
 			 this.updateSharingOptions();
@@ -88,38 +104,15 @@ class CollectionSharingSettings extends React.Component<Props, State> {
 		const shareUrl = document.location.origin + "/s/" + this.props.collection.sharing.token;
 
 		// Event handlers
-		const fnOpenConfirmRefreshShareToken = () => this.setState({isConfirmingRefreshToken: true});
-		const fnCloseConfirmRefreshShareToken = () => this.setState({isConfirmingRefreshToken: false});
+		const fnOpenConfirmRefreshShareToken = () => this.setState({isConfirmingResetRefreshToken: true});
+		const fnCloseConfirmRefreshShareToken = () => this.setState({isConfirmingResetRefreshToken: false});
 		const fnOnConfirmRefreshTokenOk = () => {
 			fnCloseConfirmRefreshShareToken();
 			this.generateNewUrl();
 		};
 
 		return <React.Fragment>
-			{/* Password */}
-			<label className="switch">
-				<span>Require password</span>
-				<Switch checked={this.state.requirePassword}
-					width={80}
-					onColor="#53c253"
-					checkedIcon={<span className="checkedIcon">Yes</span>}
-					uncheckedIcon={<span className="uncheckedIcon">No</span>}
-					onChange={(bRequirePassword) => {
-						this.setState({
-							requirePassword: bRequirePassword,
-							isChangingPassword: bRequirePassword
-						}, () => {
-							if (!bRequirePassword) {
-								this.updateSharingOptions();
-							}
-						});
-					}}/>
-			</label>
-			{this.state.requirePassword &&
-				<button onClick={() => this.setState({ isChangingPassword: true })}>
-					Change password
-				</button>
-			}
+
 
 			{/* URL */}
 			<div className="url">
@@ -128,31 +121,66 @@ class CollectionSharingSettings extends React.Component<Props, State> {
 						// Prevent changes to the value of this input by resetting value in onchange event.
 						// I cannot make it 'disabled', because then I cannot copy the text using JS
 						onChange={(event) => event.target.value = shareUrl}/>
-					<button className="iconOnly" onClick={fnOpenConfirmRefreshShareToken} title="Update URL">
-						<IconRefresh/>
-					</button>
 					<button className="iconOnly" onClick={this.copyUrlToClipboard} title="Copy URL">
 						<IconCopy/>
 					</button>
 				</div>
 			</div>
 
-			{this.state.isChangingPassword && <ModalSetPassword
-				onOkButtonClick={(password: string) => this.onPasswordUpdated(password)}/>}
+			{/* Actions / Buttons */}
+			<div className="flex">
+				{/* Password */}
+				<div className="flex">
+					<label className="switch">
+						<Switch checked={this.state.requirePassword}
+							width={60}
+							onColor="#20aced"
+							offColor="#1c1c1c"
+							checkedIcon={<span className="checkedIcon"/>}
+							uncheckedIcon={<span className="uncheckedIcon"/>}
+							onChange={(bRequirePassword) => {
+								this.setState({
+									requirePassword: bRequirePassword,
+									isEnablingPasswordRequired: bRequirePassword,
+									isSettingPassword: bRequirePassword
+								}, () => {
+									if (!bRequirePassword) {
+										this.updateSharingOptions();
+									}
+								});
+							}}/>
+						<span>&nbsp;Require password</span>
+					</label>
+				</div>
 
-			{this.state.isConfirmingRefreshToken && <ModalConfirmation
-					title="Update URL"
-					isOpen={true}
-					onRequestClose={fnCloseConfirmRefreshShareToken}
-					onOkButtonClick={fnOnConfirmRefreshTokenOk}
-					okButtonText="Ok"
-					confirmationText={"The old URL will no longer work."}
-					/>}
+				<div className="flex flex-justify-content-right flex-grow">
+					{this.state.requirePassword &&<button onClick={() => this.setState({ isSettingPassword: true })}>
+						Reset password
+					</button>}
+					<button onClick={fnOpenConfirmRefreshShareToken}>
+						Update URL
+					</button>
+				</div>
+			</div>
+
+			{this.state.isSettingPassword && <ModalSetPassword
+				onRequestClose={this.onSetPasswordCancelled}
+				onOkButtonClick={this.onSetPassword}/>}
+
+			{this.state.isConfirmingResetRefreshToken && <ModalConfirmation
+				title="Update URL"
+				isOpen={true}
+				onRequestClose={fnCloseConfirmRefreshShareToken}
+				onOkButtonClick={fnOnConfirmRefreshTokenOk}
+				okButtonText="Ok"
+				confirmationText={"The old URL will no longer work."}
+				/>}
 		</React.Fragment>;
 	}
 }
 
 interface ModalSetPasswordProps {
+	onRequestClose?: () => void,
 	onOkButtonClick: (password: string) => void
 }
 
@@ -175,7 +203,7 @@ class ModalSetPassword extends React.Component<ModalSetPasswordProps> {
 			title="Set password"
 			className="modalSetPassword"
 			isOpen={true}
-			onRequestClose={() => {}}
+			onRequestClose={() => {!!this.props.onRequestClose && this.props.onRequestClose()}}
 			okButtonText="Save"
 			onOkButtonClick={() => this.onOkButtonClick()}
 			>

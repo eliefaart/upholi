@@ -65,7 +65,7 @@ html {
 @import "app.component.modal";
 @import "app.component.header";
 @import "app.component.albums";
-@import "app.component.collection";
+@import "app.component.collectionView";
 @import "app.component.collections";
 @import "app.component.photoGallery";
 @import "app.component.photoDetail";
@@ -79,13 +79,27 @@ html {
 
 input, select, button, .asButton {
 	margin: 10px 0 10px 0;
-	width: 100%;
 	height: $buttonHeight;
 	line-height: $buttonHeight;
 	border-radius: $borderRadius;
 
 	&:disabled {
 		background-color: $colorDisabled;
+	}
+
+	&[type=text],&[type=password] {
+		width: 100%;
+	}
+
+	&[type=file] {
+		display: none;
+	}
+
+	&[type=checkbox] {
+		visibility: hidden;
+		&:checked {
+
+		}
 	}
 
 	&::-moz-focus-inner {
@@ -117,9 +131,6 @@ input, select {
 	display: inline-block;
 	padding: 0 $buttonHeight;
 }
-input[type=file] {
-	display: none;
-}
 
 button, .asButton {
 	color: $colorAccent;
@@ -128,14 +139,14 @@ button, .asButton {
 	border: none;
 	cursor: pointer;
 	width: auto;
-	margin: 0px 0px 0px 0px;
 	text-decoration: none;
 	padding: 0;
 	display: inline-block;
 	text-align: center;
-
+	margin: 0px;
 	display: flex;
 	justify-content: center;
+	white-space: nowrap;
 
 	&.iconOnly {
 		display: flex;
@@ -144,6 +155,9 @@ button, .asButton {
 	}
 	&:not(.iconOnly) {
 		min-width: $buttonHeight * 2;
+		background-color: rgba($colorBackground, 0.9);
+		margin: 0px $spacing * 1;
+		padding: 0px $spacing * 3;
 	}
 
 	&:hover,

@@ -8,6 +8,18 @@
 	color: $colorError;
 }
 
+.flex {
+	display: flex;
+}
+
+.flex-grow {
+	flex-grow: 1;
+}
+
+.flex-justify-content-right {
+	justify-content: right;
+}
+
 .hidden {
 	width: 0px;
 	height: 0px;

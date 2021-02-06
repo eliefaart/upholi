@@ -87,18 +87,16 @@ class SharedCollectionPage extends PageBaseComponent<CollectionPageBaseState> {
 	render() {
 		return (
 			<ContentContainer>
-				<React.Fragment>
-					{/* Password input box */}
-					{this.state.unauthorized && <InputPassword
-						className="padding-top-50px"
-						prompt="You need to provide a password to view this collection."
-						onSubmitPassword={(password) => this.authenticate(password)}
-						lastPasswordIncorrect={this.state.lastPasswordIncorrect}/>}
+				{/* Password input box */}
+				{this.state.unauthorized && <InputPassword
+					className="padding-top-50px"
+					prompt="You need to provide a password to view this collection."
+					onSubmitPassword={(password) => this.authenticate(password)}
+					lastPasswordIncorrect={this.state.lastPasswordIncorrect}/>}
 
-					{/* Collection view  */}
-					{this.state.collection != null && <CollectionView
-						collection={this.state.collection}/>}
-				</React.Fragment>
+				{/* Collection view  */}
+				{this.state.collection != null && <CollectionView
+					collection={this.state.collection}/>}
 			</ContentContainer>
 		);
 	}

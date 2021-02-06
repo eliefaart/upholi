@@ -146,61 +146,59 @@ class SharedPage extends PageBaseComponent<SharedPageState> {
 		const activeAlbum = activeCollection && activeCollection.albums.find(alb => alb.id === this.state.activeAlbumId);
 
 		return (
-			<ContentContainer paddingTop={true}>
-				<div className="collections">
-					{this.state.collections.map(collection => {
-						const settingsOpened = this.state.settingsOpenCollectionIds.indexOf(collection.id) !== -1;
+			<ContentContainer paddingTop={true} className="collections">
+				{this.state.collections.map(collection => {
+					const settingsOpened = this.state.settingsOpenCollectionIds.indexOf(collection.id) !== -1;
 
-						// Collection container
-						return <div key={collection.id} className="collection">
-							<div className="head">
-								{/* Collection title and some actions/buttons */}
-								<h2 className="title">{collection.title}</h2>
-								<button className="iconOnly" onClick={() => this.toggleSettings(collection.id)} title="Collection sharing options">
-									{settingsOpened && <IconChevronUp/>}
-									{!settingsOpened && <IconChevronDown/>}
-								</button>
-								<button className="iconOnly" onClick={() => this.onClickDeleteCollection(collection.id)} title="Delete collection">
-									<IconDelete/>
+					// Collection container
+					return <div key={collection.id} className="collection">
+						<div className="head">
+							{/* Collection title and some actions/buttons */}
+							<h2 className="title">{collection.title}</h2>
+							<button className="iconOnly" onClick={() => this.toggleSettings(collection.id)} title="Collection sharing options">
+								{settingsOpened && <IconChevronUp/>}
+								{!settingsOpened && <IconChevronDown/>}
+							</button>
+							<button className="iconOnly" onClick={() => this.onClickDeleteCollection(collection.id)} title="Delete collection">
+								<IconDelete/>
+							</button>
+						</div>
+
+						<div className="body">
+							<div className={"settings" + (settingsOpened ? " open" : "")}>
+								{settingsOpened && <CollectionSharingSettings collection={collection} onOptionsChanged={() => this.refreshCollections()}/>}
+							</div>
+							{settingsOpened && <hr/>}
+
+							{/* Albums inside this collection */}
+							<div className="collection-albums">
+								{collection.albums.map(album => {
+									let albumThumbUrl = album.thumbPhotoId
+										? "url('" + PhotoService.baseUrl() + "/photo/" + album.thumbPhotoId + "/thumb')"
+										: "";
+
+									return (<div key={album.id}
+										className="album"
+										style={{ backgroundImage: albumThumbUrl }}
+										onClick={() => this.openAlbum(album.id)}>
+										<div className="albumContent">
+											<span className="title">{album.title}</span>
+											<button className="iconOnly" onClick={(event) => {
+												event.stopPropagation();
+												this.onRemoveAlbumFromCollectionClick(collection.id, album.id);
+											}} title="Remove album from collection">
+												<IconClose/>
+											</button>
+										</div>
+									</div>);
+								})}
+								<button className="iconOnly" onClick={() => this.onAddAlbumToCollectionClick(collection.id)} title="Add album to collection">
+									<IconCreate/>
 								</button>
 							</div>
-
-							<div className="body">
-								<div className={"settings" + (settingsOpened ? " open" : "")}>
-									{settingsOpened && <CollectionSharingSettings collection={collection} onOptionsChanged={() => this.refreshCollections()}/>}
-								</div>
-								{settingsOpened && <hr/>}
-
-								{/* Albums inside this collection */}
-								<div className="collection-albums">
-									{collection.albums.map(album => {
-										let albumThumbUrl = album.thumbPhotoId
-											? "url('" + PhotoService.baseUrl() + "/photo/" + album.thumbPhotoId + "/thumb')"
-											: "";
-
-										return (<div key={album.id}
-											className="album"
-											style={{ backgroundImage: albumThumbUrl }}
-											onClick={() => this.openAlbum(album.id)}>
-											<div className="albumContent">
-												<span className="title">{album.title}</span>
-												<button className="iconOnly" onClick={(event) => {
-													event.stopPropagation();
-													this.onRemoveAlbumFromCollectionClick(collection.id, album.id);
-												}} title="Remove album from collection">
-													<IconClose/>
-												</button>
-											</div>
-										</div>);
-									})}
-									<button className="" onClick={() => this.onAddAlbumToCollectionClick(collection.id)} title="Add album to collection">
-										<IconCreate/> Add album
-									</button>
-								</div>
-							</div>
-						</div>;
-					})}
-				</div>
+						</div>
+					</div>;
+				})}
 
 				{this.state.addAlbumToCollectionDialogOpen && <ModalAddAlbumToCollection
 					isOpen={true}

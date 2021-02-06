@@ -1,5 +1,3 @@
-use std::string;
-
 use crate::error::Result;
 use crate::constants::{PASSWORD_HASH_ITERATIONS, PASSWORD_HASH_LENGTH};
 use pbkdf2::{Params, Pbkdf2, password_hash::{Ident, PasswordHash, PasswordHasher, PasswordVerifier, Salt}};

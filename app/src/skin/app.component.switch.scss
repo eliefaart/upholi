@@ -4,9 +4,14 @@
 	span {
 		align-self: center;
 		padding-right: $spacing * 2;
+		white-space: nowrap;
 	}
+
 	>div {
+		// This div represents the switch itself
 		align-self: center;
+		border-radius: 20px;
+		border: 2px solid $colorBackgroundShadow;
 	}
 
 	.checkedIcon, .uncheckedIcon {
