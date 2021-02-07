@@ -133,7 +133,9 @@ class CollectionSharingSettings extends React.Component<Props, State> {
 				<div className="flex">
 					<label className="switch">
 						<Switch checked={this.state.requirePassword}
-							width={60}
+							width={40}
+							height={15}
+							handleDiameter={25}
 							onColor="#20aced"
 							offColor="#1c1c1c"
 							checkedIcon={<span className="checkedIcon"/>}
@@ -149,7 +151,7 @@ class CollectionSharingSettings extends React.Component<Props, State> {
 									}
 								});
 							}}/>
-						<span>&nbsp;Require password</span>
+						<span>Require password</span>
 					</label>
 				</div>
 
