@@ -1,7 +1,6 @@
 import AlbumInfo from "./AlbumInfo";
 
 interface CollectionSharingOptions {
-	shared: boolean,
 	requirePassword: boolean,
 	token: string
 }

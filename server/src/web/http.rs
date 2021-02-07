@@ -149,6 +149,21 @@ async fn get_form_field_bytes(mut field: Field) -> Result<Vec<u8>> {
 	Ok(field_bytes)
 }
 
+pub fn get_session_or_create_new(session_opt: Option<Session>) -> Result<Session> {
+	let mut session: Session;
+
+	// Create a new session if request didn't have one
+	if let Some(existing_sesson) = session_opt {
+		session = existing_sesson;
+	}
+	else {
+		session = Session::new();
+		session.insert()?;
+	}
+
+	Ok(session)
+}
+
 /// Create a HTTP 200 OK response
 pub fn create_ok_response() -> actix_http::Response {
 	HttpResponse::Ok().finish()
@@ -168,7 +183,7 @@ pub fn create_not_found_response() -> actix_http::Response {
 pub fn create_bad_request_response(error: Box<dyn std::error::Error>) -> actix_http::Response {
 	HttpResponse::BadRequest()
 		.json(ErrorResult{
-			message: format!("{:?}", error) 
+			message: format!("{:?}", error)
 		})
 }
 
@@ -178,7 +193,7 @@ pub fn create_internal_server_error_response(error: Option<Box<dyn std::error::E
 
 	match error {
 		Some(error) => response.json(ErrorResult{
-			message: format!("{:?}", error) 
+			message: format!("{:?}", error)
 		}),
 		None => response.finish()
 	}
