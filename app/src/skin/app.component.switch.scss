@@ -3,10 +3,14 @@
 
 	span {
 		align-self: center;
-		padding-right: $spacing * 2;
+		padding: 0 $spacing * 2;
+		white-space: nowrap;
 	}
+
 	>div {
+		// This div represents the switch itself
 		align-self: center;
+		border-radius: 30px;
 	}
 
 	.checkedIcon, .uncheckedIcon {

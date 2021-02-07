@@ -45,6 +45,12 @@ mod requests {
 
 	#[derive(Deserialize)]
 	#[serde(rename_all = "camelCase")]
+	pub struct AuthenticateToCollection {
+		pub password: Option<String>,
+	}
+
+	#[derive(Deserialize)]
+	#[serde(rename_all = "camelCase")]
 	pub struct UpdateCollectionSharingOptions {
 		pub shared: bool,
 		pub require_password: bool,

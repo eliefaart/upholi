@@ -194,7 +194,7 @@ class PhotoService {
 		});
 	}
 
-	static addPhotosToAlbum(albumId: string, photoIds: string[]) {
+	static addPhotosToAlbum(albumId: string, photoIds: string[]): Promise<void> {
 		return new Promise((ok, err) => {
 			this.getAlbum(albumId)
 				.then((album) => {
@@ -256,6 +256,14 @@ class PhotoService {
 
 	static getCollectionByShareToken(shareToken: string): Promise<Collection> {
 		return PhotoService.getJson<Collection>("GET", PhotoService.baseUrl() + "/collection/shared/" + shareToken, null);
+	}
+
+	static authenticateToCollectionByShareToken(shareToken: string, password: string): Promise<Response> {
+		const requestData = {
+			password
+		};
+
+		return PhotoService.sendRequest("POST", `${PhotoService.baseUrl()}/collection/shared/${shareToken}/authenticate`, requestData);
 	}
 
 	static createCollection(title: string): Promise<string> {

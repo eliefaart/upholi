@@ -18,13 +18,14 @@ class ContentContainer extends React.Component<ContentContainerProps> {
 	}
 
 	getClassName(): string | undefined {
-		let className = "";
+		let className = this.props.className || "";
 
 		if (this.props.paddingTop === true){
-			className += "padding-top";
+			className += " padding-top";
 		}
 
-		if (className.trim() === ""){
+		className = className.trim();
+		if (className === ""){
 			return undefined;
 		}
 		else {

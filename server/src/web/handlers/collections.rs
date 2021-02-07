@@ -1,7 +1,7 @@
 use actix_web::{web, HttpResponse, Responder};
 use serde::Serialize;
 
-use crate::database::{DatabaseEntity, DatabaseUserEntity};
+use crate::{constants::{PASSWORD_HASH_ITERATIONS, PASSWORD_HASH_LENGTH}, database::{DatabaseEntity, DatabaseUserEntity}, passwords::hash_password, web::cookies::create_session_cookie};
 use crate::web::http::*;
 use crate::entities::AccessControl;
 use crate::entities::user::User;
@@ -9,6 +9,7 @@ use crate::entities::session::Session;
 use crate::entities::collection::Collection;
 use crate::web::handlers::requests::*;
 use crate::web::handlers::responses::*;
+use crate::error::Result;
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -99,7 +100,12 @@ pub async fn update_collection(session: Session, collection_id: web::Path<String
 						return create_bad_request_response(Box::from("Empty password provided"));
 					}
 
-					collection.sharing.password_hash = Some(password.to_string());
+					match hash_password(&password, &collection.id) {
+						Ok(password_hash) => collection.sharing.password_hash = Some(password_hash),
+						Err(error) => {
+							return create_internal_server_error_response(Some(error));
+						}
+					}
 				}
 				else {
 					if collection.sharing.password_hash.is_none() {
@@ -139,6 +145,60 @@ pub async fn rotate_collection_share_token(session: Session, collection_id: web:
 			Err(error) => create_internal_server_error_response(Some(error))
 		}
 	}).await
+}
+
+/// Grant a session access to a password-protected collection, if the password is correct.
+pub async fn authenticate_to_collection(session_opt: Option<Session>, token: web::Path<String>, authenticate_request: web::Json<AuthenticateToCollection>) -> impl Responder {
+	let request_has_session = session_opt.is_some();
+
+	match &authenticate_request.password {
+		Some(password) => {
+			match Collection::get_by_share_token(&token) {
+				Ok(opt) => {
+					match opt {
+						Some(collection) => {
+							match collection.password_correct(&password) {
+								true => {
+									match get_session_or_create_new(session_opt) {
+										Ok(mut session) => {
+											// Authenticate this session for the collection
+											if !session.authenticated_for_collection_tokens.contains(&collection.sharing.token) {
+												session.authenticated_for_collection_tokens.push(collection.sharing.token);
+												if let Err(error) = session.update() {
+													return create_internal_server_error_response(Some(error));
+												}
+											}
+
+											let mut response = HttpResponse::Ok()
+												.finish();
+
+											// Append the new session cookie to the response
+											if !request_has_session {
+												let cookie = create_session_cookie(&session);
+
+												if let Err(error) = response.add_cookie(&cookie) {
+													return create_internal_server_error_response(Some(Box::new(error)));
+												}
+											}
+
+											response
+										},
+										Err(error) => create_internal_server_error_response(Some(error))
+									}
+								},
+								false => {
+									create_unauthorized_response()
+								}
+							}
+						},
+						None => create_not_found_response()
+					}
+				},
+				Err(error) => create_internal_server_error_response(Some(error))
+			}
+		},
+		None => create_bad_request_response(Box::from("No password"))
+	}
 }
 
 /// Perform some action on a collection, if it exists and the given user has access to it.

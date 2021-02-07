@@ -11,6 +11,7 @@ $colorText: #eee;
 $colorTextContrast: #161f21;
 $colorDisabled: gray;
 $colorHeaderBackground: transparent; //$colorBackgroundAlt;
+$colorError: #d74646;
 // $colorHeaderBackground: linear-gradient(120deg, rgba(117,66,179,1) 0%, rgba(46,110,165,1) 45%, rgba(198,135,51,1) 100%);
 // $colorHeaderBackground: linear-gradient(25deg, $colorBackground 0%, $colorBackground 35%, $colorSecondaryAccent 120%);
 
@@ -64,7 +65,7 @@ html {
 @import "app.component.modal";
 @import "app.component.header";
 @import "app.component.albums";
-@import "app.component.collection";
+@import "app.component.collectionView";
 @import "app.component.collections";
 @import "app.component.photoGallery";
 @import "app.component.photoDetail";
@@ -74,16 +75,35 @@ html {
 @import "app.component.exif";
 @import "app.component.toasts";
 @import "app.component.switch";
+@import "app.component.inputPassword";
 
 input, select, button, .asButton {
 	margin: 10px 0 10px 0;
-	width: 100%;
 	height: $buttonHeight;
 	line-height: $buttonHeight;
 	border-radius: $borderRadius;
 
 	&:disabled {
 		background-color: $colorDisabled;
+	}
+
+	&[type=text],&[type=password] {
+		width: 100%;
+	}
+
+	&[type=file] {
+		display: none;
+	}
+
+	&[type=checkbox] {
+		visibility: hidden;
+		&:checked {
+
+		}
+	}
+
+	&::-moz-focus-inner {
+		border: 0;
 	}
 }
 
@@ -96,6 +116,7 @@ input, select {
 	background-color: $colorBackgroundAlt;
 	color: $colorText;
 	border: 2px solid $colorBackgroundShadow;
+	text-indent: $spacing * 2;
 
 	&:focus {
 		border-color: $colorSecondaryAccent;
@@ -110,9 +131,6 @@ input, select {
 	display: inline-block;
 	padding: 0 $buttonHeight;
 }
-input[type=file] {
-	display: none;
-}
 
 button, .asButton {
 	color: $colorAccent;
@@ -121,14 +139,14 @@ button, .asButton {
 	border: none;
 	cursor: pointer;
 	width: auto;
-	margin: 0px 0px 0px 0px;
 	text-decoration: none;
 	padding: 0;
 	display: inline-block;
 	text-align: center;
-
+	margin: 0px;
 	display: flex;
 	justify-content: center;
+	white-space: nowrap;
 
 	&.iconOnly {
 		display: flex;
@@ -137,6 +155,9 @@ button, .asButton {
 	}
 	&:not(.iconOnly) {
 		min-width: $buttonHeight * 2;
+		background-color: rgba($colorBackground, 0.9);
+		margin: 0px $spacing * 1;
+		padding: 0px $spacing * 3;
 	}
 
 	&:hover,

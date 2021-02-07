@@ -12,6 +12,9 @@ pub struct Session {
 	pub user_id: Option<String>,
 	created_on: chrono::DateTime<Utc>,
 
+	/// List of tokens (not fixed IDs) of collections that this session is authenticated to access
+	pub authenticated_for_collection_tokens: Vec<String>,
+
 	/// Contains data related to an oauth login attempt
 	/// Such as: state id, PKCE tokens.
 	/// The value of this field will be None once authorization has completed
@@ -31,6 +34,7 @@ impl Session {
 			id: ids::create_unique_id(),
 			user_id: None,
 			created_on: Utc::now(),
+			authenticated_for_collection_tokens: vec!{},
 			oauth: None
 		}
 	}
