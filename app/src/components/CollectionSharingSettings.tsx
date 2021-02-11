@@ -1,12 +1,12 @@
 import * as React from "react";
 import AppStateContext from "../contexts/AppStateContext";
-import { IconCopy, IconRefresh } from "./Icons";
+import { IconCopy } from "./Icons";
 import { toast } from "react-toastify";
 import Switch from "react-switch";
 import { default as PhotoService, UpdateCollection } from "../services/PhotoService";
 import Collection from "../models/Collection";
-import Modal from "./modals/Modal";
 import ModalConfirmation from "./modals/ModalConfirmation";
+import ModalSetPassword from "./modals/ModalSetPassword";
 
 interface Props {
 	collection: Collection,
@@ -178,39 +178,6 @@ class CollectionSharingSettings extends React.Component<Props, State> {
 				confirmationText={"The old URL will no longer work."}
 				/>}
 		</React.Fragment>;
-	}
-}
-
-interface ModalSetPasswordProps {
-	onRequestClose?: () => void,
-	onOkButtonClick: (password: string) => void
-}
-
-class ModalSetPassword extends React.Component<ModalSetPasswordProps> {
-	constructor(props:ModalSetPasswordProps) {
-		super(props);
-
-		this.state = {};
-	}
-
-	onOkButtonClick() {
-		const input = document.getElementById("password") as HTMLInputElement;
-		if (input) {
-			this.props.onOkButtonClick(input.value);
-		}
-	}
-
-	render() {
-		return <Modal
-			title="Set password"
-			className="modalSetPassword"
-			isOpen={true}
-			onRequestClose={() => {!!this.props.onRequestClose && this.props.onRequestClose()}}
-			okButtonText="Save"
-			onOkButtonClick={() => this.onOkButtonClick()}
-			>
-				<input id="password" type="password"/>
-		</Modal>;
 	}
 }
 
