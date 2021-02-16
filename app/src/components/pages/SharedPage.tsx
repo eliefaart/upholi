@@ -9,6 +9,7 @@ import { IconCreate, IconDelete, IconShare, IconClose, IconChevronDown, IconChev
 import PhotoService from "../../services/PhotoService";
 import Collection from "../../models/Collection";
 import CollectionSharingSettings from "../CollectionSharingSettings";
+import OrderableContent from "../OrderableContent";
 
 interface SharedPageState {
 	collections: Collection[],
@@ -171,34 +172,37 @@ class SharedPage extends PageBaseComponent<SharedPageState> {
 							{settingsOpened && <hr/>}
 
 							{/* Albums inside this collection */}
-							<div className="collection-albums">
-								{collection.albums.map(album => {
-									let albumThumbUrl = album.thumbPhotoId
-										? "url('" + PhotoService.baseUrl() + "/photo/" + album.thumbPhotoId + "/thumb')"
-										: "";
+							<div className="">
+								<OrderableContent className="collection-albums" onOrderChanged={() => {}}>
+									{collection.albums.map(album => {
+										let albumThumbUrl = album.thumbPhotoId
+											? "url('" + PhotoService.baseUrl() + "/photo/" + album.thumbPhotoId + "/thumb')"
+											: "";
 
-									return (<div key={album.id}
-										className="album"
-										style={{ backgroundImage: albumThumbUrl }}
-										onClick={() => this.openAlbum(album.id)}>
-										<div className="albumContent">
-											<span className="title">{album.title}</span>
-											<button className="iconOnly" onClick={(event) => {
-												event.stopPropagation();
-												this.onRemoveAlbumFromCollectionClick(collection.id, album.id);
-											}} title="Remove album from collection">
-												<IconClose/>
-											</button>
-										</div>
-									</div>);
-								})}
+										return (<div key={album.id}
+											className="album"
+											style={{ backgroundImage: albumThumbUrl }}
+											onClick={() => this.openAlbum(album.id)}>
+											<div className="albumContent">
+												<span className="title">{album.title}</span>
+												<button className="iconOnly" onClick={(event) => {
+													event.stopPropagation();
+													this.onRemoveAlbumFromCollectionClick(collection.id, album.id);
+												}} title="Remove album from collection">
+													<IconClose/>
+												</button>
+											</div>
+										</div>);
+									})}
+								</OrderableContent>
 								<button className="iconOnly" onClick={() => this.onAddAlbumToCollectionClick(collection.id)} title="Add album to collection">
-									<IconCreate/>
+									<IconCreate/> TODO
 								</button>
 							</div>
 						</div>
 					</div>;
 				})}
+
 
 				{this.state.addAlbumToCollectionDialogOpen && <ModalAddAlbumToCollection
 					isOpen={true}
