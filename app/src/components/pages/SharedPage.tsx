@@ -28,6 +28,8 @@ class SharedPage extends PageBaseComponent<SharedPageState> {
 	constructor(props: PageBaseComponentProps) {
 		super(props);
 
+		this.onAlbumOrderChanged = this.onAlbumOrderChanged.bind(this);
+
 		this.state = {
 			collections: [],
 			settingsOpenCollectionIds: [],
@@ -142,6 +144,10 @@ class SharedPage extends PageBaseComponent<SharedPageState> {
 		});
 	}
 
+	onAlbumOrderChanged(movedItem: unknown, newPosition: number): void {
+		console.log("onAlbumOrderChanged", movedItem, newPosition);
+	}
+
 	render() {
 		const activeCollection = this.state.collections.find(col => col.id === this.state.activeCollectionId);
 		const activeAlbum = activeCollection && activeCollection.albums.find(alb => alb.id === this.state.activeAlbumId);
@@ -173,7 +179,9 @@ class SharedPage extends PageBaseComponent<SharedPageState> {
 
 							{/* Albums inside this collection */}
 							<div className="">
-								<OrderableContent className="collection-albums" onOrderChanged={() => {}}>
+								<OrderableContent
+									className="collection-albums"
+									onOrderChanged={this.onAlbumOrderChanged}>
 									{collection.albums.map(album => {
 										let albumThumbUrl = album.thumbPhotoId
 											? "url('" + PhotoService.baseUrl() + "/photo/" + album.thumbPhotoId + "/thumb')"
