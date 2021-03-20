@@ -170,7 +170,7 @@ mod responses {
 			let albums = Album::get_with_ids(&album_ids)
 				.unwrap_or_else(|_| vec!{});
 
-			let mut collection_albums2: Vec<ClientCollectionAlbum> = Vec::new();
+			let mut collection_albums: Vec<ClientCollectionAlbum> = Vec::new();
 			for album_id in &collection.albums {
 				let album = albums.iter().find(|album| &album.id == album_id);
 				if let Some(album) = album {
@@ -184,14 +184,14 @@ mod responses {
 							}
 						}
 					};
-					collection_albums2.push(client_album);
+					collection_albums.push(client_album);
 				}
 			}
 
             ClientCollection {
 				id: collection.id.to_string(),
 				title: collection.title.to_string(),
-				albums: collection_albums2,
+				albums: collection_albums,
 				sharing: ClientCollectionSharingOptions {
 					require_password: collection.sharing.password_hash.is_some(),
 					token: collection.sharing.token.to_string()
