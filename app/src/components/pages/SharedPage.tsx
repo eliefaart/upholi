@@ -16,7 +16,6 @@ class SharedPage extends PageBaseComponent<SharedPageState> {
 	constructor(props: PageBaseComponentProps) {
 		super(props);
 
-		this.onAlbumOrderChanged = this.onAlbumOrderChanged.bind(this);
 		this.refreshCollections = this.refreshCollections.bind(this);
 
 		this.state = {
@@ -59,10 +58,6 @@ class SharedPage extends PageBaseComponent<SharedPageState> {
 			.then((id) => this.refreshCollections())
 			.catch(console.error)
 			.finally(() => this.setState({newCollectionDialogOpen: false}));
-	}
-
-	onAlbumOrderChanged(movedItem: unknown, newPosition: number): void {
-		console.log("onAlbumOrderChanged", movedItem, newPosition);
 	}
 
 	render() {

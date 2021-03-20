@@ -29,6 +29,7 @@ export default class UserCollection extends React.Component<Props, State> {
 		this.toggleSettings = this.toggleSettings.bind(this);
 		this.onClickDeleteCollection = this.onClickDeleteCollection.bind(this);
 		this.onClickAddAlbumToCollection = this.onClickAddAlbumToCollection.bind(this);
+		this.onAlbumOrderChanged = this.onAlbumOrderChanged.bind(this);
 
 		this.state = {
 			settingsOpened: false,
@@ -65,6 +66,10 @@ export default class UserCollection extends React.Component<Props, State> {
 		this.setState({
 			addAlbumToCollectionDialogOpen: true
 		});
+	}
+
+	onAlbumOrderChanged(movedItemKey: string, newPosition: number): void {
+		console.log("onAlbumOrderChanged", movedItemKey, newPosition);
 	}
 
 	/**
@@ -124,7 +129,7 @@ export default class UserCollection extends React.Component<Props, State> {
 				<div className="">
 					<OrderableContent
 						className="collection-albums"
-						onOrderChanged={() => {}}>
+						onOrderChanged={this.onAlbumOrderChanged}>
 						{this.props.collection.albums.map(album => {
 							let albumThumbUrl = album.thumbPhotoId
 								? "url('" + PhotoService.baseUrl() + "/photo/" + album.thumbPhotoId + "/thumb')"

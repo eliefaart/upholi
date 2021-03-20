@@ -2,22 +2,21 @@ import * as React from "react";
 
 interface Props {
 	className?: string,
-	onOrderChanged: (movedItem: React.ReactElement<any>, newPosition: number) => void
+	onOrderChanged: (movedItemKey: string, newPosition: number) => void
 }
 
-interface State { }
-
 interface Item {
-	originalElement: React.ReactElement<any>,
-	originalIndex: number,
+	key: string;
+	originalElement: React.ReactElement<any>;
+	originalIndex: number;
 
-	elementRef: React.RefObject<HTMLInputElement>,
-	element: JSX.Element,
+	elementRef: React.RefObject<HTMLInputElement>;
+	element: JSX.Element;
 
-	positionTopLeftX: number,
-	positionTopLeftY: number,
-	positionBottomRightX: number,
-	positionBottomRightY: number,
+	positionTopLeftX: number;
+	positionTopLeftY: number;
+	positionBottomRightX: number;
+	positionBottomRightY: number;
 }
 
 class Items {
@@ -33,7 +32,11 @@ class Items {
 		React.Children.forEach(reactNode, child => {
 			if (React.isValidElement(child)) {
 				const elementRef = React.createRef<HTMLInputElement>();
+				if (!child.key) {
+					throw Error(`Child ${child} does not have a key.`);
+				}
 				items.push({
+					key: String(child.key),
 					originalElement: child,
 					originalIndex: items.length,
 					elementRef: elementRef,
@@ -114,7 +117,8 @@ export default class OrderableContent extends React.Component<Props> {
 		}
 	}
 
-	componentDidUpdate(){
+	componentDidUpdate() {
+		// TODO: Do something if 'this.props.children' changed
 		if (this.containerRef) {
 			this.items.updateItemPositions(this.containerRef);
 		}
@@ -153,7 +157,7 @@ export default class OrderableContent extends React.Component<Props> {
 
 			if (targetItem) {
 				const targetIndex = this.items.items.indexOf(targetItem);
-				this.props.onOrderChanged(originalItem.originalElement, targetIndex );
+				this.props.onOrderChanged(originalItem.key, targetIndex );
 			}
 		}
 
