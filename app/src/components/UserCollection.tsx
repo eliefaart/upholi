@@ -69,7 +69,19 @@ export default class UserCollection extends React.Component<Props, State> {
 	}
 
 	onAlbumOrderChanged(movedItemKey: string, newPosition: number): void {
-		console.log("onAlbumOrderChanged", movedItemKey, newPosition);
+		const albumIds = this.props.collection.albums.map(a => a.id);
+		const currentPosition = albumIds.indexOf(movedItemKey);
+
+		if (currentPosition !== -1 && newPosition < albumIds.length) {
+			// Move the item to new position
+			albumIds.splice(newPosition, 0, albumIds.splice(currentPosition, 1)[0]);
+
+			PhotoService.updateCollection(this.props.collection.id, {
+				albums: albumIds
+			}).then(() => {
+				this.props.onCollectionUpdated();
+			}).catch(console.error);
+		}
 	}
 
 	/**

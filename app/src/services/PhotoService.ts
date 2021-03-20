@@ -25,9 +25,9 @@ export interface CreateCollection {
 }
 
 export interface UpdateCollection {
-	title: string | null,
-	public: boolean | null,
-	albums: string[] | null,
+	title?: string | null,
+	public?: boolean | null,
+	albums?: string[] | null,
 	sharing?: {
 		shared: boolean
 		requirePassword: boolean,

@@ -170,21 +170,28 @@ mod responses {
 			let albums = Album::get_with_ids(&album_ids)
 				.unwrap_or_else(|_| vec!{});
 
-			let collection_albums = albums.iter().map(|album| ClientCollectionAlbum {
-				id: album.id.to_string(),
-				title: album.title.to_string(),
-				thumb_photo_id: {
-					match &album.thumb_photo_id {
-						Some(thumb_photo_id) => Some(thumb_photo_id.to_string()),
-						None => None
-					}
+			let mut collection_albums2: Vec<ClientCollectionAlbum> = Vec::new();
+			for album_id in &collection.albums {
+				let album = albums.iter().find(|album| &album.id == album_id);
+				if let Some(album) = album {
+					let client_album = ClientCollectionAlbum {
+						id: album.id.to_string(),
+						title: album.title.to_string(),
+						thumb_photo_id: {
+							match &album.thumb_photo_id {
+								Some(thumb_photo_id) => Some(thumb_photo_id.to_string()),
+								None => None
+							}
+						}
+					};
+					collection_albums2.push(client_album);
 				}
-			}).collect();
+			}
 
             ClientCollection {
 				id: collection.id.to_string(),
 				title: collection.title.to_string(),
-				albums: collection_albums,
+				albums: collection_albums2,
 				sharing: ClientCollectionSharingOptions {
 					require_password: collection.sharing.password_hash.is_some(),
 					token: collection.sharing.token.to_string()
