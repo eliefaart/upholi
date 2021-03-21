@@ -128,7 +128,6 @@ export default class OrderableContent extends React.Component<Props, State> {
 		// Figure out if parent element has updated the child elements.
 		// If so, then update the items in the state.
 		let childrenUpdated = this.state.items.items.length !== React.Children.count(this.props.children);
-
 		React.Children.forEach(this.props.children, (child, index) => {
 			const childElement = child as React.ReactElement;
 			const childKey = childElement ? String(childElement.key) : "";
