@@ -1,8 +1,12 @@
 import * as React from "react";
 
 interface Props {
-	className?: string,
-	onOrderChanged: (movedItemKey: string, newPosition: number) => void
+	className?: string;
+	onOrderChanged: (movedItemKey: string, newPosition: number) => void;
+}
+
+interface State {
+	children: JSX.Element[];
 }
 
 interface Item {
@@ -56,6 +60,10 @@ class Items {
 		return new Items(items);
 	}
 
+	getElements(): JSX.Element[] {
+		return this.items.map(item => item.element);
+	}
+
 	getItemAtPosition(posX: number, posY: number): Item | null {
 		const item = this.items.find(it =>
 			it.positionTopLeftX < posX && it.positionBottomRightX > posX
@@ -85,7 +93,7 @@ class Items {
 	}
 }
 
-export default class OrderableContent extends React.Component<Props> {
+export default class OrderableContent extends React.Component<Props, State> {
 
 	containerRef: React.RefObject<HTMLInputElement> | null;
 	items: Items;
@@ -108,6 +116,7 @@ export default class OrderableContent extends React.Component<Props> {
 		this.onDragEnd = this.onDragEnd.bind(this);
 
 		this.state = {
+			children: this.items.getElements()
 		};
 	}
 
@@ -118,20 +127,9 @@ export default class OrderableContent extends React.Component<Props> {
 	}
 
 	componentDidUpdate() {
-		// TODO: Do something if 'this.props.children' changed
 		if (this.containerRef) {
 			this.items.updateItemPositions(this.containerRef);
 		}
-
-		// const fnUpdateItemPositions = this.updateItemPositions;
-		// window.requestAnimationFrame(function() {
-		// 	// Note: I may also need setTimeout to ensure this gets executed
-		// 	// after browser fully finished rendering.
-		// 	// https://stackoverflow.com/questions/26556436/react-after-render-code
-		// 	setTimeout(function () {
-		// 		fnUpdateItemPositions();
-		// 	})
-		// });
 	}
 
 	onDragStart(event: React.DragEvent) {
@@ -183,9 +181,13 @@ export default class OrderableContent extends React.Component<Props> {
 	}
 
 	render() {
+		console.log("render");
 		this.containerRef = React.createRef<HTMLInputElement>();
+		this.items = Items.from(this.props.children);
 		const items = this.items.items.map(item => item.element);
 		const className = `orderable-content ${this.props.className || ""}`.trim();
+
+		console.log(this.items.items.map(item => item.key));
 
 		return <div
 			ref={this.containerRef}

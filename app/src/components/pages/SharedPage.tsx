@@ -43,7 +43,10 @@ class SharedPage extends PageBaseComponent<SharedPageState> {
 
 	refreshCollections() {
 		PhotoService.getCollections()
-			.then(collections => this.setState({ collections }))
+			.then(collections => {
+				console.log(collections);
+				this.setState({ collections });
+			})
 			.catch(console.error);
 	}
 
