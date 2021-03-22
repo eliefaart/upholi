@@ -1,7 +1,7 @@
 use actix_web::{web, HttpResponse, Responder};
 use serde::Serialize;
 
-use crate::{constants::{PASSWORD_HASH_ITERATIONS, PASSWORD_HASH_LENGTH}, database::{DatabaseEntity, DatabaseUserEntity}, passwords::hash_password, web::cookies::create_session_cookie};
+use crate::{database::{DatabaseEntity, DatabaseUserEntity}, passwords::hash_password, web::cookies::create_session_cookie};
 use crate::web::http::*;
 use crate::entities::AccessControl;
 use crate::entities::user::User;
@@ -9,7 +9,6 @@ use crate::entities::session::Session;
 use crate::entities::collection::Collection;
 use crate::web::handlers::requests::*;
 use crate::web::handlers::responses::*;
-use crate::error::Result;
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]

@@ -150,7 +150,7 @@ async fn get_form_field_bytes(mut field: Field) -> Result<Vec<u8>> {
 }
 
 pub fn get_session_or_create_new(session_opt: Option<Session>) -> Result<Session> {
-	let mut session: Session;
+	let session: Session;
 
 	// Create a new session if request didn't have one
 	if let Some(existing_sesson) = session_opt {

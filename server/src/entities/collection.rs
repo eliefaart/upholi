@@ -1,5 +1,4 @@
 use crate::{entities::Session, passwords::verify_password_hash};
-use oauth2::url::quirks::password;
 use serde::{Serialize, Deserialize};
 
 use crate::database;
