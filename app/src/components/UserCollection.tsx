@@ -124,6 +124,9 @@ export default class UserCollection extends React.Component<Props, State> {
 					{this.state.settingsOpened && <IconChevronUp/>}
 					{!this.state.settingsOpened && <IconChevronDown/>}
 				</button>
+				<button className="iconOnly" onClick={this.onClickAddAlbumToCollection} title="Add album to collection">
+					<IconCreate/>
+				</button>
 				<button className="iconOnly"
 					onClick={this.onClickDeleteCollection}
 					title="Delete collection">
@@ -162,9 +165,6 @@ export default class UserCollection extends React.Component<Props, State> {
 							</div>);
 						})}
 					</OrderableContent>
-					<button className="iconOnly" onClick={this.onClickAddAlbumToCollection} title="Add album to collection">
-						<IconCreate/> TODO
-					</button>
 				</div>
 			</div>
 
