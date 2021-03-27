@@ -1,5 +1,5 @@
 
-use mongodb::{Client, options::ClientOptions};
+use mongodb::{sync::Client, options::ClientOptions};
 use bson::doc;
 use lazy_static::lazy_static;
 use crate::database;
@@ -11,7 +11,7 @@ use crate::entities::user::User;
 
 lazy_static!{
 	/// A reference to the database that can be used to execute queries etc
-	static ref DATABASE: mongodb::Database = {
+	static ref DATABASE: mongodb::sync::Database = {
 		let client_options = ClientOptions::parse(&crate::SETTINGS.database.connection_string)
 			.expect("Failed to parse database connection string");
 
@@ -29,7 +29,7 @@ lazy_static!{
 }
 
 /// Initialize database by setting some indexes if needed
-fn initialize(database: &mongodb::Database) -> Result<()> {
+fn initialize(database: &mongodb::sync::Database) -> Result<()> {
 	create_index(database, crate::database::COLLECTION_SESSIONS, "id")?;
 	create_index(database, crate::database::COLLECTION_USERS, "id")?;
 	create_index(database, crate::database::COLLECTION_PHOTOS, "id")?;
@@ -46,20 +46,20 @@ impl MongoDatabase {
 }
 
 impl Database for MongoDatabase {
-	fn find_one<'de, T: serde::Deserialize<'de>>(&self, collection: &str, id: &str) 
+	fn find_one<T: serde::de::DeserializeOwned>(&self, collection: &str, id: &str)
 		-> Result<Option<T>>
 	{
 		let mut items: Vec<T> = Self::find_many(self, collection, None, Some(&[id]), None)?;
 
 		if !items.is_empty() {
 			Ok(items.pop())
-		} 
+		}
 		else {
 			Ok(None)
 		}
 	}
 
-	fn find_many<'de, T: serde::Deserialize<'de>>(&self, collection: &str, user_id: Option<&str>, ids: Option<&[&str]>, sort_field: Option<&SortField>) 
+	fn find_many<T: serde::de::DeserializeOwned>(&self, collection: &str, user_id: Option<&str>, ids: Option<&[&str]>, sort_field: Option<&SortField>)
 		-> Result<Vec<T>>
 	{
 		let mongo_collection = DATABASE.collection(collection);
@@ -68,7 +68,7 @@ impl Database for MongoDatabase {
 				"$match": create_filter_for_user_and_ids_options(&user_id, &ids)
 			}
 		};
-	
+
 		// Add $sort stage to pipeline
 		if let Some(sort) = sort_field {
 			pipeline.push(doc!{
@@ -77,7 +77,7 @@ impl Database for MongoDatabase {
 				}
 			});
 		}
-	
+
 		// Since id is unique, we can optimize the query a bit by adding a $limit stage
 		if let Some(ids_info) = ids {
 			pipeline.push(doc!{
@@ -95,7 +95,7 @@ impl Database for MongoDatabase {
 	fn insert_one<T: serde::Serialize>(&self, collection: &str, item: &T) -> Result<String>
 	{
 		let mongo_collection = DATABASE.collection(collection);
-		
+
 		match bson::to_bson(item) {
 			Ok(bson_item) => {
 				if let bson::Bson::Document(document) = bson_item {
@@ -194,9 +194,9 @@ impl DatabaseExt for MongoDatabase {
 
 	fn photo_exists_for_user(&self, user_id: &str, hash: &str) -> Result<bool> {
 		let mongo_collection = DATABASE.collection(database::COLLECTION_PHOTOS);
-		let filter = doc!{ 
+		let filter = doc!{
 			"user_id": user_id,
-			"hash": hash 
+			"hash": hash
 		};
 
 		let count = mongo_collection.count_documents(filter, None)?;
@@ -259,12 +259,11 @@ impl DatabaseExt for MongoDatabase {
 }
 
 /// Take all items available in given cursor. This exhausts the cursor.
-fn get_items_from_cursor<'de, T: serde::Deserialize<'de>>(cursor: mongodb::Cursor) -> Result<Vec<T>> {
+fn get_items_from_cursor<T: serde::de::DeserializeOwned>(cursor: mongodb::sync::Cursor) -> Result<Vec<T>> {
 	let mut items = Vec::new();
 
 	for document_result in cursor {
 		if let Ok(document) = document_result {
-
 			match bson::from_bson(bson::Bson::Document(document)) {
 				Ok(item) => items.push(item),
 				Err(error) => {
@@ -281,22 +280,22 @@ fn get_items_from_cursor<'de, T: serde::Deserialize<'de>>(cursor: mongodb::Curso
 }
 
 /// Create a filter definition to be used in queries that matches an item with given id
-fn create_filter_for_id(id: &str) -> bson::ordered::OrderedDocument {
+fn create_filter_for_id(id: &str) -> bson::Document {
 	doc!{"id": id}
 }
 
 /// Create a filter definition to be used in queries that matches all items with given ids
-fn create_in_filter_for_ids(ids: &[&str]) -> bson::ordered::OrderedDocument {
+fn create_in_filter_for_ids(ids: &[&str]) -> bson::Document {
 	doc!{"id": doc!{"$in": ids } }
 }
 
 /// Create a filter definition to be used in queries that matches all item for a user
-fn create_filter_for_user(user_id: &str) -> bson::ordered::OrderedDocument {
+fn create_filter_for_user(user_id: &str) -> bson::Document {
 	doc!{"userId": user_id}
 }
 
 /// Create a filter definition to be used in queries that matches all item for a user and certian item ids
-fn create_filter_for_user_and_ids(user_id: &str, ids: &[&str]) -> bson::ordered::OrderedDocument {
+fn create_filter_for_user_and_ids(user_id: &str, ids: &[&str]) -> bson::Document {
 	doc!{
 		"id": doc!{"$in": ids },
 		"userId": user_id
@@ -304,7 +303,7 @@ fn create_filter_for_user_and_ids(user_id: &str, ids: &[&str]) -> bson::ordered:
 }
 
 /// Create a filter definition to be used in queries that matches all item for a user and certian item ids
-fn create_filter_for_user_and_ids_options(user_id: &Option<&str>, ids: &Option<&[&str]>) -> bson::ordered::OrderedDocument {
+fn create_filter_for_user_and_ids_options(user_id: &Option<&str>, ids: &Option<&[&str]>) -> bson::Document {
 	if user_id.is_some() && ids.is_some() {
 		create_filter_for_user_and_ids(user_id.unwrap(), ids.unwrap())
 	}
@@ -321,7 +320,7 @@ fn create_filter_for_user_and_ids_options(user_id: &Option<&str>, ids: &Option<&
 
 /// Create an index if it does not exist, this index will have option 'unique: true'.
 /// Note: existance check if by name only, does not take index options into account
-fn create_index(database: &mongodb::Database, collection: &str, key: &str) -> Result<()>{
+fn create_index(database: &mongodb::sync::Database, collection: &str, key: &str) -> Result<()>{
 	if !index_exists(database, collection, key)? {
 		let command = doc!{
 			"createIndexes": collection,
@@ -335,23 +334,23 @@ fn create_index(database: &mongodb::Database, collection: &str, key: &str) -> Re
 				}
 			}
 		};
-	
+
 		database.run_command(command, None)?;
 	}
-	
+
 	Ok(())
 }
 
 /// Check if index with given name exists for collection
-fn index_exists(database: &mongodb::Database, collection: &str, index_name: &str) -> Result<bool> {
-	let command = doc!{ 
+fn index_exists(database: &mongodb::sync::Database, collection: &str, index_name: &str) -> Result<bool> {
+	let command = doc!{
 		"listIndexes": collection
 	};
 
 	let result = database.run_command(command, None)?;
 	let index_docs = result.get_document("cursor")?.get_array("firstBatch")?;
 
-	let exists = index_docs.iter().any(|bson| 
+	let exists = index_docs.iter().any(|bson|
 		match bson.as_document() {
 			Some(doc) => {
 				match doc.get_str("name") {

@@ -24,28 +24,28 @@ pub struct SortField<'a> {
 /// General CRUD functions for a database implementation
 pub trait Database {
 	/// Get a single item from a collection
-	fn find_one<'de, T: serde::Deserialize<'de>>(&self, collection: &str, id: &str) 
+	fn find_one<T: serde::de::DeserializeOwned>(&self, collection: &str, id: &str)
 		-> Result<Option<T>>;
 
 	/// Get multiple items from a collection
-	fn find_many<'de, T: serde::Deserialize<'de>>(&self, collection: &str, user_id: Option<&str>, ids: Option<&[&str]>, sort_field: Option<&SortField>) 
+	fn find_many<T: serde::de::DeserializeOwned>(&self, collection: &str, user_id: Option<&str>, ids: Option<&[&str]>, sort_field: Option<&SortField>)
 		-> Result<Vec<T>>;
 
 	/// Insert a single item into a collection.
 	/// Returns the ID of created item if succesfull.
-	fn insert_one<T: serde::Serialize>(&self, collection: &str, item: &T) 
+	fn insert_one<T: serde::Serialize>(&self, collection: &str, item: &T)
 		-> Result<String>;
 
 	/// Replace a single existing item with a new version in its entirety
-	fn replace_one<T: serde::Serialize>(&self, collection: &str, id: &str, replacement: &T) 
+	fn replace_one<T: serde::Serialize>(&self, collection: &str, id: &str, replacement: &T)
 		-> Result<()>;
 
 	/// Delete an item from a collection
-	fn delete_one(&self, collection: &str, id: &str) 
+	fn delete_one(&self, collection: &str, id: &str)
 		-> Result<()>;
 
 	/// Delete multiple items from a collection
-	fn delete_many(&self, collection: &str, ids: &[&str]) 
+	fn delete_many(&self, collection: &str, ids: &[&str])
 		-> Result<()>;
 }
 

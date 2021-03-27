@@ -198,11 +198,11 @@ mod tests {
 			id: id.to_string(),
 			user_id: create_unique_id(),
 			title: "title".to_string(),
-			thumb_photo_id: Some(bson::oid::ObjectId::new().unwrap().to_hex()),
+			thumb_photo_id: Some(bson::oid::ObjectId::new().to_hex()),
 			photos: vec!{
-				bson::oid::ObjectId::new().unwrap().to_hex(),
-				bson::oid::ObjectId::new().unwrap().to_hex(),
-				bson::oid::ObjectId::new().unwrap().to_hex()
+				bson::oid::ObjectId::new().to_hex(),
+				bson::oid::ObjectId::new().to_hex(),
+				bson::oid::ObjectId::new().to_hex()
 			}
 		}
 	}
