@@ -3,12 +3,13 @@ import ExifData from "../components/ExifData";
 import Exif from "../models/Exif";
 
 interface PhotoDetailProps {
-	src: string,
-	exif: Exif | null
+	src: string;
+	isVideo: boolean;
+	exif: Exif | null;
 }
 
 interface PhotoDetailState {
-	isPanning: boolean
+	isPanning: boolean;
 }
 
 const ZoomStyleEnum = {
@@ -302,9 +303,18 @@ class PhotoDetail extends React.Component<PhotoDetailProps, PhotoDetailState> {
 	render() {
 		return <div className="photoDetail">
 			{this.props.exif != null && <ExifData exif={this.props.exif}/>}
-			<img className="photoDetailImg" src={this.props.src}
-				draggable={false}
-				style={{top: "0px", left: "0px"}}/>
+			{this.props.isVideo
+				? <video src={this.props.src}
+					className="photoDetailVideo"
+					draggable={false}
+					style={{top: "0px", left: "0px", maxWidth: "90vw", maxHeight: "90vw"}}
+					controls />
+				: <img src={this.props.src}
+					className="photoDetailImg"
+					draggable={false}
+					style={{top: "0px", left: "0px"}}/>
+			}
+
 		</div>;
 	}
 }

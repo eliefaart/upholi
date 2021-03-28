@@ -75,7 +75,10 @@ class ModalPhotoDetail extends React.Component<ModalPhotoDetailProps, ModalPhoto
 				headerActions={headerActions}
 				okButtonText={null}
 			>
-				<PhotoDetail src={previewUrl} exif={!!this.state.photo ? this.state.photo.exif : null} />
+				<PhotoDetail
+					src={previewUrl}
+					isVideo={!!this.state.photo && this.state.photo.contentType.startsWith("video/")}
+					exif={!!this.state.photo ? this.state.photo.exif : null} />
 			</Modal>
 		);
 	}

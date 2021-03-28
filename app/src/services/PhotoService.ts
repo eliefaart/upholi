@@ -119,7 +119,7 @@ class PhotoService {
 		return new Promise((ok, err) => {
 			const xhr = new XMLHttpRequest();
 			const formData = new FormData();
-			formData.append('file', file);
+			formData.append(file.name, file);
 
 			xhr.open("POST", PhotoService.baseUrl() + "/photo", true);
 			xhr.onreadystatechange = function (event) {

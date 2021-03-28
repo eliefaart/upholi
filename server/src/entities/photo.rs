@@ -21,6 +21,7 @@ pub struct Photo {
 	pub name: String,
 	pub width: i32,
 	pub height: i32,
+	pub content_type: String,
 	pub created_on: chrono::DateTime<Utc>,
 	pub hash: String,
 	pub path_thumbnail: String,
@@ -30,8 +31,8 @@ pub struct Photo {
 }
 
 impl Photo {
-	/// Create a new photo from bytes
-	pub fn new(user_id: String, photo_bytes: &[u8]) -> Result<Self> {
+	/// Create a new photo from JPG bytes
+	pub fn parse_jpg_bytes(user_id: String, photo_bytes: &[u8]) -> Result<Self> {
 		let id = ids::create_unique_id();
 		let filename = Self::generate_filename(".jpg")?;
 		let hash = Self::compute_md5_hash(photo_bytes);
@@ -71,12 +72,44 @@ impl Photo {
 				name: filename,
 				width: image_info.width as i32,
 				height: image_info.height as i32,
+				content_type: "image/jpeg".to_string(),
 				created_on,
 				hash,
 				path_thumbnail,
 				path_preview,
 				path_original,
 				exif
+			})
+		}
+	}
+
+	/// Create a new photo from MP4 bytes
+	pub fn parse_mp4_bytes(user_id: String, photo_bytes: &[u8]) -> Result<Self> {
+		let id = ids::create_unique_id();
+		let filename = Self::generate_filename(".mp4")?;
+		let hash = Self::compute_md5_hash(photo_bytes);
+
+		// Verify if this photo doesn't already exist by checking hash in database
+		let exists = database::get_database().photo_exists_for_user(&user_id, &hash)?;
+
+		if exists {
+			Err(Box::from(EntityError::AlreadyExists))
+		} else {
+			let path_original = files::store_photo(&filename, photo_bytes)?;
+
+			Ok(Self {
+				id,
+				user_id,
+				name: filename,
+				width: 500,
+				height: 500,
+				content_type: "video/mp4".to_string(),
+				created_on: chrono::Utc::now(),
+				hash,
+				path_thumbnail: path_original.to_string(),
+				path_preview: path_original.to_string(),
+				path_original,
+				exif: exif::Exif::default()
 			})
 		}
 	}

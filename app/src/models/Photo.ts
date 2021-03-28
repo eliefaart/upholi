@@ -5,6 +5,7 @@ export default interface Photo {
 	name: string;
 	width: number;
 	height: number;
+	contentType: string;
 	createdOn: Date;
 	hash: string;
 	pathThumbnail: string;

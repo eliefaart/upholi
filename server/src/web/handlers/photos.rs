@@ -97,17 +97,27 @@ pub async fn route_download_photo_original(session: Option<Session>, req: HttpRe
 pub async fn route_upload_photo(user: User, payload: Multipart) -> impl Responder {
 	match get_form_data(payload).await {
 		Ok(form_data) => {
-			let mut files_iter = form_data.iter().filter(|d| d.name == "file");
-			let file_option = files_iter.next();
-			let remaining_files = files_iter.count();
+			// let mut files_iter = form_data.first();//.iter(); //.filter(|d| d.name == "file");
+			// let file_option = files_iter.next();
+			// let remaining_files = files_iter.count();
 
-			if remaining_files > 0 {
+			if form_data.len() > 1 {
 				return create_bad_request_response(Box::from(UploadError::MoreThanOneFile));
 			}
 
+			let file_option = form_data.first();
+
 			match file_option {
 				Some(file) => {
-					match Photo::new(user.id, &file.bytes) {
+					let photo = match &file.name {
+						name if name.ends_with(".jpg") || name.ends_with(".jpeg") =>
+							Photo::parse_jpg_bytes(user.id, &file.bytes),
+						name if name.ends_with(".mp4") =>
+							Photo::parse_mp4_bytes(user.id, &file.bytes),
+						_ => Err(Box::from("Unsupported file type"))
+					};
+
+					match photo {
 						Ok(photo) => {
 							match photo.insert() {
 								Ok(_) => create_created_response(&photo.id),
@@ -169,11 +179,11 @@ pub fn delete_photos(user_id: String, ids: &[&str]) -> impl Responder {
 /// Given user must have access to it.
 fn create_response_for_photo(photo_id: &str, session: Option<Session>, offer_as_download: bool, select_path: fn(&Photo) -> &str) -> actix_http::Response {
 	match Photo::get(photo_id) {
-		Ok(photo_opt) => {
-			match photo_opt {
-				Some(photo_info) => {
-					if photo_info.can_view(&session) {
-						serve_photo(&select_path(&photo_info), &photo_info.name, offer_as_download)
+		Ok(photo) => {
+			match photo {
+				Some(photo) => {
+					if photo.can_view(&session) {
+						serve_photo(&select_path(&photo), &photo.name, &photo.content_type, offer_as_download)
 					}
 					else {
 						create_unauthorized_response()
@@ -187,13 +197,13 @@ fn create_response_for_photo(photo_id: &str, session: Option<Session>, offer_as_
 }
 
 /// Create an HTTP response that offers photo file at given path as download
-fn serve_photo(path: &str, file_name: &str, offer_as_download: bool) -> actix_http::Response {
+fn serve_photo(path: &str, file_name: &str, content_type: &str, offer_as_download: bool) -> actix_http::Response {
 	match crate::files::get_photo(path) {
 		Ok(file_bytes_option) => {
 			match file_bytes_option {
 				Some(file_bytes) => {
 					HttpResponse::Ok()
-						.content_type("image/jpeg")
+						.content_type(content_type)
 						.header(http::header::CONTENT_DISPOSITION,
 							if offer_as_download {
 								format!("attachment; filename=\"{}\"", file_name)

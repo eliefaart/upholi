@@ -110,7 +110,6 @@ pub async fn get_form_data(mut payload: Multipart) -> Result<Vec<FormData>> {
 	let mut form_data: Vec<FormData> = Vec::new();
 
 	while let Ok(Some(field)) = payload.try_next().await {
-
 		match field.content_disposition() {
 			Some(content_disposition) => {
 				match content_disposition.get_name() {

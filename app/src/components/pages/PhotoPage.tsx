@@ -62,7 +62,10 @@ class PhotoPage extends PageBaseComponent<PhotoPageState> {
 	render() {
 		return (
 			<ContentContainer>
-				<PhotoDetail src={this.state.previewUrl} exif={!!this.state.photo ? this.state.photo.exif : null} />
+				<PhotoDetail
+					src={this.state.previewUrl}
+					isVideo={!!this.state.photo && this.state.photo.contentType.startsWith("video/")}
+					exif={!!this.state.photo ? this.state.photo.exif : null} />
 			</ContentContainer>
 		);
 	}
