@@ -95,30 +95,31 @@ impl Photo {
 		if exists {
 			Err(Box::from(EntityError::AlreadyExists))
 		} else {
-
-			let decoder = png::Decoder::new(photo_bytes);
-			let (info, _) = decoder.read_info()?;
-
-			// let limited = png::Decoder::new_with_limits(photo_bytes, png::Limits::from(10 * 1024));
-			// let thumb_bytes: Vec<u8> = limited.into();
-
-			//decoder.
+			// TODO: This function is now almost the same as the JPG version,
+			// do some refactoring.
+			let image_info = images::Image::from_buffer(photo_bytes, 1 as u8)?;
 
 			let created_on = chrono::Utc::now();
 
+			// Store files
+			let thumbnail_file_name = format!("thumb_{}", filename);
+			let preview_file_name = format!("preview_{}", filename);
+
 			let path_original = files::store_photo(&filename, photo_bytes)?;
+			let path_thumbnail = files::store_photo(&thumbnail_file_name, &image_info.bytes_thumbnail)?;
+			let path_preview = files::store_photo(&preview_file_name, &image_info.bytes_preview)?;
 
 			Ok(Self {
 				id,
 				user_id,
 				name: filename,
-				width: info.width as i32,
-				height: info.height as i32,
+				width: image_info.width as i32,
+				height: image_info.height as i32,
 				content_type: "image/png".to_string(),
 				created_on,
 				hash,
-				path_thumbnail: path_original.to_string(),
-				path_preview: path_original.to_string(),
+				path_thumbnail,
+				path_preview,
 				path_original,
 				exif: exif::Exif::default()
 			})
