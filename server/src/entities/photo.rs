@@ -360,6 +360,7 @@ mod tests {
 			name: "photo name".to_string(),
 			width: 150,
 			height: 2500,
+			content_type: "image/jpeg".to_string(),
 			created_on: Utc::now(),
 			hash: "abc123".to_string(),
 			path_thumbnail: "path_thumbnail".to_string(),
