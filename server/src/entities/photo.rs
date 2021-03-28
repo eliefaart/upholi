@@ -83,6 +83,48 @@ impl Photo {
 		}
 	}
 
+	/// Create a new photo from PNG bytes
+	pub fn parse_png_bytes(user_id: String, photo_bytes: &[u8]) -> Result<Self> {
+		let id = ids::create_unique_id();
+		let filename = Self::generate_filename(".mp4")?;
+		let hash = Self::compute_md5_hash(photo_bytes);
+
+		// Verify if this photo doesn't already exist by checking hash in database
+		let exists = database::get_database().photo_exists_for_user(&user_id, &hash)?;
+
+		if exists {
+			Err(Box::from(EntityError::AlreadyExists))
+		} else {
+
+			let decoder = png::Decoder::new(photo_bytes);
+			let (info, _) = decoder.read_info()?;
+
+			// let limited = png::Decoder::new_with_limits(photo_bytes, png::Limits::from(10 * 1024));
+			// let thumb_bytes: Vec<u8> = limited.into();
+
+			//decoder.
+
+			let created_on = chrono::Utc::now();
+
+			let path_original = files::store_photo(&filename, photo_bytes)?;
+
+			Ok(Self {
+				id,
+				user_id,
+				name: filename,
+				width: info.width as i32,
+				height: info.height as i32,
+				content_type: "image/png".to_string(),
+				created_on,
+				hash,
+				path_thumbnail: path_original.to_string(),
+				path_preview: path_original.to_string(),
+				path_original,
+				exif: exif::Exif::default()
+			})
+		}
+	}
+
 	/// Create a new photo from MP4 bytes
 	pub fn parse_mp4_bytes(user_id: String, photo_bytes: &[u8]) -> Result<Self> {
 		let id = ids::create_unique_id();
