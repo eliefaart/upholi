@@ -69,6 +69,8 @@
 						.title {
 							flex: 1;
 							margin-left: $spacing;
+							overflow: hidden;
+							text-overflow: ellipsis;
 						}
 					}
 				}

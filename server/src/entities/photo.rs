@@ -48,15 +48,15 @@ impl Photo {
 
 			// Process image
 			let exif_orientation = exif.orientation.unwrap_or(1) as u8;
-			let image_info = images::Image::from_buffer(photo_bytes, exif_orientation)?;
+			let image = images::Image::from_buffer(photo_bytes, exif_orientation)?;
 
 			// Store files
 			let thumbnail_file_name = format!("thumb_{}", filename);
 			let preview_file_name = format!("preview_{}", filename);
 
 			let path_original = files::store_photo(&filename, photo_bytes)?;
-			let path_thumbnail = files::store_photo(&thumbnail_file_name, &image_info.bytes_thumbnail)?;
-			let path_preview = files::store_photo(&preview_file_name, &image_info.bytes_preview)?;
+			let path_thumbnail = files::store_photo(&thumbnail_file_name, &image.bytes_thumbnail)?;
+			let path_preview = files::store_photo(&preview_file_name, &image.bytes_preview)?;
 
 			// Decide 'created' date for the photo. Use 'taken on' field from exif if available, otherwise use current time
 			let created_on = {
@@ -70,8 +70,8 @@ impl Photo {
 				id,
 				user_id,
 				name: filename,
-				width: image_info.width as i32,
-				height: image_info.height as i32,
+				width: image.width as i32,
+				height: image.height as i32,
 				content_type: "image/jpeg".to_string(),
 				created_on,
 				hash,
@@ -97,7 +97,7 @@ impl Photo {
 		} else {
 			// TODO: This function is now almost the same as the JPG version,
 			// do some refactoring.
-			let image_info = images::Image::from_buffer(photo_bytes, 1 as u8)?;
+			let image = images::Image::from_buffer(photo_bytes, 1 as u8)?;
 
 			let created_on = chrono::Utc::now();
 
@@ -106,15 +106,15 @@ impl Photo {
 			let preview_file_name = format!("preview_{}", filename);
 
 			let path_original = files::store_photo(&filename, photo_bytes)?;
-			let path_thumbnail = files::store_photo(&thumbnail_file_name, &image_info.bytes_thumbnail)?;
-			let path_preview = files::store_photo(&preview_file_name, &image_info.bytes_preview)?;
+			let path_thumbnail = files::store_photo(&thumbnail_file_name, &image.bytes_thumbnail)?;
+			let path_preview = files::store_photo(&preview_file_name, &image.bytes_preview)?;
 
 			Ok(Self {
 				id,
 				user_id,
 				name: filename,
-				width: image_info.width as i32,
-				height: image_info.height as i32,
+				width: image.width as i32,
+				height: image.height as i32,
 				content_type: "image/png".to_string(),
 				created_on,
 				hash,

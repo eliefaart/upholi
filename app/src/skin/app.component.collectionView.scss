@@ -1,5 +1,31 @@
 
 .collection-view {
+	display: flex;
+	flex-direction: row-reverse;
+
+	.albums-menu {
+		display: flex;
+		flex-direction: column;
+		max-width: 350px;
+		height: 100vh;
+		// background-color: $colorBackgroundAlt;
+		border-left: 3px solid $colorBackgroundAlt;
+
+		span {
+			height: $buttonHeight;
+			line-height: $buttonHeight;
+			cursor: pointer;
+			padding: 0px $spacing * 3;
+			overflow: hidden;
+			text-overflow: ellipsis;
+
+			&:hover, &.active {
+				color: $colorAccent;
+				background-color: $colorBackground;
+			}
+		}
+	}
+
 	.albums {
 		padding-top: 0px;
 
@@ -15,6 +41,8 @@
 	}
 
 	.photos {
+		flex: 1;
+
 		h2 {
 			height: $headerHeight;
 			line-height: $headerHeight;

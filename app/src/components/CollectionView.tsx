@@ -132,20 +132,36 @@ class CollectionView extends React.Component<CollectionViewProps, CollectionView
 
 		return (
 			<div className="collection-view">
-				<div className="topBar">
+				{/* <div className="topBar">
 					<h1>{this.collectionHasOneAlbum ? this.state.activeAlbum?.title : this.state.collection.title}</h1>
-				</div>
+				</div> */}
+
+				{this.state.collection.albums.length > 1 && <div className="albums-menu">
+					{this.state.collection.albums.map(album => {
+						return <span
+							key={album.id}
+							className={this.state.activeAlbum?.id === album.id ? "active" : ""}
+							onClick={_ => this.onAlbumClicked(album.id)}>
+							{album.title}
+						</span>;
+					})}
+				</div>}
+
 
 				{/* Albums in this collection */}
-				{!this.collectionHasOneAlbum && <Albums
+				{/* {!this.collectionHasOneAlbum && <Albums
 					albums={this.state.collection.albums}
 					activeAlbumId={this.state.activeAlbum?.id}
 					onClick={album => this.onAlbumClicked(album.id)}/>
-				}
+				} */}
 
 				{/* Photos inside selected/active album */}
 				{!!this.state.activeAlbum && <div className="photos">
-					{!this.collectionHasOneAlbum && <h2>{this.state.activeAlbum.title}</h2>}
+					<div className="topBar">
+						<h1>{this.state.activeAlbum.title}</h1>
+					</div>
+
+					{/* {!this.collectionHasOneAlbum && <h2>{this.state.activeAlbum.title}</h2>} */}
 					{this.state.activeAlbum.photos.length > 0 && <PhotoGallerySelectable
 						onClick={(_, target) => this.onPhotoClicked(target.index)}
 						photos={this.state.activeAlbum.photos}

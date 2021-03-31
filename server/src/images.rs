@@ -46,7 +46,7 @@ impl Image {
 		// For some orientations, I need to swap the width and height
 		if exif_orientation >= 5 && exif_orientation <= 8 {
 			std::mem::swap(&mut height, &mut width)
-		} 
+		}
 
 		Ok(Self {
 			width,
@@ -61,7 +61,7 @@ impl Image {
 	fn get_image_dimensions(image: &DynamicImage) -> (u32, u32) {
 		let photo_width = image.width();
 		let photo_height = image.height();
-	
+
 		(photo_width, photo_height)
 	}
 
@@ -69,7 +69,7 @@ impl Image {
 	fn resize_image(image: &DynamicImage, to_size: u32) -> Option<DynamicImage> {
 		// Get current dimensions
 		let (width, height) = Self::get_image_dimensions(&image);
-		
+
 		// Check if resizing image would make sense based on current dimensions
 		// Only resize if target dimensions are smaller than current ones.
 		if width > to_size && height > to_size {
@@ -125,7 +125,7 @@ impl Image {
 	}
 }
 
-/* 
+/*
 	A PNG file in bytes, to use for test cases later.
 	let minipng = [137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1,
                0, 0, 0, 1, 8, 0, 0, 0, 0, 58, 126, 155, 85, 0, 0, 0, 10, 73, 68, 65, 84,
