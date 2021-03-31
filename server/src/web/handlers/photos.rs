@@ -110,10 +110,12 @@ pub async fn route_upload_photo(user: User, payload: Multipart) -> impl Responde
 			match file_option {
 				Some(file) => {
 					let photo = match &file.name {
-						name if name.ends_with(".jpg") || name.ends_with(".jpeg") =>
-							Photo::parse_jpg_bytes(user.id, &file.bytes),
+						name if name.ends_with(".jpg")
+							|| name.ends_with(".jpeg")
+							|| name.ends_with(".png") =>
+							Photo::parse_image_bytes(user.id, &file.bytes, "image/jpeg"),
 						name if name.ends_with(".png") =>
-							Photo::parse_png_bytes(user.id, &file.bytes),
+							Photo::parse_image_bytes(user.id, &file.bytes, "image/png"),
 						name if name.ends_with(".mp4") =>
 							Photo::parse_mp4_bytes(user.id, &file.bytes),
 						_ => Err(Box::from("Unsupported file type"))

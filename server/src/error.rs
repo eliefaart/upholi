@@ -17,7 +17,8 @@ pub enum EntityError {
 #[derive(Debug)]
 pub enum FileError {
 	InvalidFileName,
-	NotFound
+	NotFound,
+	UnsupportedContentType
 }
 
 /// Errors related to oauth2 authentication
@@ -66,7 +67,8 @@ impl Display for FileError {
 		let message = {
 			match self {
 				FileError::InvalidFileName => "Invalid file name",
-				FileError::NotFound => "File does not exist on disk"
+				FileError::NotFound => "File does not exist on disk",
+				FileError::UnsupportedContentType => "Unsupported content type"
 			}
 		};
 		write!(f, "{}", message)

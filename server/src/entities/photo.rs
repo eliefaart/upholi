@@ -32,9 +32,9 @@ pub struct Photo {
 
 impl Photo {
 	/// Create a new photo from JPG bytes
-	pub fn parse_jpg_bytes(user_id: String, photo_bytes: &[u8]) -> Result<Self> {
+	pub fn parse_image_bytes(user_id: String, photo_bytes: &[u8], content_type: &str) -> Result<Self> {
 		let id = ids::create_unique_id();
-		let filename = Self::generate_filename(".jpg")?;
+		let filename = Self::generate_filename(content_type)?;
 		let hash = Self::compute_md5_hash(photo_bytes);
 
 		// Verify if this photo doesn't already exist by checking hash in database
@@ -72,56 +72,13 @@ impl Photo {
 				name: filename,
 				width: image.width as i32,
 				height: image.height as i32,
-				content_type: "image/jpeg".to_string(),
+				content_type: content_type.to_string(),
 				created_on,
 				hash,
 				path_thumbnail,
 				path_preview,
 				path_original,
 				exif
-			})
-		}
-	}
-
-	/// Create a new photo from PNG bytes
-	pub fn parse_png_bytes(user_id: String, photo_bytes: &[u8]) -> Result<Self> {
-		let id = ids::create_unique_id();
-		let filename = Self::generate_filename(".mp4")?;
-		let hash = Self::compute_md5_hash(photo_bytes);
-
-		// Verify if this photo doesn't already exist by checking hash in database
-		let exists = database::get_database().photo_exists_for_user(&user_id, &hash)?;
-
-		if exists {
-			Err(Box::from(EntityError::AlreadyExists))
-		} else {
-			// TODO: This function is now almost the same as the JPG version,
-			// do some refactoring.
-			let image = images::Image::from_buffer(photo_bytes, 1 as u8)?;
-
-			let created_on = chrono::Utc::now();
-
-			// Store files
-			let thumbnail_file_name = format!("thumb_{}", filename);
-			let preview_file_name = format!("preview_{}", filename);
-
-			let path_original = files::store_photo(&filename, photo_bytes)?;
-			let path_thumbnail = files::store_photo(&thumbnail_file_name, &image.bytes_thumbnail)?;
-			let path_preview = files::store_photo(&preview_file_name, &image.bytes_preview)?;
-
-			Ok(Self {
-				id,
-				user_id,
-				name: filename,
-				width: image.width as i32,
-				height: image.height as i32,
-				content_type: "image/png".to_string(),
-				created_on,
-				hash,
-				path_thumbnail,
-				path_preview,
-				path_original,
-				exif: exif::Exif::default()
 			})
 		}
 	}
@@ -166,13 +123,19 @@ impl Photo {
 	}
 
 	/// Generate a random filename
-	fn generate_filename(extension: &str) -> Result<String> {
+	fn generate_filename(content_type: &str) -> Result<String> {
 		const NAME_LENGTH: usize = 20;
 
 		// Generate random string
 		let name: String = thread_rng()
 			.sample_iter(&Alphanumeric)
 			.take(NAME_LENGTH).collect();
+
+		let extension = match content_type {
+			"image/jpeg" => ".jpg",
+			"image/png" => ".png",
+			_ => return Err(Box::from(FileError::UnsupportedContentType)),
+		};
 
 		// Check and fix extension.
 		// An empty extension is allowed.
