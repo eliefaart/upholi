@@ -31,7 +31,7 @@ pub struct Photo {
 }
 
 impl Photo {
-	/// Create a new photo from JPG bytes
+	/// Create a new photo from JPG/PNG bytes
 	pub fn parse_image_bytes(user_id: String, photo_bytes: &[u8], content_type: &str) -> Result<Self> {
 		let id = ids::create_unique_id();
 		let filename = Self::generate_filename(content_type)?;
@@ -272,51 +272,24 @@ mod tests {
 
 	#[test]
 	fn generate_filename() {
-		test_generate_filename_with_extension("jpg");
-		test_generate_filename_with_extension(".jpg");
-		test_generate_filename_with_extension("123");
-		test_generate_filename_with_extension("啊");
+		let name = Photo::generate_filename("image/jpeg").unwrap_or_default();
+		assert!(name.ends_with(".jpg"));
+
+		let name = Photo::generate_filename("image/png").unwrap_or_default();
+		assert!(name.ends_with(".png"));
 	}
 
 	#[test]
-	fn generate_filename_no_extension() {
-		let name = Photo::generate_filename("").unwrap_or_default();
+	fn generate_filename_bad_content_type() {
+		let result = Photo::generate_filename("&@");
+		assert!(result.is_err());
 
-		assert!(name.len() > 0, name);
-		assert!(!name.contains('.'), name);
-	}
+		let result = Photo::generate_filename("image/BAD");
+		assert!(result.is_err());
 
-	#[test]
-	fn generate_filename_bad_extension() {
-		test_generate_filename_bad_extension("&@");
-		test_generate_filename_bad_extension(".(");
-	}
-
-	fn test_generate_filename_with_extension(extension: &str) {
-		let name = Photo::generate_filename(extension).unwrap_or_default();
-
-		assert!(name.ends_with(extension));
-		assert!(!name.starts_with(extension));
-		assert!(name.contains('.'));
-		assert!(name.len() > extension.len());
-	}
-
-	fn test_generate_filename_bad_extension(extension: &str) {
-		let result = Photo::generate_filename(extension);
+		let result = Photo::generate_filename("");
 		assert!(result.is_err());
 	}
-
-	// #[test]
-	// fn new() {
-	// 	const TITLE: &str = "Hello world";
-	// 	const user_id: String = 100i64;
-
-	// 	let photo = Photo::new(USER_ID, TITLE);
-
-	// 	assert!(!photo.id.is_empty());
-	// 	assert_eq!(photo.title, TITLE);
-	// 	assert_eq!(photo.user_id, USER_ID);
-	// }
 
 	#[test]
 	fn insert_empty_id() {
