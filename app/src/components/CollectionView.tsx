@@ -7,6 +7,7 @@ import ModalPhotoDetail from "./modals/ModalPhotoDetail";
 import UrlHelper from "../helpers/UrlHelper";
 import Collection from "../models/Collection";
 import GalleryPhoto from "../models/GalleryPhoto";
+import Menu from "./Menu";
 
 const queryStringParamNameAlbumId = "albumId";
 const queryStringParamNamePhotoId = "photoId";
@@ -67,8 +68,10 @@ class CollectionView extends React.Component<CollectionViewProps, CollectionView
 	}
 
 	openAlbum(albumId: string) {
-		this.loadAlbum(albumId);
-		this.setLocationPath(albumId);
+		if (albumId !== this.state.activeAlbum?.id) {
+			this.loadAlbum(albumId);
+			this.setLocationPath(albumId);
+		}
 	}
 
 	loadAlbum(albumId:string) {
@@ -105,19 +108,6 @@ class CollectionView extends React.Component<CollectionViewProps, CollectionView
 		}
 	}
 
-	onAlbumClicked(albumId: string) {
-		if (this.state.activeAlbum && albumId === this.state.activeAlbum.id) {
-			this.setState({
-				activeAlbum: null
-			});
-
-			this.setLocationPath("");
-		}
-		else {
-			this.openAlbum(albumId);
-		}
-	}
-
 	onPhotoClicked(index: number) {
 		if (this.state.activeAlbum) {
 			const photo = this.state.activeAlbum.photos[index];
@@ -132,28 +122,13 @@ class CollectionView extends React.Component<CollectionViewProps, CollectionView
 
 		return (
 			<div className="collection-view">
-				{/* <div className="topBar">
-					<h1>{this.collectionHasOneAlbum ? this.state.activeAlbum?.title : this.state.collection.title}</h1>
-				</div> */}
-
-				{this.state.collection.albums.length > 1 && <div className="albums-menu">
-					{this.state.collection.albums.map(album => {
-						return <span
-							key={album.id}
-							className={this.state.activeAlbum?.id === album.id ? "active" : ""}
-							onClick={_ => this.onAlbumClicked(album.id)}>
-							{album.title}
-						</span>;
-					})}
-				</div>}
-
-
-				{/* Albums in this collection */}
-				{/* {!this.collectionHasOneAlbum && <Albums
-					albums={this.state.collection.albums}
-					activeAlbumId={this.state.activeAlbum?.id}
-					onClick={album => this.onAlbumClicked(album.id)}/>
-				} */}
+				{this.state.collection.albums.length > 1 && <Menu items={this.state.collection.albums.map(album => {
+					return {
+						title: album.title,
+						active: album.id === this.state.activeAlbum?.id,
+						onClick: () => this.openAlbum(album.id)
+					};
+				})}/>}
 
 				{/* Photos inside selected/active album */}
 				{!!this.state.activeAlbum && <div className="photos">
@@ -161,7 +136,6 @@ class CollectionView extends React.Component<CollectionViewProps, CollectionView
 						<h1>{this.state.activeAlbum.title}</h1>
 					</div>
 
-					{/* {!this.collectionHasOneAlbum && <h2>{this.state.activeAlbum.title}</h2>} */}
 					{this.state.activeAlbum.photos.length > 0 && <PhotoGallerySelectable
 						onClick={(_, target) => this.onPhotoClicked(target.index)}
 						photos={this.state.activeAlbum.photos}

@@ -28,11 +28,13 @@ $breakpointMobile: 768px;
 html {
 	touch-action: manipulation;
 
-	& * {
+	* {
 		box-sizing: border-box;
 		outline: none;
 		transition-property: none;
 		transition-duration: $transitionSpeed;
+		scrollbar-width: thin;
+		scrollbar-color: $colorBackgroundAlt transparent;
 	}
 
 	body {
@@ -76,6 +78,7 @@ html {
 @import "app.component.toasts";
 @import "app.component.switch";
 @import "app.component.inputPassword";
+@import "app.component.menu";
 
 input, select, button, .asButton {
 	margin: 10px 0 10px 0;
@@ -182,7 +185,6 @@ svg {
 
 h1, h2 {
 	margin: 0;
-	text-align: center;
 }
 
 hr {

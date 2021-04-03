@@ -2,51 +2,22 @@
 .collection-view {
 	display: flex;
 	flex-direction: row-reverse;
-
-	.albums-menu {
-		display: flex;
-		flex-direction: column;
-		max-width: 350px;
-		height: 100vh;
-		// background-color: $colorBackgroundAlt;
-		border-left: 3px solid $colorBackgroundAlt;
-
-		span {
-			height: $buttonHeight;
-			line-height: $buttonHeight;
-			cursor: pointer;
-			padding: 0px $spacing * 3;
-			overflow: hidden;
-			text-overflow: ellipsis;
-
-			&:hover, &.active {
-				color: $colorAccent;
-				background-color: $colorBackground;
-			}
-		}
-	}
-
-	.albums {
-		padding-top: 0px;
-
-		.album {
-			height: 75px;
-		}
-
-		&.anyActive {
-			.album:not(.active):not(:hover) {
-				filter: brightness(0.5)
-			}
-		}
-	}
+	max-height: 100vh;
 
 	.photos {
 		flex: 1;
+		display: flex;
+		flex-direction: column;
 
 		h2 {
 			height: $headerHeight;
 			line-height: $headerHeight;
 			margin-top: $headerHeight / 2;
+		}
+
+		.photoGallery {
+			max-height: 100%;
+			overflow: auto;
 		}
 	}
 }

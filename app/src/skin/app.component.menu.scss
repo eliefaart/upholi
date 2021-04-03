@@ -1,0 +1,54 @@
+.menu {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	height: 100vh;
+	max-height: 100vh;
+	border-left: 3px solid $colorBackgroundAlt;
+
+	transition-property: width;
+
+	&.closed {
+		width: 0px;
+	}
+	&.opened {
+		width: 350px;
+	}
+
+	.toggle {
+		display: flex;
+		position: absolute;
+		top: 0px;
+		right: 0px;
+		height: $headerHeight;
+		line-height: $headerHeight;
+		cursor: pointer;
+
+		svg {
+			min-width: $buttonHeight;
+			margin-right: $spacing * 4;
+		}
+	}
+
+	menu {
+		display: flex;
+		flex-direction: column;
+		max-width: 350px;
+		overflow: hidden;
+		margin-top: $headerHeight;
+		padding: 0;
+
+		span {
+			height: $buttonHeight;
+			line-height: $buttonHeight;
+			cursor: pointer;
+			padding: 0px $spacing * 3;
+			overflow: hidden;
+			text-overflow: ellipsis;
+
+			&:hover, &.active {
+				color: $colorAccent;
+			}
+		}
+	}
+}

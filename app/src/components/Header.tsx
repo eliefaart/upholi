@@ -38,7 +38,7 @@ class Header extends React.Component<HeaderProps, HeaderState> {
 
 		return <header id="header">
 			{/* Navigation menu */}
-			{this.props.renderMenu !== false && <nav className="menu">
+			{this.props.renderMenu !== false && <nav>
 				{menuItems.map((menuItem) =>
 					(<span key={menuItem.path}
 						onClick={() => gotoPage(menuItem.path)}

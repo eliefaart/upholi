@@ -182,10 +182,20 @@ class IconChevronDown extends React.Component<IconProps> {
 	}
 }
 
+class IconMenu extends React.Component<IconProps> {
+	constructor(props: IconProps) { super(props); }
+
+	render() {
+		return (<Icon {...this.props}>
+			<path fill="currentColor" d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" />
+		</Icon>);
+	}
+}
+
 export {
 	IconClose, IconCopy, IconDownload, IconUpload, IconContextMenu,
 	IconRemove, IconDelete, IconCreate,
 	IconLink, IconImage, IconAddToAlbum,
 	IconPublic, IconShare, IconBack, IconRefresh,
-	IconChevronUp, IconChevronDown
+	IconChevronUp, IconChevronDown, IconMenu
 }
