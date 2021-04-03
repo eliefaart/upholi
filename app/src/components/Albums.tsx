@@ -40,11 +40,19 @@ class Albums extends React.Component<AlbumProps> {
 				const thumbUrl = !!album.thumbPhotoId ?"url('" + PhotoService.baseUrl() + "/photo/" + album.thumbPhotoId + "/thumb')" : "";
 				const isActive = album.id === activeAlbumId;
 
+				// return <div
+				// 	onClick={() => fnOnClick(album)}
+				// 	className={"album " + (props.className || "") + (isActive ? " active" : "")}
+				// 	style={{ backgroundImage: thumbUrl }}>
+				// 	<span>{album.title}</span>
+				// </div>;
 				return <div
 					onClick={() => fnOnClick(album)}
-					className={"album " + (props.className || "") + (isActive ? " active" : "")}
-					style={{ backgroundImage: thumbUrl }}>
-					<span>{album.title}</span>
+					className={"album " + (props.className || "") + (isActive ? " active" : "")}>
+					<div className="album-thumbnail"
+						style={{ backgroundImage: thumbUrl }}>
+					</div>
+					<span title={album.title} className="album-title">{album.title}</span>
 				</div>;
 			}
 			else {

@@ -45,6 +45,7 @@ class Menu extends React.Component<Props, State> {
 					{this.props.items.map(item => {
 						return <span
 							key={item.title}
+							title={item.title}
 							className={item.active ? "active" : ""}
 							onClick={item.onClick}>
 							{item.title}

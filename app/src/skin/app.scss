@@ -27,6 +27,7 @@ $breakpointMobile: 768px;
 
 html {
 	touch-action: manipulation;
+	overscroll-behavior: none;
 
 	* {
 		box-sizing: border-box;

@@ -2,52 +2,36 @@
 .albums {
 	display: flex;
 	flex-wrap: wrap;
-	gap: $spacing * 2;
-	padding: $spacing * 2;
+	gap: $spacing * 4;
+	padding: 0 $spacing * 4;
 
 	.album {
 		position: relative;
 		cursor: pointer;
-		border-radius: $borderRadius;
 
-		width: 200px;
-		height: 150px;
-		max-width: 46vw;
-		max-height: 30vw;
-		background-size:cover;
-		background-position:center center;
-		background-repeat:no-repeat;
-		background-color: $colorBackgroundAlt;
-
-		&:hover, &.active {
-			span {
-				background-color: rgba($colorAccent, 1);
-				color: $colorTextContrast;
+		&:hover {
+			.album-thumbnail {
+				filter: brightness(1.1);
 			}
 		}
 
-		svg {
-			position: absolute;
-			top: $spacing;
-			right: $spacing;
-			color: $colorAccent;
-			background-color: rgba($colorBackgroundAlt, 0.5);
-			border-radius: 50px;
+		.album-thumbnail {
+			max-width: 40vw;
+			width: 200px;
+			height: 150px;
+			border-radius: $borderRadius;
+			background-size:cover;
+			background-position:center center;
+			background-repeat:no-repeat;
+			background-color: $colorBackgroundAlt;
 		}
 
-		span {
-			position: absolute;
-			border-bottom-left-radius: $borderRadius;
-			border-bottom-right-radius: $borderRadius;
-			bottom: 0;
-			left: 0;
-			height: 30px;
-			line-height: 30px;
-			width: 100%;
+		.album-title {
+			max-width: 40vw;
+			display: inline-block;
+			width: 200px;
+			line-height: $buttonHeight;
 			padding: 0 $spacing;
-			background-color: rgba($colorBackground, $alpha: 0.7);
-			color: $colorText;
-			text-align: center;
 			overflow: hidden;
 			text-overflow: ellipsis;
 			white-space: nowrap;
