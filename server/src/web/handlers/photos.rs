@@ -109,7 +109,7 @@ pub async fn route_upload_photo(user: User, payload: Multipart) -> impl Responde
 
 			match file_option {
 				Some(file) => {
-					let photo = match &file.name {
+					let photo = match &file.name.to_lowercase() {
 						name if name.ends_with(".jpg")
 							|| name.ends_with(".jpeg")
 							|| name.ends_with(".png") =>
