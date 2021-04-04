@@ -39,6 +39,7 @@
 		overflow: auto;
 
 		span {
+			flex: 0 0 auto;
 			height: $buttonHeight;
 			line-height: $buttonHeight;
 			cursor: pointer;
