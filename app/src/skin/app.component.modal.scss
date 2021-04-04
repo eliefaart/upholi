@@ -25,7 +25,7 @@ $modalHeaderHeight: $buttonHeight;
 
 	.modalHeader {
 		display: flex;
-		padding: $spacing * 2 $spacing * 2 0 $spacing * 2;
+		padding: $spacing;
 		z-index: 1;
 		background: $colorBackground;
 
@@ -38,7 +38,7 @@ $modalHeaderHeight: $buttonHeight;
 		}
 
 		a, button {
-			margin-left: $spacing * 2;
+			margin-left: $spacing;
 		}
 	}
 
@@ -49,8 +49,8 @@ $modalHeaderHeight: $buttonHeight;
 		min-height: 100px;
 		min-width: 350px;
 		flex-direction: column;
-		gap: $spacing * 2;
-		padding: 0 $spacing * 2;
+		gap: $spacing;
+		padding: $spacing;
 	}
 
 	.modalFooter {
@@ -59,8 +59,8 @@ $modalHeaderHeight: $buttonHeight;
 		justify-content: right;
 
 		&:not(:empty) {
-			padding: $spacing * 2;
-			margin-top: $spacing * 6;
+			padding: $spacing;
+			margin-top: $spacingLarge;
 
 			// Use :before psuedo element to create a top-border that doesn't fill the entire width.
 			&:before {
@@ -82,7 +82,7 @@ $modalHeaderHeight: $buttonHeight;
 
 		.modalHeader {
 			height: $headerHeight;
-			padding: $spacing;
+			padding: 0 $spacing;
 			display: flex;
 			justify-content: right;
 			align-items: center;
@@ -91,7 +91,7 @@ $modalHeaderHeight: $buttonHeight;
 
 	&:not(.fullscreen) .modalBody {
 		max-height: 80vh;
-		margin: $spacing * 4 0px;
+		//margin: $spacingLarge 0px;
 	}
 }
 

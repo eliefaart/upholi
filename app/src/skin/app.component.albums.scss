@@ -2,8 +2,8 @@
 .albums {
 	display: flex;
 	flex-wrap: wrap;
-	gap: $spacing * 4;
-	padding: 0 $spacing * 4;
+	gap: $spacingLarge;
+	padding: 0 $spacingLarge;
 
 	.album {
 		position: relative;
@@ -31,7 +31,6 @@
 			display: inline-block;
 			width: 200px;
 			line-height: $buttonHeight;
-			padding: 0 $spacing;
 			overflow: hidden;
 			text-overflow: ellipsis;
 			white-space: nowrap;

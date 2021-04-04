@@ -3,7 +3,7 @@
 
 	span {
 		align-self: center;
-		padding: 0 $spacing * 2;
+		padding: 0 $spacing;
 		white-space: nowrap;
 	}
 
@@ -21,11 +21,11 @@
 	}
 
 	.checkedIcon {
-		padding-left: $spacing * 4;
+		padding-left: $spacingLarge;
 		color: $colorTextContrast;
 	}
 	.uncheckedIcon {
-		padding-right: $spacing * 3;
+		padding-right: $spacing;
 		color: $colorText;
 	}
 }

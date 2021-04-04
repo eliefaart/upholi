@@ -2,11 +2,11 @@
 .collections {
 	display: flex;
 	flex-direction: column;
-	gap: $spacing * 4;
-	padding: $spacing * 4;
+	gap: $spacingLarge;
+	padding: $spacingLarge;
 
 	.collection {
-		padding: $spacing * 4;
+		padding: $spacingLarge;
 		background: $colorBackgroundAlt;
 		border-radius: $borderRadius;
 
@@ -22,7 +22,6 @@
 		.body {
 
 			.settings {
-
 				// Will need JS to do this animation properly..
 				padding: 0px;
 				max-height: 0px;
@@ -33,7 +32,7 @@
 				}
 
 				&:not(:empty) {
-					padding: $spacing * 5 0px;
+					padding: $spacingLarge 0px;
 				}
 			}
 
@@ -41,8 +40,8 @@
 				display: flex;
 				flex-direction: row;
 				flex-wrap: wrap;
-				gap: $spacing * 2;
-				margin-top: $spacing * 2;
+				gap: $spacing;
+				margin-top: $spacing;
 
 				.album {
 					background-size: cover;

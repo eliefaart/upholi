@@ -16,9 +16,9 @@
 			font-size: $fontSizeLarge;
 			line-height: $headerHeight;
 			height: $headerHeight;
-			margin: 0 $spacing * 2 0 0;
-			padding-right: $spacing * 4;
-			padding-left: $spacing * 4;
+			margin: 0 $spacing 0 0;
+			padding-right: $spacingLarge;
+			padding-left: $spacingLarge;
 
 			&:hover {
 				color: $colorAccent;
@@ -33,7 +33,7 @@
 
 	.buffer{
 		flex: 1 1 auto;
-		padding-left: $spacing * 10;
+		padding-left: $spacingLarge;
 	}
 
 	.contextMenuToggle {
@@ -57,11 +57,11 @@
 			align-items: center;
 
 			button, .asButton {
-				margin: 0 0 0 $spacing * 2;
-				padding: 0px $spacing * 2;
+				margin: 0 0 0 $spacing;
+				padding: 0px $spacing;
 
 				span {
-					margin-right: $spacing * 2;
+					margin-right: $spacing;
 					color: $colorText;
 				}
 			}
@@ -94,7 +94,7 @@
 
 			button {
 				border-radius: unset;
-				padding: 0 $spacing * 3;
+				padding: 0 $spacing;
 				color: $colorText;
 				background-color: $colorBackgroundAlt;
 				width: 100%;

@@ -4,20 +4,19 @@
 $colorBackground: #1c1c1c;
 $colorBackgroundAlt: #303030;
 $colorBackgroundShadow: rgba(70, 70, 70,.85);
-$colorAccent: #20aced; //#437dec;	// #26bf84
-$colorSecondaryAccent: #d6d12f; //#bb8736;	// #c9436b
+$colorAccent: #20aced;
+$colorSecondaryAccent: #d6d12f;
 $colorSpecial: #b5a238;
 $colorText: #eee;
 $colorTextContrast: #161f21;
 $colorDisabled: gray;
-$colorHeaderBackground: transparent; //$colorBackgroundAlt;
+$colorHeaderBackground: transparent;
 $colorError: #d74646;
-// $colorHeaderBackground: linear-gradient(120deg, rgba(117,66,179,1) 0%, rgba(46,110,165,1) 45%, rgba(198,135,51,1) 100%);
-// $colorHeaderBackground: linear-gradient(25deg, $colorBackground 0%, $colorBackground 35%, $colorSecondaryAccent 120%);
 
 $fontSizeNormal: 0.8em;
 $fontSizeLarge: 1.2em;
-$spacing: 5px;
+$spacing: 10px;
+$spacingLarge: 20px;
 $transitionSpeed: 0.2s;
 $borderRadius: 2px;
 $headerHeight: 65px;
@@ -120,7 +119,7 @@ input, select {
 	background-color: $colorBackgroundAlt;
 	color: $colorText;
 	border: 2px solid $colorBackgroundShadow;
-	text-indent: $spacing * 2;
+	text-indent: $spacing;
 
 	&:focus {
 		border-color: $colorSecondaryAccent;
@@ -160,8 +159,8 @@ button, .asButton {
 	&:not(.iconOnly) {
 		min-width: $buttonHeight * 2;
 		background-color: rgba($colorBackground, 0.9);
-		margin: 0px $spacing * 1;
-		padding: 0px $spacing * 3;
+		margin: 0px $spacing;
+		padding: 0px $spacing;
 	}
 
 	&:hover,
