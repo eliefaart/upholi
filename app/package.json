@@ -10,7 +10,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "webpack-dev-server --open --mode development",
     "build": "webpack --watch --mode development",
-    "build-prd": "webpack --mode production"
+    "build-prd": "webpack --mode production",
+    "lint": "./node_modules/.bin/eslint src"
   },
   "dependencies": {
     "@types/history": "^4.7.8",
@@ -38,7 +39,11 @@
     "@babel/core": "^7.12.3",
     "@babel/preset-env": "^7.12.1",
     "@babel/preset-react": "^7.12.1",
+    "@typescript-eslint/eslint-plugin": "^4.22.0",
+    "@typescript-eslint/parser": "^4.22.0",
     "babel-loader": "^8.1.0",
+    "eslint": "^7.24.0",
+    "eslint-plugin-react": "^7.23.2",
     "file-loader": "^2.0.0",
     "node-sass": "^4.14.1",
     "sass-loader": "^7.3.1",
