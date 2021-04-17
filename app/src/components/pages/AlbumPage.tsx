@@ -12,7 +12,6 @@ import UploadButton from "../UploadButton";
 import { IconRemove, IconImage } from "../Icons";
 import { toast } from "react-toastify";
 import UrlHelper from "../../helpers/UrlHelper";
-import Photo from "../../models/Photo";
 import File from "../../models/File";
 import GalleryPhoto from "../../models/GalleryPhoto";
 
@@ -48,36 +47,43 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 		};
 	}
 
-	getHeaderActions() {
-		return (<React.Fragment>
-			{this.state.selectedPhotos.length === 1 && <button className="iconOnly" onClick={(e) => this.setSelectedPhotoAsAlbumCover()} title="Set album cover">
+	getHeaderActions(): JSX.Element | null {
+		return <React.Fragment>
+			{this.state.selectedPhotos.length === 1 && <button className="iconOnly" onClick={() => this.setSelectedPhotoAsAlbumCover()} title="Set album cover">
 				<IconImage/>
 			</button>}
-			{this.state.selectedPhotos.length > 0 && <button className="iconOnly" onClick={(e) => this.onRemovePhotosClick()} title="Remove from album">
+			{this.state.selectedPhotos.length > 0 && <button className="iconOnly" onClick={() => this.onRemovePhotosClick()} title="Remove from album">
 				<IconRemove/>
 			</button>}
-			{this.state.selectedPhotos.length === 0 && <button onClick={() => document.getElementById("select-photos")!.click()} title="Upload photos">
+			{this.state.selectedPhotos.length === 0 && <button
+				onClick={() => {
+					const selectPhotosElement = document.getElementById("select-photos");
+					if (selectPhotosElement) {
+						selectPhotosElement.click();
+					}
+				}}
+				title="Upload photos">
 				Upload photos
 			</button>}
-		</React.Fragment>);
+		</React.Fragment>;
 	}
 
-	getHeaderContextMenu() {
+	getHeaderContextMenu(): JSX.Element | null {
 		return (<React.Fragment>
 			{<button onClick={() => this.onDeleteAlbumClick()}>Delete album</button>}
 		</React.Fragment>);
 	}
 
-	getTitle() {
+	getTitle(): string {
 		return "Album - " + this.state.title;
 	}
 
-	componentDidMount() {
+	componentDidMount(): void {
 		this.refreshPhotos();
 		super.componentDidMount();
 	}
 
-	componentDidUpdate() {
+	componentDidUpdate(prevProps: PageBaseComponentProps, prevState: AlbumPageState): void {
 		// Open photo, if indicated as such by query string
 		const queryStringPhotoId = UrlHelper.getQueryStringParamValue(location.search, queryStringParamNamePhotoId);
 		if (this.state.openedPhotoId !== queryStringPhotoId) {
@@ -86,14 +92,13 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 			});
 		}
 
-		super.componentDidUpdate();
+		super.componentDidUpdate(prevProps, prevState);
 	}
 
-	refreshPhotos() {
-		let _this = this;
+	refreshPhotos(): void {
 		PhotoService.getAlbum(this.state.albumId)
 			.then((response) => {
-				_this.setState({
+				this.setState({
 					title: response.title,
 					photos: response.photos.map((photo): GalleryPhoto => {
 						return {
@@ -108,33 +113,32 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 			});
 	}
 
-	onDeleteAlbumClick() {
+	onDeleteAlbumClick(): void {
 		this.setState({
 			confirmDeleteAlbumOpen: true
 		});
 	}
 
-	deleteAlbum() {
-		let component = this;
-		let albumTitle = this.state.title;
+	deleteAlbum(): void {
+		const albumTitle = this.state.title;
 
 		PhotoService.deleteAlbum(this.state.albumId)
 			.then(() => {
 				toast.info("Album '" + albumTitle + "' deleted.");
-				component.context.history.push("/albums");
+				this.context.history.push("/albums");
 			})
 			.catch(console.error);
 	}
 
-	onPhotoClicked(index: number) {
-		let photo = this.state.photos[index];
+	onPhotoClicked(index: number): void {
+		const photo = this.state.photos[index];
 		this.context.history.push(document.location.pathname + "?photoId=" + photo.id);
 	}
 
-	setSelectedPhotoAsAlbumCover() {
-		let _refreshPhotos = () => this.refreshPhotos();
+	setSelectedPhotoAsAlbumCover(): void {
+		const _refreshPhotos = () => this.refreshPhotos();
 
-		let photoId = this.state.selectedPhotos[0];
+		const photoId = this.state.selectedPhotos[0];
 
 		PhotoService.updateAlbumCover(this.state.albumId, photoId)
 			.then(() => {
@@ -144,19 +148,19 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 			.catch(console.error);
 	}
 
-	onRemovePhotosClick() {
+	onRemovePhotosClick(): void {
 		this.setState({
 			confirmRemovePhotosOpen: true
 		});
 	}
 
-	removeSelectedPhotosFromAlbum() {
-		let fnRefreshPhotos = () => this.refreshPhotos();
-		let fnCloseConfirmDialog = () => this.setState({ confirmRemovePhotosOpen: false });
+	removeSelectedPhotosFromAlbum(): void {
+		const fnRefreshPhotos = () => this.refreshPhotos();
+		const fnCloseConfirmDialog = () => this.setState({ confirmRemovePhotosOpen: false });
 
-		let selectedPhotos = this.state.selectedPhotos;
-		let photoIds = this.state.photos.map(p => p.id);
-		let remainingPhotosAfterRemoval = photoIds.filter(id => selectedPhotos.indexOf(id) === -1);
+		const selectedPhotos = this.state.selectedPhotos;
+		const photoIds = this.state.photos.map(p => p.id);
+		const remainingPhotosAfterRemoval = photoIds.filter(id => selectedPhotos.indexOf(id) === -1);
 
 		PhotoService.updateAlbumPhotos(this.state.albumId, remainingPhotosAfterRemoval)
 			.then(() => {
@@ -167,8 +171,8 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 			.catch(console.error);
 	}
 
-	onPhotoSelectedChange(photoId: string, selected: boolean) {
-		let selectedPhotos = this.state.selectedPhotos;
+	onPhotoSelectedChange(photoId: string, selected: boolean): void {
+		const selectedPhotos = this.state.selectedPhotos;
 
 		if (selected) {
 			selectedPhotos.push(photoId);
@@ -184,7 +188,7 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 		});
 	}
 
-	onFilesDropped(event: React.DragEvent<HTMLElement>) {
+	onFilesDropped(event: React.DragEvent<HTMLElement>): void {
 		event.preventDefault();
 		if (!event.dataTransfer.files || event.dataTransfer.files.length === 0)
 			return; // no files
@@ -192,19 +196,19 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 		this.uploadFilesList(event.dataTransfer.files);
 	}
 
-	uploadFilesList (fileList: FileList) {
-		let albumId = this.state.albumId;
-		let photoIds = this.state.photos.map(p => p.id)
+	uploadFilesList (fileList: FileList): void {
+		const albumId = this.state.albumId;
+		let photoIds = this.state.photos.map(p => p.id);
 
-		let files = UploadHelper.convertFileListToFileArrayForUploadDialog(fileList);
+		const files = UploadHelper.convertFileListToFileArrayForUploadDialog(fileList);
 
-		let fnOnUploadFinished = (uploadedPhotoIds: string[]) => {
+		const fnOnUploadFinished = (uploadedPhotoIds: string[]) => {
 			this.setState({
 				uploadInProgress: false,
 				uploadFiles: []
 			});
 
-			let fnRefreshPhotos = () => this.refreshPhotos();
+			const fnRefreshPhotos = () => this.refreshPhotos();
 
 			if (uploadedPhotoIds && uploadedPhotoIds.length > 0) {
 				toast.info("Upload finished.");
@@ -214,8 +218,8 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 					.then(fnRefreshPhotos);
 			}
 		};
-		let fnUpdateFileUploadState = (file: File, newState: string) => {
-			let stateFile = files.find(f => f.name === file.name);
+		const fnUpdateFileUploadState = (file: globalThis.File, newState: string) => {
+			const stateFile = files.find(f => f.name === file.name);
 			if (stateFile) {
 				stateFile.status = newState;
 
@@ -235,7 +239,7 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 		});
 	}
 
-	render() {
+	render(): React.ReactNode {
 		return (
 			<ContentContainer onDrop={(event) => this.onFilesDropped(event)}>
 				<div className="topBar">

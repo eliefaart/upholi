@@ -13,19 +13,19 @@ export default class ModalSetPassword extends React.Component<Props> {
 		this.state = {};
 	}
 
-	onOkButtonClick() {
+	onOkButtonClick(): void {
 		const input = document.getElementById("password") as HTMLInputElement;
 		if (input) {
 			this.props.onOkButtonClick(input.value);
 		}
 	}
 
-	render() {
+	render(): React.ReactNode {
 		return <Modal
 			title="Set password"
 			className="modalSetPassword"
 			isOpen={true}
-			onRequestClose={() => {!!this.props.onRequestClose && this.props.onRequestClose()}}
+			onRequestClose={() => {!!this.props.onRequestClose && this.props.onRequestClose();}}
 			okButtonText="Save"
 			onOkButtonClick={() => this.onOkButtonClick()}
 			>

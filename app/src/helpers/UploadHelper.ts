@@ -2,8 +2,6 @@ import File from "../models/File";
 
 export default class UploadHelper {
 
-	constructor() { }
-
 	/**
 	 * Convert a FileList to an array of files that can be used as view model for the upload UI
 	 * @param fileList
@@ -12,7 +10,7 @@ export default class UploadHelper {
 		const files: File[] = [];
 
 		for (let i = 0; i < fileList.length; i++) {
-			let file = fileList.item(i);
+			const file = fileList.item(i);
 			if (file) {
 				files.push({
 					name: file.name,

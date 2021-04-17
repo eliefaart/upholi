@@ -27,7 +27,7 @@ class Menu extends React.Component<Props, State> {
 		};
 	}
 
-	toggleMenu() {
+	toggleMenu(): void {
 		this.setState(prevState => {
 			return {
 				opened: !prevState.opened
@@ -35,7 +35,7 @@ class Menu extends React.Component<Props, State> {
 		});
 	}
 
-	render() {
+	render(): React.ReactNode {
 		return (
 			<div className={"menu " + (this.state.opened ? "opened" : "closed")}>
 				<span className="toggle" onClick={this.toggleMenu}>

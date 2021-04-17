@@ -43,7 +43,7 @@ export default class UserCollection extends React.Component<Props, State> {
 	/**
 	 * Toggles the settings pane of the collection
 	 */
-	toggleSettings() {
+	toggleSettings(): void {
 		this.setState(prevState => {
 			return {
 				settingsOpened: !prevState.settingsOpened
@@ -51,18 +51,18 @@ export default class UserCollection extends React.Component<Props, State> {
 		});
 	}
 
-	onClickDeleteCollection() {
+	onClickDeleteCollection(): void {
 		this.setState({confirmDeleteCollectionOpen: true});
 	}
 
-	onClickRemoveAlbumFromCollection(album: AlbumInfo) {
+	onClickRemoveAlbumFromCollection(album: AlbumInfo): void {
 		this.setState({
 			confirmRemoveAlbumFromCollectionOpen: true,
 			activeAlbum: album
 		});
 	}
 
-	onClickAddAlbumToCollection() {
+	onClickAddAlbumToCollection(): void {
 		this.setState({
 			addAlbumToCollectionDialogOpen: true
 		});
@@ -87,7 +87,7 @@ export default class UserCollection extends React.Component<Props, State> {
 	/**
 	 * Delete the current collection
 	 */
-	deleteCollection() {
+	deleteCollection(): void {
 		PhotoService.deleteCollection(this.props.collection.id)
 			.then(() => this.props.onCollectionDeleted())
 			.catch(console.error)
@@ -97,7 +97,7 @@ export default class UserCollection extends React.Component<Props, State> {
 	/**
 	 * Remove an album from the collection
 	 */
-	removeAlbumFromCollection(albumId: string) {
+	removeAlbumFromCollection(albumId: string): void {
 		PhotoService.removeAlbumFromCollection(this.props.collection.id, albumId)
 			.then(() => this.props.onCollectionUpdated())
 			.catch(console.error)
@@ -108,14 +108,14 @@ export default class UserCollection extends React.Component<Props, State> {
 	 * Add an album to the collection
 	 * @param albumId
 	 */
-	addAlbumToCollection(albumId: string) {
+	addAlbumToCollection(albumId: string): void {
 		PhotoService.addAlbumToCollection(this.props.collection.id, albumId)
 			.then(() => this.props.onCollectionUpdated())
 			.catch(console.error)
 			.finally(() => this.setState({addAlbumToCollectionDialogOpen: false}));
 	}
 
-	render() {
+	render(): React.ReactNode {
 		return <div key={this.props.collection.id} className="collection">
 			<div className="head">
 				{/* Collection title and some actions/buttons */}
@@ -146,7 +146,7 @@ export default class UserCollection extends React.Component<Props, State> {
 						className="collection-albums"
 						onOrderChanged={this.onAlbumOrderChanged}>
 						{this.props.collection.albums.map(album => {
-							let albumThumbUrl = album.thumbPhotoId
+							const albumThumbUrl = album.thumbPhotoId
 								? "url('" + PhotoService.baseUrl() + "/photo/" + album.thumbPhotoId + "/thumb')"
 								: "";
 
@@ -187,10 +187,10 @@ export default class UserCollection extends React.Component<Props, State> {
 				title="Remove album from collection"
 				isOpen={true}
 				onRequestClose={() => this.setState({confirmRemoveAlbumFromCollectionOpen: false, activeAlbum: null})}
-				onOkButtonClick={() => this.removeAlbumFromCollection(this.state.activeAlbum!.id)}
+				onOkButtonClick={() => this.state.activeAlbum && this.removeAlbumFromCollection(this.state.activeAlbum.id)}
 				okButtonText="Remove"
 				confirmationText={"Album '"
-					+ this.state.activeAlbum!.title
+					+ (this.state.activeAlbum ? this.state.activeAlbum.title : "")
 					+ "' will be remove from collection '"
 					+ this.props.collection.title + "'."}
 				/>}

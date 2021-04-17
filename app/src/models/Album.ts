@@ -4,9 +4,11 @@ interface AlbumPhoto {
 	height: number
 }
 
-export default interface Album {
+interface Album {
 	id: string,
 	title: string,
 	thumbPhoto: AlbumPhoto | null,
 	photos: AlbumPhoto[]
 }
+
+export default Album;

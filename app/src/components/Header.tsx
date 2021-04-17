@@ -22,14 +22,14 @@ class Header extends React.Component<HeaderProps, HeaderState> {
 		};
 	}
 
-	render() {
+	render(): React.ReactNode {
 		const headerEmpty = !this.props.renderMenu && !this.props.actions && !this.props.contextMenu;
 		if (headerEmpty)
 			return null;
 
 		const gotoPage = (path: string) => {
 			!!this.context.history && this.context.history.push(path);
-		}
+		};
 		const menuItems = [
 			{ path: "/", title: "Library" },
 			{ path: "/albums", title: "Albums" },

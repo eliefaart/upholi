@@ -1,6 +1,6 @@
 import * as React from "react";
 import AlbumInfo from "../models/AlbumInfo";
-import PhotoService from "../services/PhotoService"
+import PhotoService from "../services/PhotoService";
 import AppStateContext from "../contexts/AppStateContext";
 
 interface AlbumProps {
@@ -22,7 +22,7 @@ class Albums extends React.Component<AlbumProps> {
 		super(props);
 	}
 
-	render() {
+	render(): React.ReactNode {
 		const activeAlbumId = this.props.activeAlbumId;
 		const anyAlbumActive = this.props.albums.some(album => album.id === this.props.activeAlbumId);
 
@@ -37,7 +37,7 @@ class Albums extends React.Component<AlbumProps> {
 		const AlbumElement = function (props: AlbumElementProps) {
 			const album = props.album;
 			if (album) {
-				const thumbUrl = !!album.thumbPhotoId ?"url('" + PhotoService.baseUrl() + "/photo/" + album.thumbPhotoId + "/thumb')" : "";
+				const thumbUrl = album.thumbPhotoId ?"url('" + PhotoService.baseUrl() + "/photo/" + album.thumbPhotoId + "/thumb')" : "";
 				const isActive = album.id === activeAlbumId;
 
 				// return <div
@@ -58,7 +58,7 @@ class Albums extends React.Component<AlbumProps> {
 			else {
 				return null;
 			}
-		}
+		};
 
 		const albums = this.props.albums.map((album) => {
 			return (

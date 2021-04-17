@@ -2,8 +2,6 @@ import * as queryString from "query-string";
 
 export default class UrlHelper {
 
-	constructor() { }
-
 	/**
 	 * Get the value of a query string parameter. Returns null if parameter is not present in query string.
 	 * @param qs Query string

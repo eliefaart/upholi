@@ -15,7 +15,6 @@ import { IconDelete, IconAddToAlbum } from "../Icons";
 import { toast } from "react-toastify";
 import UrlHelper from "../../helpers/UrlHelper";
 import Photo from "../../models/Photo";
-import Album from "../../models/Album";
 import File from "../../models/File";
 import GalleryPhoto from "../../models/GalleryPhoto";
 import AlbumInfo from "../../models/AlbumInfo";
@@ -61,7 +60,7 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 					this.photoCheckQueued = false;
 				}, msTimeBetweenChecks);
 			}
-		}
+		};
 
 		this.state = {
 			photos: [],
@@ -76,9 +75,16 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 		};
 	}
 
-	getHeaderActions() {
+	getHeaderActions(): JSX.Element | null {
 		return (<React.Fragment>
-			{this.state.selectedPhotos.length === 0 && <button onClick={() => document.getElementById("select-photos")!.click()} title="Upload photos">
+			{this.state.selectedPhotos.length === 0 && <button
+				onClick={() => {
+					const element = document.getElementById("select-photos");
+					if (element) {
+						element.click();
+					}
+				}}
+				title="Upload photos">
 				Upload photos
 			</button>}
 			{this.state.selectedPhotos.length > 0 && <button className="iconOnly" onClick={() => this.onClickAddSelectedPhotosToAlbum()} title="Add to album">
@@ -90,11 +96,11 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 		</React.Fragment>);
 	}
 
-	getTitle() {
+	getTitle(): string {
 		return "Library";
 	}
 
-	componentDidMount() {
+	componentDidMount(): void {
 		this.refreshPhotos();
 
 		const contentElement = document.getElementById("content");
@@ -105,7 +111,7 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 		super.componentDidMount();
 	}
 
-	componentDidUpdate(prevProps: PageBaseComponentProps, prevState: LibraryPageState) {
+	componentDidUpdate(prevProps: PageBaseComponentProps, prevState: LibraryPageState): void {
 		// Load the initial batch of photo thumbnails once all photo data has been fetched
 		if (prevState.photos.length === 0 && this.state.photos.length > 0) {
 			this.loadVisiblePhotos();
@@ -136,13 +142,13 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 			});
 		}
 
-		super.componentDidUpdate();
+		super.componentDidUpdate(prevProps, prevState);
 	}
 
 	/**
 	 * Get info of all photos in user's library
 	 */
-	refreshPhotos() {
+	refreshPhotos(): void {
 		const fnSetPhotos = (photos: Photo[]) => {
 			this.photos = photos;
 
@@ -169,7 +175,7 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 	/**
 	 * Load all photo thumbnails that are visible in the viewport
 	 */
-	loadVisiblePhotos() {
+	loadVisiblePhotos(): void {
 		// Function that checks if given element is at least partially visible within viewport
 		const fnElementIsInViewport = (element: HTMLElement) => {
 			if (!element)  {
@@ -210,22 +216,22 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 		}
 	}
 
-	resetSelection() {
+	resetSelection(): void {
 		this.setState({
 			selectedPhotos: []
 		});
 	}
 
-	onClickDeletePhotos() {
+	onClickDeletePhotos(): void {
 		this.setState({
 			confirmDeletePhotosOpen: true
 		});
 	}
 
-	deleteSelectedPhotos() {
+	deleteSelectedPhotos(): void {
 		PhotoService.deletePhotos(this.state.selectedPhotos)
 			.then(() => {
-				let remainingPhotos = this.state.photos.filter(p =>
+				const remainingPhotos = this.state.photos.filter(p =>
 					this.state.selectedPhotos.indexOf(p.id) === -1);
 
 				this.setState({
@@ -239,34 +245,30 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 			.catch(console.error);
 	}
 
-	onClickAddSelectedPhotosToAlbum() {
-		let _this = this;
-
+	onClickAddSelectedPhotosToAlbum(): void {
 		PhotoService.getAlbums()
 			.then((albums) => {
-				_this.setState({
+				this.setState({
 					albums: albums,
 					addPhotosToAlbumDialogOpen: true
 				});
 			});
 	}
 
-	addSelectedPhotosToAlbum(albumId: string) {
-		let _this = this;
-
+	addSelectedPhotosToAlbum(albumId: string): void {
 		PhotoService.addPhotosToAlbum(albumId, this.state.selectedPhotos)
 			.then(() => {
-				_this.setState({
+				this.setState({
 					selectedPhotos: [],
 					addPhotosToAlbumDialogOpen: false
-				})
+				});
 				toast.info("Photos added to album.");
 			})
 			.catch(console.error);
 	}
 
-	onPhotoSelectedChange(photoId: string, selected: boolean) {
-		let selectedPhotos = this.state.selectedPhotos;
+	onPhotoSelectedChange(photoId: string, selected: boolean): void {
+		const selectedPhotos = this.state.selectedPhotos;
 
 		if (selected) {
 			selectedPhotos.push(photoId);
@@ -282,24 +284,24 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 		});
 	}
 
-	onSelectionChange(selectedPhotos: string[]) {
+	onSelectionChange(selectedPhotos: string[]): void {
 		this.setState({
 			selectedPhotos: selectedPhotos
 		});
 	}
 
-	createNewAlbum() {
+	createNewAlbum(): void {
 		this.setState({
 			newAlbumDialogOpen: true
-		})
+		});
 	}
 
-	onPhotoClicked(index: number) {
-		let photo = this.state.photos[index];
+	onPhotoClicked(index: number): void {
+		const photo = this.state.photos[index];
 		this.context.history.push(document.location.pathname + "?photoId=" + photo.id);
 	}
 
-	onFilesDropped(event: React.DragEvent<HTMLElement>) {
+	onFilesDropped(event: React.DragEvent<HTMLElement>): void {
 		event.preventDefault();
 		if (!event.dataTransfer.files || event.dataTransfer.files.length === 0)
 			return; // no files
@@ -307,18 +309,18 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 		this.uploadFilesList(event.dataTransfer.files);
 	}
 
-	uploadFilesList(fileList: FileList) {
-		let files = UploadHelper.convertFileListToFileArrayForUploadDialog(fileList);
-		let fnOnUploadFinished = () => {
+	uploadFilesList(fileList: FileList): void {
+		const files = UploadHelper.convertFileListToFileArrayForUploadDialog(fileList);
+		const fnOnUploadFinished = () => {
 			this.setState({
-			 	uploadInProgress: false,
-			 	uploadFiles: []
+				uploadInProgress: false,
+				uploadFiles: []
 			});
 			this.refreshPhotos();
 			toast.info("Upload finished.");
 		};
-		let fnUpdateFileUploadState = (file: File, newState: string) => {
-			let stateFile = files.find(f => f.name === file.name);
+		const fnUpdateFileUploadState = (file: globalThis.File, newState: string) => {
+			const stateFile = files.find(f => f.name === file.name);
 			if (stateFile) {
 				stateFile.status = newState;
 
@@ -338,7 +340,7 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 		});
 	}
 
-	render() {
+	render(): React.ReactNode {
 		return (
 			<ContentContainer onDrop={(event) => this.onFilesDropped(event)}>
 				<PhotoGallerySelectable photos={this.state.photos} onClick={(_, target) => this.onPhotoClicked(target.index)} selectedItems={this.state.selectedPhotos} onPhotoSelectedChange={(photoId, selected) => this.onPhotoSelectedChange(photoId, selected)} />

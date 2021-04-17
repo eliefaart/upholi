@@ -3,7 +3,7 @@ import * as ReactModal from "react-modal";
 import { Router } from "react-router-dom";
 import { createBrowserHistory as createHistory } from "history";
 import { ToastContainer, Zoom } from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css';
+import "react-toastify/dist/ReactToastify.css";
 import AppBody from "../components/AppBody";
 import AppStateContext from "../contexts/AppStateContext";
 
@@ -23,10 +23,10 @@ class AppContainer extends React.Component<AppContainerProps, AppContainerState>
 
 		this.state = {
 			ready: false
-		}
+		};
 	}
 
-	componentDidMount() {
+	componentDidMount(): void {
 		ReactModal.setAppElement("#appRoot");
 
 		// Call server to find out if user is authenticated
@@ -38,7 +38,7 @@ class AppContainer extends React.Component<AppContainerProps, AppContainerState>
 		}).catch(console.error);
 	}
 
-	render() {
+	render(): React.ReactNode {
 		if (!this.state.ready)
 			return null;
 

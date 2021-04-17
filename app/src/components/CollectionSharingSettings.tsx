@@ -38,8 +38,8 @@ class CollectionSharingSettings extends React.Component<Props, State> {
 		};
 	}
 
-	copyUrlToClipboard() {
-		let publicUrlElement = document.getElementsByClassName("urlToCopy")[0] as HTMLInputElement;
+	copyUrlToClipboard(): void {
+		const publicUrlElement = document.getElementsByClassName("urlToCopy")[0] as HTMLInputElement;
 
 		// Select text
 		publicUrlElement.select();
@@ -54,27 +54,27 @@ class CollectionSharingSettings extends React.Component<Props, State> {
 		toast.info("URL copied to clipboard.");
 	}
 
-	onSetPasswordCancelled() {
+	onSetPasswordCancelled(): void {
 		this.setState({
 			// If user was enabling password (first time setting password after checking 'require password'), but cancelled setting a password,
 			// then also disable 'require password' again.
 			requirePassword: this.state.isEnablingPasswordRequired ? false : this.state.requirePassword,
 			isEnablingPasswordRequired: false,
 			isSettingPassword: false
-		 });
+		});
 	}
 
-	onSetPassword(password: string) {
+	onSetPassword(password: string): void {
 		this.setState({
 			isSettingPassword: false,
 			isEnablingPasswordRequired: false,
 			password: password
-		 }, () => {
-			 this.updateSharingOptions();
-		 });
+		}, () => {
+			this.updateSharingOptions();
+		});
 	}
 
-	updateSharingOptions() {
+	updateSharingOptions(): void {
 		const updateOptions: UpdateCollection = {
 			title: null,
 			albums: null,
@@ -85,22 +85,22 @@ class CollectionSharingSettings extends React.Component<Props, State> {
 			}
 		};
 
-		if (this.state.requirePassword && !!this.state.password) {
-			updateOptions.sharing!.password = this.state.password;
+		if (this.state.requirePassword && this.state.password && updateOptions.sharing) {
+			updateOptions.sharing.password = this.state.password;
 		}
 
 		PhotoService.updateCollection(this.props.collection.id, updateOptions)
-			.then(_ => this.props.onOptionsChanged())
+			.then(() => this.props.onOptionsChanged())
 			.catch(console.error);
 	}
 
-	generateNewUrl() {
+	generateNewUrl(): void {
 		PhotoService.rotateCollectionShareToken(this.props.collection.id)
-			.then(_ => this.props.onOptionsChanged())
+			.then(() => this.props.onOptionsChanged())
 			.catch(console.error);
 	}
 
-	render() {
+	render(): React.ReactNode {
 		const shareUrl = document.location.origin + "/s/" + this.props.collection.sharing.token;
 
 		// Event handlers

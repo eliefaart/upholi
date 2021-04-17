@@ -5,6 +5,7 @@ export interface PageBaseComponentProps {
 	requiresAuthentication: boolean,
 	renderHeaderNavMenu: boolean,
 	onHeaderUpdated: (renderHeaderNavMenu: boolean, headerActions: JSX.Element | null, headerContextMenu: JSX.Element | null) => void,
+	// eslint-disable-next-line  @typescript-eslint/no-explicit-any
 	match: any	// TODO: Find type. This is the 'react-router' match info
 }
 
@@ -41,11 +42,11 @@ export class PageBaseComponent<TState> extends React.Component<PageBaseComponent
 		return null;
 	}
 
-	getTitle() {
+	getTitle(): string {
 		return "upholi";
 	}
 
-	componentDidMount() {
+	componentDidMount(): void {
 		if (this.props.requiresAuthentication && !this.context.authenticated) {
 			// TODO: This is a temporary implementation,
 			// should redirect to a Welcome component or something,
@@ -56,11 +57,14 @@ export class PageBaseComponent<TState> extends React.Component<PageBaseComponent
 		this.updateAllPageElement();
 	}
 
-	componentDidUpdate(prevProps?: PageBaseComponentProps, prevState?: TState) {
+	componentDidUpdate(prevProps: PageBaseComponentProps, prevState: TState): void {
 		this.updateAllPageElement();
+		if (super.componentDidUpdate) {
+			super.componentDidUpdate(prevProps, prevState);
+		}
 	}
 
-	updateAllPageElement() {
+	updateAllPageElement(): void {
 		this.updatePageTitle();
 		this.updateHeader();
 	}
@@ -68,7 +72,7 @@ export class PageBaseComponent<TState> extends React.Component<PageBaseComponent
 	/**
 	 * Update title displayed in browser tab
 	 */
-	updatePageTitle() {
+	updatePageTitle(): void {
 		const title = this.getTitle();
 		document.title = title;
 	}
@@ -76,7 +80,7 @@ export class PageBaseComponent<TState> extends React.Component<PageBaseComponent
 	/**
 	 * Notify parent component if the content of the header changed.
 	 */
-	updateHeader() {
+	updateHeader(): void {
 		if (this.props.onHeaderUpdated) {
 			const headerActions = this.getHeaderActions();
 			const headerActionsJson = JSON.stringify(headerActions);

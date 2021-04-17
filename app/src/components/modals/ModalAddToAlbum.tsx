@@ -16,10 +16,7 @@ class ModalAddToAlbum extends React.Component<ModalAddToAlbumProps> {
 		super(props);
 	}
 
-	submitCreateAlbum() {
-	}
-
-	render() {
+	render(): React.ReactNode {
 		return <Modal
 			title="Add to album"
 			isOpen={this.props.isOpen}

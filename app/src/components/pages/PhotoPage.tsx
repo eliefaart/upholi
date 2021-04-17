@@ -2,7 +2,7 @@ import * as React from "react";
 import { PageBaseComponent, PageBaseComponentProps } from "./PageBaseComponent";
 import PhotoService from "../../services/PhotoService";
 import PhotoDetail from "../PhotoDetail";
-import ContentContainer from "../ContentContainer"
+import ContentContainer from "../ContentContainer";
 import AppStateContext from "../../contexts/AppStateContext";
 import { IconClose, IconDownload } from "../Icons";
 import Photo from "../../models/Photo";
@@ -32,7 +32,7 @@ class PhotoPage extends PageBaseComponent<PhotoPageState> {
 		};
 	}
 
-	getHeaderActions() {
+	getHeaderActions(): JSX.Element | null {
 		return <React.Fragment>
 			{<a className="iconOnly asButton" href={this.state.downloadUrl} download title="Download">
 				<IconDownload/>
@@ -43,12 +43,12 @@ class PhotoPage extends PageBaseComponent<PhotoPageState> {
 		</React.Fragment>;
 	}
 
-	getTitle() {
+	getTitle(): string {
 		return "Photo - " + this.photoId;
 	}
 
-	componentDidMount() {
-		let fnOnPhotoDataReceived = (photo: Photo) => {
+	componentDidMount(): void {
+		const fnOnPhotoDataReceived = (photo: Photo) => {
 			this.setState({ photo });
 		};
 
@@ -59,13 +59,13 @@ class PhotoPage extends PageBaseComponent<PhotoPageState> {
 		super.componentDidMount();
 	}
 
-	render() {
+	render(): React.ReactNode {
 		return (
 			<ContentContainer>
 				<PhotoDetail
 					src={this.state.previewUrl}
 					isVideo={!!this.state.photo && this.state.photo.contentType.startsWith("video/")}
-					exif={!!this.state.photo ? this.state.photo.exif : null} />
+					exif={this.state.photo ? this.state.photo.exif : null} />
 			</ContentContainer>
 		);
 	}

@@ -28,7 +28,7 @@ class PhotoDetail extends React.Component<PhotoDetailProps, PhotoDetailState> {
 		};
 	}
 
-	componentDidMount() {
+	componentDidMount(): void {
 		const containerElement = document.getElementsByClassName("photoDetail")[0] as HTMLElement;
 		const imgElement = document.getElementsByClassName("photoDetailImg")[0] as HTMLElement;
 
@@ -62,11 +62,11 @@ class PhotoDetail extends React.Component<PhotoDetailProps, PhotoDetailState> {
 		const fnHandlePanning = (event: MouseEvent | TouchEvent) => {
 			if (isPanning) {
 				const coords = this.getClickCoordinatesFromEvent(event);
-				let currentX = coords.x;
-				let currentY = coords.y;
+				const currentX = coords.x;
+				const currentY = coords.y;
 
-				let deltaX = currentX - panLastX;
-				let deltaY = currentY - panLastY;
+				const deltaX = currentX - panLastX;
+				const deltaY = currentY - panLastY;
 
 				this.movePhoto(imgElement, deltaX, deltaY);
 
@@ -103,7 +103,7 @@ class PhotoDetail extends React.Component<PhotoDetailProps, PhotoDetailState> {
 		// Handle double click - reset zoom
 		const fnOnDoubleClick = () => {
 			this.resetView(imgElement);
-		}
+		};
 
 		imgElement.ondragstart = () => false;
 		imgElement.ondrop = () => false;
@@ -123,7 +123,7 @@ class PhotoDetail extends React.Component<PhotoDetailProps, PhotoDetailState> {
 
 	// Get the X and Y click coordinates for event,
 	// wether it is from a mouse or touch event
-	getClickCoordinatesFromEvent(event: MouseEvent | TouchEvent) {
+	getClickCoordinatesFromEvent(event: MouseEvent | TouchEvent): { x: number, y: number } {
 		let x = 0;
 		let y = 0;
 
@@ -136,19 +136,19 @@ class PhotoDetail extends React.Component<PhotoDetailProps, PhotoDetailState> {
 			const touches = event.touches;
 
 			const fnTouchListToArray = (touchList: TouchList) => {
-				let array = [];
+				const array = [];
 				for (let i = 0; i < touchList.length; i++) {
 					array.push(touchList[i]);
 				}
 				return array;
-			}
+			};
 			const fnAverage = (numbers: number[]): number => {
 				let total = 0;
-				for (let number of numbers) {
+				for (const number of numbers) {
 					total += number;
 				}
 				return total / numbers.length;
-			}
+			};
 
 			if (!!touches && touches.length > 0) {
 				// Calculate the average of all touch points
@@ -161,7 +161,7 @@ class PhotoDetail extends React.Component<PhotoDetailProps, PhotoDetailState> {
 	}
 
 	// Zoom the image by given number of units
-	zoomPhoto(imgElement: HTMLElement, zoomDelta: number, zoomStyle: number) {
+	zoomPhoto(imgElement: HTMLElement, zoomDelta: number, zoomStyle: number): void {
 		if (!zoomDelta || zoomDelta === 0)
 			return;
 
@@ -169,7 +169,7 @@ class PhotoDetail extends React.Component<PhotoDetailProps, PhotoDetailState> {
 		const zoomingIn = zoomDelta < 0;
 
 		// Find current scale factor
-		let matches = /scale\((.+)\)/.exec(imgElement.style.transform);
+		const matches = /scale\((.+)\)/.exec(imgElement.style.transform);
 		const currentScaleFactor = matches && matches.length >= 2
 			? parseFloat(matches[1])
 			: 1;
@@ -180,7 +180,7 @@ class PhotoDetail extends React.Component<PhotoDetailProps, PhotoDetailState> {
 
 		// Calculate new scale factor
 		const zoomStep = (currentScaleFactor / 100) * zoomStepPercentage;
-		let newScaleFactor = zoomingIn
+		const newScaleFactor = zoomingIn
 			? currentScaleFactor + zoomStep
 			: currentScaleFactor - zoomStep;
 
@@ -189,14 +189,14 @@ class PhotoDetail extends React.Component<PhotoDetailProps, PhotoDetailState> {
 	}
 
 	// reset the photo to its default position and zoom level
-	resetView (imgElement: HTMLElement) {
+	resetView (imgElement: HTMLElement): void {
 		imgElement.style.transform = "scale(1)";
 		imgElement.style.left = "0px";
 		imgElement.style.top = "0px";
 	}
 
 	// Move/pan the image by given number of units.
-	movePhoto(imgElement: HTMLElement, deltaX: number, deltaY: number) {
+	movePhoto(imgElement: HTMLElement, deltaX: number, deltaY: number): void {
 		if (imgElement.parentElement) {
 			const imgWidth = imgElement.getBoundingClientRect().width;
 			const imgHeight = imgElement.getBoundingClientRect().height;
@@ -208,8 +208,8 @@ class PhotoDetail extends React.Component<PhotoDetailProps, PhotoDetailState> {
 
 			// Image smaller than container, X-axis
 			if (imgFitsInContainerX && deltaX !== 0) {
-				let movingRight = deltaX > 0;
-				let movingLeft = !movingRight;
+				const movingRight = deltaX > 0;
+				const movingLeft = !movingRight;
 
 				if (movingRight) {
 					const availablePixels = -(imgElement.getBoundingClientRect().right - imgElement.parentElement.getBoundingClientRect().width);
@@ -229,8 +229,8 @@ class PhotoDetail extends React.Component<PhotoDetailProps, PhotoDetailState> {
 
 			// Image smaller than container, Y-axis
 			if (imgFitsInContainerY && deltaY !== 0) {
-				let movingDown = deltaY > 0;
-				let movingUp = !movingDown;
+				const movingDown = deltaY > 0;
+				const movingUp = !movingDown;
 
 				if (movingDown) {
 					const availablePixels = -(imgElement.getBoundingClientRect().bottom - imgElement.parentElement.getBoundingClientRect().height);
@@ -250,8 +250,8 @@ class PhotoDetail extends React.Component<PhotoDetailProps, PhotoDetailState> {
 
 			// Image larger than container, X-axis
 			if (!imgFitsInContainerX && deltaX !== 0) {
-				let movingRight = deltaX > 0;
-				let movingLeft = !movingRight;
+				const movingRight = deltaX > 0;
+				const movingLeft = !movingRight;
 
 				if (movingRight) {
 					const availablePixels = -imgElement.getBoundingClientRect().left;
@@ -271,8 +271,8 @@ class PhotoDetail extends React.Component<PhotoDetailProps, PhotoDetailState> {
 
 			// Image larger than container, Y-axis
 			if (!imgFitsInContainerY && deltaY !== 0) {
-				let movingDown = deltaY > 0;
-				let movingUp = !movingDown;
+				const movingDown = deltaY > 0;
+				const movingUp = !movingDown;
 
 				if (movingDown) {
 					const availablePixels = -imgElement.getBoundingClientRect().top;
@@ -300,7 +300,7 @@ class PhotoDetail extends React.Component<PhotoDetailProps, PhotoDetailState> {
 		}
 	}
 
-	render() {
+	render(): React.ReactNode {
 		return <div className="photoDetail">
 			{this.props.exif != null && <ExifData exif={this.props.exif}/>}
 			{this.props.isVideo

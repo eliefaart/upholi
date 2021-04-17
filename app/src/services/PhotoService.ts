@@ -43,24 +43,24 @@ class PhotoService {
 		return "/api";
 	}
 
-	public static getThumbUrl(photoId: string) {
+	public static getThumbUrl(photoId: string): string {
 		return this.getUrl(photoId, "thumb");
 	}
 
-	public static getPreviewUrl(photoId: string) {
+	public static getPreviewUrl(photoId: string): string {
 		return this.getUrl(photoId, "preview");
 	}
 
-	public static getOriginalUrl(photoId: string) {
+	public static getOriginalUrl(photoId: string): string {
 		return this.getUrl(photoId, "original");
 	}
 
-	private static getUrl(photoId: string, variant: string) {
+	private static getUrl(photoId: string, variant: string): string {
 		const baseUrl = "/api";
 		return baseUrl + "/photo/" + photoId + "/" + variant;
 	}
 
-	static uploadPhotos(fileList: FileList, fnFileStatusUpdatedCallback: Function): Promise<string[]> {
+	static uploadPhotos(fileList: FileList, fnFileStatusUpdatedCallback: (file: File, newState: string) => void): Promise<string[]> {
 		const nConcurrentUploads = 3;
 
 		// Create queue, and set initial status
@@ -75,12 +75,12 @@ class PhotoService {
 			}
 		}
 
-		let photoIdsUploaded: string[] = [];
+		const photoIdsUploaded: string[] = [];
 
 		return new Promise<string[]>((ok, err) => {
-			let uploadPromises: Promise<string>[] = [];
+			const uploadPromises: Promise<string>[] = [];
 
-			let fnStartNextUpload = () => {
+			const fnStartNextUpload = () => {
 				if (queue.length > 0) {
 					const file = queue.pop();
 					if (file) {
@@ -107,7 +107,7 @@ class PhotoService {
 						err("Calling pop() on file upload queue returned no item");
 					}
 				}
-			}
+			};
 
 			for (let i = 0; i < nConcurrentUploads; i++) {
 				fnStartNextUpload();
@@ -122,9 +122,9 @@ class PhotoService {
 			formData.append(file.name, file);
 
 			xhr.open("POST", PhotoService.baseUrl() + "/photo", true);
-			xhr.onreadystatechange = function (event) {
+			xhr.onreadystatechange = function () {
 				if (xhr.readyState == 4 && (xhr.status === 201)) {
-					let response = JSON.parse(xhr.responseText);
+					const response = JSON.parse(xhr.responseText);
 					ok(response.id);
 				} else if (xhr.readyState == 4 && xhr.status !== 201) {
 					err();
@@ -161,11 +161,11 @@ class PhotoService {
 		// });
 	}
 
-	static deletePhotos(photoIds: string[]) {
+	static deletePhotos(photoIds: string[]): Promise<Response> {
 		return PhotoService.sendRequest("DELETE", PhotoService.baseUrl() + "/photos", photoIds);
 	}
 
-	static createAlbum(title: string, photoIds: string[]) {
+	static createAlbum(title: string, photoIds: string[]): Promise<string> {
 		const createRequestData: CreateAlbum = {
 			title
 		};
@@ -174,9 +174,9 @@ class PhotoService {
 			PhotoService.getJson<CreatedResult>("POST", PhotoService.baseUrl() + "/album", createRequestData)
 				.then((response) => {
 					// TODO: allow setting photos and thumb in initial create call
-					let albumId = response.id;
+					const albumId = response.id;
 
-					if (!!photoIds) {
+					if (photoIds) {
 						const updateRequestData: UpdateAlbum = {
 							title: title,
 							thumbPhotoId: photoIds[0],
@@ -222,11 +222,11 @@ class PhotoService {
 		return PhotoService.getJson("GET", PhotoService.baseUrl() + "/album/" + albumId, null);
 	}
 
-	static deleteAlbum(albumId: string) {
+	static deleteAlbum(albumId: string): Promise<Response> {
 		return PhotoService.sendRequest("DELETE", PhotoService.baseUrl() + "/album/" + albumId, null);
 	}
 
-	static updateAlbumPhotos(albumId: string, newPhotoIds: string[]) {
+	static updateAlbumPhotos(albumId: string, newPhotoIds: string[]): Promise<Response> {
 		return PhotoService.updateAlbum(albumId, {
 			title: null,
 			thumbPhotoId: null,
@@ -234,7 +234,7 @@ class PhotoService {
 		});
 	}
 
-	static updateAlbumCover(albumId: string, newCoverPhotoId: string) {
+	static updateAlbumCover(albumId: string, newCoverPhotoId: string): Promise<Response> {
 		return PhotoService.updateAlbum(albumId, {
 			title: null,
 			thumbPhotoId: newCoverPhotoId,
@@ -242,7 +242,7 @@ class PhotoService {
 		});
 	}
 
-	static updateAlbum(albumId: string, albumObjectWithModifiedProperties: UpdateAlbum) {
+	static updateAlbum(albumId: string, albumObjectWithModifiedProperties: UpdateAlbum): Promise<Response> {
 		return PhotoService.sendRequest("PUT", PhotoService.baseUrl() + "/album/" + albumId, albumObjectWithModifiedProperties);
 	}
 
@@ -274,22 +274,22 @@ class PhotoService {
 		return new Promise((ok, err) => {
 			PhotoService.getJson<CreatedResult>("POST", PhotoService.baseUrl() + "/collection", requestData)
 				.then((response) => {
-					let collectionId = response.id;
+					const collectionId = response.id;
 					ok(collectionId);
 				})
 				.catch(err);
 		});
 	}
 
-	static deleteCollection(collectionId: string) {
+	static deleteCollection(collectionId: string): Promise<Response> {
 		return PhotoService.sendRequest("DELETE", PhotoService.baseUrl() + "/collection/" + collectionId, null);
 	}
 
-	static addAlbumToCollection(collectionId: string, albumId: string) {
+	static addAlbumToCollection(collectionId: string, albumId: string): Promise<Response> {
 		return new Promise((ok, err) => {
 			PhotoService.getCollection(collectionId)
 				.then(collection => {
-					let albumIds = collection.albums.map(a => a.id);
+					const albumIds = collection.albums.map(a => a.id);
 					if (albumIds.indexOf(albumId) === -1) {
 						const updatedAlbums = albumIds.concat(albumId);
 						PhotoService.updateCollection(collectionId, {
@@ -306,7 +306,7 @@ class PhotoService {
 		});
 	}
 
-	static removeAlbumFromCollection(collectionId: string, albumId: string) {
+	static removeAlbumFromCollection(collectionId: string, albumId: string): Promise<Response> {
 		return new Promise((ok, err) => {
 			PhotoService.getCollection(collectionId)
 				.then(collection => {
@@ -328,7 +328,7 @@ class PhotoService {
 		});
 	}
 
-	static updateCollectionPublic(collectionId: string, bPublic: boolean) {
+	static updateCollectionPublic(collectionId: string, bPublic: boolean): Promise<Response> {
 		return PhotoService.updateCollection(collectionId, {
 			title: null,
 			public: bPublic,
@@ -336,16 +336,16 @@ class PhotoService {
 		});
 	}
 
-	static updateCollection(collectionId: string, collectionObjectWithModifiedProperties: UpdateCollection) {
+	static updateCollection(collectionId: string, collectionObjectWithModifiedProperties: UpdateCollection): Promise<Response> {
 		return PhotoService.sendRequest("PUT", PhotoService.baseUrl() + "/collection/" + collectionId, collectionObjectWithModifiedProperties);
 	}
 
-	static rotateCollectionShareToken(collectionId: string) {
+	static rotateCollectionShareToken(collectionId: string): Promise<Response> {
 		return PhotoService.getJson("POST", PhotoService.baseUrl() + "/collection/" + collectionId + "/rotate-token", null);
 	}
 
 	/// Send a web request and gets json from the response body, returns a promise.
-	static getJson<T>(method: string, url: string, data: any): Promise<T> {
+	static getJson<T>(method: string, url: string, data: unknown): Promise<T> {
 		return new Promise((ok, err) => {
 			this.sendRequest(method, url, data)
 				.then((response) => {
@@ -358,14 +358,14 @@ class PhotoService {
 	}
 
 	/// Send a web request, returns a promise.
-	static sendRequest(method: string, url: string, data: any): Promise<Response> {
+	static sendRequest(method: string, url: string, data: unknown): Promise<Response> {
 		const options: RequestInit = {
 			method,
 			credentials: "include",
 			body: data ? JSON.stringify(data) : null,
 		};
 
-		if (!!data) {
+		if (data) {
 			options.headers = {
 				"Content-Type": "application/json"
 			};

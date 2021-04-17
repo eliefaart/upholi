@@ -1,7 +1,7 @@
 import * as React from "react";
 import { PageBaseComponent, PageBaseComponentProps } from "./PageBaseComponent";
 import PhotoService from "../../services/PhotoService";
-import ContentContainer from "../ContentContainer"
+import ContentContainer from "../ContentContainer";
 import AppStateContext from "../../contexts/AppStateContext";
 import CollectionView from "../CollectionView";
 import Collection from "../../models/Collection";
@@ -28,11 +28,11 @@ class SharedCollectionPage extends PageBaseComponent<CollectionPageBaseState> {
 		};
 	}
 
-	componentDidMount() {
+	componentDidMount(): void {
 		this.getCollection();
 	}
 
-	getCollection() {
+	getCollection(): void {
 		this.setState({
 			unauthorized: false
 		});
@@ -51,14 +51,14 @@ class SharedCollectionPage extends PageBaseComponent<CollectionPageBaseState> {
 			});
 	}
 
-	getTitle() {
+	getTitle(): string {
 		return this.state.collection
 			? "Collection - " + this.state.collection.title
 			: super.getTitle();
 	}
 
 	authenticate(password: string): void {
-		if (!!password) {
+		if (password) {
 			PhotoService.authenticateToCollectionByShareToken(this.collectionToken, password)
 				.then(() => {
 					this.setState({
@@ -84,7 +84,7 @@ class SharedCollectionPage extends PageBaseComponent<CollectionPageBaseState> {
 		}
 	}
 
-	render() {
+	render(): React.ReactNode {
 		return (
 			<ContentContainer>
 				{/* Password input box */}

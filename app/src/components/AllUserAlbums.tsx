@@ -1,5 +1,5 @@
 import * as React from "react";
-import PhotoService from "../services/PhotoService"
+import PhotoService from "../services/PhotoService";
 import Albums from "../components/Albums";
 import AlbumInfo from "../models/AlbumInfo";
 
@@ -16,12 +16,11 @@ class AllUserAlbums extends React.Component<AllUserAlbumsProps, AllUserAlbumsSta
 	constructor(props: AllUserAlbumsProps) {
 		super(props);
 
-		let _this = this;
 		PhotoService.getAlbums()
 			.then((albums) => {
-				_this.setState({
+				this.setState({
 					albums: albums
-				})
+				});
 			})
 			.catch(console.error);
 
@@ -30,8 +29,8 @@ class AllUserAlbums extends React.Component<AllUserAlbumsProps, AllUserAlbumsSta
 		};
 	}
 
-	render() {
-		return <Albums albums={this.state.albums} onClick={this.props.onClick}/>
+	render(): React.ReactNode {
+		return <Albums albums={this.state.albums} onClick={this.props.onClick}/>;
 	}
 }
 

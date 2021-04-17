@@ -17,16 +17,16 @@ class InputPassword extends React.Component<Props> {
 		this.submitPassword = this.submitPassword.bind(this);
 	}
 
-	submitPassword() {
-		if (!!this.passwordInput.current) {
+	submitPassword(): void {
+		if (this.passwordInput.current) {
 			const password = this.passwordInput.current.value;
 			this.props.onSubmitPassword(password);
 		}
 	}
 
-	render() {
+	render(): React.ReactNode {
 		let className = "input-password";
-		if (!!this.props.className) {
+		if (this.props.className) {
 			className += ` ${this.props.className}`;
 		}
 
