@@ -1,47 +1,53 @@
-name: Publish - Frontend app
+name: Web app
 
 on:
   push:
-    branches: [ master, dev ]
     paths:
-      - '.github/workflows/publish-app.yml'
+      - '.github/workflows/app.yml'
       - 'app/**'
 
 env:
   IMAGE_NAME: upholi-app
 
 jobs:
-  build:
+  main:
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
 
-    # Authenticate
-    - name: Log into GitHub registry
-      run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
-
-    # Setup Node.JS
-    - name: Use Node.js 10.x
+    - name: Setup node.js
       uses: actions/setup-node@v1
       with:
         node-version: 10.x
 
-    # Build
-    - name: Build
+    - name: Install packages
       run: |
         cd ./app
         npm install
+
+    - name: Lint
+      run: |
+        cd ./app
+        npm run lint
+
+    - name: Build
+      run: |
+        cd ./app
         npm run build-prd
 
-    # Build docker
-    - name: Frontend app - Build docker image
+    - name: Authenticate to githib registry
+      if: ${{ github.ref == 'refs/heads/master' }}
+      run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
+
+    - name: Build docker
+      if: ${{ github.ref == 'refs/heads/master' }}
       run: |
         cd ./app
         docker build . --file Dockerfile --tag $IMAGE_NAME
 
-    # Publish docker
-    - name: Frontend app - Push docker image
+    - name: Publish docker
+      if: ${{ github.ref == 'refs/heads/master' }}
       run: |
         cd ./app
         IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/$IMAGE_NAME
