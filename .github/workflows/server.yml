@@ -1,46 +1,42 @@
-name: Publish - Server
+name: Server
 
 on:
   push:
-    branches: [ master, dev ]
     paths:
-      - '.github/workflows/publish-server.yml'
+      - '.github/workflows/server.yml'
       - 'server/**'
 
-env:
-  IMAGE_NAME: upholi-server
-
 jobs:
-  build:
+  main:
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
 
-    # Setup
-    - name: Log into GitHub registry
-      run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
-
-    # Build
-    - name: Server - Build
+    - name: Build
       run: |
         cd ./server
         cargo build --release --verbose
 
-    # Test
-    - name: Server - Run tests
+    - name: Test
       run: |
         cd ./server
         cargo test --release --verbose
 
-    # Build docker
-    - name: Server - Build docker image
+    # TODO: clippy
+
+    - name: Authenticate to githib registry
+      if: ${{ github.ref == 'refs/heads/master' }}
+      run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
+
+    - name: Build docker
+      if: ${{ github.ref == 'refs/heads/master' }}
       run: |
         cd ./server
         docker build . --file Dockerfile --tag $IMAGE_NAME
 
-    # Publish docker
-    - name: Server - Push docker image
+    - name: Publish docker
+      if: ${{ github.ref == 'refs/heads/master' }}
       run: |
         cd ./server
         IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/$IMAGE_NAME

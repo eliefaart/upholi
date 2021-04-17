@@ -10,43 +10,43 @@ env:
   IMAGE_NAME: upholi-app
 
 jobs:
-  setup:
+  main:
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
 
-    - name: setup node.js
+    - name: Setup node.js
       uses: actions/setup-node@v1
       with:
         node-version: 10.x
 
-    - name: npm install
+    - name: Install packages
       run: |
         cd ./app
         npm install
 
-    - name: eslint
+    - name: Lint
       run: |
         cd ./app
         npm run lint
 
-    - name: build
+    - name: Build
       run: |
         cd ./app
         npm run build-prd
 
-    - name: authenticate to githib registry
+    - name: Authenticate to githib registry
       if: ${{ github.ref == 'refs/heads/master' }}
       run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
 
-    - name: build docker image
+    - name: Build docker
       if: ${{ github.ref == 'refs/heads/master' }}
       run: |
         cd ./app
         docker build . --file Dockerfile --tag $IMAGE_NAME
 
-    - name: push docker image
+    - name: Publish docker
       if: ${{ github.ref == 'refs/heads/master' }}
       run: |
         cd ./app
