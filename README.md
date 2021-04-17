@@ -26,6 +26,3 @@ Settings of OAuth2 providers can also be overwritten using environment variables
 | `HB_OAUTH_XXX_USERINFOURL`    | Url from which information about the current user can be retrieved using an oauth2 access token |
 
  The ```XXX``` within each environment variable must be replaced with the ID of the OAuth2 provider, this is not case sensitive. So for OAuth2 provider with ID 'github' (the only one supported right now), you could for example set environment variable ```HB_OAUTH_GITHUB_CLIENTSECRET```.
-
-## License
-This project is licensed under the MIT license.
