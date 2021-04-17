@@ -33,7 +33,7 @@ class ContentContainer extends React.Component<ContentContainerProps> {
 		}
 	}
 
-	render() {
+	render(): React.ReactNode {
 		const className = this.getClassName();
 
 		return (<main id="content"

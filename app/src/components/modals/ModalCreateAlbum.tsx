@@ -15,7 +15,7 @@ class ModalCreateAlbum extends React.Component<ModalCreateAlbumProps> {
 		super(props);
 	}
 
-	submitCreateAlbum() {
+	submitCreateAlbum(): void {
 		const history = this.context.history;
 		const form = document.getElementById("form-create-album");
 
@@ -34,7 +34,7 @@ class ModalCreateAlbum extends React.Component<ModalCreateAlbumProps> {
 		}
 	}
 
-	render() {
+	render(): React.ReactNode {
 		return <Modal
 			title="Create album"
 			className={this.props.className + " modalCreateAlbum"}

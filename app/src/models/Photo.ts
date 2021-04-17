@@ -1,6 +1,6 @@
 import Exif from "./Exif";
 
-export default interface Photo {
+interface Photo {
 	id: string;
 	name: string;
 	width: number;
@@ -14,4 +14,4 @@ export default interface Photo {
 	exif: Exif;
 }
 
-export { Photo }
+export default Photo;

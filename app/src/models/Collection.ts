@@ -5,9 +5,11 @@ interface CollectionSharingOptions {
 	token: string
 }
 
-export default interface Collection {
+interface Collection {
 	id: string,
 	title: string,
 	albums: AlbumInfo[],
 	sharing: CollectionSharingOptions
 }
+
+export default Collection;

@@ -15,10 +15,7 @@ class ModalConfirmation extends React.Component<ModalConfirmationProps> {
 		super(props);
 	}
 
-	componentDidMount() {
-	}
-
-	render() {
+	render(): React.ReactNode {
 		return (
 			<Modal
 				title={this.props.title || "Confirmation"}

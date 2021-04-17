@@ -2,7 +2,6 @@ import * as React from "react";
 import PhotoGallerySelectable from "../components/PhotoGallerySelectable";
 import AppStateContext from "../contexts/AppStateContext";
 import PhotoService from "../services/PhotoService";
-import Albums from "../components/Albums";
 import ModalPhotoDetail from "./modals/ModalPhotoDetail";
 import UrlHelper from "../helpers/UrlHelper";
 import Collection from "../models/Collection";
@@ -44,7 +43,7 @@ class CollectionView extends React.Component<CollectionViewProps, CollectionView
 		};
 	}
 
-	componentDidMount() {
+	componentDidMount(): void {
 		let initialActiveAlbumId = UrlHelper.getQueryStringParamValue(location.search, queryStringParamNameAlbumId);
 
 		// If there is only one album in collection, open it by default
@@ -57,9 +56,9 @@ class CollectionView extends React.Component<CollectionViewProps, CollectionView
 		}
 	}
 
-	componentDidUpdate() {
+	componentDidUpdate(): void {
 		// Open photo, if indicated as such by query string
-		let queryStringPhotoId = UrlHelper.getQueryStringParamValue(location.search, queryStringParamNamePhotoId);
+		const queryStringPhotoId = UrlHelper.getQueryStringParamValue(location.search, queryStringParamNamePhotoId);
 		if (this.state.openedPhotoId !== queryStringPhotoId) {
 			this.setState({
 				openedPhotoId: queryStringPhotoId
@@ -67,18 +66,17 @@ class CollectionView extends React.Component<CollectionViewProps, CollectionView
 		}
 	}
 
-	openAlbum(albumId: string) {
+	openAlbum(albumId: string): void {
 		if (albumId !== this.state.activeAlbum?.id) {
 			this.loadAlbum(albumId);
 			this.setLocationPath(albumId);
 		}
 	}
 
-	loadAlbum(albumId:string) {
-		let _this = this;
+	loadAlbum(albumId:string): void {
 		PhotoService.getAlbum(albumId)
 			.then((response) => {
-				_this.setState({
+				this.setState({
 					activeAlbum: {
 						id: albumId,
 						title: response.title,
@@ -98,17 +96,17 @@ class CollectionView extends React.Component<CollectionViewProps, CollectionView
 	/**
 	 * Update the current browser location to match the currently opened album.
 	 */
-	setLocationPath(albumId: string) {
+	setLocationPath(albumId: string): void {
 		const initialQueryString = location.search;
 		const newQueryString = UrlHelper.setQueryStringParam(location.search, queryStringParamNameAlbumId, albumId);
 
 		if (initialQueryString !== newQueryString) {
-			let newUrl = location.pathname + "?" + newQueryString;
+			const newUrl = location.pathname + "?" + newQueryString;
 			this.context.history.replace(newUrl);
 		}
 	}
 
-	onPhotoClicked(index: number) {
+	onPhotoClicked(index: number): void {
 		if (this.state.activeAlbum) {
 			const photo = this.state.activeAlbum.photos[index];
 			const photoIdUrl = document.location.pathname + "?" + UrlHelper.setQueryStringParam(document.location.search, queryStringParamNamePhotoId, photo.id);
@@ -116,7 +114,7 @@ class CollectionView extends React.Component<CollectionViewProps, CollectionView
 		}
 	}
 
-	render() {
+	render(): React.ReactNode {
 		if (this.state.collection == null)
 			return null;
 
@@ -139,8 +137,7 @@ class CollectionView extends React.Component<CollectionViewProps, CollectionView
 					{this.state.activeAlbum.photos.length > 0 && <PhotoGallerySelectable
 						onClick={(_, target) => this.onPhotoClicked(target.index)}
 						photos={this.state.activeAlbum.photos}
-						selectedItems={[]}
-						onPhotoSelectedChange={() => {}}/>
+						selectedItems={[]}/>
 					}
 				</div>}
 

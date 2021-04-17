@@ -11,7 +11,7 @@ interface State {
 
 interface Item {
 	key: string;
-	originalElement: React.ReactElement<any>;
+	originalElement: React.ReactElement<unknown>;
 	originalIndex: number;
 
 	elementRef: React.RefObject<HTMLInputElement>;
@@ -72,13 +72,13 @@ class Items {
 		return item || null;
 	}
 
-	updateItemPositions(container: React.RefObject<HTMLInputElement>) {
+	updateItemPositions(container: React.RefObject<HTMLInputElement>): void {
 		if (!!container?.current && this.items.length > 0) {
 			const containerRect = container.current.getBoundingClientRect();
 
 			for (const item of this.items) {
 				const element = item.elementRef.current;
-				if (!!element) {
+				if (element) {
 					const rect = element.getBoundingClientRect();
 					const posX = rect.x - containerRect.x;
 					const posY = rect.y - containerRect.y;
@@ -118,13 +118,13 @@ export default class OrderableContent extends React.Component<Props, State> {
 		};
 	}
 
-	componentDidMount() {
+	componentDidMount(): void {
 		if (this.containerRef) {
 			this.state.items.updateItemPositions(this.containerRef);
 		}
 	}
 
-	componentDidUpdate() {
+	componentDidUpdate(): void {
 		// Figure out if parent element has updated the child elements.
 		// If so, then update the items in the state.
 		let childrenUpdated = this.state.items.items.length !== React.Children.count(this.props.children);
@@ -145,7 +145,7 @@ export default class OrderableContent extends React.Component<Props, State> {
 		}
 	}
 
-	onDragStart(event: React.DragEvent) {
+	onDragStart(event: React.DragEvent): void {
 		// Keep track of the Item being dragged.
 		const coords = this.getDragEventXY(event);
 		if (coords) {
@@ -153,7 +153,7 @@ export default class OrderableContent extends React.Component<Props, State> {
 		}
 	}
 
-	onDragOver(event: React.DragEvent) {
+	onDragOver(event: React.DragEvent): void {
 		const coords = this.getDragEventXY(event);
 		if (coords) {
 			this.lastDragPosX = coords.x;
@@ -161,7 +161,7 @@ export default class OrderableContent extends React.Component<Props, State> {
 		}
 	}
 
-	onDragEnd(event: React.DragEvent) {
+	onDragEnd(): void {
 		if (this.dragTarget && this.lastDragPosX && this.lastDragPosY) {
 			const originalItem = this.dragTarget;
 			const targetItem = this.state.items.getItemAtPosition(this.lastDragPosX, this.lastDragPosY);
@@ -178,7 +178,7 @@ export default class OrderableContent extends React.Component<Props, State> {
 	}
 
 	getDragEventXY(event: React.DragEvent): {x: number, y: number} | null {
-		if (!!this.containerRef?.current) {
+		if (this.containerRef?.current) {
 			const containerRect = this.containerRef.current.getBoundingClientRect();
 			const posX = event.clientX - containerRect.x;
 			const posY = event.clientY - containerRect.y;
@@ -193,7 +193,7 @@ export default class OrderableContent extends React.Component<Props, State> {
 		}
 	}
 
-	render() {
+	render(): React.ReactNode {
 		this.containerRef = React.createRef<HTMLInputElement>();
 		const itemElements = this.state.items.items.map(item => item.element);
 		const className = `orderable-content ${this.props.className || ""}`.trim();

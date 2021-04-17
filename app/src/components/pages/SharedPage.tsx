@@ -1,8 +1,8 @@
 import * as React from "react";
 import { PageBaseComponent, PageBaseComponentProps } from "./PageBaseComponent";
-import ContentContainer from "../ContentContainer"
+import ContentContainer from "../ContentContainer";
 import AppStateContext from "../../contexts/AppStateContext";
-import ModalCreateCollection from "../modals/ModalCreateCollection"
+import ModalCreateCollection from "../modals/ModalCreateCollection";
 import PhotoService from "../../services/PhotoService";
 import Collection from "../../models/Collection";
 import UserCollection from "../UserCollection";
@@ -21,27 +21,27 @@ class SharedPage extends PageBaseComponent<SharedPageState> {
 		this.state = {
 			collections: [],
 			newCollectionDialogOpen: false
-		}
+		};
 	}
 
-	getHeaderActions() {
-		return  (<React.Fragment>
+	getHeaderActions(): JSX.Element | null {
+		return  <React.Fragment>
 			<button onClick={() => this.onCreateCollectionClick()} title="Create collection">
 				New collection
 			</button>
-		</React.Fragment>);
+		</React.Fragment>;
 	}
 
-	getTitle() {
+	getTitle(): string {
 		return "Collections";
 	}
 
-	componentDidMount() {
+	componentDidMount(): void {
 		this.refreshCollections();
 		super.componentDidMount();
 	}
 
-	refreshCollections() {
+	refreshCollections(): void {
 		PhotoService.getCollections()
 			.then(collections => {
 				this.setState({ collections });
@@ -49,20 +49,20 @@ class SharedPage extends PageBaseComponent<SharedPageState> {
 			.catch(console.error);
 	}
 
-	onCreateCollectionClick() {
+	onCreateCollectionClick(): void {
 		this.setState({
 			newCollectionDialogOpen: true
 		});
 	}
 
-	createCollection(title: string) {
+	createCollection(title: string): void {
 		PhotoService.createCollection(title)
-			.then((id) => this.refreshCollections())
+			.then(() => this.refreshCollections())
 			.catch(console.error)
 			.finally(() => this.setState({newCollectionDialogOpen: false}));
 	}
 
-	render() {
+	render(): React.ReactNode {
 		return (
 			<ContentContainer paddingTop={true} className="collections">
 				{this.state.collections.map(collection => {
@@ -71,7 +71,7 @@ class SharedPage extends PageBaseComponent<SharedPageState> {
 						collection={collection}
 						onCollectionUpdated={this.refreshCollections}
 						onCollectionDeleted={this.refreshCollections}
-						/>
+						/>;
 				})}
 
 				{this.state.newCollectionDialogOpen && <ModalCreateCollection

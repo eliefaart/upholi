@@ -16,7 +16,7 @@ class Modal extends React.Component<ModalProps> {
 		super(props);
 	}
 
-	render() {
+	render(): React.ReactNode {
 		return !this.props.isOpen ? null : (
 			<ReactModal
 				isOpen={this.props.isOpen}

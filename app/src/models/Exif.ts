@@ -1,4 +1,4 @@
-export default interface Exif {
+interface Exif {
 	manufactorer: string | null;
 	model: string | null;
 	aperture: string | null;
@@ -11,3 +11,5 @@ export default interface Exif {
 	gpsLatitude: number | null;
 	gpsLongitude: number | null;
 }
+
+export default Exif;

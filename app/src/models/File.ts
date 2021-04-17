@@ -1,5 +1,7 @@
-export default interface File {
+interface File {
 	name: string,
 	status: string,
 	objectUrl: string
 }
+
+export default File;

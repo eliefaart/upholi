@@ -5,7 +5,7 @@ import GalleryPhoto from "../models/GalleryPhoto";
 interface PhotoGallerySelectableProps {
 	photos: GalleryPhoto[],
 	selectedItems: string[],
-	onPhotoSelectedChange: (photoId: string, selected: boolean) => void,
+	onPhotoSelectedChange?: (photoId: string, selected: boolean) => void,
 	onClick: (event: React.MouseEvent<Element, MouseEvent>, photo: { index: number }) => void
 }
 
@@ -30,8 +30,7 @@ class PhotoGallerySelectable extends React.Component<PhotoGallerySelectableProps
 		return viewModel;
 	}
 
-	render() {
-		const galleryComponent = this;
+	render(): React.ReactNode {
 		const photoHeight = 200;	// Target height for algorithm, but exact height will vary a bit.
 		const photoMargin = 3;
 
@@ -39,82 +38,89 @@ class PhotoGallerySelectable extends React.Component<PhotoGallerySelectableProps
 
 		// Inline-component representing one photo tile.
 		//{ index: number, onClick, photo: Photo, margin: number, direction: string, top: number, left: number, key: string }
-		const imageRenderer: React.FunctionComponent<RenderImageProps<{}>> = (renderImageProps: RenderImageProps<{}>) => {
-			const imgStyle: React.CSSProperties = {
-				backgroundImage: "url(\"" + renderImageProps.photo.src + "\")",
-				margin: renderImageProps.margin,
-				width: renderImageProps.photo.width,
-				height: renderImageProps.photo.height,
-			};
+		const imageRenderer: React.FunctionComponent<RenderImageProps<Record<string, never>>> = (renderImageProps: RenderImageProps<Record<string, never>>) => {
+			if (renderImageProps.photo.key) {
+				const imgStyle: React.CSSProperties = {
+					backgroundImage: "url(\"" + renderImageProps.photo.src + "\")",
+					margin: renderImageProps.margin,
+					width: renderImageProps.photo.width,
+					height: renderImageProps.photo.height,
+				};
 
-			if (renderImageProps.direction === "column") {
-				imgStyle.position = "absolute";
-				imgStyle.left = renderImageProps.left;
-				imgStyle.top = renderImageProps.top;
-			}
+				if (renderImageProps.direction === "column") {
+					imgStyle.position = "absolute";
+					imgStyle.left = renderImageProps.left;
+					imgStyle.top = renderImageProps.top;
+				}
 
-			const containerStyle: React.CSSProperties = {
-				position: "relative"
-			};
+				const containerStyle: React.CSSProperties = {
+					position: "relative"
+				};
 
-			const photoMargin = parseInt(renderImageProps.margin ?? "0");
-			const checkboxLabelStyle: React.CSSProperties = {
-				position: "absolute",
-				top: 0 + (photoMargin * 2),
-				left: 0 + (photoMargin * 2),
-			};
+				const photoMargin = parseInt(renderImageProps.margin ?? "0");
+				const checkboxLabelStyle: React.CSSProperties = {
+					position: "absolute",
+					top: 0 + (photoMargin * 2),
+					left: 0 + (photoMargin * 2),
+				};
 
-			const checkboxId = "photo_select_" + renderImageProps.photo.key;
-			const isSelected = galleryComponent.props.selectedItems.indexOf(renderImageProps.photo.key!) !== -1;
-			const anySelected = galleryComponent.props.selectedItems.length > 0;
-			const cssClass = "photo"
-				+ " " + (isSelected ? "selected" : "")
-				+ " " + (anySelected ? "any-other-selected" : "");
+				const checkboxId = "photo_select_" + renderImageProps.photo.key;
+				const isSelected = this.props.selectedItems.indexOf(renderImageProps.photo.key) !== -1;
+				const anySelected = this.props.selectedItems.length > 0;
+				const cssClass = "photo"
+					+ " " + (isSelected ? "selected" : "")
+					+ " " + (anySelected ? "any-other-selected" : "");
 
-			const onPhotoClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-				if (anySelected) {
-					if (galleryComponent.props.onPhotoSelectedChange) {
-						galleryComponent.props.onPhotoSelectedChange(renderImageProps.photo.key!, !isSelected);
+				const onPhotoClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+					if (anySelected) {
+						if (this.props.onPhotoSelectedChange && renderImageProps.photo.key) {
+							this.props.onPhotoSelectedChange(renderImageProps.photo.key, !isSelected);
+						}
 					}
-				}
-				else if (renderImageProps.onClick) {
-					renderImageProps.onClick(event, {
-						index: renderImageProps.index
-					});
-					// {
-					// 	photo: renderImageProps.photo
-					// 	index: renderImageProps.index
-					// });
-				}
+					else if (renderImageProps.onClick) {
+						renderImageProps.onClick(event, {
+							index: renderImageProps.index
+						});
+						// {
+						// 	photo: renderImageProps.photo
+						// 	index: renderImageProps.index
+						// });
+					}
+				};
+
+				const onPhotoSelectedChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
+					const checked = event.target.checked;
+
+					if (this.props.onPhotoSelectedChange && renderImageProps.photo.key) {
+						this.props.onPhotoSelectedChange(renderImageProps.photo.key, checked);
+					}
+				};
+
+				const onContextMenu = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+					event.preventDefault();
+					if (this.props.onPhotoSelectedChange && renderImageProps.photo.key) {
+						this.props.onPhotoSelectedChange(renderImageProps.photo.key, !isSelected);
+					}
+				};
+
+				return <div key={renderImageProps.photo.key} style={containerStyle} className={cssClass}>
+					<input type="checkbox" id={checkboxId} name={checkboxId}
+						checked={isSelected}
+						onChange={onPhotoSelectedChanged}/>
+					<label htmlFor={checkboxId} style={checkboxLabelStyle}></label>
+					{/* Render a div instead of an img element. This is solely to prevent the default (longpress) context menu to appear in mobile browsers */}
+					<div
+						id={renderImageProps.photo.key}
+						className="photoImg"
+						style={imgStyle}
+						onClick={onPhotoClick}
+						onContextMenu={onContextMenu}
+					/>
+				</div>;
 			}
-
-			const onPhotoSelectedChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
-				let checked = event.target.checked;
-
-				if (galleryComponent.props.onPhotoSelectedChange) {
-					galleryComponent.props.onPhotoSelectedChange(renderImageProps.photo.key!, checked);
-				}
-			};
-
-			const onContextMenu = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-				event.preventDefault();
-				galleryComponent.props.onPhotoSelectedChange(renderImageProps.photo.key!, !isSelected)
+			else {
+				return null;
 			}
-
-			return <div key={renderImageProps.photo.key} style={containerStyle} className={cssClass}>
-				<input type="checkbox" id={checkboxId} name={checkboxId}
-					checked={isSelected}
-					onChange={onPhotoSelectedChanged}/>
-				<label htmlFor={checkboxId} style={checkboxLabelStyle}></label>
-				{/* Render a div instead of an img element. This is solely to prevent the default (longpress) context menu to appear in mobile browsers */}
-				<div
-					id={renderImageProps.photo.key}
-					className="photoImg"
-					style={imgStyle}
-					onClick={onPhotoClick}
-					onContextMenu={onContextMenu}
-				/>
-			</div>;
 		};
 
 		return (

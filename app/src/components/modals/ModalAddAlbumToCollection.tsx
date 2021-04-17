@@ -15,7 +15,7 @@ class ModalAddAlbumToCollection extends React.Component<ModalAddAlbumToCollectio
 		super(props);
 	}
 
-	render() {
+	render(): React.ReactNode {
 		return <Modal
 			title="Choose album to add to collection"
 			isOpen={this.props.isOpen}

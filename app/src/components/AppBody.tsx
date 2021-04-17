@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Route } from "react-router-dom";
-import 'react-toastify/dist/ReactToastify.css';
+import "react-toastify/dist/ReactToastify.css";
 import LibraryPage from "./pages/LibraryPage";
 import AlbumsPage from "./pages/AlbumsPage";
 import AlbumPage from "./pages/AlbumPage";
@@ -9,9 +9,7 @@ import SharedPage from "./pages/SharedPage";
 import SharedCollectionPage from "./pages/SharedCollectionPage";
 import Header from "./Header";
 
-interface AppBodyProps {
-
-}
+interface AppBodyProps { }
 
 interface AppBodyState {
 	header: {
@@ -34,13 +32,13 @@ class AppBody extends React.Component<AppBodyProps, AppBodyState> {
 				actions: null,
 				contextMenu: null
 			}
-		}
+		};
 	}
 
 	/**
 	 * Handle updated header content received from child component
 	 */
-	updateHeader(renderNavMenu: boolean, actions: JSX.Element | null, contextMenu: JSX.Element | null) {
+	updateHeader(renderNavMenu: boolean, actions: JSX.Element | null, contextMenu: JSX.Element | null): void {
 		this.setState({
 			header: {
 				renderMenu: renderNavMenu,
@@ -50,15 +48,17 @@ class AppBody extends React.Component<AppBodyProps, AppBodyState> {
 		});
 	}
 
-	render() {
-		const fnRenderRoute = (path: string, component: any /* Correct type = ? */, requiresAuthentication: boolean) => {
+	render(): React.ReactNode {
+		// eslint-disable-next-line  @typescript-eslint/no-explicit-any
+		const fnRenderRoute = (path: string, component: any, requiresAuthentication: boolean) => {
+			// eslint-disable-next-line  @typescript-eslint/no-explicit-any
 			return <Route path={path} exact render={(props: any) => {
 				props.onHeaderUpdated = (renderNavMenu: boolean, actions: JSX.Element | null, contextMenu: JSX.Element | null) => this.updateHeader(renderNavMenu, actions, contextMenu);
 				props.requiresAuthentication = requiresAuthentication;
 				props.renderHeaderNavMenu = requiresAuthentication;	// Can determine this based on wether auth is required for now
 
 				return React.createElement(component, props);
-			}}/>
+			}}/>;
 		};
 
 		return (

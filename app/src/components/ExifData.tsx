@@ -10,25 +10,25 @@ class ExifData extends React.Component<ExifDataProps> {
 		super(props);
 	}
 
-	createLocationUri(lat: number, lon: number) {
+	createLocationUri(lat: number, lon: number): string {
 		return "https://www.openstreetmap.org/#map=18/" + lat + "/" + lon;
 	}
 
-	render() {
+	render(): React.ReactNode {
 		// Prepare exposure display text
 		let exposureText = "";
-		if (!!this.props.exif.aperture)
+		if (this.props.exif.aperture)
 			exposureText += this.props.exif.aperture + " ";
-		if (!!this.props.exif.exposureTime)
+		if (this.props.exif.exposureTime)
 			exposureText += this.props.exif.exposureTime + " ";
-		if (!!this.props.exif.iso)
+		if (this.props.exif.iso)
 			exposureText += "ISO-" + this.props.exif.iso;
 
 		// Prepare focal length display text
 		let focalLengthText = null;
-		if (!!this.props.exif.focalLength) {
+		if (this.props.exif.focalLength) {
 			focalLengthText = this.props.exif.focalLength + "mm";
-			if (!!this.props.exif.focalLength35mmEquiv) {
+			if (this.props.exif.focalLength35mmEquiv) {
 				focalLengthText += " (" + this.props.exif.focalLength35mmEquiv + "mm in 35mm equivalent)";
 			}
 
@@ -36,10 +36,10 @@ class ExifData extends React.Component<ExifDataProps> {
 
 		// Prepare date taken display text
 		let dateTakenText = null;
-		if (!!this.props.exif.dateTaken) {
-			let date = new Date(this.props.exif.dateTaken);
+		if (this.props.exif.dateTaken) {
+			const date = new Date(this.props.exif.dateTaken);
 			// This check verifies if parsing from string was succesfull
-			if (date.getTime() !== NaN) {
+			if (!isNaN(date.getTime())) {
 				dateTakenText = date.toLocaleString();
 			}
 		}
@@ -74,7 +74,7 @@ class ExifData extends React.Component<ExifDataProps> {
 
 			{!!locationText && <div className="property">
 				<span className="name">Location</span>
-				<a className="value" target="_blank" href={locationUri as string}>{locationText}</a>
+				<a className="value" target="_blank" href={locationUri as string} rel="noreferrer">{locationText}</a>
 			</div>}
 		</div>;
 	}

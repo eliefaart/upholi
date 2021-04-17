@@ -13,7 +13,7 @@ class ModalCreateCollection extends React.Component<ModalCreateCollectionProps> 
 		super(props);
 	}
 
-	onOkButtonClick() {
+	onOkButtonClick(): void {
 		const form = document.getElementById("form-create-collection");
 		if (form) {
 			const title = form.getElementsByTagName("input")[0].value;
@@ -21,7 +21,7 @@ class ModalCreateCollection extends React.Component<ModalCreateCollectionProps> 
 		}
 	}
 
-	render() {
+	render(): React.ReactNode {
 		return <Modal
 			title="Create collection"
 			className={this.props.className + " modalCreateCollection"}

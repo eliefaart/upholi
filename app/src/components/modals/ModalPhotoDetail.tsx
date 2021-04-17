@@ -28,17 +28,17 @@ class ModalPhotoDetail extends React.Component<ModalPhotoDetailProps, ModalPhoto
 		};
 	}
 
-	componentDidMount() {
+	componentDidMount(): void {
 		this.getPhotoInfo();
 	}
 
-	componentDidUpdate(prevProps: ModalPhotoDetailProps) {
+	componentDidUpdate(prevProps: ModalPhotoDetailProps): void {
 		if (this.props.photoId && this.isRequestingPhotoId !== this.props.photoId && (this.state.photo == null || this.state.photo?.id !== prevProps.photoId)) {
 			this.getPhotoInfo();
 		}
 	}
 
-	getPhotoInfo() {
+	getPhotoInfo(): void {
 		if (this.props.photoId) {
 			const fnOnPhotoDataReceived = (photo: Photo) => {
 				this.setState({ photo });
@@ -53,7 +53,7 @@ class ModalPhotoDetail extends React.Component<ModalPhotoDetailProps, ModalPhoto
 
 	}
 
-	render() {
+	render(): React.ReactNode {
 		if (!this.props.photoId) {
 			return null;
 		}
@@ -78,7 +78,7 @@ class ModalPhotoDetail extends React.Component<ModalPhotoDetailProps, ModalPhoto
 				<PhotoDetail
 					src={previewUrl}
 					isVideo={!!this.state.photo && this.state.photo.contentType.startsWith("video/")}
-					exif={!!this.state.photo ? this.state.photo.exif : null} />
+					exif={this.state.photo ? this.state.photo.exif : null} />
 			</Modal>
 		);
 	}

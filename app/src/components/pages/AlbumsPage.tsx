@@ -16,28 +16,28 @@ class AlbumsPage extends PageBaseComponent<AlbumsPageState> {
 
 		this.state = {
 			newAlbumDialogOpen: false
-		}
+		};
 	}
 
 	getHeaderActions(): JSX.Element {
 		return <React.Fragment>
-			{<button onClick={(e) => this.onCreateAlbumClick()} title="Create album">
+			{<button onClick={() => this.onCreateAlbumClick()} title="Create album">
 				New album
 			</button>}
 		</React.Fragment>;
 	}
 
-	getTitle() {
+	getTitle(): string {
 		return "Albums";
 	}
 
-	onCreateAlbumClick() {
+	onCreateAlbumClick(): void {
 		this.setState({
 			newAlbumDialogOpen: true
 		});
 	}
 
-	render() {
+	render(): React.ReactNode {
 		const history = this.context.history;
 
 		return (

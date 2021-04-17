@@ -13,7 +13,7 @@ class ModalUploadProgress extends React.Component<ModalUploadProgressProps> {
 		super(props);
 	}
 
-	render() {
+	render(): React.ReactNode {
 		return (
 			<Modal
 				title="Upload progress"
