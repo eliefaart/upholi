@@ -6,6 +6,9 @@ on:
       - '.github/workflows/server.yml'
       - 'server/**'
 
+env:
+  IMAGE_NAME: upholi-server
+
 jobs:
   main:
     runs-on: ubuntu-latest
