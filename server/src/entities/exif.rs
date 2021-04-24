@@ -106,7 +106,7 @@ impl Exif {
 			}
 		}
 	}
-	
+
 	/// Convert exif field to chrono::DateTime<Utc>
 	fn convert_exif_to_datetime(entry: &rexif::ExifEntry) -> Option<chrono::DateTime<Utc>> {
 		match &entry.value {
@@ -142,7 +142,7 @@ impl Exif {
 		}
 	}
 
-	/// Remove the spaces from the string-value contained within the option. 
+	/// Remove the spaces from the string-value contained within the option.
 	/// If the option contains None, this function will return None.
 	fn remove_spaces(option: &Option<String>) -> Option<String> {
 		match option {

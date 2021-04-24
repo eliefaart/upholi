@@ -75,7 +75,7 @@ pub async fn run_server() -> std::io::Result<()>{
 			)
 	})
 	.bind(address)
-	.unwrap_or_else(|_| panic!(format!("Failed to bind to {}, perhaps the port is in use?", address)))
+	.unwrap_or_else(|_| panic!("Failed to bind to address, perhaps the port is in use?"))
 	.run()
 	.await
 }

@@ -224,7 +224,7 @@ impl DatabaseExt for MongoDatabase {
 		let users = get_items_from_cursor(cursor)?;
 
 		match users.len() {
-			1 => Ok(Some(users.into_iter().nth(0).unwrap())),
+			1 => Ok(Some(users.into_iter().next().unwrap())),
 			0 => Ok(None),
 			_ => Err(Box::from(format!("Multiple users found for identity provider '{}' and identity provider user ID '{}'. There cannot be more than one.", identity_provider, identity_provider_user_id)))
 		}

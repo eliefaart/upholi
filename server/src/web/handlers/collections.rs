@@ -18,7 +18,7 @@ struct RotateTokenResult {
 
 /// Get all collections
 pub async fn get_collections(user: User) -> impl Responder {
-    match Collection::get_all_as_user(user.id.to_string()) {
+    match Collection::get_all_as_user(user.id) {
 		Ok(collections) => {
 			let client_collections: Vec<ClientCollection> = collections.into_iter()
 				.map(|collection| ClientCollection::from(&collection)).collect();
@@ -95,7 +95,7 @@ pub async fn update_collection(session: Session, collection_id: web::Path<String
 				// if it is, then update it in database
 				// if it is not provided, then it must already exist in database, otherwise request is invalid
 				if let Some(password) = &sharing_options.password {
-					if password.len() == 0 {
+					if password.is_empty() {
 						return create_bad_request_response(Box::from("Empty password provided"));
 					}
 
@@ -106,10 +106,8 @@ pub async fn update_collection(session: Session, collection_id: web::Path<String
 						}
 					}
 				}
-				else {
-					if collection.sharing.password_hash.is_none() {
-						create_bad_request_response(Box::from("Missing password in request"));
-					}
+				else if collection.sharing.password_hash.is_none() {
+					create_bad_request_response(Box::from("Missing password in request"));
 				}
 			}
 			else {

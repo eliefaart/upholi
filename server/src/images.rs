@@ -44,7 +44,7 @@ impl Image {
 		}
 
 		// For some orientations, I need to swap the width and height
-		if exif_orientation >= 5 && exif_orientation <= 8 {
+		if (5..=8).contains(&exif_orientation) {
 			std::mem::swap(&mut height, &mut width)
 		}
 

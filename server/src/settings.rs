@@ -75,9 +75,9 @@ impl Default for Settings {
 
 impl Settings {
 	/// Get all application settings
-	/// 
+	///
 	/// # Panics
-	/// 
+	///
 	/// Panics if anything went wrong
 	pub fn new() -> Self {
 
@@ -85,7 +85,7 @@ impl Settings {
 
 		// Set defaults from file
 		config.merge(File::with_name("config/default")).expect("Default config file not found");
-		
+
 		// TODO: How does this work with field names containing underscores?
 		// I would prefer to use this method instead of the solution below,
 		// but not sure how to get around underscores issue.
@@ -126,22 +126,22 @@ impl Settings {
 		};
 		Ok(())
 	}
-	
+
 	/// Get the value of an environment variable if it exists
 	fn get_env_var(key: &str) -> Option<String> {
 		var(key).ok()
 	}
 
 	/// Update fields of given OauthProvider from environment variables.
-	/// 
+	///
 	/// Looks for env vars with name format: HB_OAUTH_<PROVIDER_ID>_<FIELD_KEY>
 	/// Where PROVIDER_ID equals the value in OAuthProvider.provider_id (ignoring case)
 	/// And FIELD_KEY is one of the available fields within OAuthProvider:
-	///  - CLIENTID
-	///	 - CLIENTSECRET
-	///	 - AUTHURL
-	///	 - TOKENURL
-	///	 - USERINFOURL
+	/// - CLIENTID
+	///	- CLIENTSECRET
+	///	- AUTHURL
+	///	- TOKENURL
+	///	- USERINFOURL
 	/// For example:
 	///  - HB_OAUTH_GITHUB_CLIENTSECRET
 	fn update_oauth_provider_from_env_vars(oauth_provider: &mut OAuthProvider) {
