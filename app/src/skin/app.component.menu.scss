@@ -4,7 +4,7 @@
 	flex-direction: column;
 	height: 100vh;
 	max-height: 100vh;
-	border-left: 3px solid $colorBackgroundAlt;
+	border-left: 3px solid var(--colorBackgroundAlt);
 
 	transition-property: width;
 
@@ -49,7 +49,7 @@
 			text-overflow: ellipsis;
 
 			&:hover, &.active {
-				color: $colorAccent;
+				color: var(--colorAccent);
 			}
 		}
 	}

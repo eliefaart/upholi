@@ -11,8 +11,8 @@
 			background-size: cover;
 			background-position: center center;
 			background-repeat: no-repeat;
-			background-color: $colorBackgroundAlt;
-			border: 0px solid $colorAccent;
+			background-color: var(--colorBackgroundAlt);
+			border: 0px solid var(--colorAccent);
 			transition-property: border-width;
 		}
 
@@ -38,14 +38,14 @@
 			display: none;
 
 			&:checked+label {
-				background: $colorAccent;
+				background: var(--colorAccent);
 			}
 		}
 
 		label {
 			display: none;
 			cursor: pointer;
-			background: $colorText;
+			background: var(--colorText);
 			width: 20px;
 			height: 20px;
 			border-radius: 20px;

@@ -7,7 +7,7 @@
 
 	.collection {
 		padding: $spacingLarge;
-		background: $colorBackgroundAlt;
+		background: var(--colorBackgroundAlt);
 		border-radius: $borderRadius;
 
 		.head {

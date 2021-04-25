@@ -9,14 +9,14 @@ $modalHeaderHeight: $buttonHeight;
 	z-index: 3;
 	display: flex;
 	justify-content: center;
-	background: $colorBackgroundShadow;
+	background: var(--colorBackgroundShadow);
 }
 
 .modal {
 	position: absolute;
-	background: $colorBackground;
+	background: var(--colorBackground);
 	overflow: auto;
-	box-shadow: 0 0 5px lighten($colorBackgroundShadow, 40);
+	box-shadow: 0 0 5px var(--colorBackgroundShadow, 40);
 	border-radius: $borderRadius;
 	margin: 5%;
 
@@ -27,7 +27,7 @@ $modalHeaderHeight: $buttonHeight;
 		display: flex;
 		padding: $spacing;
 		z-index: 1;
-		background: $colorBackground;
+		background: var(--colorBackground);
 
 		.title {
 			display: flex;
@@ -68,7 +68,7 @@ $modalHeaderHeight: $buttonHeight;
 				position: absolute;
 				left: 5%;
 				width: 90%;
-				border-top: 1px solid $colorBackgroundShadow;
+				border-top: 1px solid var(--colorBackgroundShadow);
 			}
 		}
 	}

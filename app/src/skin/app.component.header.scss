@@ -1,9 +1,9 @@
 #header {
 	display: flex;
 	height: $headerHeight;
-	background: $colorHeaderBackground;
-	//background-color: $colorHeaderBackground;
-	//border-bottom: 3px solid $colorText;
+	background: var(--colorHeaderBackground);
+	//background-color: var(--colorHeaderBackground);
+	//border-bottom: 3px solid var(--colorText);
 	width: 100%;
 	z-index: 1;
 
@@ -21,12 +21,12 @@
 			padding-left: $spacingLarge;
 
 			&:hover {
-				color: $colorAccent;
+				color: var(--colorAccent);
 			}
 
 			&.active {
-				color: $colorAccent;
-				//border-bottom: 4px solid $colorAccent;
+				color: var(--colorAccent);
+				//border-bottom: 4px solid var(--colorAccent);
 			}
 		}
 	}
@@ -41,7 +41,7 @@
 		width: $headerHeight;
 		min-width: $headerHeight;
 		background-color: transparent;
-		color: $colorText;
+		color: var(--colorText);
 	}
 
 	.actions {
@@ -62,7 +62,7 @@
 
 				span {
 					margin-right: $spacing;
-					color: $colorText;
+					color: var(--colorText);
 				}
 			}
 		}
@@ -80,7 +80,7 @@
 			flex-direction: column;
 			justify-content: right;
 			align-items: center;
-			background-color: $colorBackgroundAlt;
+			background-color: var(--colorBackgroundAlt);
 			min-width: 150px;
 
 			position: fixed;
@@ -95,8 +95,8 @@
 			button {
 				border-radius: unset;
 				padding: 0 $spacing;
-				color: $colorText;
-				background-color: $colorBackgroundAlt;
+				color: var(--colorText);
+				background-color: var(--colorBackgroundAlt);
 				width: 100%;
 				margin: 0;
 				justify-content: left;
@@ -104,8 +104,8 @@
 
 				&:hover {
 					&, * {
-						background-color: $colorAccent;
-						color: $colorTextContrast;
+						background-color: var(--colorAccent);
+						color: var(--colorText)Contrast;
 					}
 				}
 			}

@@ -22,10 +22,10 @@
 
 	.checkedIcon {
 		padding-left: $spacingLarge;
-		color: $colorTextContrast;
+		color: var(--colorText)Contrast;
 	}
 	.uncheckedIcon {
 		padding-right: $spacing;
-		color: $colorText;
+		color: var(--colorText);
 	}
 }
