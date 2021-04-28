@@ -6,7 +6,8 @@ use chrono::prelude::*;
 
 use crate::error::*;
 use crate::images;
-use crate::files;
+use crate::storage;
+use crate::storage::StorageProvider;
 use crate::ids;
 use crate::entities::exif;
 use crate::database;
@@ -50,13 +51,10 @@ impl Photo {
 			let exif_orientation = exif.orientation.unwrap_or(1) as u8;
 			let image = images::Image::from_buffer(photo_bytes, exif_orientation)?;
 
-			// Store files
-			let thumbnail_file_name = format!("thumb_{}", filename);
-			let preview_file_name = format!("preview_{}", filename);
-
-			let path_original = files::store_photo(&filename, photo_bytes)?;
-			let path_thumbnail = files::store_photo(&thumbnail_file_name, &image.bytes_thumbnail)?;
-			let path_preview = files::store_photo(&preview_file_name, &image.bytes_preview)?;
+			let storage_provider = storage::get_storage_provider();
+			let path_original = storage_provider.store_file(photo_bytes)?;
+			let path_thumbnail = storage_provider.store_file(&image.bytes_thumbnail)?;
+			let path_preview = storage_provider.store_file(&image.bytes_preview)?;
 
 			// Decide 'created' date for the photo. Use 'taken on' field from exif if available, otherwise use current time
 			let created_on = {
@@ -95,7 +93,8 @@ impl Photo {
 		if exists {
 			Err(Box::from(EntityError::AlreadyExists))
 		} else {
-			let path_original = files::store_photo(&filename, photo_bytes)?;
+			let storage_provider = storage::get_storage_provider();
+			let path_original = storage_provider.store_file(photo_bytes)?;
 
 			Ok(Self {
 				id,

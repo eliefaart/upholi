@@ -1,4 +1,4 @@
-use crate::entities::session::Session;
+use crate::{entities::session::Session, storage::StorageProvider};
 use actix_web::{web, HttpRequest, HttpResponse, Responder};
 use actix_multipart::Multipart;
 
@@ -7,7 +7,7 @@ use crate::error::*;
 use crate::database;
 use crate::database::{Database, DatabaseExt, DatabaseEntity, DatabaseUserEntity};
 use crate::web::http::*;
-use crate::files;
+use crate::storage;
 use crate::entities::AccessControl;
 use crate::entities::user::User;
 use crate::entities::photo::Photo;
@@ -202,7 +202,8 @@ fn create_response_for_photo(photo_id: &str, session: Option<Session>, offer_as_
 
 /// Create an HTTP response that offers photo file at given path as download
 fn serve_photo(path: &str, file_name: &str, content_type: &str, offer_as_download: bool) -> actix_http::Response {
-	match crate::files::get_photo(path) {
+	let storage_provider = storage::get_storage_provider();
+	match storage_provider.get_file(path) {
 		Ok(file_bytes_option) => {
 			match file_bytes_option {
 				Some(file_bytes) => {
@@ -227,9 +228,10 @@ fn serve_photo(path: &str, file_name: &str, content_type: &str, offer_as_downloa
 /// Original, thumbnail and preview images.
 fn delete_photo_files(photo_id: &str) -> Result<()> {
 	if let Some(photo) = Photo::get(&photo_id)? {
-		files::delete_photo(&photo.path_original)?;
-		files::delete_photo(&photo.path_preview)?;
-		files::delete_photo(&photo.path_thumbnail)?;
+		let storage_provider = storage::get_storage_provider();
+		storage_provider.delete_file(&photo.path_original)?;
+		storage_provider.delete_file(&photo.path_preview)?;
+		storage_provider.delete_file(&photo.path_thumbnail)?;
 	}
 	Ok(())
 }

@@ -5,7 +5,7 @@ mod constants;
 mod error;
 mod database;
 mod images;
-mod files;
+mod storage;
 mod ids;
 mod settings;
 mod web;
