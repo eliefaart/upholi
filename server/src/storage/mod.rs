@@ -1,6 +1,7 @@
 use crate::error::Result;
 
-mod localdisk;
+mod local_disk;
+mod azure_storage;
 
 pub trait StorageProvider {
 	/// Store a file
@@ -16,5 +17,5 @@ pub trait StorageProvider {
 
 // Get the implementation of the storage provider trait
 pub fn get_storage_provider() -> impl StorageProvider {
-	localdisk::LocalDiskStorageProvider::new()
+	local_disk::LocalDiskStorageProvider::new()
 }
