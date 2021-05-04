@@ -17,7 +17,8 @@ export interface CreateAlbum {
 export interface UpdateAlbum {
 	title: string | null,
 	thumbPhotoId: string | null,
-	photos: string[] | null
+	photos: string[] | null,
+	tags: string[] | null
 }
 
 export interface CreateCollection {
@@ -142,23 +143,6 @@ class PhotoService {
 
 	static getPhotos(): Promise<Photo[]> {
 		return PhotoService.getJson<Photo[]>("GET", PhotoService.baseUrl() + "/photos", null);
-		// return new Promise((ok, err) => {
-		// 	PhotoService.getJson<Photo[]>("GET", PhotoService.baseUrl() + "/photos", null)
-		// 		.then((response) => {
-		// 			let photos = !response ? [] : response.map((photo) => {
-		// 				const ph: Photo = {
-		// 					photo.id,
-		// 					photo.width,
-		// 					photo.height
-		// 				};
-
-		// 				return ph;
-		// 			});
-
-		// 			ok(photos);
-		// 		})
-		// 		.catch(err);
-		// });
 	}
 
 	static deletePhotos(photoIds: string[]): Promise<Response> {
@@ -180,7 +164,8 @@ class PhotoService {
 						const updateRequestData: UpdateAlbum = {
 							title: title,
 							thumbPhotoId: photoIds[0],
-							photos: photoIds
+							photos: photoIds,
+							tags: null
 						};
 
 						PhotoService.updateAlbum(albumId, updateRequestData)
@@ -202,7 +187,8 @@ class PhotoService {
 					const updatedAlbum: UpdateAlbum = {
 						title: null,
 						thumbPhotoId: null,
-						photos: existingPhotoIds.concat(photoIds)
+						photos: existingPhotoIds.concat(photoIds),
+						tags: null
 					};
 
 					PhotoService.updateAlbum(albumId, updatedAlbum)
@@ -230,7 +216,8 @@ class PhotoService {
 		return PhotoService.updateAlbum(albumId, {
 			title: null,
 			thumbPhotoId: null,
-			photos: newPhotoIds
+			photos: newPhotoIds,
+			tags: null
 		});
 	}
 
@@ -238,7 +225,17 @@ class PhotoService {
 		return PhotoService.updateAlbum(albumId, {
 			title: null,
 			thumbPhotoId: newCoverPhotoId,
-			photos: null
+			photos: null,
+			tags: null
+		});
+	}
+
+	static updateAlbumTags(albumId: string, tags: string[]): Promise<Response> {
+		return PhotoService.updateAlbum(albumId, {
+			title: null,
+			thumbPhotoId: null,
+			photos: null,
+			tags: tags
 		});
 	}
 

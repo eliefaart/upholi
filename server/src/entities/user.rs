@@ -12,7 +12,7 @@ pub struct User {
 	pub identity_provider: String,
 
 	/// ID of user at identity provider
-	pub identity_provider_user_id: String
+	pub identity_provider_user_id: String,
 }
 
 impl DatabaseEntity for User {

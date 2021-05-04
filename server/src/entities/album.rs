@@ -18,7 +18,9 @@ pub struct Album {
 	#[serde(default)]
 	pub thumb_photo_id: Option<String>,
 	#[serde(default)]
-	pub photos: Vec<String>
+	pub photos: Vec<String>,
+
+	pub tags: Vec<String>
 }
 
 impl Album {
@@ -30,7 +32,8 @@ impl Album {
 			user_id,
 			title: title.to_string(),
 			thumb_photo_id: None,
-			photos: vec!{}
+			photos: vec!{},
+			tags: vec!{}
 		}
 	}
 
@@ -203,7 +206,8 @@ mod tests {
 				bson::oid::ObjectId::new().to_hex(),
 				bson::oid::ObjectId::new().to_hex(),
 				bson::oid::ObjectId::new().to_hex()
-			}
+			},
+			tags: vec!{}
 		}
 	}
 

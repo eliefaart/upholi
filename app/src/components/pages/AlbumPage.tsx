@@ -14,15 +14,18 @@ import { toast } from "react-toastify";
 import UrlHelper from "../../helpers/UrlHelper";
 import File from "../../models/File";
 import GalleryPhoto from "../../models/GalleryPhoto";
+import ModalEditAlbum from "../modals/ModalEditAlbum";
+import Album from "../../models/Album";
 
 const queryStringParamNamePhotoId = "photoId";
 
 interface AlbumPageState {
 	albumId: string,
-	title: string,
-	photos: GalleryPhoto[],
+	album: Album | null,
+	galleryPhotos: GalleryPhoto[],
 	selectedPhotos: string[],
 	openedPhotoId: string | null,
+	editAlbumOpen: boolean,
 	confirmDeleteAlbumOpen: boolean,
 	confirmRemovePhotosOpen: boolean,
 	uploadInProgress: boolean,
@@ -34,12 +37,16 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 	constructor(props: PageBaseComponentProps) {
 		super(props);
 
+		this.onEditAlbumClick = this.onEditAlbumClick.bind(this);
+		this.onDeleteAlbumClick = this.onDeleteAlbumClick.bind(this);
+
 		this.state = {
 			albumId: props.match.params.albumId,
-			title: "",
-			photos: [],
+			album: null,
+			galleryPhotos: [],
 			selectedPhotos: [],
 			openedPhotoId: null,
+			editAlbumOpen: false,
 			confirmDeleteAlbumOpen: false,
 			confirmRemovePhotosOpen: false,
 			uploadInProgress: false,
@@ -70,12 +77,13 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 
 	getHeaderContextMenu(): JSX.Element | null {
 		return (<React.Fragment>
-			{<button onClick={() => this.onDeleteAlbumClick()}>Delete album</button>}
+			{<button onClick={this.onEditAlbumClick}>Edit album</button>}
+			{<button onClick={this.onDeleteAlbumClick}>Delete album</button>}
 		</React.Fragment>);
 	}
 
 	getTitle(): string {
-		return "Album - " + this.state.title;
+		return "Album - " + this.state.album?.title;
 	}
 
 	componentDidMount(): void {
@@ -97,10 +105,10 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 
 	refreshPhotos(): void {
 		PhotoService.getAlbum(this.state.albumId)
-			.then((response) => {
+			.then((album) => {
 				this.setState({
-					title: response.title,
-					photos: response.photos.map((photo): GalleryPhoto => {
+					album,
+					galleryPhotos: album.photos.map((photo): GalleryPhoto => {
 						return {
 							id: photo.id,
 							src: PhotoService.baseUrl() + "/photo/" + photo.id + "/thumb",
@@ -119,8 +127,14 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 		});
 	}
 
+	onEditAlbumClick(): void {
+		this.setState({
+			editAlbumOpen: true
+		});
+	}
+
 	deleteAlbum(): void {
-		const albumTitle = this.state.title;
+		const albumTitle = this.state.album?.title;
 
 		PhotoService.deleteAlbum(this.state.albumId)
 			.then(() => {
@@ -131,7 +145,7 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 	}
 
 	onPhotoClicked(index: number): void {
-		const photo = this.state.photos[index];
+		const photo = this.state.galleryPhotos[index];
 		this.context.history.push(document.location.pathname + "?photoId=" + photo.id);
 	}
 
@@ -159,7 +173,7 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 		const fnCloseConfirmDialog = () => this.setState({ confirmRemovePhotosOpen: false });
 
 		const selectedPhotos = this.state.selectedPhotos;
-		const photoIds = this.state.photos.map(p => p.id);
+		const photoIds = this.state.galleryPhotos.map(p => p.id);
 		const remainingPhotosAfterRemoval = photoIds.filter(id => selectedPhotos.indexOf(id) === -1);
 
 		PhotoService.updateAlbumPhotos(this.state.albumId, remainingPhotosAfterRemoval)
@@ -198,7 +212,7 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 
 	uploadFilesList (fileList: FileList): void {
 		const albumId = this.state.albumId;
-		let photoIds = this.state.photos.map(p => p.id);
+		let photoIds = this.state.galleryPhotos.map(p => p.id);
 
 		const files = UploadHelper.convertFileListToFileArrayForUploadDialog(fileList);
 
@@ -240,58 +254,68 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 	}
 
 	render(): React.ReactNode {
-		return (
-			<ContentContainer onDrop={(event) => this.onFilesDropped(event)}>
-				<div className="topBar">
-					<h1>{this.state.title}</h1>
-				</div>
+		if (!this.state.album) {
+			return null;
+		}
+		else {
+			return (
+				<ContentContainer onDrop={(event) => this.onFilesDropped(event)}>
+					<div className="topBar">
+						<h1>{this.state.album.title}</h1>
+					</div>
 
-				{!!this.state.title && this.state.photos.length === 0 &&
-					<span className="centerText">This album has no photos.</span>
-				}
+					{!!this.state.album.title && this.state.galleryPhotos.length === 0 &&
+						<span className="centerText">This album has no photos.</span>
+					}
 
-				{this.state.photos.length > 0 && <PhotoGallerySelectable
-					onClick={(_, target) => this.onPhotoClicked(target.index)}
-					photos={this.state.photos}
-					selectedItems={this.state.selectedPhotos}
-					onPhotoSelectedChange={(photoId, selected) => this.onPhotoSelectedChange(photoId, selected)}/>
-				}
+					{this.state.galleryPhotos.length > 0 && <PhotoGallerySelectable
+						onClick={(_, target) => this.onPhotoClicked(target.index)}
+						photos={this.state.galleryPhotos}
+						selectedItems={this.state.selectedPhotos}
+						onPhotoSelectedChange={(photoId, selected) => this.onPhotoSelectedChange(photoId, selected)}/>
+					}
 
-				{this.state.openedPhotoId && <ModalPhotoDetail
-					isOpen={!!this.state.openedPhotoId}
-					photoId={this.state.openedPhotoId}
-					onRequestClose={() => this.context.history.push(document.location.pathname + "?" + UrlHelper.removeQueryStringParam(document.location.search, queryStringParamNamePhotoId))}
-				/>}
+					{this.state.openedPhotoId && <ModalPhotoDetail
+						isOpen={!!this.state.openedPhotoId}
+						photoId={this.state.openedPhotoId}
+						onRequestClose={() => this.context.history.push(document.location.pathname + "?" + UrlHelper.removeQueryStringParam(document.location.search, queryStringParamNamePhotoId))}
+					/>}
 
-				<ModalConfirmation
-					title="Delete album"
-					isOpen={this.state.confirmDeleteAlbumOpen}
-					onRequestClose={() => this.setState({confirmDeleteAlbumOpen: false})}
-					onOkButtonClick={() => this.deleteAlbum()}
-					okButtonText="Delete"
-					confirmationText={"Album '" + this.state.title + "' will be deleted."}
-					/>
+					<ModalEditAlbum
+						isOpen={this.state.editAlbumOpen}
+						onRequestClose={() => this.setState({editAlbumOpen: false})}
+						album={this.state.album}/>
 
-				<ModalConfirmation
-					title="Remove photos"
-					isOpen={this.state.confirmRemovePhotosOpen}
-					onRequestClose={() => this.setState({confirmRemovePhotosOpen: false})}
-					onOkButtonClick={() => this.removeSelectedPhotosFromAlbum()}
-					okButtonText="Remove"
-					confirmationText={this.state.selectedPhotos.length + " photos will be removed from album '" + this.state.title + "'."}
-					/>
+					<ModalConfirmation
+						title="Delete album"
+						isOpen={this.state.confirmDeleteAlbumOpen}
+						onRequestClose={() => this.setState({confirmDeleteAlbumOpen: false})}
+						onOkButtonClick={() => this.deleteAlbum()}
+						okButtonText="Delete"
+						confirmationText={"Album '" + this.state.album.title + "' will be deleted."}
+						/>
 
-				<ModalUploadProgress
-					isOpen={this.state.uploadInProgress}
-					onRequestClose={() => this.setState({uploadInProgress: false})}
-					files={this.state.uploadFiles}
-					/>
+					<ModalConfirmation
+						title="Remove photos"
+						isOpen={this.state.confirmRemovePhotosOpen}
+						onRequestClose={() => this.setState({confirmRemovePhotosOpen: false})}
+						onOkButtonClick={() => this.removeSelectedPhotosFromAlbum()}
+						okButtonText="Remove"
+						confirmationText={this.state.selectedPhotos.length + " photos will be removed from album '" + this.state.album.title + "'."}
+						/>
+
+					<ModalUploadProgress
+						isOpen={this.state.uploadInProgress}
+						onRequestClose={() => this.setState({uploadInProgress: false})}
+						files={this.state.uploadFiles}
+						/>
 
 
-				{/* Hidden upload button triggered by the button in action bar. This allos me to write simpler CSS to style the action buttons. */}
-				<UploadButton className="hidden" onSubmit={(files) => this.uploadFilesList(files)}/>
-			</ContentContainer>
-		);
+					{/* Hidden upload button triggered by the button in action bar. This allos me to write simpler CSS to style the action buttons. */}
+					<UploadButton className="hidden" onSubmit={(files) => this.uploadFilesList(files)}/>
+				</ContentContainer>
+			);
+		}
 	}
 }
 

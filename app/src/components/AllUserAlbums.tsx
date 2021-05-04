@@ -3,17 +3,17 @@ import PhotoService from "../services/PhotoService";
 import Albums from "../components/Albums";
 import AlbumInfo from "../models/AlbumInfo";
 
-interface AllUserAlbumsProps {
+interface Props {
 	onClick: (album: AlbumInfo) => void
 }
 
-interface AllUserAlbumsState {
+interface State {
 	albums: AlbumInfo[],
 }
 
-class AllUserAlbums extends React.Component<AllUserAlbumsProps, AllUserAlbumsState> {
+export default class AllUserAlbums extends React.Component<Props, State> {
 
-	constructor(props: AllUserAlbumsProps) {
+	constructor(props: Props) {
 		super(props);
 
 		PhotoService.getAlbums()
@@ -33,5 +33,3 @@ class AllUserAlbums extends React.Component<AllUserAlbumsProps, AllUserAlbumsSta
 		return <Albums albums={this.state.albums} onClick={this.props.onClick}/>;
 	}
 }
-
-export default AllUserAlbums;

@@ -4,7 +4,8 @@
 interface AlbumInfo {
 	id: string,
 	title: string,
-	thumbPhotoId: string | null
+	thumbPhotoId: string | null,
+	tags: string[]
 }
 
 export default AlbumInfo;

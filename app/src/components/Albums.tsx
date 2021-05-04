@@ -1,18 +1,13 @@
 import * as React from "react";
 import AlbumInfo from "../models/AlbumInfo";
-import PhotoService from "../services/PhotoService";
 import AppStateContext from "../contexts/AppStateContext";
+import Album from "./Album";
 
 interface AlbumProps {
 	onClick: (album: AlbumInfo) => void,
 	activeAlbumId?: string,
 	albumUrl?: (albumUrl: string) => string,
 	albums: AlbumInfo[]
-}
-
-interface AlbumElementProps {
-	className?: string,
-	album: AlbumInfo
 }
 
 class Albums extends React.Component<AlbumProps> {
@@ -23,7 +18,6 @@ class Albums extends React.Component<AlbumProps> {
 	}
 
 	render(): React.ReactNode {
-		const activeAlbumId = this.props.activeAlbumId;
 		const anyAlbumActive = this.props.albums.some(album => album.id === this.props.activeAlbumId);
 
 		const history = this.context.history;
@@ -33,38 +27,9 @@ class Albums extends React.Component<AlbumProps> {
 			}
 		});
 
-		// Inline child component. TODO: Just make this a proper component, but only needs to be known within this module.
-		const AlbumElement = function (props: AlbumElementProps) {
-			const album = props.album;
-			if (album) {
-				const thumbUrl = album.thumbPhotoId ?"url('" + PhotoService.baseUrl() + "/photo/" + album.thumbPhotoId + "/thumb')" : "";
-				const isActive = album.id === activeAlbumId;
-
-				// return <div
-				// 	onClick={() => fnOnClick(album)}
-				// 	className={"album " + (props.className || "") + (isActive ? " active" : "")}
-				// 	style={{ backgroundImage: thumbUrl }}>
-				// 	<span>{album.title}</span>
-				// </div>;
-				return <div
-					onClick={() => fnOnClick(album)}
-					className={"album " + (props.className || "") + (isActive ? " active" : "")}>
-					<div className="album-thumbnail"
-						style={{ backgroundImage: thumbUrl }}>
-					</div>
-					<span title={album.title} className="album-title">{album.title}</span>
-				</div>;
-			}
-			else {
-				return null;
-			}
-		};
-
-		const albums = this.props.albums.map((album) => {
-			return (
-				<AlbumElement key={album.id} album={album} />
-			);
-		});
+		const albums = this.props.albums.map((album) => (
+			<Album key={album.id} album={album} onClick={fnOnClick} />
+		));
 
 		return <div className={"albums " + (anyAlbumActive ? "anyActive" : "")}>
 			{albums}

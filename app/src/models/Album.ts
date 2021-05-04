@@ -8,7 +8,8 @@ interface Album {
 	id: string,
 	title: string,
 	thumbPhoto: AlbumPhoto | null,
-	photos: AlbumPhoto[]
+	photos: AlbumPhoto[],
+	tags: string[]
 }
 
 export default Album;

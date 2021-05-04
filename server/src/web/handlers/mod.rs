@@ -25,7 +25,8 @@ mod requests {
 	pub struct UpdateAlbum {
 		pub title: Option<String>,
 		pub thumb_photo_id: Option<String>,
-		pub photos: Option<Vec<String>>
+		pub photos: Option<Vec<String>>,
+		pub tags: Option<Vec<String>>
 	}
 
 	#[derive(Deserialize)]
@@ -80,7 +81,8 @@ mod responses {
 		pub id: String,
 		pub title: String,
 		pub thumb_photo: Option<PhotoSmall>,
-		pub photos: Vec<PhotoSmall>
+		pub photos: Vec<PhotoSmall>,
+		pub tags: Vec<String>
 	}
 
 	#[derive(Serialize)]
@@ -155,7 +157,8 @@ mod responses {
 						}
 						Err(_) => vec!{}
 					}
-				}
+				},
+				tags: album.tags
 			}
 		}
     }

@@ -75,11 +75,14 @@ pub async fn route_update_album(session: Session, req: HttpRequest, updated_albu
 							if let Some(title) = &updated_album.title {
 								album.title = title.to_string();
 							}
+							if let Some(thumb_photo_id) = &updated_album.thumb_photo_id {
+								album.thumb_photo_id = Some(thumb_photo_id.to_string());
+							}
 							if let Some(photos) = &updated_album.photos {
 								album.photos = photos.to_vec();
 							}
-							if let Some(thumb_photo_id) = &updated_album.thumb_photo_id {
-								album.thumb_photo_id = Some(thumb_photo_id.to_string());
+							if let Some(tags) = &updated_album.tags {
+								album.tags = tags.to_vec();
 							}
 
 							match album.update() {

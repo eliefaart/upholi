@@ -1,9 +1,15 @@
+.album-tag {
+	margin: $spacingLarge;
+	h2 {
+		margin-bottom: $spacing;
+	}
+}
 
 .albums {
 	display: flex;
 	flex-wrap: wrap;
 	gap: $spacingLarge;
-	padding: 0 $spacingLarge;
+	//padding: 0 $spacingLarge;
 
 	.album {
 		position: relative;
