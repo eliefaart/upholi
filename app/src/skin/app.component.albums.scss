@@ -17,8 +17,8 @@
 
 		.album-thumbnail {
 			max-width: 40vw;
-			width: 200px;
-			height: 150px;
+			width: 160px;
+			height: 120px;
 			border-radius: $borderRadius;
 			background-size:cover;
 			background-position:center center;
@@ -29,7 +29,7 @@
 		.album-title {
 			max-width: 40vw;
 			display: inline-block;
-			width: 200px;
+			width: 160px;
 			line-height: $buttonHeight;
 			overflow: hidden;
 			text-overflow: ellipsis;
