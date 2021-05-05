@@ -1,7 +1,11 @@
 .album-tag {
 	margin: $spacingLarge;
+
 	h2 {
 		margin-bottom: $spacing;
+		padding-left: $spacing;
+		border-left: 5px solid var(--colorSecondaryAccent);
+		font-weight: normal;
 	}
 }
 

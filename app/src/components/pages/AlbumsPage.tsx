@@ -57,7 +57,7 @@ class AlbumsPage extends PageBaseComponent<AlbumsPageState> {
 
 		const renderAlbumsInTagContainer = function(tag: string, albums: AlbumInfo[]): React.ReactNode {
 			return <div key={tag} className="album-tag">
-				{tag && <h2>#{tag}</h2>}
+				{tag && <h2>{tag}</h2>}
 				{renderAlbums(albums)}
 			</div>;
 		};
