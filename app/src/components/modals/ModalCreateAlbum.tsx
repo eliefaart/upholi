@@ -10,17 +10,18 @@ interface ModalCreateAlbumProps extends ModalPropsBase {
 }
 
 class ModalCreateAlbum extends React.Component<ModalCreateAlbumProps> {
+	titleInput: React.RefObject<HTMLInputElement>;
 
 	constructor(props: ModalCreateAlbumProps) {
 		super(props);
+
+		this.titleInput = React.createRef();
 	}
 
 	submitCreateAlbum(): void {
-		const history = this.context.history;
-		const form = document.getElementById("form-create-album");
-
-		if (form) {
-			const title = form.getElementsByTagName("input")[0].value;
+		if (this.titleInput.current) {
+			const history = this.context.history;
+			const title = this.titleInput.current.value;
 
 			PhotoService.createAlbum(title, this.props.createWithPhotoIds ?? [])
 				.then(albumId => {
@@ -43,9 +44,10 @@ class ModalCreateAlbum extends React.Component<ModalCreateAlbumProps> {
 			onOkButtonClick={() => this.submitCreateAlbum()}
 			okButtonText="Create"
 			>
-				<form id="form-create-album">
-					<input name="title" placeholder="Title" maxLength={40}/>
-				</form>
+				<label>
+					Title
+					<input type="text" name="title" placeholder="Title" maxLength={40} ref={this.titleInput} />
+				</label>
 		</Modal>;
 	}
 }

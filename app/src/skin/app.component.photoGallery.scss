@@ -12,14 +12,13 @@
 			background-position: center center;
 			background-repeat: no-repeat;
 			background-color: var(--colorBackgroundAlt);
-			border: 0px solid var(--colorAccent);
+			border: 0px solid var(--colorSecondaryAccent);
 			transition-property: border-width;
 		}
 
 		&.selected .photoImg{
 			box-sizing: border-box;
 			border-width: 5px;
-
 		}
 
 		&:hover, &.any-other-selected {
@@ -38,7 +37,7 @@
 			display: none;
 
 			&:checked+label {
-				background: var(--colorAccent);
+				background: var(--colorSecondaryAccent);
 			}
 		}
 

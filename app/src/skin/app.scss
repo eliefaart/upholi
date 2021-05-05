@@ -11,10 +11,10 @@ $headerHeight: 65px;
 $buttonHeight: 40px;
 $breakpointMobile: 768px;
 
-@import "theme-default-dark";
+@import "themes/theme-default-dark";
 
-//@import "theme-solarized-dark";
-//@import "theme-solarized-light";
+//@import "themes/theme-solarized-dark";
+//@import "themes/theme-solarized-light";
 
 html {
 	touch-action: manipulation;
@@ -71,6 +71,10 @@ html {
 @import "app.component.switch";
 @import "app.component.inputPassword";
 @import "app.component.menu";
+
+label {
+	width: 100%;
+}
 
 input, select, button, .asButton {
 	margin: 10px 0 10px 0;

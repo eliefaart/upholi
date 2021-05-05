@@ -54,11 +54,18 @@ export default class ModalEditAlbum extends React.Component<Props, State> {
 				isOpen={this.props.isOpen}
 				onRequestClose={this.props.onRequestClose}
 				className={this.props.className + " modal-update-album"}
-				okButtonText={null}
+				okButtonText="Save"
+				onOkButtonClick={this.saveChanges}
 			>
-				<input type="text" placeholder="Title" ref={this.titleInput} defaultValue={this.props.album.title} />
-				<input type="text" placeholder="Tags" ref={this.tagsInput} defaultValue={this.props.album.tags.join(" ")} />
-				<button onClick={this.saveChanges}>Save</button>
+				<label>
+					Title
+					<input type="text" placeholder="Title" ref={this.titleInput} defaultValue={this.props.album.title} />
+				</label>
+
+				<label>
+					Tags
+					<input type="text" placeholder="Tags" ref={this.tagsInput} defaultValue={this.props.album.tags.join(" ")} />
+				</label>
 			</Modal>
 		);
 	}

@@ -7,16 +7,19 @@ interface Props {
 }
 
 export default class ModalSetPassword extends React.Component<Props> {
+	passwordInput: React.RefObject<HTMLInputElement>;
+
 	constructor(props:Props) {
 		super(props);
+
+		this.passwordInput = React.createRef();
 
 		this.state = {};
 	}
 
 	onOkButtonClick(): void {
-		const input = document.getElementById("password") as HTMLInputElement;
-		if (input) {
-			this.props.onOkButtonClick(input.value);
+		if (this.passwordInput.current) {
+			this.props.onOkButtonClick(this.passwordInput.current.value);
 		}
 	}
 
@@ -29,7 +32,10 @@ export default class ModalSetPassword extends React.Component<Props> {
 			okButtonText="Save"
 			onOkButtonClick={() => this.onOkButtonClick()}
 			>
-				<input id="password" type="password"/>
+				<label>
+					Password
+					<input type="password" ref={this.passwordInput} placeholder="password"/>
+				</label>
 		</Modal>;
 	}
 }
