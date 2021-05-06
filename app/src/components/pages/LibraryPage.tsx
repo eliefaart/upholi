@@ -8,26 +8,23 @@ import AppStateContext from "../../contexts/AppStateContext";
 import ModalPhotoDetail from "../modals/ModalPhotoDetail";
 import ModalConfirmation from "../modals/ModalConfirmation";
 import ModalUploadProgress from "../modals/ModalUploadProgress";
-import ModalCreateAlbum from "../modals/ModalCreateAlbum";
-import ModalAddToAlbum from "../modals/ModalAddToAlbum";
 import UploadButton from "../UploadButton";
-import { IconDelete, IconAddToAlbum } from "../Icons";
+import { IconDelete } from "../Icons";
 import { toast } from "react-toastify";
 import UrlHelper from "../../helpers/UrlHelper";
 import Photo from "../../models/Photo";
 import File from "../../models/File";
 import GalleryPhoto from "../../models/GalleryPhoto";
 import AlbumInfo from "../../models/AlbumInfo";
+import AddPhotosToAlbumButton from "../Buttons/AddPhotosToAlbumButton";
 
 const queryStringParamNamePhotoId = "photoId";
 
 interface LibraryPageState {
 	photos: GalleryPhoto[],
-	selectedPhotos: string[],
+	selectedPhotoIds: string[],
 	openedPhotoId: string | null,
-	newAlbumDialogOpen: boolean,
 	confirmDeletePhotosOpen: boolean,
-	addPhotosToAlbumDialogOpen: boolean,
 	albums: AlbumInfo[],
 	uploadInProgress: boolean,
 	uploadFiles: File[]
@@ -62,13 +59,13 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 			}
 		};
 
+		this.resetSelection = this.resetSelection.bind(this);
+
 		this.state = {
 			photos: [],
-			selectedPhotos: [],
+			selectedPhotoIds: [],
 			openedPhotoId: null,
-			newAlbumDialogOpen: false,
 			confirmDeletePhotosOpen: false,
-			addPhotosToAlbumDialogOpen: false,
 			albums: [],
 			uploadInProgress: false,
 			uploadFiles: []
@@ -77,7 +74,7 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 
 	getHeaderActions(): JSX.Element | null {
 		return (<React.Fragment>
-			{this.state.selectedPhotos.length === 0 && <button
+			{this.state.selectedPhotoIds.length === 0 && <button
 				onClick={() => {
 					const element = document.getElementById("select-photos");
 					if (element) {
@@ -87,10 +84,10 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 				title="Upload photos">
 				Upload photos
 			</button>}
-			{this.state.selectedPhotos.length > 0 && <button className="iconOnly" onClick={() => this.onClickAddSelectedPhotosToAlbum()} title="Add to album">
-				<IconAddToAlbum/>
-			</button>}
-			{this.state.selectedPhotos.length > 0 && <button className="iconOnly" onClick={() => this.onClickDeletePhotos()} title="Delete photos">
+			<AddPhotosToAlbumButton
+				selectedPhotoIds={this.state.selectedPhotoIds}
+				onSelectionAddedToAlbum={this.resetSelection}/>
+			{this.state.selectedPhotoIds.length > 0 && <button className="iconOnly" onClick={() => this.onClickDeletePhotos()} title="Delete photos">
 				<IconDelete/>
 			</button>}
 		</React.Fragment>);
@@ -218,7 +215,7 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 
 	resetSelection(): void {
 		this.setState({
-			selectedPhotos: []
+			selectedPhotoIds: []
 		});
 	}
 
@@ -229,14 +226,14 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 	}
 
 	deleteSelectedPhotos(): void {
-		PhotoService.deletePhotos(this.state.selectedPhotos)
+		PhotoService.deletePhotos(this.state.selectedPhotoIds)
 			.then(() => {
 				const remainingPhotos = this.state.photos.filter(p =>
-					this.state.selectedPhotos.indexOf(p.id) === -1);
+					this.state.selectedPhotoIds.indexOf(p.id) === -1);
 
 				this.setState({
 					photos: remainingPhotos,
-					selectedPhotos: [],
+					selectedPhotoIds: [],
 					confirmDeletePhotosOpen: false
 				});
 
@@ -245,30 +242,8 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 			.catch(console.error);
 	}
 
-	onClickAddSelectedPhotosToAlbum(): void {
-		PhotoService.getAlbums()
-			.then((albums) => {
-				this.setState({
-					albums: albums,
-					addPhotosToAlbumDialogOpen: true
-				});
-			});
-	}
-
-	addSelectedPhotosToAlbum(albumId: string): void {
-		PhotoService.addPhotosToAlbum(albumId, this.state.selectedPhotos)
-			.then(() => {
-				this.setState({
-					selectedPhotos: [],
-					addPhotosToAlbumDialogOpen: false
-				});
-				toast.info("Photos added to album.");
-			})
-			.catch(console.error);
-	}
-
 	onPhotoSelectedChange(photoId: string, selected: boolean): void {
-		const selectedPhotos = this.state.selectedPhotos;
+		const selectedPhotos = this.state.selectedPhotoIds;
 
 		if (selected) {
 			selectedPhotos.push(photoId);
@@ -280,19 +255,13 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 		}
 
 		this.setState({
-			selectedPhotos: selectedPhotos
+			selectedPhotoIds: selectedPhotos
 		});
 	}
 
 	onSelectionChange(selectedPhotos: string[]): void {
 		this.setState({
-			selectedPhotos: selectedPhotos
-		});
-	}
-
-	createNewAlbum(): void {
-		this.setState({
-			newAlbumDialogOpen: true
+			selectedPhotoIds: selectedPhotos
 		});
 	}
 
@@ -343,7 +312,7 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 	render(): React.ReactNode {
 		return (
 			<ContentContainer onDrop={(event) => this.onFilesDropped(event)}>
-				<PhotoGallerySelectable photos={this.state.photos} onClick={(_, target) => this.onPhotoClicked(target.index)} selectedItems={this.state.selectedPhotos} onPhotoSelectedChange={(photoId, selected) => this.onPhotoSelectedChange(photoId, selected)} />
+				<PhotoGallerySelectable photos={this.state.photos} onClick={(_, target) => this.onPhotoClicked(target.index)} selectedItems={this.state.selectedPhotoIds} onPhotoSelectedChange={(photoId, selected) => this.onPhotoSelectedChange(photoId, selected)} />
 
 				{this.state.openedPhotoId && <ModalPhotoDetail
 					isOpen={!!this.state.openedPhotoId}
@@ -351,26 +320,13 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 					onRequestClose={() => this.context.history.push(document.location.pathname + "?" + UrlHelper.removeQueryStringParam(document.location.search, queryStringParamNamePhotoId))}
 				/>}
 
-				<ModalCreateAlbum
-					isOpen={this.state.newAlbumDialogOpen}
-					onRequestClose={() => this.setState({newAlbumDialogOpen: false})}
-					createWithPhotoIds={this.state.selectedPhotos}
-					/>
-
-				<ModalAddToAlbum
-					isOpen={this.state.addPhotosToAlbumDialogOpen}
-					onRequestClose={() => this.setState({addPhotosToAlbumDialogOpen: false})}
-					onClickNewAlbum={() => this.createNewAlbum()}
-					onClickExistingAlbum={(album) => this.addSelectedPhotosToAlbum(album.id)}
-					/>
-
 				<ModalConfirmation
 					title="Delete photos"
 					isOpen={this.state.confirmDeletePhotosOpen}
 					onRequestClose={() => this.setState({confirmDeletePhotosOpen: false})}
 					onOkButtonClick={() => this.deleteSelectedPhotos()}
 					okButtonText="Delete"
-					confirmationText={this.state.selectedPhotos.length + " photos will be deleted."}
+					confirmationText={this.state.selectedPhotoIds.length + " photos will be deleted."}
 					/>
 
 				<ModalUploadProgress

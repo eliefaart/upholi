@@ -16,6 +16,7 @@ import File from "../../models/File";
 import GalleryPhoto from "../../models/GalleryPhoto";
 import ModalEditAlbum from "../modals/ModalEditAlbum";
 import Album from "../../models/Album";
+import AddPhotosToAlbumButton from "../Buttons/AddPhotosToAlbumButton";
 
 const queryStringParamNamePhotoId = "photoId";
 
@@ -23,7 +24,7 @@ interface AlbumPageState {
 	albumId: string,
 	album: Album | null,
 	galleryPhotos: GalleryPhoto[],
-	selectedPhotos: string[],
+	selectedPhotoIds: string[],
 	openedPhotoId: string | null,
 	editAlbumOpen: boolean,
 	confirmDeleteAlbumOpen: boolean,
@@ -39,12 +40,13 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 
 		this.onEditAlbumClick = this.onEditAlbumClick.bind(this);
 		this.onDeleteAlbumClick = this.onDeleteAlbumClick.bind(this);
+		this.resetSelection = this.resetSelection.bind(this);
 
 		this.state = {
 			albumId: props.match.params.albumId,
 			album: null,
 			galleryPhotos: [],
-			selectedPhotos: [],
+			selectedPhotoIds: [],
 			openedPhotoId: null,
 			editAlbumOpen: false,
 			confirmDeleteAlbumOpen: false,
@@ -56,13 +58,16 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 
 	getHeaderActions(): JSX.Element | null {
 		return <React.Fragment>
-			{this.state.selectedPhotos.length === 1 && <button className="iconOnly" onClick={() => this.setSelectedPhotoAsAlbumCover()} title="Set album cover">
+			{this.state.selectedPhotoIds.length === 1 && <button className="iconOnly" onClick={() => this.setSelectedPhotoAsAlbumCover()} title="Set album cover">
 				<IconImage/>
 			</button>}
-			{this.state.selectedPhotos.length > 0 && <button className="iconOnly" onClick={() => this.onRemovePhotosClick()} title="Remove from album">
+			<AddPhotosToAlbumButton
+				selectedPhotoIds={this.state.selectedPhotoIds}
+				onSelectionAddedToAlbum={this.resetSelection}/>
+			{this.state.selectedPhotoIds.length > 0 && <button className="iconOnly" onClick={() => this.onRemovePhotosClick()} title="Remove from album">
 				<IconRemove/>
 			</button>}
-			{this.state.selectedPhotos.length === 0 && <button
+			{this.state.selectedPhotoIds.length === 0 && <button
 				onClick={() => {
 					const selectPhotosElement = document.getElementById("select-photos");
 					if (selectPhotosElement) {
@@ -116,9 +121,15 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 							height: photo.height
 						};
 					}),
-					selectedPhotos: []
+					selectedPhotoIds: []
 				});
 			});
+	}
+
+	resetSelection(): void {
+		this.setState({
+			selectedPhotoIds: []
+		});
 	}
 
 	onDeleteAlbumClick(): void {
@@ -152,7 +163,7 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 	setSelectedPhotoAsAlbumCover(): void {
 		const _refreshPhotos = () => this.refreshPhotos();
 
-		const photoId = this.state.selectedPhotos[0];
+		const photoId = this.state.selectedPhotoIds[0];
 
 		PhotoService.updateAlbumCover(this.state.albumId, photoId)
 			.then(() => {
@@ -172,7 +183,7 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 		const fnRefreshPhotos = () => this.refreshPhotos();
 		const fnCloseConfirmDialog = () => this.setState({ confirmRemovePhotosOpen: false });
 
-		const selectedPhotos = this.state.selectedPhotos;
+		const selectedPhotos = this.state.selectedPhotoIds;
 		const photoIds = this.state.galleryPhotos.map(p => p.id);
 		const remainingPhotosAfterRemoval = photoIds.filter(id => selectedPhotos.indexOf(id) === -1);
 
@@ -186,7 +197,7 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 	}
 
 	onPhotoSelectedChange(photoId: string, selected: boolean): void {
-		const selectedPhotos = this.state.selectedPhotos;
+		const selectedPhotos = this.state.selectedPhotoIds;
 
 		if (selected) {
 			selectedPhotos.push(photoId);
@@ -198,7 +209,7 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 		}
 
 		this.setState({
-			selectedPhotos: selectedPhotos
+			selectedPhotoIds: selectedPhotos
 		});
 	}
 
@@ -271,7 +282,7 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 					{this.state.galleryPhotos.length > 0 && <PhotoGallerySelectable
 						onClick={(_, target) => this.onPhotoClicked(target.index)}
 						photos={this.state.galleryPhotos}
-						selectedItems={this.state.selectedPhotos}
+						selectedItems={this.state.selectedPhotoIds}
 						onPhotoSelectedChange={(photoId, selected) => this.onPhotoSelectedChange(photoId, selected)}/>
 					}
 
@@ -301,7 +312,7 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 						onRequestClose={() => this.setState({confirmRemovePhotosOpen: false})}
 						onOkButtonClick={() => this.removeSelectedPhotosFromAlbum()}
 						okButtonText="Remove"
-						confirmationText={this.state.selectedPhotos.length + " photos will be removed from album '" + this.state.album.title + "'."}
+						confirmationText={this.state.selectedPhotoIds.length + " photos will be removed from album '" + this.state.album.title + "'."}
 						/>
 
 					<ModalUploadProgress

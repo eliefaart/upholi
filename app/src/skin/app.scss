@@ -26,7 +26,7 @@ html {
 		transition-property: none;
 		transition-duration: $transitionSpeed;
 		scrollbar-width: thin;
-		scrollbar-color: var(--colorBackgroundAlt) transparent;
+		scrollbar-color: var(--colorSecondaryAccent) var(--colorBackground);
 	}
 
 	body {
@@ -44,7 +44,6 @@ html {
 
 			#content {
 				overflow: auto;
-				scrollbar-color: var(--colorBackgroundAlt) var(--colorBackground);
 
 				&.padding-top {
 					padding-top: $headerHeight / 2;
