@@ -7,6 +7,7 @@ import AppStateContext from "../../contexts/AppStateContext";
 import PhotoService from "../../services/PhotoService";
 import AlbumInfo from "../../models/AlbumInfo";
 import Album from "../Album";
+import { IconHashTag } from "../Icons";
 
 interface AlbumsPageState {
 	newAlbumDialogOpen: boolean,
@@ -57,7 +58,7 @@ class AlbumsPage extends PageBaseComponent<AlbumsPageState> {
 
 		const renderAlbumsInTagContainer = function(tag: string, albums: AlbumInfo[]): React.ReactNode {
 			return <div key={tag} className="album-tag">
-				{tag && <h2>{tag}</h2>}
+				{tag && <h2><IconHashTag/>{tag}</h2>}
 				{renderAlbums(albums)}
 			</div>;
 		};
@@ -89,7 +90,7 @@ class AlbumsPage extends PageBaseComponent<AlbumsPageState> {
 				})}
 
 				{/* Also render all albums that do not have any tags */}
-				{renderAlbumsInTagContainer(tags.length === 0 ? "" : "no-tag", albumsWithoutTag)}
+				{albumsWithoutTag.length > 0 && renderAlbumsInTagContainer(tags.length === 0 ? "" : "no-tag", albumsWithoutTag)}
 
 				<ModalCreateAlbum
 					isOpen={this.state.newAlbumDialogOpen}
