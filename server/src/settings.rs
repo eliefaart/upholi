@@ -8,6 +8,8 @@ const ENV_VAR_SERVER_ADDRESS: &str = "HB_SERVER_ADDRESS";
 const ENV_VAR_DATABASE_CONNECTIONSTRING: &str = "HB_DATABASE_CONNECTIONSTRING";
 const ENV_VAR_DATABASE_NAME: &str = "HB_DATABASE_NAME";
 const ENV_VAR_STORAGE_DIRECTORYPHOTOS: &str = "HB_STORAGE_DIRECTORYPHOTOS";
+const ENV_VAR_STORAGE_AZURESTORAGEACCOUNTNAME: &str = "HB_STORAGE_AZURESTORAGEACCOUNTNAME";
+const ENV_VAR_STORAGE_AZURESTORAGEACCOUNTKEY: &str = "HB_STORAGE_AZURESTORAGEACCOUNTKEY";
 
 const ENV_VAR_OAUTH_PREFIX: &str = "HB_OAUTH";
 const ENV_VAR_OAUTH_POSTFIX_CLIENTID: &str = "CLIENTID";
@@ -16,6 +18,11 @@ const ENV_VAR_OAUTH_POSTFIX_AUTHURL: &str = "AUTHURL";
 const ENV_VAR_OAUTH_POSTFIX_TOKENURL: &str = "TOKENURL";
 const ENV_VAR_OAUTH_POSTFIX_USERINFOURL: &str = "USERINFOURL";
 
+#[derive(Debug, Deserialize)]
+pub enum StorageProvider {
+	Disk,
+	Azure
+}
 /// Application settings
 #[derive(Debug, Deserialize)]
 pub struct Settings {
@@ -41,7 +48,10 @@ pub struct Database {
 /// Photos settings
 #[derive(Debug, Deserialize)]
 pub struct Storage {
-	pub directory_photos: String
+	pub provider: StorageProvider,
+	pub directory_photos: String,
+	pub azure_storage_account_name: String,
+	pub azure_storage_account_key: String
 }
 
 /// OAuth setting of identity provider
@@ -99,6 +109,8 @@ impl Settings {
 			("database.connection_string", ENV_VAR_DATABASE_CONNECTIONSTRING),
 			("database.name", ENV_VAR_DATABASE_NAME),
 			("storage.directory_photos", ENV_VAR_STORAGE_DIRECTORYPHOTOS),
+			("storage.azure_storage_account_name", ENV_VAR_STORAGE_AZURESTORAGEACCOUNTNAME),
+			("storage.azure_storage_account_key", ENV_VAR_STORAGE_AZURESTORAGEACCOUNTKEY),
 		].iter().cloned().collect();
 
 		for setting in overwritable_settings {

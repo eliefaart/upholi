@@ -33,3 +33,8 @@ futures-util = "0.3.5"
 config = "0.10.1"
 async-trait = "0.1.36"
 pbkdf2 = "0.7.2"
+once_cell = "1.7.2" # required by 'azure-sdk-for-rust'
+azure_core = { git = "https://github.com/Azure/azure-sdk-for-rust" }
+azure_storage = { git = "https://github.com/Azure/azure-sdk-for-rust" }
+
+#azure_storage = { git = "https://github.com/Azure/azure-sdk-for-rust/tree/master/sdk/storage" }
