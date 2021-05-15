@@ -21,6 +21,10 @@ pub trait StorageProvider {
 	fn delete_file(&self, file_id: &str) -> Result<()>;
 }
 
+pub async fn test() -> Result<()> {
+	AzureStorageProvider.test().await
+}
+
 /// Store a file
 /// Returns a unique id for the file
 pub fn store_file(file_bytes: &[u8]) -> Result<String> {
