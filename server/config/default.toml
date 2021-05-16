@@ -12,7 +12,7 @@ name = "upholi"
 
 [storage]
 # Disk | Azure
-provider = "Azure"
+provider = "Disk"
 # [Required if provider = "Disk"]
 # Path to directory where photos will be stored
 # Can also by set using env var HB_STORAGE_DIRECTORYPHOTOS

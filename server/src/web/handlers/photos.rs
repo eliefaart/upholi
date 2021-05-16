@@ -16,7 +16,17 @@ use crate::web::handlers::responses::*;
 
 /// Get all photos
 pub async fn route_get_photos(user: User) -> impl Responder {
-	let _ = crate::storage::test().await;
+
+
+
+
+	//let _ = crate::storage::test().await;
+
+
+
+
+
+
 	match Photo::get_all_as_user(user.id) {
 		Ok(photos) => {
 			let photos_small: Vec<PhotoSmall> = photos.into_iter()

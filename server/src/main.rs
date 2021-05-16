@@ -18,7 +18,7 @@ lazy_static! {
 	pub static ref SETTINGS: Settings = Settings::new();
 }
 
-#[actix_rt::main]
+#[actix_web::main]
 async fn main() -> std::io::Result<()> {
 	web::run_server().await
 }
