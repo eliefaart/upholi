@@ -13,7 +13,6 @@ pub struct AzureStorageProvider {
 
 impl AzureStorageProvider { // for AzureStorageProvider {
 	pub fn new() -> AzureStorageProvider {
-		println!("{}", crate::SETTINGS.storage.azure_storage_account_key);
 		AzureStorageProvider {
 			storage_account_name: crate::SETTINGS.storage.azure_storage_account_name.to_string(),
 			storage_account_key: crate::SETTINGS.storage.azure_storage_account_key.to_string()
@@ -35,12 +34,12 @@ impl AzureStorageProvider { // for AzureStorageProvider {
 		// 	}
 		// }
 
-		println!("Containers:");
-		if let Ok(containers) = storage_account.list_containers().execute().await {
-			for container in containers.incomplete_vector.iter() {
-				println!("{}", container.name);
-			}
-		}
+		// println!("Containers:");
+		// if let Ok(containers) = storage_account.list_containers().execute().await {
+		// 	for container in containers.incomplete_vector.iter() {
+		// 		println!("{}", container.name);
+		// 	}
+		// }
 
 		Ok(())
 	}

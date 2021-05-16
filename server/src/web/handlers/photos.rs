@@ -20,7 +20,7 @@ pub async fn route_get_photos(user: User) -> impl Responder {
 
 
 
-	//let _ = crate::storage::test().await;
+	let _ = crate::storage::test().await;
 
 
 
@@ -192,7 +192,7 @@ pub fn delete_photos(user_id: String, ids: &[&str]) -> impl Responder {
 
 /// Get the HTTP response that returns a photo from disk by its id.
 /// Given user must have access to it.
-async fn create_response_for_photo(photo_id: &str, session: Option<Session>, offer_as_download: bool, select_path: fn(&Photo) -> &str) -> actix_http::Response {
+async fn create_response_for_photo(photo_id: &str, session: Option<Session>, offer_as_download: bool, select_path: fn(&Photo) -> &str) -> HttpResponse {
 	match Photo::get(photo_id) {
 		Ok(photo) => {
 			match photo {
@@ -212,7 +212,7 @@ async fn create_response_for_photo(photo_id: &str, session: Option<Session>, off
 }
 
 /// Create an HTTP response that offers photo file at given path as download
-async fn serve_photo(path: &str, file_name: &str, content_type: &str, offer_as_download: bool) -> actix_http::Response {
+async fn serve_photo(path: &str, file_name: &str, content_type: &str, offer_as_download: bool) -> HttpResponse {
 	match storage::get_file(path).await {
 		Ok(file_bytes_option) => {
 			match file_bytes_option {

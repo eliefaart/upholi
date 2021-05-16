@@ -1,4 +1,5 @@
 use actix_web::{Error, HttpRequest, HttpResponse, FromRequest};
+use actix_web::error::{ErrorInternalServerError, ErrorNotFound, ErrorUnauthorized};
 use actix_web::dev::Payload;
 use actix_multipart::{Multipart, Field};
 use actix_http::cookie::Cookie;
@@ -46,13 +47,13 @@ impl FromRequest for User {
 					Ok(user_opt) => {
 						match user_opt {
 							Some(user) => ok(user),
-							None => err(Error::from(HttpResponse::NotFound()))
+							None => err(ErrorNotFound(""))
 						}
 					},
-					Err(_) => err(Error::from(HttpResponse::InternalServerError()))
+					Err(_) => err(Error::from(ErrorInternalServerError("")))
 				}
 			},
-			None => err(Error::from(HttpResponse::Unauthorized()))
+			None => err(Error::from(ErrorUnauthorized("")))
 		}
 	}
 }
@@ -67,7 +68,7 @@ impl FromRequest for Session {
 	fn from_request(request: &HttpRequest, _: &mut Payload) -> Self::Future {
 		match get_session(request) {
 			Some(session) => ok(session),
-			None => err(Error::from(HttpResponse::Unauthorized()))
+			None => err(Error::from(ErrorUnauthorized("")))
 		}
 	}
 }
@@ -164,22 +165,22 @@ pub fn get_session_or_create_new(session_opt: Option<Session>) -> Result<Session
 }
 
 /// Create a HTTP 200 OK response
-pub fn create_ok_response() -> actix_http::Response {
+pub fn create_ok_response() -> HttpResponse {
 	HttpResponse::Ok().finish()
 }
 
 /// Create a HTTP 201 Created response
-pub fn create_created_response(id: &str) -> actix_http::Response {
+pub fn create_created_response(id: &str) -> HttpResponse {
 	HttpResponse::Created().json(CreatedResult{id: id.to_string()})
 }
 
 /// Create a HTTP 404 Not Found response
-pub fn create_not_found_response() -> actix_http::Response {
+pub fn create_not_found_response() -> HttpResponse {
 	HttpResponse::NotFound().finish()
 }
 
 /// Create a HTTP 400 Bad Request response
-pub fn create_bad_request_response(error: Box<dyn std::error::Error>) -> actix_http::Response {
+pub fn create_bad_request_response(error: Box<dyn std::error::Error>) -> HttpResponse {
 	HttpResponse::BadRequest()
 		.json(ErrorResult{
 			message: format!("{:?}", error)
@@ -187,7 +188,7 @@ pub fn create_bad_request_response(error: Box<dyn std::error::Error>) -> actix_h
 }
 
 /// Create a HTTP 500 Internal Server Error response
-pub fn create_internal_server_error_response(error: Option<Box<dyn std::error::Error>>) -> actix_http::Response {
+pub fn create_internal_server_error_response(error: Option<Box<dyn std::error::Error>>) -> HttpResponse {
 	let mut response = HttpResponse::InternalServerError();
 
 	match error {
@@ -199,6 +200,6 @@ pub fn create_internal_server_error_response(error: Option<Box<dyn std::error::E
 }
 
 /// Create a HTTP 501 Unauthorized response
-pub fn create_unauthorized_response() -> actix_http::Response {
+pub fn create_unauthorized_response() -> HttpResponse {
 	HttpResponse::Unauthorized().finish()
 }
