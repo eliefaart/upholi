@@ -4,55 +4,100 @@ use azure_core::prelude::*;
 use azure_storage::blob::prelude::*;
 use azure_storage::core::prelude::*;
 
-use super::StorageProvider;
+static PHOTO_CONTAINER_NAME: &'static str = "photos";
 
 pub struct AzureStorageProvider {
-	storage_account_name: String,
-	storage_account_key: String,
+	storage_client: Arc<StorageClient>
 }
 
-impl AzureStorageProvider { // for AzureStorageProvider {
+impl AzureStorageProvider {
+
 	pub fn new() -> AzureStorageProvider {
+		let account_name = &crate::SETTINGS.storage.azure_storage_account_name;
+		let account_key = &crate::SETTINGS.storage.azure_storage_account_key;
+
+		let reqwest_client = Box::new(reqwest::Client::new());
+		let http_client: Arc<Box<dyn HttpClient>> = Arc::new(reqwest_client);
+		let storage_account_client = StorageAccountClient::new_access_key(http_client.clone(), account_name, account_key).as_storage_client();
+
+		// tokio::spawn(async move {
+		// 	AzureStorageProvider::create_container_if_not_exists(&storage_account_client, PHOTO_CONTAINER_NAME).await;
+		// });
+
 		AzureStorageProvider {
-			storage_account_name: crate::SETTINGS.storage.azure_storage_account_name.to_string(),
-			storage_account_key: crate::SETTINGS.storage.azure_storage_account_key.to_string()
+			storage_client: storage_account_client
 		}
 	}
 
 	pub async fn test(&self) -> Result<()> {
-		let container_name = "test";
 
-		 let reqwest_client = Box::new(reqwest::Client::new());
-		 let http_client: Arc<Box<dyn HttpClient>> = Arc::new(reqwest_client);
-		 let storage_account = StorageAccountClient::new_access_key(http_client.clone(), &self.storage_account_name, &self.storage_account_key).as_storage_client();
+		let _ = AzureStorageProvider::create_container_if_not_exists(&self.storage_client, PHOTO_CONTAINER_NAME).await;
 
-		// println!("Blobs:");
-		// let container = storage_account.as_container_client(container_name);
-		// if let Ok(blobs) = container.list_blobs().execute().await {
-		// 	for blob in blobs.blobs.blobs {
-		// 		println!("{}", blob.name);
-		// 	}
+		println!("Blobs:");
+		let container = self.storage_client.as_container_client(PHOTO_CONTAINER_NAME);
+		// match container.delete().execute().await {
+		// 	Ok(_) => println!("deleted container"),
+		// 	Err(err) => println!("{}", err),
+		// }
+		// match container.create().execute().await {
+		// 	Ok(_) => println!("created container"),
+		// 	Err(err) => println!("{}", err),
+		// }
+		if let Ok(blobs) = container.list_blobs().execute().await {
+			for blob in blobs.blobs.blobs {
+				println!("{}", blob.name);
+			}
+		}
+
+		// let blob = container.as_blob_client("blob");
+		// match blob.put_block_blob(vec!{}).execute().await {
+		// 	Ok(_) => println!("created blob"),
+		// 	Err(err) => println!("{}", err),
 		// }
 
-		// println!("Containers:");
-		// if let Ok(containers) = storage_account.list_containers().execute().await {
-		// 	for container in containers.incomplete_vector.iter() {
-		// 		println!("{}", container.name);
-		// 	}
-		// }
+		println!("Containers:");
+		if let Ok(containers) = self.storage_client.list_containers().execute().await {
+			for container in containers.incomplete_vector.iter() {
+				println!("{}", container.name);
+			}
+		}
 
 		Ok(())
 	}
 
-	pub fn store_file(&self, file_bytes: &[u8]) -> Result<String> {
+	pub fn store_file(&self, _file_bytes: &[u8]) -> Result<String> {
 		Ok("".to_string())
 	}
 
-	pub async fn get_file(&self, file_id: &str) -> Result<Option<Vec<u8>>> {
+	pub async fn get_file(&self, _file_id: &str) -> Result<Option<Vec<u8>>> {
 		Ok(Some(vec!{}))
 	}
 
-	pub fn delete_file(&self, file_id: &str) -> Result<()> {
+	pub fn delete_file(&self, _file_id: &str) -> Result<()> {
 		Ok(())
+	}
+
+	/// Create container with given name, if it doesn't already exist.
+	async fn create_container_if_not_exists(storage_client: &Arc<StorageClient>, container_name: &str) -> Result<()> {
+		match storage_client.list_containers().prefix(container_name).execute().await {
+			Ok(containers) => {
+				let container_exists = containers.incomplete_vector.iter().any(|container| container.name == container_name);
+				println!("{}", container_exists);
+				if !container_exists {
+					let container = storage_client.as_container_client(container_name);
+					match container.create().execute().await {
+						Ok(_) => {
+							println!("Created collection {}", container_name);
+							Ok(())
+						},
+						Err(err) => Err(err)
+					}
+				}
+				else {
+					Ok(())
+				}
+			},
+			Err(err) => Err(err)
+		}
 	}
 }
