@@ -27,13 +27,13 @@ pub async fn test() -> Result<()> {
 
 /// Store a file
 /// Returns a unique id for the file
-pub fn store_file(file_bytes: &[u8]) -> Result<String> {
+pub async fn store_file(file_bytes: &[u8]) -> Result<String> {
 	match crate::SETTINGS.storage.provider {
 		crate::settings::StorageProvider::Disk => {
 			DiskStorageProvider.store_file(file_bytes)
 		},
 		crate::settings::StorageProvider::Azure => {
-			AzureStorageProvider.store_file(file_bytes)
+			AzureStorageProvider.store_file(file_bytes).await
 		}
 	}
 }
@@ -51,13 +51,13 @@ pub async fn get_file(file_id: &str) -> Result<Option<Vec<u8>>> {
 }
 
 /// Delete a file
-pub fn delete_file(file_id: &str) -> Result<()> {
+pub async fn delete_file(file_id: &str) -> Result<()> {
 	match crate::SETTINGS.storage.provider {
 		crate::settings::StorageProvider::Disk => {
 			DiskStorageProvider.delete_file(file_id)
 		},
 		crate::settings::StorageProvider::Azure => {
-			AzureStorageProvider.delete_file(file_id)
+			AzureStorageProvider.delete_file(file_id).await
 		}
 	}
 }

@@ -34,7 +34,7 @@ pub async fn route_get_photos(user: User) -> impl Responder {
 pub async fn route_delete_photo(user: User, req: HttpRequest) -> impl Responder {
 	let photo_id = req.match_info().get("photo_id").unwrap();
 
-	delete_photos(user.id, &[photo_id])
+	delete_photos(user.id, &[photo_id]).await
 }
 
 /// Delete multiple photos
@@ -44,7 +44,7 @@ pub async fn route_delete_photos(user: User, photo_ids: web::Json<Vec<String>>) 
 		ids.push(&id);
 	}
 
-	delete_photos(user.id, &ids)
+	delete_photos(user.id, &ids).await
 }
 
 /// Get info about a photo
@@ -113,11 +113,11 @@ pub async fn route_upload_photo(user: User, payload: Multipart) -> impl Responde
 						name if name.ends_with(".jpg")
 							|| name.ends_with(".jpeg")
 							|| name.ends_with(".png") =>
-							Photo::parse_image_bytes(user.id, &file.bytes, "image/jpeg"),
+							Photo::parse_image_bytes(user.id, &file.bytes, "image/jpeg").await,
 						name if name.ends_with(".png") =>
-							Photo::parse_image_bytes(user.id, &file.bytes, "image/png"),
+							Photo::parse_image_bytes(user.id, &file.bytes, "image/png").await,
 						name if name.ends_with(".mp4") =>
-							Photo::parse_mp4_bytes(user.id, &file.bytes),
+							Photo::parse_mp4_bytes(user.id, &file.bytes).await,
 						_ => Err(Box::from("Unsupported file type"))
 					};
 
@@ -140,7 +140,7 @@ pub async fn route_upload_photo(user: User, payload: Multipart) -> impl Responde
 
 
 /// Delete multiple photos from database and disk
-pub fn delete_photos(user_id: String, ids: &[&str]) -> impl Responder {
+pub async fn delete_photos(user_id: String, ids: &[&str]) -> impl Responder {
 	// Check if all ids to be deleted are owned by user_id
 	for id in ids {
 		match Photo::get(id) {
@@ -165,7 +165,7 @@ pub fn delete_photos(user_id: String, ids: &[&str]) -> impl Responder {
 
 	// Delete physical files for photo
 	for id in ids {
-		let result = delete_photo_files(&id);
+		let result = delete_photo_files(&id).await;
 		match result {
 			Ok(_) => {},
 			Err(error) => return create_internal_server_error_response(Some(error))
@@ -225,11 +225,11 @@ async fn serve_photo(path: &str, file_name: &str, content_type: &str, offer_as_d
 
 /// Deletes all physical files of a photo from file system
 /// Original, thumbnail and preview images.
-fn delete_photo_files(photo_id: &str) -> Result<()> {
+async fn delete_photo_files(photo_id: &str) -> Result<()> {
 	if let Some(photo) = Photo::get(&photo_id)? {
-		storage::delete_file(&photo.path_original)?;
-		storage::delete_file(&photo.path_preview)?;
-		storage::delete_file(&photo.path_thumbnail)?;
+		storage::delete_file(&photo.path_original).await?;
+		storage::delete_file(&photo.path_preview).await?;
+		storage::delete_file(&photo.path_thumbnail).await?;
 	}
 	Ok(())
 }

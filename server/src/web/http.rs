@@ -108,7 +108,7 @@ fn get_user_id(req: &HttpRequest) -> Option<String> {
 
 /// Gets all fields from multipart payload.
 pub async fn get_form_data(mut payload: Multipart) -> Result<Vec<FormData>> {
-	let mut form_data: Vec<FormData> = Vec::new();
+	let mut form_data = Vec::new();
 
 	while let Ok(Some(field)) = payload.try_next().await {
 		match field.content_disposition() {
