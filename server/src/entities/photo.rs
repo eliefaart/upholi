@@ -28,7 +28,11 @@ pub struct Photo {
 	pub path_thumbnail: String,
 	pub path_preview: String,
 	pub path_original: String,
-	pub exif: exif::Exif
+	pub exif: exif::Exif,
+
+	// pub file_id_thumbnail: String,
+	// pub file_id_preview: String,
+	// pub file_id_original: String,
 }
 
 impl Photo {
@@ -51,9 +55,9 @@ impl Photo {
 			let exif_orientation = exif.orientation.unwrap_or(1) as u8;
 			let image = images::Image::from_buffer(photo_bytes, exif_orientation)?;
 
-			let path_original = storage::store_file(photo_bytes).await?;
-			let path_thumbnail = storage::store_file(&image.bytes_thumbnail).await?;
-			let path_preview = storage::store_file(&image.bytes_preview).await?;
+			let path_original = storage::store_file(&id, &user_id, photo_bytes).await?;
+			let path_thumbnail = storage::store_file(&format!("{}-thumbnail", id), &user_id, &image.bytes_thumbnail).await?;
+			let path_preview = storage::store_file(&format!("{}-preview", id), &user_id, &image.bytes_preview).await?;
 
 			// Decide 'created' date for the photo. Use 'taken on' field from exif if available, otherwise use current time
 			let created_on = {
@@ -92,7 +96,7 @@ impl Photo {
 		if exists {
 			Err(Box::from(EntityError::AlreadyExists))
 		} else {
-			let path_original = storage::store_file(photo_bytes).await?;
+			let path_original = storage::store_file(&id, &user_id, photo_bytes).await?;
 
 			Ok(Self {
 				id,

@@ -3,8 +3,8 @@ extern crate base64;
 use image::{GenericImageView, DynamicImage, ImageFormat};
 use crate::error::*;
 
-const DIMENSIONS_THUMB: u32 = 700;
-const DIMENSIONS_PREVIEW: u32 = 2250;
+const DIMENSIONS_THUMB: u32 = 400;
+const DIMENSIONS_PREVIEW: u32 = 1500;
 
 pub struct Image {
 	pub width: u32,

@@ -21,43 +21,40 @@ pub trait StorageProvider {
 	fn delete_file(&self, file_id: &str) -> Result<()>;
 }
 
-pub async fn test() -> Result<()> {
-	AzureStorageProvider.test().await
-}
-
 /// Store a file
 /// Returns a unique id for the file
-pub async fn store_file(file_bytes: &[u8]) -> Result<String> {
+pub async fn store_file(file_id: &str, owner_user_id: &str, file_bytes: &[u8]) -> Result<String> {
 	match crate::SETTINGS.storage.provider {
 		crate::settings::StorageProvider::Disk => {
 			DiskStorageProvider.store_file(file_bytes)
 		},
 		crate::settings::StorageProvider::Azure => {
-			AzureStorageProvider.store_file(file_bytes).await
+			AzureStorageProvider.store_file(owner_user_id, file_id, file_bytes).await?;
+			Ok(file_id.to_string())
 		}
 	}
 }
 
 /// Retreive file contents
-pub async fn get_file(file_id: &str) -> Result<Option<Vec<u8>>> {
+pub async fn get_file(file_id: &str, owner_user_id: &str) -> Result<Option<Vec<u8>>> {
 	match crate::SETTINGS.storage.provider {
 		crate::settings::StorageProvider::Disk => {
 			DiskStorageProvider.get_file(file_id)
 		},
 		crate::settings::StorageProvider::Azure => {
-			AzureStorageProvider.get_file(file_id).await
+			AzureStorageProvider.get_file(owner_user_id, file_id).await
 		}
 	}
 }
 
 /// Delete a file
-pub async fn delete_file(file_id: &str) -> Result<()> {
+pub async fn delete_file(file_id: &str, owner_user_id: &str) -> Result<()> {
 	match crate::SETTINGS.storage.provider {
 		crate::settings::StorageProvider::Disk => {
 			DiskStorageProvider.delete_file(file_id)
 		},
 		crate::settings::StorageProvider::Azure => {
-			AzureStorageProvider.delete_file(file_id).await
+			AzureStorageProvider.delete_file(owner_user_id, file_id).await
 		}
 	}
 }

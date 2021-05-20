@@ -20,8 +20,5 @@ lazy_static! {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-
-	storage::test().await;
-
 	web::run_server().await
 }
