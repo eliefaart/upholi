@@ -11,6 +11,7 @@ mod settings;
 mod web;
 mod entities;
 mod passwords;
+mod encryption;
 
 lazy_static! {
 	/// Global application settings

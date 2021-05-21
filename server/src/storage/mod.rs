@@ -1,9 +1,15 @@
+use crate::encryption::{encrypt, decrypt};
 use crate::entities::user::User;
 use lazy_static::lazy_static;
 use crate::error::Result;
 
 mod local_disk;
 mod azure_storage;
+
+// Dummy key.
+// Now.. how to generate this properly per user/file. And how to store it?
+// Maybe I won't need to answer these, as the ultimate goal is end-to-end encryption.
+const TEMPORARY_ENCRYPTION_KEY: &[u8] = b"202285232d504e8b85093318f1d62815";
 
 lazy_static! {
 	pub static ref DISK_STORAGE_PROVIDER: local_disk::LocalDiskStorageProvider = local_disk::LocalDiskStorageProvider::new();
@@ -34,6 +40,10 @@ pub async fn init_storage_for_user(user: &User) -> Result<()> {
 /// Store a file
 /// Returns a unique id for the file
 pub async fn store_file(file_id: &str, owner_user_id: &str, file_bytes: &[u8]) -> Result<String> {
+	// Encrypt file bytes
+	let file_bytes = &encrypt(TEMPORARY_ENCRYPTION_KEY, &file_id.as_bytes()[0..12], file_bytes)?;
+
+	// Store bytes
 	match crate::SETTINGS.storage.provider {
 		crate::settings::StorageProvider::Disk => {
 			DISK_STORAGE_PROVIDER.store_file(file_bytes)
@@ -47,13 +57,18 @@ pub async fn store_file(file_id: &str, owner_user_id: &str, file_bytes: &[u8]) -
 
 /// Retreive file contents
 pub async fn get_file(file_id: &str, owner_user_id: &str) -> Result<Option<Vec<u8>>> {
-	match crate::SETTINGS.storage.provider {
+	let bytes = match crate::SETTINGS.storage.provider {
 		crate::settings::StorageProvider::Disk => {
 			DISK_STORAGE_PROVIDER.get_file(file_id)
 		},
 		crate::settings::StorageProvider::Azure => {
 			AZURE_STORAGE_PROVIDER.get_file(owner_user_id, file_id).await
 		}
+	}?;
+
+	match bytes {
+		Some(bytes) => Ok(Some(decrypt(TEMPORARY_ENCRYPTION_KEY, &file_id.as_bytes()[0..12], &bytes)?)),
+		None => Ok(None)
 	}
 }
 
