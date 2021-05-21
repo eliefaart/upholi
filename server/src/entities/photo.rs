@@ -7,7 +7,6 @@ use chrono::prelude::*;
 use crate::error::*;
 use crate::images;
 use crate::storage;
-use crate::storage::StorageProvider;
 use crate::ids;
 use crate::entities::exif;
 use crate::database;

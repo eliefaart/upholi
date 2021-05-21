@@ -1,6 +1,5 @@
-use crate::entities::photo::Photo;
 use std::sync::Arc;
-use crate::{error::Result, ids::create_unique_id};
+use crate::{error::Result};
 use azure_core::prelude::*;
 use azure_storage::blob::prelude::*;
 use azure_storage::core::prelude::*;
@@ -24,10 +23,11 @@ impl AzureStorageProvider {
 		}
 	}
 
-	pub async fn store_file(&self, container: &str, name: &str, bytes: &[u8]) -> Result<()> {
-		// TODO: Create container when user logs in for first time, then I don't need to do it here each time.
-		AzureStorageProvider::create_container_if_not_exists(&self.storage_client, container).await;
+	pub async fn create_container(&self, container: &str) -> Result<()> {
+		AzureStorageProvider::create_container_if_not_exists(&self.storage_client, container).await
+	}
 
+	pub async fn store_file(&self, container: &str, name: &str, bytes: &[u8]) -> Result<()> {
 		let file_bytes: Vec<u8> = bytes.iter()
 			.map(|byte| byte.to_owned())
 			.collect();

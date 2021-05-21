@@ -1,8 +1,4 @@
-use std::time::Instant;
-//use actix_cors::Cors;
 use actix_web::{App, HttpServer};
-use actix_service::Service;
-use futures::future::FutureExt;
 
 mod handlers;
 mod http;

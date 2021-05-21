@@ -1,4 +1,4 @@
-use crate::{entities::session::Session, storage::StorageProvider};
+use crate::{entities::session::Session};
 use actix_web::{web, HttpRequest, HttpResponse, Responder};
 use actix_multipart::Multipart;
 
