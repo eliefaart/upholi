@@ -6,14 +6,10 @@ use crate::error::Result;
 mod local_disk;
 mod azure_storage;
 
-// Dummy key.
-// Now.. how to generate this properly per user/file. And how to store it?
-// Maybe I won't need to answer these, as the ultimate goal is end-to-end encryption.
-const TEMPORARY_ENCRYPTION_KEY: &[u8] = b"202285232d504e8b85093318f1d62815";
-
 lazy_static! {
 	pub static ref DISK_STORAGE_PROVIDER: local_disk::LocalDiskStorageProvider = local_disk::LocalDiskStorageProvider::new();
 	pub static ref AZURE_STORAGE_PROVIDER: azure_storage::AzureStorageProvider = azure_storage::AzureStorageProvider::new();
+	pub static ref ENCRYPTION_KEY: &'static [u8] = crate::SETTINGS.storage.encryption_key.as_bytes();
 }
 
 pub trait StorageProvider {
@@ -41,7 +37,7 @@ pub async fn init_storage_for_user(user: &User) -> Result<()> {
 /// Returns a unique id for the file
 pub async fn store_file(file_id: &str, owner_user_id: &str, file_bytes: &[u8]) -> Result<String> {
 	// Encrypt file bytes
-	let file_bytes = &encrypt(TEMPORARY_ENCRYPTION_KEY, &file_id.as_bytes()[0..12], file_bytes)?;
+	let file_bytes = &encrypt(&ENCRYPTION_KEY, &file_id.as_bytes()[0..12], file_bytes)?;
 
 	// Store bytes
 	match crate::SETTINGS.storage.provider {
@@ -67,7 +63,7 @@ pub async fn get_file(file_id: &str, owner_user_id: &str) -> Result<Option<Vec<u
 	}?;
 
 	match bytes {
-		Some(bytes) => Ok(Some(decrypt(TEMPORARY_ENCRYPTION_KEY, &file_id.as_bytes()[0..12], &bytes)?)),
+		Some(bytes) => Ok(Some(decrypt(&ENCRYPTION_KEY, &file_id.as_bytes()[0..12], &bytes)?)),
 		None => Ok(None)
 	}
 }

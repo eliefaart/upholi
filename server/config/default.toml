@@ -11,8 +11,11 @@ connection_string = ""
 name = "upholi"
 
 [storage]
-# Disk | Azure
+# Possible values: Disk | Azure
 provider = "Azure"
+# 256bit encryption key used to encrypt all files
+# Can also by set using env var HB_STORAGE_ENCRYPTIONKEY
+encryption_key = ""
 # [Required if provider = "Disk"]
 # Path to directory where photos will be stored
 # Can also by set using env var HB_STORAGE_DIRECTORYPHOTOS
