@@ -21,8 +21,8 @@ impl User {
 	pub async fn create(identity_provider: String, identity_provider_user_id: String) -> Result<User> {
 		let user = User{
 			id: create_unique_id(),
-			identity_provider: identity_provider,
-			identity_provider_user_id: identity_provider_user_id
+			identity_provider,
+			identity_provider_user_id
 		};
 
 		user.insert()?;

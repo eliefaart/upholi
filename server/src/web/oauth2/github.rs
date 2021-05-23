@@ -1,8 +1,7 @@
 use crate::database;
-use crate::database::{DatabaseEntity, DatabaseExt};
+use crate::database::DatabaseExt;
 use crate::entities::user::User;
 use crate::error::*;
-use crate::ids::create_unique_id;
 use async_trait::async_trait;
 use serde::Deserialize;
 

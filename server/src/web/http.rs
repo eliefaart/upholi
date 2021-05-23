@@ -50,10 +50,10 @@ impl FromRequest for User {
 							None => err(ErrorNotFound(""))
 						}
 					},
-					Err(_) => err(Error::from(ErrorInternalServerError("")))
+					Err(_) => err(ErrorInternalServerError(""))
 				}
 			},
-			None => err(Error::from(ErrorUnauthorized("")))
+			None => err(ErrorUnauthorized(""))
 		}
 	}
 }
@@ -68,7 +68,7 @@ impl FromRequest for Session {
 	fn from_request(request: &HttpRequest, _: &mut Payload) -> Self::Future {
 		match get_session(request) {
 			Some(session) => ok(session),
-			None => err(Error::from(ErrorUnauthorized("")))
+			None => err(ErrorUnauthorized(""))
 		}
 	}
 }

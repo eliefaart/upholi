@@ -206,29 +206,6 @@ async fn create_response_for_photo(photo_id: &str, session: Option<Session>, off
 }
 
 /// Create an HTTP response that offers photo file at given path as download
-// async fn serve_photo(file_id: &str, file_name: &str, content_type: &str, offer_as_download: bool) -> HttpResponse {
-// 	match storage::get_file(file_id).await {
-// 		Ok(file) => {
-// 			match file {
-// 				Some(bytes) => {
-// 					HttpResponse::Ok()
-// 						.content_type(content_type)
-// 						.header(http::header::CONTENT_DISPOSITION,
-// 							if offer_as_download {
-// 								format!("attachment; filename=\"{}\"", file_name)
-// 							} else {
-// 								"inline;".to_string()
-// 							})
-// 						.body(bytes)
-// 				},
-// 				None => create_internal_server_error_response(Some(Box::from(FileError::NotFound)))
-// 			}
-// 		},
-// 		Err(error) => create_internal_server_error_response(Some(error))
-// 	}
-// }
-
-/// Create an HTTP response that offers photo file at given path as download
 async fn serve_photo(file_id: &str, photo: &Photo, offer_as_download: bool) -> HttpResponse {
 	match storage::get_file(file_id, &photo.user_id).await {
 		Ok(file) => {
@@ -236,12 +213,13 @@ async fn serve_photo(file_id: &str, photo: &Photo, offer_as_download: bool) -> H
 				Some(bytes) => {
 					HttpResponse::Ok()
 						.content_type(photo.content_type.to_owned())
-						.header(http::header::CONTENT_DISPOSITION,
+						.append_header((http::header::CONTENT_DISPOSITION,
 							if offer_as_download {
 								format!("attachment; filename=\"{}\"", &photo.name)
 							} else {
 								"inline;".to_string()
-							})
+							}
+						))
 						.body(bytes)
 				},
 				None => create_internal_server_error_response(Some(Box::from(FileError::NotFound)))

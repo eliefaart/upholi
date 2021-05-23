@@ -43,8 +43,8 @@ impl Exif {
 
 				// Date taken can be in various EXIF fields.
 				let date_taken = closure_get_exif_data_as_datetime(ExifTag::DateTimeOriginal)
-					.or(closure_get_exif_data_as_datetime(ExifTag::DateTime))
-					.or(closure_get_exif_data_as_datetime(ExifTag::DateTimeDigitized));
+					.or_else(|| closure_get_exif_data_as_datetime(ExifTag::DateTime))
+					.or_else(|| closure_get_exif_data_as_datetime(ExifTag::DateTimeDigitized));
 
 				Ok(Self {
 					manufactorer: closure_get_exif_data_as_string(ExifTag::Make),
@@ -145,9 +145,6 @@ impl Exif {
 	/// Remove the spaces from the string-value contained within the option.
 	/// If the option contains None, this function will return None.
 	fn remove_spaces(option: &Option<String>) -> Option<String> {
-		match option {
-			Some(string) => Some(string.replace(" ", "")),
-			None => None
-		}
+		option.as_ref().map(|string| string.replace(" ", ""))
 	}
 }

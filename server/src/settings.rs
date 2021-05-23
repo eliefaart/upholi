@@ -153,10 +153,10 @@ impl Settings {
 	/// Where PROVIDER_ID equals the value in OAuthProvider.provider_id (ignoring case)
 	/// And FIELD_KEY is one of the available fields within OAuthProvider:
 	/// - CLIENTID
-	///	- CLIENTSECRET
-	///	- AUTHURL
-	///	- TOKENURL
-	///	- USERINFOURL
+	/// - CLIENTSECRET
+	/// - AUTHURL
+	/// - TOKENURL
+	/// - USERINFOURL
 	/// For example:
 	///  - HB_OAUTH_GITHUB_CLIENTSECRET
 	fn update_oauth_provider_from_env_vars(oauth_provider: &mut OAuthProvider) {

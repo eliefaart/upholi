@@ -20,7 +20,8 @@ pub async fn oauth_start_login(session_opt: Option<Session>) -> impl Responder {
 					match session.update() {
 						Ok(_) => {
 							let mut response = HttpResponse::Found()
-								.header(http::header::LOCATION, url_info.auth_url)
+								.append_header((http::header::LOCATION, url_info.auth_url))
+								//.header(http::header::LOCATION, url_info.auth_url)
 								.finish();
 
 							// Append the new session cookie to the response
@@ -67,7 +68,7 @@ pub async fn oauth_callback(mut session: Session, oauth_info: web::Query<OauthCa
 								Ok(_) => {
 									// Redirect to home page
 									HttpResponse::Found()
-										.header(http::header::LOCATION, "/")
+										.append_header((http::header::LOCATION, "/"))
 										.finish()
 								},
 								Err(error) => create_internal_server_error_response(Some(error))
