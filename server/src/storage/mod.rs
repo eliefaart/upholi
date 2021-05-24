@@ -7,10 +7,10 @@ mod local_disk;
 mod azure_storage;
 
 lazy_static! {
-	pub static ref STORAGE_PROVIDER: StorageProvider = match crate::SETTINGS.storage.provider {
+	static ref STORAGE_PROVIDER: StorageProvider = match crate::SETTINGS.storage.provider {
 		crate::settings::StorageProvider::Disk => StorageProvider::Disk(local_disk::LocalDiskStorageProvider::new()),crate::settings::StorageProvider::Azure => StorageProvider::Azure(azure_storage::AzureStorageProvider::new())
 	};
-	pub static ref ENCRYPTION_KEY: &'static [u8] = crate::SETTINGS.storage.encryption_key.as_bytes();
+	static ref ENCRYPTION_KEY: &'static [u8] = crate::SETTINGS.storage.encryption_key.as_bytes();
 }
 
 enum StorageProvider {
