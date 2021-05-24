@@ -26,6 +26,10 @@ module.exports = {
 			{
 				test: /\.css$/,
 				use: ["style-loader", "css-loader"]
+			},
+			{
+				test: /\.js$/,
+				use: ["@open-wc/webpack-import-meta-loader"],
 			}
 		]
 	}
