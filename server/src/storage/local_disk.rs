@@ -2,12 +2,15 @@ use std::{fs::File, io::prelude::*};
 use std::path::Path;
 use crate::{error::Result, ids::create_unique_id};
 
-use super::StorageProvider;
-
 pub struct LocalDiskStorageProvider {}
 
-impl StorageProvider for LocalDiskStorageProvider {
-	fn store_file(&self, file_bytes: &[u8]) -> Result<String> {
+impl LocalDiskStorageProvider {
+
+	pub fn new() -> LocalDiskStorageProvider {
+		LocalDiskStorageProvider {}
+	}
+
+	pub fn store_file(&self, file_bytes: &[u8]) -> Result<String> {
 		let file_name = Self::generate_file_name();
 		let photo_absolute_path = Self::get_absolute_photo_path(&file_name)?;
 
@@ -18,7 +21,7 @@ impl StorageProvider for LocalDiskStorageProvider {
 		Ok(file_name)
 	}
 
-	fn get_file(&self, file_id: &str) -> Result<Option<Vec<u8>>> {
+	pub fn get_file(&self, file_id: &str) -> Result<Option<Vec<u8>>> {
 		let photo_relative_path = file_id;
 		let photo_absolute_path = Self::get_absolute_photo_path(photo_relative_path)?;
 		let mut file = File::open(&photo_absolute_path)?;
@@ -28,18 +31,11 @@ impl StorageProvider for LocalDiskStorageProvider {
 		Ok(Some(file_bytes))
 	}
 
-	fn delete_file(&self, file_id: &str) -> Result<()> {
+	pub fn delete_file(&self, file_id: &str) -> Result<()> {
 		let photo_relative_path = file_id;
 		let absolute_path = Self::get_absolute_photo_path(photo_relative_path)?;
 		std::fs::remove_file(absolute_path)?;
 		Ok(())
-	}
-}
-
-impl LocalDiskStorageProvider {
-
-	pub fn new() -> LocalDiskStorageProvider {
-		LocalDiskStorageProvider {}
 	}
 
 	/// Returns the absolute path for given relative photo path

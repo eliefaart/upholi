@@ -13,7 +13,7 @@ pub fn hash_password(password: &str, salt: &str) -> Result<String> {
 			};
 			let algorithm = Ident::new("pbkdf2-sha512");
 
-			match Pbkdf2.hash_password(&password.as_bytes(), Some(algorithm), None, params.into(), salt) {
+			match Pbkdf2.hash_password(&password.as_bytes(), Some(algorithm), None, params, salt) {
 				Ok(password_hash) => Ok(password_hash.to_string()),
 				Err(error) => Err(Box::from(error.to_string()))
 			}
@@ -25,12 +25,7 @@ pub fn hash_password(password: &str, salt: &str) -> Result<String> {
 /// Verify password against a PHC hash string
 pub fn verify_password_hash(password: &str, phc_hash: &str) -> bool {
 	match PasswordHash::new(phc_hash) {
-		Ok(hash) => {
-			match Pbkdf2.verify_password(password.as_bytes(), &hash) {
-				Ok(_) => true,
-				Err(_) => false
-			}
-		},
+		Ok(hash) => Pbkdf2.verify_password(password.as_bytes(), &hash).is_ok(),
 		Err(_) => false // Invalid PHC hash string
 	}
 }

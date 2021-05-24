@@ -1,4 +1,4 @@
-use actix_http::cookie::Cookie;
+use actix_web::cookie::Cookie;
 
 use crate::entities::session::Session;
 

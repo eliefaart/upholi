@@ -1,8 +1,4 @@
-use std::time::Instant;
-use actix_cors::Cors;
 use actix_web::{App, HttpServer};
-use actix_service::Service;
-use futures::future::FutureExt;
 
 mod handlers;
 mod http;
@@ -16,27 +12,28 @@ pub async fn run_server() -> std::io::Result<()>{
 
 	HttpServer::new(|| {
 		App::new()
-			.wrap(
-				// https://docs.rs/actix-cors/0.2.0-alpha.3/actix_cors/struct.Cors.html
-				// Allow everything by not specifying any origin/methods/etc
-				Cors::new().finish()
-			)
-			.wrap_fn(|req, srv| {
-				// Print all requests and responses to std-out
-				let now = Instant::now();
-				let query_id = format!("{method} {path}?{query_string}",
-					method = req.method(),
-					path = req.path(),
-					query_string = req.query_string());
+			// .wrap(
+			// 	// https://docs.rs/actix-cors/0.2.0-alpha.3/actix_cors/struct.Cors.html
+			// 	// Allow everything by not specifying any origin/methods/etc
+			// 	Cors::default()
+			// 	//Cors::new().finish()
+			// )
+			// .wrap_fn(|req, srv| {
+			// 	// Print all requests and responses to std-out
+			// 	let now = Instant::now();
+			// 	let query_id = format!("{method} {path}?{query_string}",
+			// 		method = req.method(),
+			// 		path = req.path(),
+			// 		query_string = req.query_string());
 
-				println!(">> {}", query_id);
+			// 	println!(">> {}", query_id);
 
-				srv.call(req).map(move |res| {
-					let elapsed_ms = now.elapsed().as_millis();
-					println!("<< {} {}ms", query_id, elapsed_ms);
-					res
-				})
-			})
+			// 	srv.call(req).map(move |res| {
+			// 		let elapsed_ms = now.elapsed().as_millis();
+			// 		println!("<< {} {}ms", query_id, elapsed_ms);
+			// 		res
+			// 	})
+			// })
 			.service(
 				// OAuth related routes
 				actix_web::web::scope("/oauth")

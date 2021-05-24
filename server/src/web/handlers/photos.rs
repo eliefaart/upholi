@@ -1,4 +1,4 @@
-use crate::{entities::session::Session, storage::StorageProvider};
+use crate::{entities::session::Session};
 use actix_web::{web, HttpRequest, HttpResponse, Responder};
 use actix_multipart::Multipart;
 
@@ -34,7 +34,7 @@ pub async fn route_get_photos(user: User) -> impl Responder {
 pub async fn route_delete_photo(user: User, req: HttpRequest) -> impl Responder {
 	let photo_id = req.match_info().get("photo_id").unwrap();
 
-	delete_photos(user.id, &[photo_id])
+	delete_photos(user.id, &[photo_id]).await
 }
 
 /// Delete multiple photos
@@ -44,7 +44,7 @@ pub async fn route_delete_photos(user: User, photo_ids: web::Json<Vec<String>>) 
 		ids.push(&id);
 	}
 
-	delete_photos(user.id, &ids)
+	delete_photos(user.id, &ids).await
 }
 
 /// Get info about a photo
@@ -72,7 +72,7 @@ pub async fn route_get_photo(session: Option<Session>, req: HttpRequest) -> impl
 /// Get the thumbnail of a photo as file
 pub async fn route_download_photo_thumbnail(session: Option<Session>, req: HttpRequest) -> impl Responder {
 	match req.match_info().get("photo_id") {
-		Some(photo_id) => create_response_for_photo(photo_id, session, false, |photo| &photo.path_thumbnail),
+		Some(photo_id) => create_response_for_photo(photo_id, session, false, |photo| &photo.path_thumbnail).await,
 		None => create_not_found_response()
 	}
 }
@@ -80,7 +80,7 @@ pub async fn route_download_photo_thumbnail(session: Option<Session>, req: HttpR
 /// Get the preview (large thumbnail) of a photo as file
 pub async fn route_download_photo_preview(session: Option<Session>, req: HttpRequest) -> impl Responder {
 	match req.match_info().get("photo_id") {
-		Some(photo_id) => create_response_for_photo(photo_id, session, false, |photo| &photo.path_preview),
+		Some(photo_id) => create_response_for_photo(photo_id, session, false, |photo| &photo.path_preview).await,
 		None => create_not_found_response()
 	}
 }
@@ -88,7 +88,7 @@ pub async fn route_download_photo_preview(session: Option<Session>, req: HttpReq
 /// Get the original of a photo as file
 pub async fn route_download_photo_original(session: Option<Session>, req: HttpRequest) -> impl Responder {
 	match req.match_info().get("photo_id") {
-		Some(photo_id) => create_response_for_photo(photo_id, session, true, |photo| &photo.path_original),
+		Some(photo_id) => create_response_for_photo(photo_id, session, true, |photo| &photo.path_original).await,
 		None => create_not_found_response()
 	}
 }
@@ -113,11 +113,11 @@ pub async fn route_upload_photo(user: User, payload: Multipart) -> impl Responde
 						name if name.ends_with(".jpg")
 							|| name.ends_with(".jpeg")
 							|| name.ends_with(".png") =>
-							Photo::parse_image_bytes(user.id, &file.bytes, "image/jpeg"),
+							Photo::parse_image_bytes(user.id, &file.bytes, "image/jpeg").await,
 						name if name.ends_with(".png") =>
-							Photo::parse_image_bytes(user.id, &file.bytes, "image/png"),
+							Photo::parse_image_bytes(user.id, &file.bytes, "image/png").await,
 						name if name.ends_with(".mp4") =>
-							Photo::parse_mp4_bytes(user.id, &file.bytes),
+							Photo::parse_mp4_bytes(user.id, &file.bytes).await,
 						_ => Err(Box::from("Unsupported file type"))
 					};
 
@@ -140,14 +140,19 @@ pub async fn route_upload_photo(user: User, payload: Multipart) -> impl Responde
 
 
 /// Delete multiple photos from database and disk
-pub fn delete_photos(user_id: String, ids: &[&str]) -> impl Responder {
+pub async fn delete_photos(user_id: String, ids: &[&str]) -> impl Responder {
+	let mut photos: Vec<Photo> = Vec::new();
+
 	// Check if all ids to be deleted are owned by user_id
 	for id in ids {
 		match Photo::get(id) {
-			Ok(photo_opt) => {
-				if let Some(photo) = photo_opt {
+			Ok(photo) => {
+				if let Some(photo) = photo {
 					if photo.user_id != user_id {
 						return create_unauthorized_response();
+					}
+					else {
+						photos.push(photo);
 					}
 				}
 			},
@@ -164,8 +169,8 @@ pub fn delete_photos(user_id: String, ids: &[&str]) -> impl Responder {
 	}
 
 	// Delete physical files for photo
-	for id in ids {
-		let result = delete_photo_files(&id);
+	for photo in photos {
+		let result = delete_photo_files(&photo).await;
 		match result {
 			Ok(_) => {},
 			Err(error) => return create_internal_server_error_response(Some(error))
@@ -181,13 +186,13 @@ pub fn delete_photos(user_id: String, ids: &[&str]) -> impl Responder {
 
 /// Get the HTTP response that returns a photo from disk by its id.
 /// Given user must have access to it.
-fn create_response_for_photo(photo_id: &str, session: Option<Session>, offer_as_download: bool, select_path: fn(&Photo) -> &str) -> actix_http::Response {
+async fn create_response_for_photo(photo_id: &str, session: Option<Session>, offer_as_download: bool, select_file_id: fn(&Photo) -> &str) -> HttpResponse {
 	match Photo::get(photo_id) {
 		Ok(photo) => {
 			match photo {
 				Some(photo) => {
 					if photo.can_view(&session) {
-						serve_photo(&select_path(&photo), &photo.name, &photo.content_type, offer_as_download)
+						serve_photo(&select_file_id(&photo), &photo, offer_as_download).await
 					}
 					else {
 						create_unauthorized_response()
@@ -201,21 +206,21 @@ fn create_response_for_photo(photo_id: &str, session: Option<Session>, offer_as_
 }
 
 /// Create an HTTP response that offers photo file at given path as download
-fn serve_photo(path: &str, file_name: &str, content_type: &str, offer_as_download: bool) -> actix_http::Response {
-	let storage_provider = storage::get_storage_provider();
-	match storage_provider.get_file(path) {
-		Ok(file_bytes_option) => {
-			match file_bytes_option {
-				Some(file_bytes) => {
+async fn serve_photo(file_id: &str, photo: &Photo, offer_as_download: bool) -> HttpResponse {
+	match storage::get_file(file_id, &photo.user_id).await {
+		Ok(file) => {
+			match file {
+				Some(bytes) => {
 					HttpResponse::Ok()
-						.content_type(content_type)
-						.header(http::header::CONTENT_DISPOSITION,
+						.content_type(photo.content_type.to_owned())
+						.append_header((http::header::CONTENT_DISPOSITION,
 							if offer_as_download {
-								format!("attachment; filename=\"{}\"", file_name)
+								format!("attachment; filename=\"{}\"", &photo.name)
 							} else {
 								"inline;".to_string()
-							})
-						.body(file_bytes)
+							}
+						))
+						.body(bytes)
 				},
 				None => create_internal_server_error_response(Some(Box::from(FileError::NotFound)))
 			}
@@ -226,12 +231,9 @@ fn serve_photo(path: &str, file_name: &str, content_type: &str, offer_as_downloa
 
 /// Deletes all physical files of a photo from file system
 /// Original, thumbnail and preview images.
-fn delete_photo_files(photo_id: &str) -> Result<()> {
-	if let Some(photo) = Photo::get(&photo_id)? {
-		let storage_provider = storage::get_storage_provider();
-		storage_provider.delete_file(&photo.path_original)?;
-		storage_provider.delete_file(&photo.path_preview)?;
-		storage_provider.delete_file(&photo.path_thumbnail)?;
-	}
+async fn delete_photo_files(photo: &Photo) -> Result<()> {
+	storage::delete_file(&photo.path_original, &photo.user_id).await?;
+	storage::delete_file(&photo.path_preview, &photo.user_id).await?;
+	storage::delete_file(&photo.path_thumbnail, &photo.user_id).await?;
 	Ok(())
 }

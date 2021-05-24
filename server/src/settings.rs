@@ -7,7 +7,11 @@ use crate::error::*;
 const ENV_VAR_SERVER_ADDRESS: &str = "HB_SERVER_ADDRESS";
 const ENV_VAR_DATABASE_CONNECTIONSTRING: &str = "HB_DATABASE_CONNECTIONSTRING";
 const ENV_VAR_DATABASE_NAME: &str = "HB_DATABASE_NAME";
+const ENV_VAR_STORAGE_PROVIDER: &str = "HB_STORAGE_PROVIDER";
 const ENV_VAR_STORAGE_DIRECTORYPHOTOS: &str = "HB_STORAGE_DIRECTORYPHOTOS";
+const ENV_VAR_STORAGE_ENCRYPTIONKEY: &str = "HB_STORAGE_ENCRYPTIONKEY";
+const ENV_VAR_STORAGE_AZURESTORAGEACCOUNTNAME: &str = "HB_STORAGE_AZURESTORAGEACCOUNTNAME";
+const ENV_VAR_STORAGE_AZURESTORAGEACCOUNTKEY: &str = "HB_STORAGE_AZURESTORAGEACCOUNTKEY";
 
 const ENV_VAR_OAUTH_PREFIX: &str = "HB_OAUTH";
 const ENV_VAR_OAUTH_POSTFIX_CLIENTID: &str = "CLIENTID";
@@ -16,6 +20,11 @@ const ENV_VAR_OAUTH_POSTFIX_AUTHURL: &str = "AUTHURL";
 const ENV_VAR_OAUTH_POSTFIX_TOKENURL: &str = "TOKENURL";
 const ENV_VAR_OAUTH_POSTFIX_USERINFOURL: &str = "USERINFOURL";
 
+#[derive(Debug, Deserialize)]
+pub enum StorageProvider {
+	Disk,
+	Azure
+}
 /// Application settings
 #[derive(Debug, Deserialize)]
 pub struct Settings {
@@ -41,7 +50,11 @@ pub struct Database {
 /// Photos settings
 #[derive(Debug, Deserialize)]
 pub struct Storage {
-	pub directory_photos: String
+	pub provider: StorageProvider,
+	pub encryption_key: String,
+	pub directory_photos: String,
+	pub azure_storage_account_name: String,
+	pub azure_storage_account_key: String
 }
 
 /// OAuth setting of identity provider
@@ -98,7 +111,11 @@ impl Settings {
 			("server.address", ENV_VAR_SERVER_ADDRESS),
 			("database.connection_string", ENV_VAR_DATABASE_CONNECTIONSTRING),
 			("database.name", ENV_VAR_DATABASE_NAME),
+			("storage.provider", ENV_VAR_STORAGE_PROVIDER),
 			("storage.directory_photos", ENV_VAR_STORAGE_DIRECTORYPHOTOS),
+			("storage.encryption_key", ENV_VAR_STORAGE_ENCRYPTIONKEY),
+			("storage.azure_storage_account_name", ENV_VAR_STORAGE_AZURESTORAGEACCOUNTNAME),
+			("storage.azure_storage_account_key", ENV_VAR_STORAGE_AZURESTORAGEACCOUNTKEY),
 		].iter().cloned().collect();
 
 		for setting in overwritable_settings {
@@ -138,10 +155,10 @@ impl Settings {
 	/// Where PROVIDER_ID equals the value in OAuthProvider.provider_id (ignoring case)
 	/// And FIELD_KEY is one of the available fields within OAuthProvider:
 	/// - CLIENTID
-	///	- CLIENTSECRET
-	///	- AUTHURL
-	///	- TOKENURL
-	///	- USERINFOURL
+	/// - CLIENTSECRET
+	/// - AUTHURL
+	/// - TOKENURL
+	/// - USERINFOURL
 	/// For example:
 	///  - HB_OAUTH_GITHUB_CLIENTSECRET
 	fn update_oauth_provider_from_env_vars(oauth_provider: &mut OAuthProvider) {

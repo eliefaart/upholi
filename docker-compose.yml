@@ -22,10 +22,10 @@ services:
     environment:
       HB_DATABASE_CONNECTIONSTRING: "XXX"
       HB_DATABASE_NAME: "upholi"
-      HB_STORAGE_DIRECTORYPHOTOS: "/srv/photos"
       HB_OAUTH_GITHUB_CLIENTID: "XXX"
       HB_OAUTH_GITHUB_CLIENTSECRET: "XXX"
-    volumes:
-      - "photos:/srv/photos"
+      HB_STORAGE_ENCRYPTIONKEY: "XXX"
+      HB_STORAGE_AZURESTORAGEACCOUNTNAME: "XXX"
+      HB_STORAGE_AZURESTORAGEACCOUNTKEY: "XXX"
     ports:
       - "29702:8000"

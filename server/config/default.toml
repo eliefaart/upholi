@@ -11,9 +11,24 @@ connection_string = ""
 name = "upholi"
 
 [storage]
+# Possible values: Disk | Azure
+# Can also by set using env var HB_STORAGE_PROVIDER
+provider = "Azure"
+# 256bit encryption key used to encrypt all files
+# Can also by set using env var HB_STORAGE_ENCRYPTIONKEY
+encryption_key = ""
+# [Required if provider = "Disk"]
 # Path to directory where photos will be stored
 # Can also by set using env var HB_STORAGE_DIRECTORYPHOTOS
 directory_photos = "/srv/upholi/photos"
+# [Required if provider = "Azure"]
+# Azure Storage Account name
+# Can also by set using env var HB_STORAGE_AZURESTORAGEACCOUNTNAME
+azure_storage_account_name = "upholi"
+# [Required if provider = "Azure"]
+# Master key of Azure Storage Account
+# Can also by set using env var HB_STORAGE_AZURESTORAGEACCOUNTKEY
+azure_storage_account_key = ""
 
 [[oauth_providers]]
 # Unique identifier to this OAuth provider

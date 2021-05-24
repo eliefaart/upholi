@@ -195,7 +195,7 @@ impl DatabaseExt for MongoDatabase {
 	fn photo_exists_for_user(&self, user_id: &str, hash: &str) -> Result<bool> {
 		let mongo_collection = DATABASE.collection(database::COLLECTION_PHOTOS);
 		let filter = doc!{
-			"user_id": user_id,
+			"userId": user_id,
 			"hash": hash
 		};
 

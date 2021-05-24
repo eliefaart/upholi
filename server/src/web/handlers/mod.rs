@@ -133,12 +133,7 @@ mod responses {
 				thumb_photo: {
 					if let Some(thumb_photo_id) = album.thumb_photo_id {
 						match Photo::get(&thumb_photo_id) {
-							Ok(thumb_photo_opt) => {
-								match thumb_photo_opt {
-									Some(thumb_photo) => Some(PhotoSmall::from(thumb_photo)),
-									None => None
-								}
-							},
+							Ok(thumb_photo_opt) => thumb_photo_opt.map(PhotoSmall::from),
 							Err(_) => None
 						}
 					} else {
@@ -171,7 +166,7 @@ mod responses {
 			}
 
 			let albums = Album::get_with_ids(&album_ids)
-				.unwrap_or_else(|_| vec!{});
+				.unwrap_or_else(|_| Vec::new());
 
 			let mut collection_albums: Vec<ClientCollectionAlbum> = Vec::new();
 			for album_id in &collection.albums {
@@ -180,12 +175,7 @@ mod responses {
 					let client_album = ClientCollectionAlbum {
 						id: album.id.to_string(),
 						title: album.title.to_string(),
-						thumb_photo_id: {
-							match &album.thumb_photo_id {
-								Some(thumb_photo_id) => Some(thumb_photo_id.to_string()),
-								None => None
-							}
-						}
+						thumb_photo_id: album.thumb_photo_id.as_ref().map(|thumb_photo_id| thumb_photo_id.to_string())
 					};
 					collection_albums.push(client_album);
 				}

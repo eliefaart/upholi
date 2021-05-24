@@ -7,7 +7,6 @@ use chrono::prelude::*;
 use crate::error::*;
 use crate::images;
 use crate::storage;
-use crate::storage::StorageProvider;
 use crate::ids;
 use crate::entities::exif;
 use crate::database;
@@ -28,12 +27,16 @@ pub struct Photo {
 	pub path_thumbnail: String,
 	pub path_preview: String,
 	pub path_original: String,
-	pub exif: exif::Exif
+	pub exif: exif::Exif,
+
+	// pub file_id_thumbnail: String,
+	// pub file_id_preview: String,
+	// pub file_id_original: String,
 }
 
 impl Photo {
 	/// Create a new photo from JPG/PNG bytes
-	pub fn parse_image_bytes(user_id: String, photo_bytes: &[u8], content_type: &str) -> Result<Self> {
+	pub async fn parse_image_bytes(user_id: String, photo_bytes: &[u8], content_type: &str) -> Result<Self> {
 		let id = ids::create_unique_id();
 		let filename = Self::generate_filename(content_type)?;
 		let hash = Self::compute_md5_hash(photo_bytes);
@@ -51,10 +54,9 @@ impl Photo {
 			let exif_orientation = exif.orientation.unwrap_or(1) as u8;
 			let image = images::Image::from_buffer(photo_bytes, exif_orientation)?;
 
-			let storage_provider = storage::get_storage_provider();
-			let path_original = storage_provider.store_file(photo_bytes)?;
-			let path_thumbnail = storage_provider.store_file(&image.bytes_thumbnail)?;
-			let path_preview = storage_provider.store_file(&image.bytes_preview)?;
+			let path_original = storage::store_file(&id, &user_id, photo_bytes).await?;
+			let path_thumbnail = storage::store_file(&format!("{}-thumbnail", id), &user_id, &image.bytes_thumbnail).await?;
+			let path_preview = storage::store_file(&format!("{}-preview", id), &user_id, &image.bytes_preview).await?;
 
 			// Decide 'created' date for the photo. Use 'taken on' field from exif if available, otherwise use current time
 			let created_on = {
@@ -82,7 +84,7 @@ impl Photo {
 	}
 
 	/// Create a new photo from MP4 bytes
-	pub fn parse_mp4_bytes(user_id: String, photo_bytes: &[u8]) -> Result<Self> {
+	pub async fn parse_mp4_bytes(user_id: String, photo_bytes: &[u8]) -> Result<Self> {
 		let id = ids::create_unique_id();
 		let filename = Self::generate_filename(".mp4")?;
 		let hash = Self::compute_md5_hash(photo_bytes);
@@ -93,8 +95,7 @@ impl Photo {
 		if exists {
 			Err(Box::from(EntityError::AlreadyExists))
 		} else {
-			let storage_provider = storage::get_storage_provider();
-			let path_original = storage_provider.store_file(photo_bytes)?;
+			let path_original = storage::store_file(&id, &user_id, photo_bytes).await?;
 
 			Ok(Self {
 				id,

@@ -11,6 +11,7 @@ mod settings;
 mod web;
 mod entities;
 mod passwords;
+mod encryption;
 
 lazy_static! {
 	/// Global application settings
@@ -18,7 +19,7 @@ lazy_static! {
 	pub static ref SETTINGS: Settings = Settings::new();
 }
 
-#[actix_rt::main]
+#[actix_web::main]
 async fn main() -> std::io::Result<()> {
 	web::run_server().await
 }
