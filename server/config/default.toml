@@ -12,6 +12,7 @@ name = "upholi"
 
 [storage]
 # Possible values: Disk | Azure
+# Can also by set using env var HB_STORAGE_PROVIDER
 provider = "Azure"
 # 256bit encryption key used to encrypt all files
 # Can also by set using env var HB_STORAGE_ENCRYPTIONKEY
