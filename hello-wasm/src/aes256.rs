@@ -1,8 +1,7 @@
-use crate::error::*;
 use aes_gcm_siv::{Aes256GcmSiv, Key, Nonce};
 use aes_gcm_siv::aead::{Aead, NewAead};
 
-pub fn encrypt(key: &[u8], nonce: &[u8], bytes: &[u8]) -> Result<Vec<u8>> {
+pub fn encrypt(key: &[u8], nonce: &[u8], bytes: &[u8]) -> crate::Result<Vec<u8>> {
 	if nonce.len() != 12 {
 		Err(Box::from("Nonce must be 12 bytes"))
 	}
@@ -20,7 +19,7 @@ pub fn encrypt(key: &[u8], nonce: &[u8], bytes: &[u8]) -> Result<Vec<u8>> {
 	}
 }
 
-pub fn decrypt(key: &[u8], nonce: &[u8], bytes: &[u8]) -> Result<Vec<u8>> {
+pub fn decrypt(key: &[u8], nonce: &[u8], bytes: &[u8]) -> crate::Result<Vec<u8>> {
 	if nonce.len() != 12 {
 		Err(Box::from("Nonce must be 12 bytes"))
 	}
@@ -38,7 +37,7 @@ pub fn decrypt(key: &[u8], nonce: &[u8], bytes: &[u8]) -> Result<Vec<u8>> {
 	}
 }
 
-fn get_cipher(key: &[u8]) -> Result<Aes256GcmSiv> {
+fn get_cipher(key: &[u8]) -> crate::Result<Aes256GcmSiv, > {
 	if key.len() != 32 {
 		Err(Box::from("Encryption key must be 32 bytes"))
 	}
