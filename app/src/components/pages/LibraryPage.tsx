@@ -17,6 +17,7 @@ import File from "../../models/File";
 import GalleryPhoto from "../../models/GalleryPhoto";
 import AlbumInfo from "../../models/AlbumInfo";
 import AddPhotosToAlbumButton from "../Buttons/AddPhotosToAlbumButton";
+import uploadHelper from "../../helpers/UploadHelperNew";
 
 const queryStringParamNamePhotoId = "photoId";
 
@@ -274,6 +275,11 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 		event.preventDefault();
 		if (!event.dataTransfer.files || event.dataTransfer.files.length === 0)
 			return; // no files
+
+		uploadHelper.prepareFileListForUpload(event.dataTransfer.files)
+			.then(files => {
+				console.log(files);
+			});
 
 		this.uploadFilesList(event.dataTransfer.files);
 	}
