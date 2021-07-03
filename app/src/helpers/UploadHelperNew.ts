@@ -1,4 +1,4 @@
-import init, { aes256_encrypt, aes256_decrypt, generate_aes256_key, Image } from "wasm";
+import init, { aes256_encrypt, aes256_decrypt, generate_aes256_key, ImageUploadInfo } from "wasm";
 
 
 /**
@@ -81,7 +81,12 @@ class UploadHelper {
 				const fileNonce = "452b4dd698de";
 				const fileKey = generate_aes256_key();
 
-				const image = new Image(fileBytes);
+				const image = new ImageUploadInfo(fileBytes);
+
+				console.log(image.exif);
+				console.log(image.exif.iso);
+				console.log(image.exif.focal_length);
+				console.log(image.exif.focal_length_35mm_equiv);
 
 				const preview_bytes = image.get_preview_bytes();
 				const thumbnail_bytes = image.get_thumbnail_bytes();
