@@ -1,6 +1,7 @@
 use std::error::Error;
+use exif::Exif;
 use image::{GenericImageView, ImageFormat};
-use wasm_bindgen::prelude::*;
+use wasm_bindgen::{prelude::*};
 use uuid::Uuid;
 
 mod error;
@@ -61,57 +62,102 @@ pub fn aes256_decrypt(key: &[u8], nonce: String, buffer: &[u8]) -> js_sys::Uint8
 #[wasm_bindgen]
 pub struct ImageUploadInfo {
 	image: images::Image,
-	pub exif: Exif
+	//pub bytes: js_sys::Uint8Array,
+	//pub bytes: Vec<u8>,
+	exif: exif::Exif
+	//exif: Exif
+}
+#[wasm_bindgen]
+pub struct UpholiExif {
+	exif: exif::Exif
 }
 
 #[wasm_bindgen]
-pub struct Exif {
-	pub iso: Option<i32>,
-	pub focal_length: Option<i32>,
-	pub focal_length_35mm_equiv: Option<i32>,
-}
-
-impl Copy for Exif { }
-impl Clone for Exif {
-    fn clone(&self) -> Exif {
-        Exif {
-			iso: self.iso,
-			focal_length: self.iso,
-			focal_length_35mm_equiv: self.focal_length_35mm_equiv
-		}
+impl UpholiExif{
+	pub fn get_manufactorer(&mut self) -> js_sys::JsString {
+        String::from("").into()
     }
 }
+
+// impl wasm_bindgen::convert::IntoWasmAbi for Option<String> {
+//     type Abi = JsValue;
+
+//     fn into_abi(self) -> Self::Abi {
+//         JsValue::from_serde(&self).unwrap().into_abi()
+//     }
+// }
+// #[wasm_bindgen]
+// pub struct UpholiExif {
+// 	pub manufactorer: js_sys::JsString,
+// 	pub model: Option<js_sys::JsString>,
+// 	pub aperture: Option<js_sys::JsString>,
+// 	pub exposure_time: Option<js_sys::JsString>,
+// 	pub iso: Option<i32>,
+// 	pub focal_length: Option<i32>,
+// 	pub focal_length_35mm_equiv: Option<i32>,
+// 	pub orientation: Option<i32>,
+// 	pub date_taken: Option<js_sys::Date>,
+// 	pub gps_latitude: Option<f32>,
+// 	pub gps_longitude: Option<f32>
+// }
+
+// #[wasm_bindgen]
+// pub struct Exif {
+// 	manufactorer: Option<String>,
+// 	pub iso: Option<i32>,
+// 	#[wasm_bindgen(js_name = focalLength)]
+// 	pub focal_length: Option<i32>,
+// 	#[wasm_bindgen(js_name = focalLength35mmEquiv)]
+// 	pub focal_length_35mm_equiv: Option<i32>,
+// }
+
+// impl Copy for Exif { }
+// impl Clone for Exif {
+//     fn clone(&self) -> Exif {
+//         Exif {
+// 			manufactorer: self.manufactorer.clone(),
+// 			iso: self.iso,
+// 			focal_length: self.focal_length,
+// 			focal_length_35mm_equiv: self.focal_length_35mm_equiv
+// 		}
+//     }
+// }
 
 
 #[wasm_bindgen]
 impl ImageUploadInfo {
     #[wasm_bindgen(constructor)]
     pub fn new(bytes: &[u8]) -> ImageUploadInfo {
-		let mut exif = Exif {
-			iso: None,
-			focal_length: None,
-			focal_length_35mm_equiv: None
-		};
-		let mut exif_orientation = 1u8;
+		let exif = exif::Exif::parse_from_photo_bytes(bytes);
+		match exif {
+			Ok(exif) => {
+				let exif_orientation = exif.orientation.unwrap_or(1);
 
-		if let Ok(parsed_exif) = exif::Exif::parse_from_photo_bytes(bytes) {
-			if let Some(orientation) = parsed_exif.orientation {
-				exif_orientation = orientation as u8;
-			}
+				//let slice = &bytes[0..];
+				let image = images::Image::from_buffer(bytes, exif_orientation as u8).unwrap();
 
-			exif.iso = parsed_exif.iso;
-			exif.focal_length = parsed_exif.focal_length;
-			exif.focal_length_35mm_equiv = parsed_exif.focal_length_35mm_equiv;
-
+				ImageUploadInfo {
+					image,
+					exif
+				}
+			},
+			Err(error) => panic!("Error parsing exif data: {}", error)
 		}
+    }
 
-		let slice = &bytes[0..];
-		let image = images::Image::from_buffer(slice, exif_orientation).unwrap();
+	#[wasm_bindgen(getter)]
+    pub fn bytes(&self) -> Vec<u8> {
+        self.image.bytes_original[0..20].to_vec()
+    }
 
-		ImageUploadInfo {
-			image,
-			exif
-		}
+	#[wasm_bindgen(getter, js_name = exifFocalLength)]
+    pub fn exif_focal_length(&self) -> Option<i32> {
+        self.exif.focal_length
+    }
+
+	#[wasm_bindgen(getter, js_name = exifManufactorer)]
+    pub fn exif_manufacturer(&self) -> Option<String> {
+        self.exif.manufactorer.to_owned()
     }
 
 	pub fn get_bytes(&mut self) -> js_sys::Uint8Array {
@@ -125,10 +171,6 @@ impl ImageUploadInfo {
 	pub fn get_thumbnail_bytes(&mut self) -> js_sys::Uint8Array {
         js_sys::Uint8Array::from(&self.image.bytes_thumbnail[..])
     }
-
-	// pub fn get_exif(&mut self) -> Exif {
-	// 	self.exif
-	// }
 }
 
 

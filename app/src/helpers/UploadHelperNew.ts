@@ -83,15 +83,11 @@ class UploadHelper {
 
 				const image = new ImageUploadInfo(fileBytes);
 
-				console.log(image.exif);
-				console.log(image.exif.iso);
-				console.log(image.exif.focal_length);
-				console.log(image.exif.focal_length_35mm_equiv);
+				console.log(image.exifFocalLength);
+				console.log(image.exifManufactorer);
 
 				const preview_bytes = image.get_preview_bytes();
 				const thumbnail_bytes = image.get_thumbnail_bytes();
-
-				console.log(preview_bytes.byteLength, thumbnail_bytes.byteLength);
 
 				const fileData: FileData = {
 					bytes: fileBytes,
