@@ -123,6 +123,19 @@ impl UpholiExif{
 //     }
 // }
 
+#[wasm_bindgen]
+pub async fn test_reqwest() -> String {
+	match reqwest::get("https://httpbin.org/ip").await {
+		Ok(response) => {
+			match response.json::<std::collections::HashMap<String, String>>().await {
+				Ok(json) => format!("{:#?}", json),
+				Err(_) => String::from("")
+			}
+		},
+		Err(_) => String::from("")
+	}
+}
+
 
 #[wasm_bindgen]
 impl ImageUploadInfo {
@@ -144,6 +157,8 @@ impl ImageUploadInfo {
 			Err(error) => panic!("Error parsing exif data: {}", error)
 		}
     }
+
+
 
 	#[wasm_bindgen(getter)]
     pub fn bytes(&self) -> Vec<u8> {

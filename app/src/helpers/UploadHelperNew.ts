@@ -1,4 +1,4 @@
-import init, { aes256_encrypt, aes256_decrypt, generate_aes256_key, ImageUploadInfo } from "wasm";
+import init, { aes256_encrypt, aes256_decrypt, generate_aes256_key, ImageUploadInfo, test_reqwest } from "wasm";
 
 
 /**
@@ -85,6 +85,8 @@ class UploadHelper {
 
 				console.log(image.exifFocalLength);
 				console.log(image.exifManufactorer);
+
+				console.log(await test_reqwest());
 
 				const preview_bytes = image.get_preview_bytes();
 				const thumbnail_bytes = image.get_thumbnail_bytes();
