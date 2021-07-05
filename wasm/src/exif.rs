@@ -15,7 +15,8 @@ pub struct Exif {
 	pub focal_length: Option<i32>,
 	pub focal_length_35mm_equiv: Option<i32>,
 	pub orientation: Option<i32>,
-	pub date_taken: Option<chrono::DateTime<Utc>>,
+	// https://rustwasm.github.io/wasm-bindgen/reference/arbitrary-data-with-serde.html
+	//pub date_taken: Option<chrono::DateTime<Utc>>,
 	pub gps_latitude: Option<f32>,
 	pub gps_longitude: Option<f32>
 }
@@ -56,7 +57,7 @@ impl Exif {
 					focal_length: closure_get_exif_data_as_i32(ExifTag::FocalLength),
 					focal_length_35mm_equiv: closure_get_exif_data_as_i32(ExifTag::FocalLengthIn35mmFilm),
 					orientation: closure_get_exif_data_as_i32(ExifTag::Orientation),
-					date_taken,
+					//date_taken,
 					gps_latitude: closure_get_exif_data_as_coord(ExifTag::GPSLatitude),
 					gps_longitude: closure_get_exif_data_as_coord(ExifTag::GPSLongitude)
 				})
@@ -73,6 +74,24 @@ impl Exif {
 			}
 		}
 	}
+
+	// /// I cannot derive 'Default' properly, so I have to mimic it.
+	// /// See https://github.com/rust-lang/rust/issues/81119
+	// fn default() -> Self {
+	// 	Self {
+	// 		manufactorer: None,
+	// 		model: None,
+	// 		aperture: None,
+	// 		exposure_time: None,
+	// 		iso: None,
+	// 		focal_length: None,
+	// 		focal_length_35mm_equiv: None,
+	// 		orientation: None,
+	// 		//date_taken: None,
+	// 		gps_latitude: None,
+	// 		gps_longitude: None
+	// 	}
+	// }
 
 	/// Gets the value of given exif field
 	fn get_exif_data<T>(exif: &rexif::ExifData, tag: ExifTag, convert_value: fn(&rexif::ExifEntry) -> Option<T>) -> Option<T> {
