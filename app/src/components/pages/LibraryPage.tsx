@@ -276,9 +276,9 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 		if (!event.dataTransfer.files || event.dataTransfer.files.length === 0)
 			return; // no files
 
-		uploadHelper.prepareFileListForUpload(event.dataTransfer.files)
-			.then(files => {
-				console.log(files);
+		uploadHelper.uploadPhotos(event.dataTransfer.files, (progress) => console.log(progress[0].status))
+			.then(() => {
+				console.log("Upload finished?");
 			});
 
 		this.uploadFilesList(event.dataTransfer.files);

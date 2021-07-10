@@ -1,4 +1,4 @@
-import init, { aes256_encrypt, aes256_decrypt, generate_aes256_key, ImageUploadInfo, test_reqwest } from "wasm";
+import * as wasm from "wasm";
 
 
 /**
@@ -52,6 +52,21 @@ interface FileSharedKey {
 	keyEncrypted: Uint8Array,
 }
 
+enum FileUploadStatus {
+	Queued = "Queued",
+	Processing = "Processing",
+	Uploading = "Uploading",
+	Done = "Done",
+	Failed = "Failed"
+}
+interface FileUploadProgress {
+	file: globalThis.File,
+	status: FileUploadStatus
+}
+interface FileUploadQueueItem extends FileUploadProgress {
+	photo: wasm.ImageUploadInfo
+}
+
 class UploadHelper {
 
 	// Temp; encryption key needs to come from elsewhere
@@ -62,57 +77,86 @@ class UploadHelper {
 	}
 
 	public init(): void {
-		this.userEncryptionKey = generate_aes256_key();
+		this.userEncryptionKey = wasm.generate_aes256_key();
 	}
 
-	/**
-	 * Convert a FileList into an array of objects (..)
-	 * @param fileList
-	 */
-	public async prepareFileListForUpload(fileList: FileList): Promise<File[]> {
+	public async uploadPhotos(fileList: FileList, progressUpdated: (progress: FileUploadProgress[]) => void): Promise<void> {
+		const upholiClient = new wasm.UpholiClient("http://localhost");
+		const queue: FileUploadQueueItem[] = [];
 
-		const files: File[] = [];
+		const updateQueueItemStatus = (item: FileUploadQueueItem, status: FileUploadStatus) => {
+			item.status = status;
+			progressUpdated(queue);
+		};
 
+		// Create an upload queue from FileList
 		for (let i = 0; i < fileList.length; i++) {
 			const file = fileList.item(i);
 			if (file) {
-				const fileBuffer = await file.arrayBuffer();
-				const fileBytes = new Uint8Array(fileBuffer);
-				const fileNonce = "452b4dd698de";
-				const fileKey = generate_aes256_key();
+				const photo = await this.prepareFileForUpload(file);
 
-				const image = new ImageUploadInfo(fileBytes);
-
-				console.log(image.exifFocalLength);
-				console.log(image.exifManufactorer);
-
-				console.log(await test_reqwest());
-
-				const preview_bytes = image.get_preview_bytes();
-				const thumbnail_bytes = image.get_thumbnail_bytes();
-
-				const fileData: FileData = {
-					bytes: fileBytes,
-					exif: {}
-				};
-				const fileDataString = JSON.stringify(fileData);
-				const fileDataBuffer = Buffer.from(fileDataString, "utf8");
-
-				const encryptedFileBytes = aes256_encrypt(fileKey, fileNonce, fileDataBuffer);
-				const encryptedFileKey = aes256_encrypt(this.userEncryptionKey, fileNonce, fileKey);
-
-				files.push({
-					id: "" + 1,
-					nonce: fileNonce,
-					data: encryptedFileBytes,
-					dataVersion: 1,
-					encryptedFileKey,
-					sharedKeys: []
+				queue.push({
+					file,
+					status: FileUploadStatus.Queued,
+					photo
 				});
 			}
 		}
 
-		return files;
+		// Upload all items in queue
+		progressUpdated(queue);
+		for (const queueItem of queue) {
+			updateQueueItemStatus(queueItem, FileUploadStatus.Uploading);
+
+			await upholiClient.uploadPhoto(queueItem.photo);
+
+			updateQueueItemStatus(queueItem, FileUploadStatus.Done);
+		}
+	}
+
+	/**
+	 * Convert a File into an object that can be uploaded to server.
+	 * @param fileList
+	 */
+	async prepareFileForUpload(file: globalThis.File): Promise<wasm.ImageUploadInfo> {
+		if (file) {
+			const fileBuffer = await file.arrayBuffer();
+			const fileBytes = new Uint8Array(fileBuffer);
+			const image = new wasm.ImageUploadInfo(fileBytes);
+
+			console.log(image.bytes.byteLength, image.bytesPreview.byteLength, image.bytesThumbnail.byteLength);
+			console.log(image.exif);
+
+			// Encryption -> THis should happen within WASM. JS shouldn't have to do any encryption.
+			// I won't even have to expose any keys I guess?
+
+			const fileNonce = "452b4dd698de";
+			const fileKey = wasm.generate_aes256_key();
+
+			const fileData: FileData = {
+				bytes: fileBytes,
+				exif: {}
+			};
+			const fileDataString = JSON.stringify(fileData);
+			const fileDataBuffer = Buffer.from(fileDataString, "utf8");
+
+			const encryptedFileBytes = wasm.aes256_encrypt(fileKey, fileNonce, fileDataBuffer);
+			const encryptedFileKey = wasm.aes256_encrypt(this.userEncryptionKey, fileNonce, fileKey);
+
+			const _file: File = {
+				id: "" + 1,
+				nonce: fileNonce,
+				data: encryptedFileBytes,
+				dataVersion: 1,
+				encryptedFileKey,
+				sharedKeys: []
+			};
+
+			return image;
+		}
+		else {
+			return Promise.reject("");
+		}
 	}
 }
 
