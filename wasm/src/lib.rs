@@ -4,6 +4,7 @@ use js_sys::Array;
 use wasm_bindgen::prelude::*;
 use uuid::Uuid;
 use wasm_bindgen_futures::future_to_promise;
+use serde::{Deserialize,Serialize};
 
 /*
  * Info on async functions within struct implementations:
@@ -63,15 +64,15 @@ pub fn aes256_decrypt(key: &[u8], nonce: String, buffer: &[u8]) -> js_sys::Uint8
 
 
 #[wasm_bindgen]
-pub struct ImageUploadInfo {
+pub struct PhotoUploadInfo {
 	image: images::Image,
 	exif: Exif
 }
 
 #[wasm_bindgen]
-impl ImageUploadInfo {
+impl PhotoUploadInfo {
     #[wasm_bindgen(constructor)]
-    pub fn new(bytes: &[u8]) -> ImageUploadInfo {
+    pub fn new(bytes: &[u8]) -> PhotoUploadInfo {
 		let exif = exif::Exif::parse_from_photo_bytes(bytes);
 		match exif {
 			Ok(exif) => {
@@ -79,7 +80,7 @@ impl ImageUploadInfo {
 
 				let image = images::Image::from_buffer(bytes, exif_orientation as u8).unwrap();
 
-				ImageUploadInfo {
+				PhotoUploadInfo {
 					image,
 					exif
 				}
@@ -116,7 +117,7 @@ impl ImageUploadInfo {
 
 
 
-#[derive(serde::Deserialize, serde::Serialize)]
+#[derive(Deserialize, Serialize)]
 struct UpholiPhotoMinimal {
 	id: String,
 	width: u32,
@@ -144,25 +145,138 @@ struct UpholiPhotoMinimal {
 // 	vec.into()
 // }
 
+mod request {
+	use serde::{Serialize, Deserialize};
+	use crate::aes256;
+
+	#[derive(Deserialize, Serialize)]
+	pub struct UploadPhoto {
+		pub id: String,
+		/// Encrypted data, contains width, height, exif, etc
+		pub data: EncryptedData,
+		pub data_version: u8,
+		/// Key that all data and file bytes of this photo is encrypted with. This key is encrypted with the owner's private key.
+		pub key: EncryptedData,
+
+		pub share_keys: Vec<ShareKey>
+	}
+
+	#[derive(Deserialize, Serialize)]
+	pub struct ShareKey {
+		id: String,
+		key: EncryptedData
+	}
+
+	#[derive(Deserialize, Serialize)]
+	pub struct PhotoData {
+		pub width: u32,
+		pub height: u32,
+		pub content_type: String,
+		pub exif: crate::exif::Exif
+	}
+
+	#[derive(Deserialize, Serialize)]
+	pub struct EncryptedData {
+		pub nonce: String,
+		pub data: String
+	}
+
+	impl UploadPhoto {
+		pub fn from_image(image: &crate::PhotoUploadInfo, private_key: &[u8]) -> crate::Result<Self> {
+
+			// Generate a key and encrypt it
+			let photo_key = aes256::generate_key();
+			let photo_key_nonce = aes256::generate_nonce();
+			let photo_key_encrypted = aes256::encrypt(private_key, &photo_key_nonce, &photo_key)?;
+
+			// Create photo data/properties and encrypt it
+			let data = PhotoData {
+				width: image.image.width,
+				height: image.image.height,
+				content_type: "".to_string(),
+				exif: crate::exif::Exif {
+					manufactorer: image.exif.manufactorer.to_owned(),
+					model: image.exif.model.to_owned(),
+					aperture: image.exif.aperture.to_owned(),
+					exposure_time: image.exif.exposure_time.to_owned(),
+					iso: image.exif.iso,
+					focal_length: image.exif.focal_length,
+					focal_length_35mm_equiv: image.exif.focal_length_35mm_equiv,
+					orientation: image.exif.orientation,
+					date_taken: image.exif.date_taken,
+					gps_latitude: image.exif.gps_latitude,
+					gps_longitude: image.exif.gps_longitude,
+				}
+			};
+			let data_json = serde_json::to_string(&data).unwrap();
+			let data_bytes = data_json.as_bytes();
+			let data_nonce = aes256::generate_nonce();
+			let data_encrypted = aes256::encrypt(&photo_key, &photo_key_nonce, data_bytes)?;
+
+			Ok(UploadPhoto {
+				id: "".into(),
+				data_version: 1,
+				data: EncryptedData {
+					nonce: String::from_utf8(data_nonce)?,
+					data: String::from_utf8_lossy(&data_encrypted).to_string()
+				},
+				key: EncryptedData {
+					nonce: String::from_utf8(photo_key_nonce)?,
+					data: String::from_utf8_lossy(&photo_key_encrypted).to_string()
+				},
+				share_keys: vec!{}
+			})
+		}
+	}
+}
+
+
 #[wasm_bindgen]
 pub struct UpholiClient {
-	base_url: String
+	base_url: String,
+	/// The master private key of current session
+	private_key: String
 }
 
 /// Client for Upholi server.
 #[wasm_bindgen]
 impl UpholiClient {
 	#[wasm_bindgen(constructor)]
-	pub fn new(base_url: String) -> UpholiClient {
+	pub fn new(base_url: String, private_key: String) -> UpholiClient {
 		UpholiClient {
-			base_url
+			base_url,
+			private_key
 		}
 	}
 
 	#[wasm_bindgen(js_name = uploadPhoto)]
-	pub fn upload_photo(&self, image: ImageUploadInfo) -> js_sys::Promise {
+	pub fn upload_photo(&self, image: PhotoUploadInfo) -> js_sys::Promise {
+		let private_key = self.private_key.as_bytes().to_owned();
+		let url = format!("{}/api/photo", &self.base_url).to_owned();
+
 		future_to_promise(async move {
-			Ok(JsValue::NULL)
+			match request::UploadPhoto::from_image(&image, &private_key) {
+				Ok(request_data) => {
+					match serde_json::to_string(&request_data) {
+						Ok(request_data) => {
+							let client = reqwest::Client::new();
+							// let form = reqwest::multipart::Form::new()
+							// 	.text("name", "seanmonstar")
+							// 	.part("thumbnail", Part::bytes(image.bytes_thumbnail()));	// file_name("thumbnail").mime_str("image/jpg")
+
+							match client.post(url)
+								.body(request_data)
+								//.multipart(form)
+								.send().await {
+								Ok(_) => Ok(JsValue::NULL),
+								Err(error) => Err(String::from(format!("{}", error)).into())
+							}
+						},
+						Err(error) => Err(String::from(format!("{}", error)).into())
+					}
+				},
+				Err(error) => Err(String::from(format!("{}", error)).into())
+			}
 		})
 	}
 
@@ -175,7 +289,6 @@ impl UpholiClient {
 				Ok(response) => {
 					match response.json::<Vec<UpholiPhotoMinimal>>().await {
 						Ok(photos) => {
-							//let js_array = Array::new_with_length(photos.len() as u32);
 							let mut js_array_photos: Vec<JsValue> = Vec::new();
 
 							for photo in photos {

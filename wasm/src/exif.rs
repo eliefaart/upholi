@@ -19,6 +19,25 @@ pub struct Exif {
 	pub gps_longitude: Option<f32>
 }
 
+// impl Copy for Exif { }
+// impl Clone for Exif {
+// 	fn clone(&self) -> Self {
+// 		Self {
+// 			manufactorer: self.manufactorer.to_owned(),
+// 			model: self.model.to_owned(),
+// 			aperture: self.aperture.to_owned(),
+// 			exposure_time: self.exposure_time.to_owned(),
+// 			iso: self.iso,
+// 			focal_length: self.focal_length,
+// 			focal_length_35mm_equiv: self.focal_length_35mm_equiv,
+// 			orientation: self.orientation,
+// 			date_taken: self.date_taken,
+// 			gps_latitude: self.gps_latitude,
+// 			gps_longitude: self.gps_longitude,
+// 		}
+// 	}
+// }
+
 impl Exif {
 	/// Parse EXIF data from photo bytes. Bytes can represent a .jpg or .tiff file.
 	pub fn parse_from_photo_bytes(photo_bytes: &[u8]) -> Result<Exif> {
@@ -72,24 +91,6 @@ impl Exif {
 			}
 		}
 	}
-
-	// /// I cannot derive 'Default' properly, so I have to mimic it.
-	// /// See https://github.com/rust-lang/rust/issues/81119
-	// fn default() -> Self {
-	// 	Self {
-	// 		manufactorer: None,
-	// 		model: None,
-	// 		aperture: None,
-	// 		exposure_time: None,
-	// 		iso: None,
-	// 		focal_length: None,
-	// 		focal_length_35mm_equiv: None,
-	// 		orientation: None,
-	// 		//date_taken: None,
-	// 		gps_latitude: None,
-	// 		gps_longitude: None
-	// 	}
-	// }
 
 	/// Gets the value of given exif field
 	fn get_exif_data<T>(exif: &rexif::ExifData, tag: ExifTag, convert_value: fn(&rexif::ExifEntry) -> Option<T>) -> Option<T> {
