@@ -64,7 +64,7 @@ interface FileUploadProgress {
 	status: FileUploadStatus
 }
 interface FileUploadQueueItem extends FileUploadProgress {
-	photo: wasm.ImageUploadInfo
+	photo: wasm.PhotoUploadInfo
 }
 
 class UploadHelper {
@@ -81,7 +81,7 @@ class UploadHelper {
 	}
 
 	public async uploadPhotos(fileList: FileList, progressUpdated: (progress: FileUploadProgress[]) => void): Promise<void> {
-		const upholiClient = new wasm.UpholiClient("http://localhost");
+		const upholiClient = new wasm.UpholiClient("http://localhost", "e0ca4c29d5504e8daa8c52e873e66f71");
 		const queue: FileUploadQueueItem[] = [];
 
 		const updateQueueItemStatus = (item: FileUploadQueueItem, status: FileUploadStatus) => {
@@ -118,11 +118,11 @@ class UploadHelper {
 	 * Convert a File into an object that can be uploaded to server.
 	 * @param fileList
 	 */
-	async prepareFileForUpload(file: globalThis.File): Promise<wasm.ImageUploadInfo> {
+	async prepareFileForUpload(file: globalThis.File): Promise<wasm.PhotoUploadInfo> {
 		if (file) {
 			const fileBuffer = await file.arrayBuffer();
 			const fileBytes = new Uint8Array(fileBuffer);
-			const image = new wasm.ImageUploadInfo(fileBytes);
+			const image = new wasm.PhotoUploadInfo(fileBytes);
 
 			console.log(image.bytes.byteLength, image.bytesPreview.byteLength, image.bytesThumbnail.byteLength);
 			console.log(image.exif);

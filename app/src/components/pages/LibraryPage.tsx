@@ -281,7 +281,7 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 				console.log("Upload finished?");
 			});
 
-		this.uploadFilesList(event.dataTransfer.files);
+		// this.uploadFilesList(event.dataTransfer.files);
 	}
 
 	uploadFilesList(fileList: FileList): void {
