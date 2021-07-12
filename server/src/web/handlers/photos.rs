@@ -1,3 +1,5 @@
+use crate::ids;
+use crate::web::handlers::requests::UploadPhoto;
 use crate::{entities::session::Session};
 use actix_web::{web, HttpRequest, HttpResponse, Responder};
 use actix_multipart::Multipart;
@@ -12,6 +14,58 @@ use crate::entities::AccessControl;
 use crate::entities::user::User;
 use crate::entities::photo::Photo;
 use crate::web::handlers::responses::*;
+
+
+
+
+
+
+
+pub async fn route_upload_photo_new(user: User, payload: Multipart) -> impl Responder {
+	match get_form_data(payload).await {
+		Ok(form) => {
+			let empty_form_data = FormData {
+				name: String::new(),
+				bytes: vec!{}
+			};
+
+			let bytes_data = &form.iter().find(|entry| entry.name == "thumbnail").unwrap_or_else(|| &empty_form_data).bytes;
+			let bytes_thumbnail = &form.iter().find(|entry| entry.name == "thumbnail").unwrap_or_else(|| &empty_form_data).bytes;
+			let bytes_preview = &form.iter().find(|entry| entry.name == "preview").unwrap_or_else(|| &empty_form_data).bytes;
+			let bytes_original = &form.iter().find(|entry| entry.name == "original").unwrap_or_else(|| &empty_form_data).bytes;
+
+
+			let photo_id = ids::create_unique_id();
+			//storage::store_file("abc", &user.id, &bytes_thumbnail);
+
+			create_ok_response()
+		},
+		Err(_) => create_not_found_response()
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /// Get all photos
@@ -137,7 +191,6 @@ pub async fn route_upload_photo(user: User, payload: Multipart) -> impl Responde
 		Err(error) => create_bad_request_response(error)
 	}
 }
-
 
 /// Delete multiple photos from database and disk
 pub async fn delete_photos(user_id: String, ids: &[&str]) -> impl Responder {
