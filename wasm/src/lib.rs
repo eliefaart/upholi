@@ -5,6 +5,7 @@ use wasm_bindgen::prelude::*;
 use uuid::Uuid;
 use wasm_bindgen_futures::future_to_promise;
 use serde::{Deserialize,Serialize};
+use reqwest::multipart;
 
 /*
  * Info on async functions within struct implementations:
@@ -151,7 +152,6 @@ mod request {
 
 	#[derive(Deserialize, Serialize)]
 	pub struct UploadPhoto {
-		pub id: String,
 		/// Encrypted data, contains width, height, exif, etc
 		pub data: EncryptedData,
 		pub data_version: u8,
@@ -214,7 +214,6 @@ mod request {
 			let data_encrypted = aes256::encrypt(&photo_key, &photo_key_nonce, data_bytes)?;
 
 			Ok(UploadPhoto {
-				id: "".into(),
 				data_version: 1,
 				data: EncryptedData {
 					nonce: String::from_utf8(data_nonce)?,
@@ -252,7 +251,7 @@ impl UpholiClient {
 	#[wasm_bindgen(js_name = uploadPhoto)]
 	pub fn upload_photo(&self, image: PhotoUploadInfo) -> js_sys::Promise {
 		let private_key = self.private_key.as_bytes().to_owned();
-		let url = format!("{}/api/photo", &self.base_url).to_owned();
+		let url = format!("{}/api/photo_new", &self.base_url).to_owned();
 
 		future_to_promise(async move {
 			match request::UploadPhoto::from_image(&image, &private_key) {
@@ -260,13 +259,22 @@ impl UpholiClient {
 					match serde_json::to_string(&request_data) {
 						Ok(request_data) => {
 							let client = reqwest::Client::new();
-							// let form = reqwest::multipart::Form::new()
-							// 	.text("name", "seanmonstar")
-							// 	.part("thumbnail", Part::bytes(image.bytes_thumbnail()));	// file_name("thumbnail").mime_str("image/jpg")
+							let form = reqwest::multipart::Form::new()
+								.text("data", request_data)
+								.part("thumbnail", multipart::Part::bytes(image.bytes_thumbnail()))
+								.part("preview", multipart::Part::bytes(image.bytes_preview()))
+								.part("original", multipart::Part::bytes(image.bytes())) //.file_name("thumbnail").mime_str("image/jpg"));
+								;
 
+							// TODO: Perhaps I should do this in 4 seperate requests:
+							//	- POST /photo						to create
+							//	- POST /photo/{id}/thumbnail		to upload file bytes
+							//	- POST /photo/{id}/preview			to upload file bytes
+							//	- POST /photo/{id}/original			to upload file bytes
 							match client.post(url)
-								.body(request_data)
-								//.multipart(form)
+								//.json(&request_data)
+								//.body(request_data)
+								.multipart(form)
 								.send().await {
 								Ok(_) => Ok(JsValue::NULL),
 								Err(error) => Err(String::from(format!("{}", error)).into())

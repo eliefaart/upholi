@@ -8,6 +8,41 @@ mod requests {
 	use serde::Deserialize;
 
 	#[derive(Deserialize)]
+	pub struct UploadPhoto {
+		/// Encrypted data, contains width, height, exif, etc
+		pub data: EncryptedData,
+		pub data_version: u8,
+		/// Key that all data and file bytes of this photo is encrypted with. This key is encrypted with the owner's private key.
+		pub key: EncryptedData,
+
+		pub share_keys: Vec<ShareKey>
+	}
+
+	#[derive(Deserialize)]
+	pub struct ShareKey {
+		id: String,
+		key: EncryptedData
+	}
+
+	#[derive(Deserialize)]
+	pub struct EncryptedData {
+		pub nonce: String,
+		pub data: String
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+	#[derive(Deserialize)]
 	#[serde(rename_all = "camelCase")]
 	pub struct OauthCallback {
 		pub code: String,
