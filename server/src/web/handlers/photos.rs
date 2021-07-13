@@ -20,31 +20,80 @@ use crate::web::handlers::responses::*;
 
 
 
+pub async fn route_upload_photo_info(user: User, data: web::Json<UploadPhoto>) -> impl Responder {
+	let photo_id = ids::create_unique_id();
+	println!("{}", photo_id);
+	HttpResponse::Ok().json(crate::web::handlers::responses::UploadPhoto {
+		id: photo_id
+	})
+}
 
-pub async fn route_upload_photo_new(user: User, payload: Multipart) -> impl Responder {
-	match get_form_data(payload).await {
-		Ok(form) => {
-			let empty_form_data = FormData {
-				name: String::new(),
-				bytes: vec!{}
-			};
+pub async fn route_upload_photo_original(user: User, payload: Multipart, req: HttpRequest) -> impl Responder {
+	upload_photo(&user.id, payload, req, "-original").await
+}
 
-			let bytes_data = &form.iter().find(|entry| entry.name == "thumbnail").unwrap_or_else(|| &empty_form_data).bytes;
-			let bytes_thumbnail = &form.iter().find(|entry| entry.name == "thumbnail").unwrap_or_else(|| &empty_form_data).bytes;
-			let bytes_preview = &form.iter().find(|entry| entry.name == "preview").unwrap_or_else(|| &empty_form_data).bytes;
-			let bytes_original = &form.iter().find(|entry| entry.name == "original").unwrap_or_else(|| &empty_form_data).bytes;
+pub async fn route_upload_photo_thumbnail(user: User, payload: Multipart, req: HttpRequest) -> impl Responder {
+	upload_photo(&user.id, payload, req, "-thumbnail").await
+}
 
+pub async fn route_upload_photo_preview(user: User, payload: Multipart, req: HttpRequest) -> impl Responder {
+	upload_photo(&user.id, payload, req, "-preview").await
+}
 
-			let photo_id = ids::create_unique_id();
-			//storage::store_file("abc", &user.id, &bytes_thumbnail);
+async fn upload_photo(user_id: &str, payload: Multipart, req: HttpRequest, file_name_postfix: &str) -> impl Responder {
+	match req.match_info().get("photo_id") {
+		Some(photo_id) => {
+			match get_form_data(payload).await {
+				Ok(form) => {
 
-			create_ok_response()
+					if form.len() > 1 {
+						create_bad_request_response(Box::from(UploadError::MoreThanOneFile))
+					}
+					else if form.len() == 0 {
+						create_bad_request_response(Box::from(UploadError::NoFile))
+					}
+					else {
+						let file_data = form.first().unwrap();
+						let file_id = &format!("{}{}TEST", photo_id, file_name_postfix);
+						match storage::store_file(file_id, user_id, &file_data.bytes).await {
+							Ok(_) => create_ok_response(),
+							Err(error) => create_internal_server_error_response(Some(error))
+						}
+					}
+				},
+				Err(error) => create_internal_server_error_response(Some(error))
+			}
 		},
-		Err(_) => create_not_found_response()
+		None => create_not_found_response()
 	}
 }
 
+// pub async fn route_upload_photo_new(user: User, mut payload: Multipart) -> impl Responder {
+// 	route_upload_photo_handler(&user, &mut payload)
+// 		.await
+// 		.unwrap_or_else(|error| create_internal_server_error_response(Some(Box::from(format!("{:?}", error)))))
+// }
 
+async fn route_upload_photo_handler(user: &User, payload: Multipart) -> Result<HttpResponse> {
+	let form = get_form_data(payload).await?;
+	let empty_form_data = FormData {
+		name: String::new(),
+		bytes: vec!{}
+	};
+
+	let bytes_data = &form.iter().find(|entry| entry.name == "thumbnail").unwrap_or_else(|| &empty_form_data).bytes;
+	let bytes_thumbnail = &form.iter().find(|entry| entry.name == "thumbnail").unwrap_or_else(|| &empty_form_data).bytes;
+	let bytes_preview = &form.iter().find(|entry| entry.name == "preview").unwrap_or_else(|| &empty_form_data).bytes;
+	let bytes_original = &form.iter().find(|entry| entry.name == "original").unwrap_or_else(|| &empty_form_data).bytes;
+
+	let data = std::str::from_utf8(bytes_data).unwrap();
+	println!("{}", data);
+	let data: UploadPhoto = serde_json::from_str(data).unwrap();
+	let photo_id = ids::create_unique_id();
+	//storage::store_file("abc", &user.id, &bytes_thumbnail);
+
+	Ok(create_ok_response())
+}
 
 
 

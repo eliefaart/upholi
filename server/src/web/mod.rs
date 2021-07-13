@@ -74,7 +74,10 @@ pub async fn run_server() -> std::io::Result<()>{
 
 
 
-					.route("/photo_new", actix_web::web::post().to(handlers::photos::route_upload_photo_new))
+					.route("/photo_new", actix_web::web::post().to(handlers::photos::route_upload_photo_info))
+					.route("/photo/{photo_id}/original", actix_web::web::post().to(handlers::photos::route_upload_photo_original))
+					.route("/photo/{photo_id}/thumbnail", actix_web::web::post().to(handlers::photos::route_upload_photo_thumbnail))
+					.route("/photo/{photo_id}/preview", actix_web::web::post().to(handlers::photos::route_upload_photo_preview))
 			)
 	})
 	.bind(address)
