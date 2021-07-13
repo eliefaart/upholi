@@ -229,6 +229,14 @@ mod request {
 	}
 }
 
+mod response {
+	use serde::Deserialize;
+
+	#[derive(Deserialize)]
+	pub struct UploadPhoto {
+		pub id: String
+	}
+}
 
 #[wasm_bindgen]
 pub struct UpholiClient {
@@ -251,29 +259,28 @@ impl UpholiClient {
 	#[wasm_bindgen(js_name = uploadPhoto)]
 	pub fn upload_photo(&self, image: PhotoUploadInfo) -> js_sys::Promise {
 		let private_key = self.private_key.as_bytes().to_owned();
-		let url = format!("{}/api/photo_new", &self.base_url).to_owned();
+		let base_url = self.base_url.to_owned();
 
 		future_to_promise(async move {
+			let client = reqwest::Client::new();
+
 			match request::UploadPhoto::from_image(&image, &private_key) {
 				Ok(request_data) => {
-					match serde_json::to_string(&request_data) {
-						Ok(request_data) => {
-							let client = reqwest::Client::new();
+					let url = format!("{}/api/photo_new", &base_url).to_owned();
+					match client.post(&url)
+						.json(&request_data)
+						.send().await {
+						Ok(response) => {
+							let response: response::UploadPhoto = response.json().await.unwrap();
+
 							let form = reqwest::multipart::Form::new()
-								.text("data", request_data)
 								.part("thumbnail", multipart::Part::bytes(image.bytes_thumbnail()))
-								.part("preview", multipart::Part::bytes(image.bytes_preview()))
-								.part("original", multipart::Part::bytes(image.bytes())) //.file_name("thumbnail").mime_str("image/jpg"));
+								// .part("preview", multipart::Part::bytes(image.bytes_preview()))
+								// .part("original", multipart::Part::bytes(image.bytes())) //.file_name("thumbnail").mime_str("image/jpg"));
 								;
 
-							// TODO: Perhaps I should do this in 4 seperate requests:
-							//	- POST /photo						to create
-							//	- POST /photo/{id}/thumbnail		to upload file bytes
-							//	- POST /photo/{id}/preview			to upload file bytes
-							//	- POST /photo/{id}/original			to upload file bytes
-							match client.post(url)
-								//.json(&request_data)
-								//.body(request_data)
+							let url = format!("{}/api/photo/{}/thumbnail", &base_url, &response.id).to_owned();
+							match client.post(&url)
 								.multipart(form)
 								.send().await {
 								Ok(_) => Ok(JsValue::NULL),
@@ -282,6 +289,34 @@ impl UpholiClient {
 						},
 						Err(error) => Err(String::from(format!("{}", error)).into())
 					}
+
+					// match serde_json::to_string_pretty(&request_data) {
+					// 	Ok(request_data) => {
+
+
+					// 		let form = reqwest::multipart::Form::new()
+					// 			.text("data", request_data)
+					// 			.part("thumbnail", multipart::Part::bytes(image.bytes_thumbnail()))
+					// 			.part("preview", multipart::Part::bytes(image.bytes_preview()))
+					// 			.part("original", multipart::Part::bytes(image.bytes())) //.file_name("thumbnail").mime_str("image/jpg"));
+					// 			;
+
+					// 		// TODO: Perhaps I should do this in 4 seperate requests:
+					// 		//	- POST /photo						to create
+					// 		//	- POST /photo/{id}/thumbnail		to upload file bytes
+					// 		//	- POST /photo/{id}/preview			to upload file bytes
+					// 		//	- POST /photo/{id}/original			to upload file bytes
+					// 		match client.post(url)
+					// 			//.json(&request_data)
+					// 			//.body(request_data)
+					// 			.multipart(form)
+					// 			.send().await {
+					// 			Ok(_) => Ok(JsValue::NULL),
+					// 			Err(error) => Err(String::from(format!("{}", error)).into())
+					// 		}
+					// 	},
+					// 	Err(error) => Err(String::from(format!("{}", error)).into())
+					// }
 				},
 				Err(error) => Err(String::from(format!("{}", error)).into())
 			}

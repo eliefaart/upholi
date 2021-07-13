@@ -42,6 +42,7 @@ mod requests {
 
 
 
+
 	#[derive(Deserialize)]
 	#[serde(rename_all = "camelCase")]
 	pub struct OauthCallback {
@@ -101,6 +102,17 @@ mod responses {
 	use crate::entities::album::Album;
 	use crate::entities::collection::Collection;
 	use crate::database::{DatabaseEntity, DatabaseEntityBatch};
+
+
+
+	#[derive(Serialize)]
+	#[serde(rename_all = "camelCase")]
+	pub struct UploadPhoto {
+		pub id: String
+	}
+
+
+
 
 	#[derive(Serialize)]
 	#[serde(rename_all = "camelCase")]
