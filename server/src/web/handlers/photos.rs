@@ -3,7 +3,6 @@ use crate::{entities::session::Session};
 use actix_web::{web, HttpRequest, HttpResponse, Responder};
 use actix_multipart::Multipart;
 use upholi_lib::http::*;
-use upholi_lib::http::response::PhotoMinimal;
 
 use crate::error::*;
 
@@ -19,11 +18,13 @@ use crate::web::handlers::responses::*;
 
 /// Get all photos
 pub async fn route_get_photos_new(user: User) -> impl Responder {
-	// TODO: Write specific query, I want to $project just a few fields.
-	let photos: Vec<PhotoMinimal> = vec!{};
-	HttpResponse::Ok().json(photos)
+	match database::get_database().get_photos_for_user(&user.id) {
+		Ok(photos) => HttpResponse::Ok().json(photos),
+		Err(error) => create_internal_server_error_response(Some(error))
+	}
 }
 
+/// Create/register a new photo
 pub async fn route_upload_photo_info(user: User, data: web::Json<request::UploadPhoto>) -> impl Responder {
 	let mut db_photo: photo_new::Photo = data.into_inner().into();
 	db_photo.user_id = user.id;

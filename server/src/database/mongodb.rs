@@ -2,6 +2,7 @@
 use mongodb::{sync::Client, options::ClientOptions};
 use bson::doc;
 use lazy_static::lazy_static;
+use upholi_lib::http::response::PhotoMinimal;
 use crate::database;
 use crate::database::{Database, DatabaseExt, SortField};
 use crate::error::*;
@@ -154,6 +155,27 @@ impl Database for MongoDatabase {
 }
 
 impl DatabaseExt for MongoDatabase {
+	fn get_photos_for_user(&self, user_id: &str) -> Result<Vec<PhotoMinimal>> {
+		let mongo_collection = DATABASE.collection(database::COLLECTION_PHOTOS_NEW);
+		let pipeline = vec!{
+			doc!{
+				"$match": {
+					"userId": user_id
+				}
+			},
+			doc!{
+				"$project": {
+					"id": "$id",
+					"width": "$width",
+					"height": "$height"
+				}
+			}
+		};
+
+		let cursor = mongo_collection.aggregate(pipeline, None)?;
+		get_items_from_cursor(cursor)
+	}
+
 	fn remove_photos_from_all_albums(&self, photo_ids: &[&str]) -> Result<()> {
 		let mongo_collection = DATABASE.collection(database::COLLECTION_ALBUMS);
 
