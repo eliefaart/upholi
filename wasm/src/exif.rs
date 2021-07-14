@@ -19,25 +19,6 @@ pub struct Exif {
 	pub gps_longitude: Option<f32>
 }
 
-// impl Copy for Exif { }
-// impl Clone for Exif {
-// 	fn clone(&self) -> Self {
-// 		Self {
-// 			manufactorer: self.manufactorer.to_owned(),
-// 			model: self.model.to_owned(),
-// 			aperture: self.aperture.to_owned(),
-// 			exposure_time: self.exposure_time.to_owned(),
-// 			iso: self.iso,
-// 			focal_length: self.focal_length,
-// 			focal_length_35mm_equiv: self.focal_length_35mm_equiv,
-// 			orientation: self.orientation,
-// 			date_taken: self.date_taken,
-// 			gps_latitude: self.gps_latitude,
-// 			gps_longitude: self.gps_longitude,
-// 		}
-// 	}
-// }
-
 impl Exif {
 	/// Parse EXIF data from photo bytes. Bytes can represent a .jpg or .tiff file.
 	pub fn parse_from_photo_bytes(photo_bytes: &[u8]) -> Result<Exif> {

@@ -11,5 +11,4 @@ const rootElement = document.getElementById("appRoot");
 ReactDOM.render(<AppContainer/>, rootElement);
 
 init("dist/wasm.wasm").then(() => {
-	uploadHelper.init();
 });

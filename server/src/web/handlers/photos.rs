@@ -1,8 +1,9 @@
-use crate::ids;
-use crate::web::handlers::requests::UploadPhoto;
+use crate::entities::photo_new;
 use crate::{entities::session::Session};
 use actix_web::{web, HttpRequest, HttpResponse, Responder};
 use actix_multipart::Multipart;
+use upholi_lib::http::*;
+use upholi_lib::http::response::PhotoMinimal;
 
 use crate::error::*;
 
@@ -16,16 +17,27 @@ use crate::entities::photo::Photo;
 use crate::web::handlers::responses::*;
 
 
+/// Get all photos
+pub async fn route_get_photos_new(user: User) -> impl Responder {
+	// TODO: Write specific query, I want to $project just a few fields.
+	let photos: Vec<PhotoMinimal> = vec!{};
+	HttpResponse::Ok().json(photos)
+}
 
+pub async fn route_upload_photo_info(user: User, data: web::Json<request::UploadPhoto>) -> impl Responder {
+	let mut db_photo: photo_new::Photo = data.into_inner().into();
+	db_photo.user_id = user.id;
 
+	println!("{:?}", db_photo);
 
-
-pub async fn route_upload_photo_info(user: User, data: web::Json<UploadPhoto>) -> impl Responder {
-	let photo_id = ids::create_unique_id();
-	println!("{}", photo_id);
-	HttpResponse::Ok().json(crate::web::handlers::responses::UploadPhoto {
-		id: photo_id
-	})
+	match db_photo.insert() {
+		Ok(_) => {
+			HttpResponse::Created().json(response::UploadPhoto {
+				id: db_photo.id
+			})
+		},
+		Err(error) => create_internal_server_error_response(Some(error))
+	}
 }
 
 pub async fn route_upload_photo_original(user: User, payload: Multipart, req: HttpRequest) -> impl Responder {
@@ -67,34 +79,6 @@ async fn upload_photo(user_id: &str, payload: Multipart, req: HttpRequest, file_
 		None => create_not_found_response()
 	}
 }
-
-// pub async fn route_upload_photo_new(user: User, mut payload: Multipart) -> impl Responder {
-// 	route_upload_photo_handler(&user, &mut payload)
-// 		.await
-// 		.unwrap_or_else(|error| create_internal_server_error_response(Some(Box::from(format!("{:?}", error)))))
-// }
-
-async fn route_upload_photo_handler(user: &User, payload: Multipart) -> Result<HttpResponse> {
-	let form = get_form_data(payload).await?;
-	let empty_form_data = FormData {
-		name: String::new(),
-		bytes: vec!{}
-	};
-
-	let bytes_data = &form.iter().find(|entry| entry.name == "thumbnail").unwrap_or_else(|| &empty_form_data).bytes;
-	let bytes_thumbnail = &form.iter().find(|entry| entry.name == "thumbnail").unwrap_or_else(|| &empty_form_data).bytes;
-	let bytes_preview = &form.iter().find(|entry| entry.name == "preview").unwrap_or_else(|| &empty_form_data).bytes;
-	let bytes_original = &form.iter().find(|entry| entry.name == "original").unwrap_or_else(|| &empty_form_data).bytes;
-
-	let data = std::str::from_utf8(bytes_data).unwrap();
-	println!("{}", data);
-	let data: UploadPhoto = serde_json::from_str(data).unwrap();
-	let photo_id = ids::create_unique_id();
-	//storage::store_file("abc", &user.id, &bytes_thumbnail);
-
-	Ok(create_ok_response())
-}
-
 
 
 
