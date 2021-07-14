@@ -1,3 +1,5 @@
+use upholi_lib::http::response::PhotoMinimal;
+
 use crate::error::*;
 use crate::entities::album::Album;
 use crate::entities::collection::Collection;
@@ -53,6 +55,9 @@ pub trait Database {
 /// Specific database actions that this application needs
 /// TODO: Give this a better name
 pub trait DatabaseExt : Database {
+	/// Get all photos of given user, returning only minimal info per user.
+	fn get_photos_for_user(&self, user_id: &str) -> Result<Vec<PhotoMinimal>>;
+
 	/// Remove photos with given photo_ids from all albums containing any of these photos
 	fn remove_photos_from_all_albums(&self, photo_ids: &[&str]) -> Result<()>;
 

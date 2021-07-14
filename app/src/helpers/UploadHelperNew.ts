@@ -71,6 +71,9 @@ class UploadHelper {
 
 	public async uploadPhotos(fileList: FileList, progressUpdated: (progress: FileUploadProgress[]) => void): Promise<void> {
 		const upholiClient = new wasm.UpholiClient("http://localhost", "e0ca4c29d5504e8daa8c52e873e66f71");
+
+		console.log(await upholiClient.getPhotos());
+
 		const queue: FileUploadQueueItem[] = [];
 
 		const updateQueueItemStatus = (item: FileUploadQueueItem, status: FileUploadStatus) => {
