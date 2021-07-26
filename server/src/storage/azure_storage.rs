@@ -32,6 +32,7 @@ impl AzureStorageProvider {
 			.map(|byte| byte.to_owned())
 			.collect();
 
+		println!("{},{}", container, name);
 		let blob = self.get_blob_client(container, name);
 		match blob.put_block_blob(file_bytes).execute().await {
 			Ok(_) => Ok(()),
@@ -40,6 +41,7 @@ impl AzureStorageProvider {
 	}
 
 	pub async fn get_file(&self, container: &str, name: &str) -> Result<Option<Vec<u8>>> {
+		println!("{},{}", container, name);
 		let blob = self.get_blob_client(container, name);
 		match blob.get().execute().await {
 			Ok(result) => Ok(Some(result.data.to_vec())),
