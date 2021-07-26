@@ -6,6 +6,9 @@ use wasm_bindgen_futures::future_to_promise;
 use serde::{Deserialize,Serialize};
 use reqwest::multipart;
 use upholi_lib::http::*;
+use base64::encode;
+
+use crate::aes256::{decrypt, encrypt};
 
 /*
  * Info on async functions within struct implementations:
@@ -146,15 +149,13 @@ impl UpholiClient {
 								// .part("original", multipart::Part::bytes(image.bytes())) //.file_name("thumbnail").mime_str("image/jpg"));
 								;
 
-							// let url = format!("{}/api/photo/{}/thumbnail", &base_url, &response.id).to_owned();
-							// match client.put(&url)
-							// 	.multipart(form)
-							// 	.send().await {
-							// 	Ok(_) => Ok(JsValue::NULL),
-							// 	Err(error) => Err(String::from(format!("{}", error)).into())
-							// }
-
-							Ok(JsValue::NULL)
+							let url = format!("{}/api/photo/{}/thumbnail", &base_url, &response.id).to_owned();
+							match client.put(&url)
+								.multipart(form)
+								.send().await {
+								Ok(_) => Ok(JsValue::NULL),
+								Err(error) => Err(String::from(format!("{}", error)).into())
+							}
 						},
 						Err(error) => Err(String::from(format!("{}", error)).into())
 					}
@@ -191,6 +192,28 @@ impl UpholiClient {
 		})
 	}
 
+	#[wasm_bindgen(js_name = getPhotoBase64)]
+	pub fn get_photo_base64(&self, id: &str) -> js_sys::Promise {
+		let private_key = self.private_key.as_bytes().to_owned();
+		let url = format!("{}/api/photo/{}/thumbnail", &self.base_url, id).to_owned();
+
+		future_to_promise(async move {
+			match reqwest::get(url).await {
+				Ok(response) => {
+					match response.bytes().await {
+						Ok(bytes) => {
+							//let bytes = decrypt(private_key, nonce, bytes);
+
+							let base64 = encode(bytes);
+							Ok(JsValue::from(base64))
+						},
+						Err(error) => Err(String::from(format!("{}", error)).into())
+					}
+				},
+				Err(error) => Err(String::from(format!("{}", error)).into())
+			}
+		})
+	}
 	// pub fn get_array(&self) -> Vec<JsValue> {
 	// 	let photos: Vec<UpholiPhotoMinimal> = vec!{};
 	// 	photos.iter().map(JsValue::from).collect()

@@ -18,6 +18,7 @@ import GalleryPhoto from "../../models/GalleryPhoto";
 import AlbumInfo from "../../models/AlbumInfo";
 import AddPhotosToAlbumButton from "../Buttons/AddPhotosToAlbumButton";
 import uploadHelper from "../../helpers/UploadHelperNew";
+import upholiService, { PhotoMinimal } from "../../services/UpholiService";
 
 const queryStringParamNamePhotoId = "photoId";
 
@@ -33,7 +34,7 @@ interface LibraryPageState {
 
 class LibraryPage extends PageBaseComponent<LibraryPageState> {
 
-	photos: Photo[];
+	photos: PhotoMinimal[];
 	waitingForPhotoCheck: boolean;
 	photoCheckQueued: boolean;
 	onScroll: () => void;
@@ -147,7 +148,7 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 	 * Get info of all photos in user's library
 	 */
 	refreshPhotos(): void {
-		const fnSetPhotos = (photos: Photo[]) => {
+		const fnSetPhotos = (photos: PhotoMinimal[]) => {
 			this.photos = photos;
 
 			const galleryPhotos: GalleryPhoto[] = [];
@@ -165,7 +166,7 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 			});
 		};
 
-		PhotoService.getPhotos()
+		upholiService.getPhotos()
 			.then(fnSetPhotos)
 			.catch(console.error);
 	}
@@ -192,7 +193,6 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 		};
 
 		const statePhotos = this.state.photos;
-		let anyPhotosLoaded = false;
 
 		for (const statePhoto of statePhotos) {
 			const photoHasBeenLoaded = statePhoto.src !== "";
@@ -201,16 +201,24 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 				const photoElement = document.getElementById(statePhoto.id);
 
 				if (photoElement && photoInfo && fnElementIsInViewport(photoElement)) {
-					anyPhotosLoaded = true;
-					statePhoto.src = PhotoService.getThumbUrl(photoInfo.id);
+
+					//statePhoto.src = PhotoService.getThumbUrl(photoInfo.id);
+
+					upholiService.getPhotoBase64(photoInfo.id)
+						.then(base64 => {
+							this.setState(previousState => {
+								const photo = previousState.photos.find(p => p.id === statePhoto.id);
+								if (photo) {
+									photo.src = `data:image/png;base64,${base64}`;
+								}
+
+								return {
+									photos: previousState.photos
+								};
+							});
+						});
 				}
 			}
-		}
-
-		if (anyPhotosLoaded) {
-			this.setState({
-				photos: statePhotos
-			});
 		}
 	}
 

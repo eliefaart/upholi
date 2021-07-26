@@ -19,6 +19,7 @@ serde = { version = "1.0", features = ["derive" ] }
 serde_json = "1.0.64"
 chrono = { version = "0.4.11", features = ["serde"] }
 rexif = "0.7.3"
+base64 = "0.13.0"
 # For reqwest I to target the git repo for now, until this commit made it into a release:
 # (likely 11.5+)
 # https://github.com/seanmonstar/reqwest/commit/e6a1a09f0904e06de4ff1317278798c4ed28af66

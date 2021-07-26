@@ -1,56 +1,56 @@
 import * as wasm from "wasm";
 
 
-/**
- * TODO: Just make this a class, and add functions like 'create new shared key', 'get (unencrypted) file bytes/data'
- */
-interface File {
-	id: string,
-	/**
-	 * One per file, or one per key/shared-key?
-	 */
-	nonce: string,
-	/**
-	 * Encrypted data. Encrypted using this File's 'file key'.
-	 * When decrypted it will be in form 'FileData'
-	 */
-	data: Uint8Array | FileData,
+// /**
+//  * TODO: Just make this a class, and add functions like 'create new shared key', 'get (unencrypted) file bytes/data'
+//  */
+// interface File {
+// 	id: string,
+// 	/**
+// 	 * One per file, or one per key/shared-key?
+// 	 */
+// 	nonce: string,
+// 	/**
+// 	 * Encrypted data. Encrypted using this File's 'file key'.
+// 	 * When decrypted it will be in form 'FileData'
+// 	 */
+// 	data: Uint8Array | FileData,
 
-	/**
-	 * Maybe???
-	 * If I want to change 'FileData' in the future, then I can't perform a database update.
-	 * So older versions of 'data' will linger around for a long time. So I will probably need to keep track of what version of 'data' this file is currently using.
-	 */
-	dataVersion: number,
+// 	/**
+// 	 * Maybe???
+// 	 * If I want to change 'FileData' in the future, then I can't perform a database update.
+// 	 * So older versions of 'data' will linger around for a long time. So I will probably need to keep track of what version of 'data' this file is currently using.
+// 	 */
+// 	dataVersion: number,
 
-	/**
-	 * The 'file key', encrypted by the owner's encryption key.
-	 */
-	encryptedFileKey: Uint8Array,
+// 	/**
+// 	 * The 'file key', encrypted by the owner's encryption key.
+// 	 */
+// 	encryptedFileKey: Uint8Array,
 
-	sharedKeys: FileSharedKey[]
-}
+// 	sharedKeys: FileSharedKey[]
+// }
 
-interface FileData {
-	bytes: Uint8Array,
-	// more misc fields
-	exif: {
-		// .. aperture, focal length, etc.
-	}
-}
+// interface FileData {
+// 	bytes: Uint8Array,
+// 	// more misc fields
+// 	exif: {
+// 		// .. aperture, focal length, etc.
+// 	}
+// }
 
-interface FileSharedKey {
-	/**
-	 * ID of a share. A share is a public url, or something another user has been given access to.
-	 */
-	shareId: string,
-	/**
-	 * The 'file key', encrypted by the share's encryption key.
-	 * If the share is shared with another user, this field was encrypted using that user's encryption key.
-	 * If the share is a public url, the encryption key can be reconstructed from the url. (todo: decide how)
-	 */
-	keyEncrypted: Uint8Array,
-}
+// interface FileSharedKey {
+// 	/**
+// 	 * ID of a share. A share is a public url, or something another user has been given access to.
+// 	 */
+// 	shareId: string,
+// 	/**
+// 	 * The 'file key', encrypted by the share's encryption key.
+// 	 * If the share is shared with another user, this field was encrypted using that user's encryption key.
+// 	 * If the share is a public url, the encryption key can be reconstructed from the url. (todo: decide how)
+// 	 */
+// 	keyEncrypted: Uint8Array,
+// }
 
 enum FileUploadStatus {
 	Queued = "Queued",

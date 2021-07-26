@@ -29,8 +29,6 @@ pub async fn route_upload_photo_info(user: User, data: web::Json<request::Upload
 	let mut db_photo: photo_new::Photo = data.into_inner().into();
 	db_photo.user_id = user.id;
 
-	println!("{:?}", db_photo);
-
 	match db_photo.insert() {
 		Ok(_) => {
 			HttpResponse::Created().json(response::UploadPhoto {
@@ -38,6 +36,54 @@ pub async fn route_upload_photo_info(user: User, data: web::Json<request::Upload
 			})
 		},
 		Err(error) => create_internal_server_error_response(Some(error))
+	}
+}
+
+/// Get the thumbnail of a photo as file
+pub async fn route_download_photo_thumbnail(user: User, req: HttpRequest) -> impl Responder {
+	match req.match_info().get("photo_id") {
+		Some(photo_id) => {
+
+			let photo_id = &format!("{}-thumbnail", photo_id);
+
+			match storage::get_file(photo_id, &user.id).await {
+				Ok(bytes) => {
+					match bytes {
+						Some(bytes) => {
+							HttpResponse::Ok()
+								//.content_type(photo.content_type.to_owned())
+								// .append_header((http::header::CONTENT_DISPOSITION,
+								// 	if offer_as_download {
+								// 		format!("attachment; filename=\"{}\"", &photo.name)
+								// 	} else {
+								// 		"inline;".to_string()
+								// 	}
+								// ))
+								.body(bytes)
+						},
+						None => create_not_found_response()
+					}
+				},
+				Err(error) => create_internal_server_error_response(Some(error))
+			}
+		},
+		None => create_not_found_response()
+	}
+}
+
+/// Get the preview (large thumbnail) of a photo as file
+pub async fn route_download_photo_preview(session: Option<Session>, req: HttpRequest) -> impl Responder {
+	match req.match_info().get("photo_id") {
+		Some(photo_id) => create_response_for_photo(photo_id, session, false, |photo| &photo.path_preview).await,
+		None => create_not_found_response()
+	}
+}
+
+/// Get the original of a photo as file
+pub async fn route_download_photo_original(session: Option<Session>, req: HttpRequest) -> impl Responder {
+	match req.match_info().get("photo_id") {
+		Some(photo_id) => create_response_for_photo(photo_id, session, true, |photo| &photo.path_original).await,
+		None => create_not_found_response()
 	}
 }
 
@@ -67,7 +113,7 @@ async fn upload_photo(user_id: &str, payload: Multipart, req: HttpRequest, file_
 					}
 					else {
 						let file_data = form.first().unwrap();
-						let file_id = &format!("{}{}TEST", photo_id, file_name_postfix);
+						let file_id = &format!("{}{}", photo_id, file_name_postfix);
 						match storage::store_file(file_id, user_id, &file_data.bytes).await {
 							Ok(_) => create_ok_response(),
 							Err(error) => create_internal_server_error_response(Some(error))
@@ -157,29 +203,29 @@ pub async fn route_get_photo(session: Option<Session>, req: HttpRequest) -> impl
 	}
 }
 
-/// Get the thumbnail of a photo as file
-pub async fn route_download_photo_thumbnail(session: Option<Session>, req: HttpRequest) -> impl Responder {
-	match req.match_info().get("photo_id") {
-		Some(photo_id) => create_response_for_photo(photo_id, session, false, |photo| &photo.path_thumbnail).await,
-		None => create_not_found_response()
-	}
-}
+// /// Get the thumbnail of a photo as file
+// pub async fn route_download_photo_thumbnail(session: Option<Session>, req: HttpRequest) -> impl Responder {
+// 	match req.match_info().get("photo_id") {
+// 		Some(photo_id) => create_response_for_photo(photo_id, session, false, |photo| &photo.path_thumbnail).await,
+// 		None => create_not_found_response()
+// 	}
+// }
 
-/// Get the preview (large thumbnail) of a photo as file
-pub async fn route_download_photo_preview(session: Option<Session>, req: HttpRequest) -> impl Responder {
-	match req.match_info().get("photo_id") {
-		Some(photo_id) => create_response_for_photo(photo_id, session, false, |photo| &photo.path_preview).await,
-		None => create_not_found_response()
-	}
-}
+// /// Get the preview (large thumbnail) of a photo as file
+// pub async fn route_download_photo_preview(session: Option<Session>, req: HttpRequest) -> impl Responder {
+// 	match req.match_info().get("photo_id") {
+// 		Some(photo_id) => create_response_for_photo(photo_id, session, false, |photo| &photo.path_preview).await,
+// 		None => create_not_found_response()
+// 	}
+// }
 
-/// Get the original of a photo as file
-pub async fn route_download_photo_original(session: Option<Session>, req: HttpRequest) -> impl Responder {
-	match req.match_info().get("photo_id") {
-		Some(photo_id) => create_response_for_photo(photo_id, session, true, |photo| &photo.path_original).await,
-		None => create_not_found_response()
-	}
-}
+// /// Get the original of a photo as file
+// pub async fn route_download_photo_original(session: Option<Session>, req: HttpRequest) -> impl Responder {
+// 	match req.match_info().get("photo_id") {
+// 		Some(photo_id) => create_response_for_photo(photo_id, session, true, |photo| &photo.path_original).await,
+// 		None => create_not_found_response()
+// 	}
+// }
 
 /// Upload a photo
 pub async fn route_upload_photo(user: User, payload: Multipart) -> impl Responder {
