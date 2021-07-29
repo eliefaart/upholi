@@ -24,6 +24,24 @@ pub async fn route_get_photos_new(user: User) -> impl Responder {
 	}
 }
 
+/// Get photo
+pub async fn route_get_photo_new(user: User, req: HttpRequest) -> impl Responder {
+	match req.match_info().get("photo_id") {
+		Some(photo_id) => {
+			match photo_new::Photo::get(&photo_id) {
+				Ok(photo) => {
+					match photo {
+						Some(photo) => HttpResponse::Ok().json(photo),
+						None => create_not_found_response()
+					}
+				}
+				Err(error) => create_internal_server_error_response(Some(error))
+			}
+		},
+		None => create_not_found_response()
+	}
+}
+
 /// Create/register a new photo
 pub async fn route_upload_photo_info(user: User, data: web::Json<request::UploadPhoto>) -> impl Responder {
 	let mut db_photo: photo_new::Photo = data.into_inner().into();

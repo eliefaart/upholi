@@ -46,10 +46,10 @@ pub async fn run_server() -> std::io::Result<()>{
 			.service(
 				// API routes
 				actix_web::web::scope("/api")
-					.route("/photos", actix_web::web::get().to(handlers::photos::route_get_photos))
-					.route("/photos", actix_web::web::delete().to(handlers::photos::route_delete_photos))
-					.route("/photo", actix_web::web::post().to(handlers::photos::route_upload_photo))
-					.route("/photo/{photo_id}", actix_web::web::get().to(handlers::photos::route_get_photo))
+					// .route("/photos", actix_web::web::get().to(handlers::photos::route_get_photos))
+					// .route("/photos", actix_web::web::delete().to(handlers::photos::route_delete_photos))
+					//.route("/photo", actix_web::web::post().to(handlers::photos::route_upload_photo))
+					//.route("/photo/{photo_id}", actix_web::web::get().to(handlers::photos::route_get_photo))
 					// .route("/photo/{photo_id}/original", actix_web::web::get().to(handlers::photos::route_download_photo_original))
 					// .route("/photo/{photo_id}/thumb", actix_web::web::get().to(handlers::photos::route_download_photo_thumbnail))
 					// .route("/photo/{photo_id}/preview", actix_web::web::get().to(handlers::photos::route_download_photo_preview))
@@ -74,10 +74,10 @@ pub async fn run_server() -> std::io::Result<()>{
 
 
 
-					.route("/photos_new", actix_web::web::get().to(handlers::photos::route_get_photos_new))
-					.route("/photo_new", actix_web::web::post().to(handlers::photos::route_upload_photo_info))
+					.route("/photos", actix_web::web::get().to(handlers::photos::route_get_photos_new))
+					.route("/photo", actix_web::web::post().to(handlers::photos::route_upload_photo_info))
 
-
+					.route("/photo/{photo_id}", actix_web::web::get().to(handlers::photos::route_get_photo_new))
 					.route("/photo/{photo_id}/original", actix_web::web::get().to(handlers::photos::route_download_photo_original))
 					.route("/photo/{photo_id}/original", actix_web::web::put().to(handlers::photos::route_upload_photo_original))
 					.route("/photo/{photo_id}/thumbnail", actix_web::web::get().to(handlers::photos::route_download_photo_thumbnail))
