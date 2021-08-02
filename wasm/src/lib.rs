@@ -6,6 +6,7 @@ use wasm_bindgen_futures::future_to_promise;
 use serde::{Deserialize,Serialize};
 use reqwest::multipart;
 use upholi_lib::http::*;
+use upholi_lib::result::Result;
 use base64::{STANDARD, display::Base64Display, encode};
 
 use crate::aes256::{decrypt, encrypt};
@@ -20,8 +21,7 @@ mod aes256;
 mod images;
 mod exif;
 mod photos;
-
-pub type Result<T, E = Box<dyn Error>> = std::result::Result<T, E>;
+mod encryption;
 
 // https://developer.mozilla.org/en-US/docs/WebAssembly/Rust_to_wasm
 
@@ -117,8 +117,7 @@ pub struct UpholiClient {
 	private_key: String,
 }
 
-struct UpholiClientInternalHelper {
-}
+struct UpholiClientInternalHelper { }
 
 impl UpholiClientInternalHelper {
 	pub async fn get_photo_base64(base_url: &str, private_key: &[u8], id: &str) -> Result<String> {
@@ -128,14 +127,13 @@ impl UpholiClientInternalHelper {
 		let photo_bytes = response.bytes().await?;
 
 		let photo = Self::get_photo_encrypted(base_url, id).await?;
-		let key_bytes_encrypted = base64::decode_config(&photo.key.data, base64::STANDARD)?;
-		let key_bytes = decrypt(private_key, photo.key.nonce.as_bytes(), &key_bytes_encrypted)?;
+		let photo_key = encryption::decrypt(private_key, &photo.key)?;
+		//let photo_data = encryption::decrypt(&photo_key, &photo.data)?;
 
 		// TODO: This fails to decrypt. Bad key_bytes?
-		let photo_bytes = decrypt(&key_bytes, photo.data.nonce.as_bytes(), &photo_bytes)?;
+		//let photo_bytes = decrypt(&photo_key, photo.data.nonce.as_bytes(), &photo_bytes)?;
 
-		let utf8 = String::from_utf8(photo_bytes)?;
-		Ok(utf8)
+		Ok(base64::encode_config(&photo_bytes, base64::STANDARD))
 	}
 
 	pub async fn get_photo_encrypted(base_url: &str, id: &str) -> Result<request::UploadPhoto> {
@@ -148,8 +146,8 @@ impl UpholiClientInternalHelper {
 	pub async fn get_photo_data(base_url: &str, private_key: &[u8], id: &str) -> Result<PhotoData> {
 		let encrypted_photo = Self::get_photo_encrypted(base_url, id).await?;
 
-		let decypted_key = decrypt(private_key, encrypted_photo.key.nonce.as_bytes(), encrypted_photo.key.data.as_bytes())?;
-		let decrypted_data_json = decrypt(&decypted_key, encrypted_photo.data.nonce.as_bytes(), encrypted_photo.data.data.as_bytes())?;
+		let decypted_key = decrypt(private_key, encrypted_photo.key.nonce.as_bytes(), encrypted_photo.key.base64.as_bytes())?;
+		let decrypted_data_json = decrypt(&decypted_key, encrypted_photo.data.nonce.as_bytes(), encrypted_photo.data.base64.as_bytes())?;
 		let decrypted_data_json = String::from_utf8(decrypted_data_json)?;
 
 		let data = serde_json::from_str::<PhotoData>(&decrypted_data_json)?;
@@ -185,8 +183,10 @@ impl UpholiClient {
 						Ok(response) => {
 							let response: response::UploadPhoto = response.json().await.unwrap();
 
+							//let thumbnail_base64 = base64::encode_config(&image.bytes_thumbnail(), base64::STANDARD);
+							let thumbnail_data = encryption::encrypt_slice(&private_key, &image.bytes_thumbnail()).unwrap();
 							let form = reqwest::multipart::Form::new()
-								.part("thumbnail", multipart::Part::bytes(image.bytes_thumbnail()))
+								.part("thumbnail", multipart::Part::text(thumbnail_data.base64))
 								// .part("preview", multipart::Part::bytes(image.bytes_preview()))
 								// .part("original", multipart::Part::bytes(image.bytes())) //.file_name("thumbnail").mime_str("image/jpg"));
 								;
@@ -318,7 +318,7 @@ impl UpholiClient {
 		let data_json = serde_json::to_string(&data)?;
 		let data_bytes = data_json.as_bytes();
 		let data_nonce = aes256::generate_nonce();
-		let data_encrypted = aes256::encrypt(&photo_key, &photo_key_nonce, data_bytes)?;
+		let data_encrypted = aes256::encrypt(&photo_key, &data_nonce, data_bytes)?;
 
 		Ok(request::UploadPhoto {
 			width: photo.image.width,
@@ -326,13 +326,30 @@ impl UpholiClient {
 			data_version: 1,
 			data: EncryptedData {
 				nonce: String::from_utf8(data_nonce)?,
-				data: base64::encode_config(&data_encrypted, base64::STANDARD)
+				base64: base64::encode_config(&data_encrypted, base64::STANDARD)
 			},
 			key: EncryptedData {
 				nonce: String::from_utf8(photo_key_nonce)?,
-				data: base64::encode_config(&photo_key_encrypted, base64::STANDARD)
+				base64: base64::encode_config(&photo_key_encrypted, base64::STANDARD)
 			},
 			share_keys: vec!{}
 		})
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn process_image() {
+		let key = b"e0ca4c29d5504e8daa8c52e873e66f71";
+		let nonce = b"452b4dd698de";
+		let bytes = b"message";
+		// let minipng = [137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1,
+		// 	0, 0, 0, 1, 8, 0, 0, 0, 0, 58, 126, 155, 85, 0, 0, 0, 10, 73, 68, 65, 84,
+		// 	8, 215, 99, 248, 15, 0, 1, 1, 1, 0, 27, 182, 238, 86, 0, 0, 0, 0, 73, 69,
+		// 	78, 68, 174, 66, 96, 130];
+		//let photo_bytes = b"GIF89a\x01\x00\x01\x00\x00\xff\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x00;";
 	}
 }
