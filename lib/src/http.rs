@@ -11,14 +11,14 @@ pub struct ShareKey {
 #[serde(rename_all = "camelCase")]
 pub struct EncryptedData {
 	pub nonce: String,
-	pub data: String
+	pub base64: String
 }
 
 impl Clone for EncryptedData {
 	fn clone(&self) -> Self {
 		Self {
-			data: self.data.to_owned(),
-			nonce: self.data.to_owned()
+			base64: self.base64.clone(),
+			nonce: self.nonce.clone()
 		}
 	}
 }
