@@ -22,7 +22,12 @@ pub fn decrypt(key: &[u8], data: &EncryptedData) -> Result<Vec<u8>> {
 	Ok(decypted_bytes)
 }
 
-pub fn decrypt_with_nonce(key: &[u8], nonce: &[u8], data: &[u8]) -> Result<Vec<u8>> {
+pub fn decrypt_base64(key: &[u8], nonce: &[u8], base64: &str) -> Result<Vec<u8>> {
+	let bytes = &base64::decode_config(base64, base64::STANDARD)?;
+	decrypt_slice(key, nonce, bytes)
+}
+
+pub fn decrypt_slice(key: &[u8], nonce: &[u8], data: &[u8]) -> Result<Vec<u8>> {
 	let decypted_bytes = aes256::decrypt(key, nonce, data)?;
 	Ok(decypted_bytes)
 }
@@ -32,7 +37,7 @@ mod tests {
 	use super::*;
 
 	#[test]
-	fn encrypt_data() {
+	fn encrypt() {
 		let key = b"e0ca4c29d5504e8daa8c52e873e66f71";
 		let bytes = b"some kind of message";
 
@@ -43,12 +48,23 @@ mod tests {
 	}
 
 	#[test]
-	fn encrypt_decrypt_data() {
+	fn encrypt_decrypt() {
 		let key = b"e0ca4c29d5504e8daa8c52e873e66f71";
 		let bytes = b"some kind of message";
 
 		let encrypted_data = encrypt_slice(key, bytes).unwrap();
 		let decrypted_data = decrypt(key, &encrypted_data).unwrap();
+
+		assert_eq!(decrypted_data, bytes);
+	}
+
+	#[test]
+	fn encrypt_decrypt_base64() {
+		let key = b"e0ca4c29d5504e8daa8c52e873e66f71";
+		let bytes = b"some kind of message";
+
+		let encrypted_data = encrypt_slice(key, bytes).unwrap();
+		let decrypted_data = decrypt_base64(key, encrypted_data.nonce.as_bytes(), &encrypted_data.base64).unwrap();
 
 		assert_eq!(decrypted_data, bytes);
 	}

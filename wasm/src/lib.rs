@@ -1,5 +1,6 @@
 use std::{error::Error, ops::Deref, sync::Arc};
 use exif::Exif;
+use image::EncodableLayout;
 use js_sys::Array;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::future_to_promise;
@@ -120,23 +121,64 @@ pub struct UpholiClient {
 struct UpholiClientInternalHelper { }
 
 impl UpholiClientInternalHelper {
+	pub async fn upload_photo(base_url: &str, private_key: &[u8], image: &PhotoUploadInfo) -> Result<()> {
+		let client = reqwest::Client::new();
+
+		// Create photo
+		let url = format!("{}/api/photo", &base_url).to_owned();
+		let mut request_data = UpholiClient::get_upload_photo_request_data(&image, &private_key)?;
+		//request_data.thumbnail_nonce = String::from_utf8(thumbnail_nonce.to_owned())?;
+		let response = client.post(&url).json(&request_data).send().await?;
+		let photo: response::UploadPhoto = response.json().await?;
+
+		// Decrypt photo key
+		let photo_key = encryption::decrypt(private_key, &request_data.key)?;
+		let thumbnail_encrypted = encryption::encrypt_slice(&photo_key, &image.bytes_thumbnail())?;
+		request_data.thumbnail_nonce = thumbnail_encrypted.nonce;
+		// Upload photo bytes
+		//let encrypted = aes256::encrypt(&photo_key, &thumbnail_nonce, &image.bytes_thumbnail())?;
+
+		let xxx_photo_bytes = base64::decode_config(&thumbnail_encrypted.base64, base64::STANDARD)?;
+		let xxx_photo_bytes = encryption::decrypt_slice(&photo_key, &request_data.thumbnail_nonce.as_bytes(), &xxx_photo_bytes)?;
+		let xxx_photo_bytes = encryption::decrypt_base64(&photo_key, &request_data.thumbnail_nonce.as_bytes(), &thumbnail_encrypted.base64)?;
+
+		// unsafe {
+		// 	log(&format!("{:?}", &xxx_photo_bytes.len()));
+		// 	log(&format!("{:?} - {:?}", &photo_key, &request_data.thumbnail_nonce));
+		// 	log(&format!("{:?}", &base64::decode_config(&thumbnail_encrypted.base64, base64::STANDARD)?));
+		// }
+		// let form = reqwest::multipart::Form::new()
+		// 	// This sends way too many bytes I think?
+		// 	.part("thumbnail", multipart::Part::text(thumbnail_encrypted.base64))
+		// 	//.part("thumbnail", multipart::Part::text(base64::encode_config(encrypted, base64::STANDARD)))
+		// 	// .part("preview", multipart::Part::bytes(image.bytes_preview()))
+		// 	// .part("original", multipart::Part::bytes(image.bytes())) //.file_name("thumbnail").mime_str("image/jpg"));
+		// 	;
+		let url = format!("{}/api/photo/{}/thumbnail", &base_url, &photo.id).to_owned();
+		//client.put(&url).multipart(form).send().await?;
+		client.put(&url).body(thumbnail_encrypted.base64).send().await?;
+
+		Ok(())
+	}
+
 	pub async fn get_photo_base64(base_url: &str, private_key: &[u8], id: &str) -> Result<String> {
 		let url = format!("{}/api/photo/{}/thumbnail", base_url, id);
 
 		let response = reqwest::get(url).await?;
-		let photo_bytes = response.bytes().await?;
+		//let photo_bytes = response.bytes().await?;
+		let photo_base64_bytes = response.bytes().await?;
+		let photo_base64 = String::from_utf8(photo_base64_bytes.to_vec())?;
+		//let photo_bytes = base64::decode_config(&photo_base64, base64::STANDARD)?;
 
-		let photo = Self::get_photo_encrypted(base_url, id).await?;
+		let photo = Self::get_photo_info(base_url, id).await?;
 		let photo_key = encryption::decrypt(private_key, &photo.key)?;
-		//let photo_data = encryption::decrypt(&photo_key, &photo.data)?;
+		let bytes = encryption::decrypt_base64(&photo_key, &photo.thumbnail_nonce.as_bytes(), &photo_base64)?;
 
-		// TODO: This fails to decrypt. Bad key_bytes?
-		//let photo_bytes = decrypt(&photo_key, photo.data.nonce.as_bytes(), &photo_bytes)?;
-
-		Ok(base64::encode_config(&photo_bytes, base64::STANDARD))
+		Ok("".into())
 	}
 
-	pub async fn get_photo_encrypted(base_url: &str, id: &str) -> Result<request::UploadPhoto> {
+	/// Get photo as returned by server.
+	pub async fn get_photo_info(base_url: &str, id: &str) -> Result<request::UploadPhoto> {
 		let url = format!("{}/api/photo/{}", base_url, id);
 		let response = reqwest::get(url).await?;
 		let encrypted_photo = response.json::<request::UploadPhoto>().await?;
@@ -144,10 +186,10 @@ impl UpholiClientInternalHelper {
 	}
 
 	pub async fn get_photo_data(base_url: &str, private_key: &[u8], id: &str) -> Result<PhotoData> {
-		let encrypted_photo = Self::get_photo_encrypted(base_url, id).await?;
+		let photo = Self::get_photo_info(base_url, id).await?;
 
-		let decypted_key = decrypt(private_key, encrypted_photo.key.nonce.as_bytes(), encrypted_photo.key.base64.as_bytes())?;
-		let decrypted_data_json = decrypt(&decypted_key, encrypted_photo.data.nonce.as_bytes(), encrypted_photo.data.base64.as_bytes())?;
+		let decypted_key = decrypt(private_key, photo.key.nonce.as_bytes(), photo.key.base64.as_bytes())?;
+		let decrypted_data_json = decrypt(&decypted_key, photo.data.nonce.as_bytes(), photo.data.base64.as_bytes())?;
 		let decrypted_data_json = String::from_utf8(decrypted_data_json)?;
 
 		let data = serde_json::from_str::<PhotoData>(&decrypted_data_json)?;
@@ -172,36 +214,8 @@ impl UpholiClient {
 		let base_url = self.base_url.to_owned();
 
 		future_to_promise(async move {
-			let client = reqwest::Client::new();
-
-			match UpholiClient::get_upload_photo_request_data(&image, &private_key) {
-				Ok(request_data) => {
-					let url = format!("{}/api/photo", &base_url).to_owned();
-					match client.post(&url)
-						.json(&request_data)
-						.send().await {
-						Ok(response) => {
-							let response: response::UploadPhoto = response.json().await.unwrap();
-
-							//let thumbnail_base64 = base64::encode_config(&image.bytes_thumbnail(), base64::STANDARD);
-							let thumbnail_data = encryption::encrypt_slice(&private_key, &image.bytes_thumbnail()).unwrap();
-							let form = reqwest::multipart::Form::new()
-								.part("thumbnail", multipart::Part::text(thumbnail_data.base64))
-								// .part("preview", multipart::Part::bytes(image.bytes_preview()))
-								// .part("original", multipart::Part::bytes(image.bytes())) //.file_name("thumbnail").mime_str("image/jpg"));
-								;
-
-							let url = format!("{}/api/photo/{}/thumbnail", &base_url, &response.id).to_owned();
-							match client.put(&url)
-								.multipart(form)
-								.send().await {
-								Ok(_) => Ok(JsValue::NULL),
-								Err(error) => Err(String::from(format!("{}", error)).into())
-							}
-						},
-						Err(error) => Err(String::from(format!("{}", error)).into())
-					}
-				},
+			match UpholiClientInternalHelper::upload_photo(&base_url, &private_key, &image).await {
+				Ok(_) => Ok(JsValue::NULL),
 				Err(error) => Err(String::from(format!("{}", error)).into())
 			}
 		})
@@ -332,24 +346,10 @@ impl UpholiClient {
 				nonce: String::from_utf8(photo_key_nonce)?,
 				base64: base64::encode_config(&photo_key_encrypted, base64::STANDARD)
 			},
-			share_keys: vec!{}
+			share_keys: vec!{},
+			thumbnail_nonce: String::from_utf8(aes256::generate_nonce())?,
+			preview_nonce: String::from_utf8(aes256::generate_nonce())?,
+			original_nonce: String::from_utf8(aes256::generate_nonce())?
 		})
-	}
-}
-
-#[cfg(test)]
-mod tests {
-	use super::*;
-
-	#[test]
-	fn process_image() {
-		let key = b"e0ca4c29d5504e8daa8c52e873e66f71";
-		let nonce = b"452b4dd698de";
-		let bytes = b"message";
-		// let minipng = [137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1,
-		// 	0, 0, 0, 1, 8, 0, 0, 0, 0, 58, 126, 155, 85, 0, 0, 0, 10, 73, 68, 65, 84,
-		// 	8, 215, 99, 248, 15, 0, 1, 1, 1, 0, 27, 182, 238, 86, 0, 0, 0, 0, 73, 69,
-		// 	78, 68, 174, 66, 96, 130];
-		//let photo_bytes = b"GIF89a\x01\x00\x01\x00\x00\xff\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x00;";
 	}
 }
