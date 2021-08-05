@@ -31,12 +31,18 @@ pub mod request {
 	pub struct UploadPhoto {
 		pub width: u32,
 		pub height: u32,
+		/// Key that all data and file bytes of this photo is encrypted with. This key is encrypted with the owner's private key.
+		pub key: super::EncryptedData,
 		/// Encrypted data, contains width, height, exif, etc
 		pub data: super::EncryptedData,
 		pub data_version: u32,
-		/// Key that all data and file bytes of this photo is encrypted with. This key is encrypted with the owner's private key.
-		pub key: super::EncryptedData,
-		pub share_keys: Vec<super::ShareKey>
+		pub share_keys: Vec<super::ShareKey>,
+		/// Nonce used for thumbnail image bytes
+		pub thumbnail_nonce: String,
+		/// Nonce used for preview image bytes
+		pub preview_nonce: String,
+		/// Nonce used for original image bytes
+		pub original_nonce: String
 	}
 }
 

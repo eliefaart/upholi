@@ -1,5 +1,6 @@
 use crate::entities::photo_new;
 use crate::{entities::session::Session};
+use actix_web::web::Bytes;
 use actix_web::{web, HttpRequest, HttpResponse, Responder};
 use actix_multipart::Multipart;
 use upholi_lib::http::*;
@@ -69,8 +70,8 @@ pub async fn route_download_photo_thumbnail(user: User, req: HttpRequest) -> imp
 					match bytes {
 						Some(bytes) => {
 							HttpResponse::Ok()
-								//.content_type(photo.content_type.to_owned())
-								// .append_header((http::header::CONTENT_DISPOSITION,
+								//.content_type("application/octet-stream")
+								//.append_header((http::header::CONTENT_DISPOSITION,
 								// 	if offer_as_download {
 								// 		format!("attachment; filename=\"{}\"", &photo.name)
 								// 	} else {
@@ -105,39 +106,24 @@ pub async fn route_download_photo_original(session: Option<Session>, req: HttpRe
 	}
 }
 
-pub async fn route_upload_photo_original(user: User, payload: Multipart, req: HttpRequest) -> impl Responder {
-	upload_photo(&user.id, payload, req, "-original").await
+pub async fn route_upload_photo_original(user: User, bytes: Bytes, req: HttpRequest) -> impl Responder {
+	upload_photo(&user.id, bytes, req, "-original").await
 }
 
-pub async fn route_upload_photo_thumbnail(user: User, payload: Multipart, req: HttpRequest) -> impl Responder {
-	upload_photo(&user.id, payload, req, "-thumbnail").await
+pub async fn route_upload_photo_thumbnail(user: User, bytes: Bytes, req: HttpRequest) -> impl Responder {
+	upload_photo(&user.id, bytes, req, "-thumbnail").await
 }
 
-pub async fn route_upload_photo_preview(user: User, payload: Multipart, req: HttpRequest) -> impl Responder {
-	upload_photo(&user.id, payload, req, "-preview").await
+pub async fn route_upload_photo_preview(user: User, bytes: Bytes, req: HttpRequest) -> impl Responder {
+	upload_photo(&user.id, bytes, req, "-preview").await
 }
 
-async fn upload_photo(user_id: &str, payload: Multipart, req: HttpRequest, file_name_postfix: &str) -> impl Responder {
+async fn upload_photo(user_id: &str, bytes: Bytes, req: HttpRequest, file_name_postfix: &str) -> impl Responder {
 	match req.match_info().get("photo_id") {
 		Some(photo_id) => {
-			match get_form_data(payload).await {
-				Ok(form) => {
-
-					if form.len() > 1 {
-						create_bad_request_response(Box::from(UploadError::MoreThanOneFile))
-					}
-					else if form.len() == 0 {
-						create_bad_request_response(Box::from(UploadError::NoFile))
-					}
-					else {
-						let file_data = form.first().unwrap();
-						let file_id = &format!("{}{}", photo_id, file_name_postfix);
-						match storage::store_file(file_id, user_id, &file_data.bytes).await {
-							Ok(_) => create_ok_response(),
-							Err(error) => create_internal_server_error_response(Some(error))
-						}
-					}
-				},
+			let file_id = &format!("{}{}", photo_id, file_name_postfix);
+			match storage::store_file(file_id, user_id, &bytes).await {
+				Ok(_) => create_ok_response(),
 				Err(error) => create_internal_server_error_response(Some(error))
 			}
 		},
