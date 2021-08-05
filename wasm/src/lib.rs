@@ -127,23 +127,26 @@ impl UpholiClientInternalHelper {
 		// Create photo
 		let url = format!("{}/api/photo", &base_url).to_owned();
 		let mut request_data = UpholiClient::get_upload_photo_request_data(&image, &private_key)?;
-		//request_data.thumbnail_nonce = String::from_utf8(thumbnail_nonce.to_owned())?;
-		let response = client.post(&url).json(&request_data).send().await?;
-		let photo: response::UploadPhoto = response.json().await?;
 
 		// Decrypt photo key
 		let photo_key = encryption::decrypt(private_key, &request_data.key)?;
+
+		// Encrypt photo bytes
 		let thumbnail_encrypted = encryption::encrypt_slice(&photo_key, &image.bytes_thumbnail())?;
 		request_data.thumbnail_nonce = thumbnail_encrypted.nonce;
-		// Upload photo bytes
-		//let encrypted = aes256::encrypt(&photo_key, &thumbnail_nonce, &image.bytes_thumbnail())?;
+		unsafe {
+			log(&format!("request_data {:?}", &request_data));
+		}
+		// TODOOOOO!!
+		// FIX THAT THUMBNAIL_NONCE ENDS UP INCORRECT IN DATABASE
 
-		let xxx_photo_bytes = base64::decode_config(&thumbnail_encrypted.base64, base64::STANDARD)?;
-		let xxx_photo_bytes = encryption::decrypt_slice(&photo_key, &request_data.thumbnail_nonce.as_bytes(), &xxx_photo_bytes)?;
-		let xxx_photo_bytes = encryption::decrypt_base64(&photo_key, &request_data.thumbnail_nonce.as_bytes(), &thumbnail_encrypted.base64)?;
+		// let xxx_photo_bytes = base64::decode_config(&thumbnail_encrypted.base64, base64::STANDARD)?;
+		// let xxx_photo_bytes = encryption::decrypt_slice(&photo_key, &request_data.thumbnail_nonce.as_bytes(), &xxx_photo_bytes)?;
+		// let xxx_photo_bytes = encryption::decrypt_base64(&photo_key, &request_data.thumbnail_nonce.as_bytes(), &thumbnail_encrypted.base64)?;
 
-		// unsafe {
-		// 	log(&format!("{:?}", &xxx_photo_bytes.len()));
+		let response = client.post(&url).json(&request_data).send().await?;
+		let photo: response::UploadPhoto = response.json().await?;
+
 		// 	log(&format!("{:?} - {:?}", &photo_key, &request_data.thumbnail_nonce));
 		// 	log(&format!("{:?}", &base64::decode_config(&thumbnail_encrypted.base64, base64::STANDARD)?));
 		// }
@@ -174,7 +177,7 @@ impl UpholiClientInternalHelper {
 		let photo_key = encryption::decrypt(private_key, &photo.key)?;
 		let bytes = encryption::decrypt_base64(&photo_key, &photo.thumbnail_nonce.as_bytes(), &photo_base64)?;
 
-		Ok("".into())
+		Ok(base64::encode_config(&bytes, base64::STANDARD))
 	}
 
 	/// Get photo as returned by server.
@@ -347,9 +350,9 @@ impl UpholiClient {
 				base64: base64::encode_config(&photo_key_encrypted, base64::STANDARD)
 			},
 			share_keys: vec!{},
-			thumbnail_nonce: String::from_utf8(aes256::generate_nonce())?,
-			preview_nonce: String::from_utf8(aes256::generate_nonce())?,
-			original_nonce: String::from_utf8(aes256::generate_nonce())?
+			thumbnail_nonce: String::new(),
+			preview_nonce: String::new(),
+			original_nonce: String::new()
 		})
 	}
 }
