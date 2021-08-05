@@ -156,7 +156,7 @@ impl Database for MongoDatabase {
 
 impl DatabaseExt for MongoDatabase {
 	fn get_photos_for_user(&self, user_id: &str) -> Result<Vec<PhotoMinimal>> {
-		let mongo_collection = DATABASE.collection(database::COLLECTION_PHOTOS_NEW);
+		let mongo_collection = DATABASE.collection(database::COLLECTION_PHOTOS);
 		let pipeline = vec!{
 			doc!{
 				"$match": {

@@ -8,6 +8,8 @@ use crate::{database::{self, DatabaseEntity, DatabaseEntityBatch, DatabaseUserEn
 
 use super::{AccessControl, session::Session};
 
+// Maybe a wrapper struct? {id: string, info: T}???
+// Then I can re-use the other struct which is identical.
 #[derive(Deserialize, Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Photo {
@@ -22,7 +24,10 @@ pub struct Photo {
 	pub data_version: i32,
 	/// Key that all data and file bytes of this photo is encrypted with. This key is encrypted with the owner's private key.
 	pub key: EncryptedData,
-	pub share_keys: Vec<ShareKey>
+	pub share_keys: Vec<ShareKey>,
+	pub thumbnail_nonce: String,
+	pub preview_nonce: String,
+	pub original_nonce: String
 }
 
 impl From<UploadPhoto> for Photo {
@@ -35,14 +40,17 @@ impl From<UploadPhoto> for Photo {
 			data: source.data,
 			data_version: source.data_version as i32,
 			key: source.key,
-			share_keys: source.share_keys
+			share_keys: source.share_keys,
+			thumbnail_nonce: source.thumbnail_nonce,
+			preview_nonce: source.preview_nonce,
+			original_nonce: source.original_nonce,
 		}
 	}
 }
 
 impl DatabaseEntity for Photo {
 	fn get(id: &str) -> Result<Option<Self>> {
-		database::get_database().find_one(database::COLLECTION_PHOTOS_NEW, id)
+		database::get_database().find_one(database::COLLECTION_PHOTOS, id)
 	}
 
 	fn insert(&self) -> Result<()> {
@@ -53,24 +61,24 @@ impl DatabaseEntity for Photo {
 		match Self::get(&self.id)? {
 			Some(_) => Err(Box::from(EntityError::AlreadyExists)),
 			None => {
-				database::get_database().insert_one(database::COLLECTION_PHOTOS_NEW, &self)?;
+				database::get_database().insert_one(database::COLLECTION_PHOTOS, &self)?;
 				Ok(())
 			}
 		}
 	}
 
 	fn update(&self) -> Result<()> {
-		database::get_database().replace_one(database::COLLECTION_PHOTOS_NEW, &self.id, self)
+		database::get_database().replace_one(database::COLLECTION_PHOTOS, &self.id, self)
 	}
 
 	fn delete(&self) -> Result<()> {
-		database::get_database().delete_one(database::COLLECTION_PHOTOS_NEW, &self.id)
+		database::get_database().delete_one(database::COLLECTION_PHOTOS, &self.id)
 	}
 }
 
 impl DatabaseEntityBatch for Photo {
 	fn get_with_ids(ids: &[&str]) -> Result<Vec<Self>> {
-		database::get_database().find_many(database::COLLECTION_PHOTOS_NEW, None, Some(ids), None)
+		database::get_database().find_many(database::COLLECTION_PHOTOS, None, Some(ids), None)
 	}
 }
 
@@ -93,7 +101,7 @@ impl DatabaseUserEntity for Photo {
 			field: "createdOn",
 			ascending: false
 		};
-		database::get_database().find_many(database::COLLECTION_PHOTOS_NEW, Some(&user_id), None, Some(&sort))
+		database::get_database().find_many(database::COLLECTION_PHOTOS, Some(&user_id), None, Some(&sort))
 	}
 
 	fn get_all_with_ids_as_user(ids: &[&str], user_id: String) -> Result<Vec<Self>> {
@@ -101,7 +109,7 @@ impl DatabaseUserEntity for Photo {
 			field: "createdOn",
 			ascending: false
 		};
-		database::get_database().find_many(database::COLLECTION_PHOTOS_NEW, Some(&user_id), Some(ids), Some(&sort))
+		database::get_database().find_many(database::COLLECTION_PHOTOS, Some(&user_id), Some(ids), Some(&sort))
 	}
 }
 

@@ -10,7 +10,6 @@ mod mongodb;
 pub const COLLECTION_SESSIONS: &str = "sessions";
 pub const COLLECTION_USERS: &str = "users";
 pub const COLLECTION_PHOTOS: &str = "photos";
-pub const COLLECTION_PHOTOS_NEW: &str = "photos2";
 pub const COLLECTION_ALBUMS: &str = "albums";
 pub const COLLECTION_COLLECTIONS: &str = "collections";
 
