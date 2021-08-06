@@ -16,7 +16,6 @@ pub struct Photo {
 	pub id: String,
 	/// Owner user id
 	pub user_id: String,
-
 	pub width: i32,
 	pub height: i32,
 	/// Encrypted data, contains width, height, exif, etc

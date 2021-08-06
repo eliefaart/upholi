@@ -126,7 +126,7 @@ impl UpholiClientInternalHelper {
 		let mut request_data = UpholiClient::get_upload_photo_request_data(&image, &private_key)?;
 
 		// Decrypt photo key
-		let photo_key = encryption::decrypt(private_key, &request_data.key)?;
+		let photo_key = encryption::decrypt_data(private_key, &request_data.key)?;
 
 		// Encrypt photo bytes
 		let thumbnail_encrypted = encryption::encrypt_slice(&photo_key, &image.bytes_thumbnail())?;
@@ -164,7 +164,7 @@ impl UpholiClientInternalHelper {
 
 		// Decrypt photo bytes
 		let photo = Self::get_photo_info(base_url, id).await?;
-		let photo_key = encryption::decrypt(private_key, &photo.key)?;
+		let photo_key = encryption::decrypt_data(private_key, &photo.key)?;
 		let bytes = encryption::decrypt_base64(&photo_key, &photo.thumbnail_nonce.as_bytes(), &photo_base64)?;
 
 		Ok(base64::encode_config(&bytes, base64::STANDARD))
@@ -188,6 +188,13 @@ impl UpholiClientInternalHelper {
 		let data = serde_json::from_str::<PhotoData>(&decrypted_data_json)?;
 
 		Ok(data)
+	}
+
+	pub async fn delete_photo(base_url: &str, id: &str) -> Result<()> {
+		let url = format!("{}/api/photo/{}", base_url, id);
+		let client = reqwest::Client::new();
+		client.delete(url).send().await?;
+		Ok(())
 	}
 }
 
@@ -254,37 +261,17 @@ impl UpholiClient {
 		})
 	}
 
-	// async fn get_photo_base64_2(base_url: &str, id: &str) -> Result<String> {
-	// 	let url = format!("{}/api/photo/{}/thumbnail", &base_url, id);
+	#[wasm_bindgen(js_name = deletePhoto)]
+	pub fn delete_photo(&self, id: String) -> js_sys::Promise {
+		let base_url = self.base_url.to_owned();
 
-	// 	let response = reqwest::get(url).await?;
-	// 	let photo_bytes = response.bytes().await?;
-
-	// 	Ok("".into())
-	// }
-
-	// async fn get_photo_encrypted(base_url: &str, id: &str) -> Result<request::UploadPhoto> {
-	// 	let url = format!("{}/api/photo/{}", base_url, id);
-	// 	let response = reqwest::get(url).await?;
-	// 	let encrypted_photo = response.json::<request::UploadPhoto>().await?;
-	// 	Ok(encrypted_photo)
-	// }
-
-	// async fn get_photo_data(base_url: &str, id: &str) -> Result<PhotoData> {
-	// 	let encrypted_photo = Self::get_photo_encrypted(base_url, id).await?;
-
-	// 	let decypted_key = decrypt(&self.private_key.as_bytes(), encrypted_photo.key.nonce.as_bytes(), encrypted_photo.key.data.as_bytes())?;
-	// 	let decrypted_data_json = decrypt(&decypted_key, encrypted_photo.data.nonce.as_bytes(), encrypted_photo.data.data.as_bytes())?;
-	// 	let decrypted_data_json = String::from_utf8(decrypted_data_json)?;
-
-	// 	let data = serde_json::from_str::<PhotoData>(&decrypted_data_json)?;
-
-	// 	Ok(data)
-	// }
-	// pub fn get_array(&self) -> Vec<JsValue> {
-	// 	let photos: Vec<UpholiPhotoMinimal> = vec!{};
-	// 	photos.iter().map(JsValue::from).collect()
-	// }
+		future_to_promise(async move {
+			match UpholiClientInternalHelper::delete_photo(&base_url,&id).await {
+				Ok(_) => Ok(JsValue::UNDEFINED),
+				Err(error) => Err(String::from(format!("{}", error)).into())
+			}
+		})
+	}
 
 	// pub async fn get_photo(&mut self, id: String) {}
 	// pub async fn get_photo_bytes_original(&mut self, id: String) {}
