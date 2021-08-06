@@ -76,7 +76,7 @@ mod requests {
 // Response types
 mod responses {
 	use serde::Serialize;
-	use crate::entities::photo::Photo;
+	use crate::entities::photo::PhotoOld;
 	use crate::entities::album::Album;
 	use crate::entities::collection::Collection;
 	use crate::database::{DatabaseEntity, DatabaseEntityBatch};
@@ -126,8 +126,8 @@ mod responses {
 		pub token: String
 	}
 
-	impl From<Photo> for PhotoSmall {
-		fn from(photo: Photo) -> Self {
+	impl From<PhotoOld> for PhotoSmall {
+		fn from(photo: PhotoOld) -> Self {
 			Self {
 				id: photo.id,
 				width: photo.width as u16,
@@ -149,7 +149,7 @@ mod responses {
 				title: album.title,
 				thumb_photo: {
 					if let Some(thumb_photo_id) = album.thumb_photo_id {
-						match Photo::get(&thumb_photo_id) {
+						match PhotoOld::get(&thumb_photo_id) {
 							Ok(thumb_photo_opt) => thumb_photo_opt.map(PhotoSmall::from),
 							Err(_) => None
 						}
@@ -158,7 +158,7 @@ mod responses {
 					}
 				},
 				photos: {
-					match Photo::get_with_ids(&photo_ids) {
+					match PhotoOld::get_with_ids(&photo_ids) {
 						Ok(photos) => {
 							let mut result_photos = Vec::new();
 							for photo in photos {

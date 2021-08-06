@@ -15,7 +15,7 @@ use crate::entities::AccessControl;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct Photo {
+pub struct PhotoOld {
 	pub id: String,
 	pub user_id: String,
 	pub name: String,
@@ -34,7 +34,7 @@ pub struct Photo {
 	// pub file_id_original: String,
 }
 
-impl Photo {
+impl PhotoOld {
 	/// Create a new photo from JPG/PNG bytes
 	pub async fn parse_image_bytes(user_id: String, photo_bytes: &[u8], content_type: &str) -> Result<Self> {
 		let id = ids::create_unique_id();
@@ -164,7 +164,7 @@ impl Photo {
 	}
 }
 
-impl DatabaseEntity for Photo {
+impl DatabaseEntity for PhotoOld {
 	fn get(id: &str) -> Result<Option<Self>> {
 		database::get_database().find_one(database::COLLECTION_PHOTOS, id)
 	}
@@ -192,13 +192,13 @@ impl DatabaseEntity for Photo {
 	}
 }
 
-impl DatabaseEntityBatch for Photo {
+impl DatabaseEntityBatch for PhotoOld {
 	fn get_with_ids(ids: &[&str]) -> Result<Vec<Self>> {
 		database::get_database().find_many(database::COLLECTION_PHOTOS, None, Some(ids), None)
 	}
 }
 
-impl DatabaseUserEntity for Photo {
+impl DatabaseUserEntity for PhotoOld {
 	fn get_as_user(id: &str, user_id: String) -> Result<Option<Self>>{
 		match Self::get(id)? {
 			Some(photo) => {
@@ -229,7 +229,7 @@ impl DatabaseUserEntity for Photo {
 	}
 }
 
-impl AccessControl for Photo {
+impl AccessControl for PhotoOld {
 	fn can_view(&self, session: &Option<Session>) -> bool {
 		if session_owns_photo(self, session) {
 			return true;
@@ -253,7 +253,7 @@ impl AccessControl for Photo {
 }
 
 /// Check if Photo is owned by user of given session
-fn session_owns_photo(photo: &Photo, session_opt: &Option<Session>) -> bool {
+fn session_owns_photo(photo: &PhotoOld, session_opt: &Option<Session>) -> bool {
 	if let Some(session) = session_opt {
 		if let Some(user_id) = &session.user_id {
 			if &photo.user_id == user_id {
@@ -272,22 +272,22 @@ mod tests {
 
 	#[test]
 	fn generate_filename() {
-		let name = Photo::generate_filename("image/jpeg").unwrap_or_default();
+		let name = PhotoOld::generate_filename("image/jpeg").unwrap_or_default();
 		assert!(name.ends_with(".jpg"));
 
-		let name = Photo::generate_filename("image/png").unwrap_or_default();
+		let name = PhotoOld::generate_filename("image/png").unwrap_or_default();
 		assert!(name.ends_with(".png"));
 	}
 
 	#[test]
 	fn generate_filename_bad_content_type() {
-		let result = Photo::generate_filename("&@");
+		let result = PhotoOld::generate_filename("&@");
 		assert!(result.is_err());
 
-		let result = Photo::generate_filename("image/BAD");
+		let result = PhotoOld::generate_filename("image/BAD");
 		assert!(result.is_err());
 
-		let result = Photo::generate_filename("");
+		let result = PhotoOld::generate_filename("");
 		assert!(result.is_err());
 	}
 
@@ -332,8 +332,8 @@ mod tests {
 		assert_eq!(photo.can_update(&None), false);
 	}
 
-	fn create_dummy_photo_with_id(id: &str) -> Photo {
-		Photo {
+	fn create_dummy_photo_with_id(id: &str) -> PhotoOld {
+		PhotoOld {
 			id: id.to_string(),
 			user_id: create_unique_id(),
 			name: "photo name".to_string(),
