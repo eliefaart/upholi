@@ -18,7 +18,7 @@ use crate::web::handlers::responses::*;
 
 
 /// Get all photos
-pub async fn route_get_photos_new(user: User) -> impl Responder {
+pub async fn route_get_photos(user: User) -> impl Responder {
 	match database::get_database().get_photos_for_user(&user.id) {
 		Ok(photos) => HttpResponse::Ok().json(photos),
 		Err(error) => create_internal_server_error_response(Some(error))
@@ -26,7 +26,7 @@ pub async fn route_get_photos_new(user: User) -> impl Responder {
 }
 
 /// Get photo
-pub async fn route_get_photo_new(user: User, req: HttpRequest) -> impl Responder {
+pub async fn route_get_photo(user: User, req: HttpRequest) -> impl Responder {
 	match req.match_info().get("photo_id") {
 		Some(photo_id) => {
 			match photo_new::Photo::get(&photo_id) {
@@ -41,6 +41,13 @@ pub async fn route_get_photo_new(user: User, req: HttpRequest) -> impl Responder
 		},
 		None => create_not_found_response()
 	}
+}
+
+/// Delete a single photo
+pub async fn route_delete_photo(user: User, req: HttpRequest) -> impl Responder {
+	let photo_id = req.match_info().get("photo_id").unwrap();
+
+	delete_photos(user.id, &[photo_id]).await
 }
 
 /// Create/register a new photo
@@ -153,59 +160,59 @@ async fn upload_photo(user_id: &str, bytes: Bytes, req: HttpRequest, file_name_p
 
 
 /// Get all photos
-pub async fn route_get_photos(user: User) -> impl Responder {
-	match Photo::get_all_as_user(user.id) {
-		Ok(photos) => {
-			let photos_small: Vec<PhotoSmall> = photos.into_iter()
-				.map(PhotoSmall::from)
-				.collect();
-			HttpResponse::Ok().json(photos_small)
-		},
-		Err(error) => {
-			println!("{}", error);
-			create_internal_server_error_response(Some(error))
-		}
-	}
-}
+// pub async fn route_get_photos(user: User) -> impl Responder {
+// 	match Photo::get_all_as_user(user.id) {
+// 		Ok(photos) => {
+// 			let photos_small: Vec<PhotoSmall> = photos.into_iter()
+// 				.map(PhotoSmall::from)
+// 				.collect();
+// 			HttpResponse::Ok().json(photos_small)
+// 		},
+// 		Err(error) => {
+// 			println!("{}", error);
+// 			create_internal_server_error_response(Some(error))
+// 		}
+// 	}
+// }
 
-/// Delete a single photo
-pub async fn route_delete_photo(user: User, req: HttpRequest) -> impl Responder {
-	let photo_id = req.match_info().get("photo_id").unwrap();
+// /// Delete a single photo
+// pub async fn route_delete_photo(user: User, req: HttpRequest) -> impl Responder {
+// 	let photo_id = req.match_info().get("photo_id").unwrap();
 
-	delete_photos(user.id, &[photo_id]).await
-}
+// 	delete_photos(user.id, &[photo_id]).await
+// }
 
-/// Delete multiple photos
-pub async fn route_delete_photos(user: User, photo_ids: web::Json<Vec<String>>) -> impl Responder {
-	let mut ids: Vec<&str> = Vec::new();
-	for id in photo_ids.iter() {
-		ids.push(&id);
-	}
+// /// Delete multiple photos
+// pub async fn route_delete_photos(user: User, photo_ids: web::Json<Vec<String>>) -> impl Responder {
+// 	let mut ids: Vec<&str> = Vec::new();
+// 	for id in photo_ids.iter() {
+// 		ids.push(&id);
+// 	}
 
-	delete_photos(user.id, &ids).await
-}
+// 	delete_photos(user.id, &ids).await
+// }
 
-/// Get info about a photo
-pub async fn route_get_photo(session: Option<Session>, req: HttpRequest) -> impl Responder {
-	let photo_id = req.match_info().get("photo_id").unwrap();
+// /// Get info about a photo
+// pub async fn route_get_photo(session: Option<Session>, req: HttpRequest) -> impl Responder {
+// 	let photo_id = req.match_info().get("photo_id").unwrap();
 
-	match Photo::get(photo_id) {
-		Ok(photo_opt) => {
-			match photo_opt {
-				Some(photo) => {
-					if photo.can_view(&session) {
-						HttpResponse::Ok().json(photo)
-					}
-					else {
-						create_unauthorized_response()
-					}
-				},
-				None => create_not_found_response()
-			}
-		},
-		Err(_) => create_unauthorized_response()
-	}
-}
+// 	match Photo::get(photo_id) {
+// 		Ok(photo_opt) => {
+// 			match photo_opt {
+// 				Some(photo) => {
+// 					if photo.can_view(&session) {
+// 						HttpResponse::Ok().json(photo)
+// 					}
+// 					else {
+// 						create_unauthorized_response()
+// 					}
+// 				},
+// 				None => create_not_found_response()
+// 			}
+// 		},
+// 		Err(_) => create_unauthorized_response()
+// 	}
+// }
 
 // /// Get the thumbnail of a photo as file
 // pub async fn route_download_photo_thumbnail(session: Option<Session>, req: HttpRequest) -> impl Responder {
@@ -278,11 +285,11 @@ pub async fn route_upload_photo(user: User, payload: Multipart) -> impl Responde
 
 /// Delete multiple photos from database and disk
 pub async fn delete_photos(user_id: String, ids: &[&str]) -> impl Responder {
-	let mut photos: Vec<Photo> = Vec::new();
+	let mut photos: Vec<photo_new::Photo> = Vec::new();
 
 	// Check if all ids to be deleted are owned by user_id
 	for id in ids {
-		match Photo::get(id) {
+		match photo_new::Photo::get(id) {
 			Ok(photo) => {
 				if let Some(photo) = photo {
 					if photo.user_id != user_id {
@@ -298,12 +305,12 @@ pub async fn delete_photos(user_id: String, ids: &[&str]) -> impl Responder {
 	}
 
 	// Remove references to these photos from albums
-	if let Err(error) = database::get_database().remove_photos_from_all_albums(ids) {
-		return create_internal_server_error_response(Some(error));
-	}
-	if let Err(error) = database::get_database().remove_thumbs_from_all_albums(ids) {
-		return create_internal_server_error_response(Some(error));
-	}
+	// if let Err(error) = database::get_database().remove_photos_from_all_albums(ids) {
+	// 	return create_internal_server_error_response(Some(error));
+	// }
+	// if let Err(error) = database::get_database().remove_thumbs_from_all_albums(ids) {
+	// 	return create_internal_server_error_response(Some(error));
+	// }
 
 	// Delete physical files for photo
 	for photo in photos {
@@ -368,9 +375,9 @@ async fn serve_photo(file_id: &str, photo: &Photo, offer_as_download: bool) -> H
 
 /// Deletes all physical files of a photo from file system
 /// Original, thumbnail and preview images.
-async fn delete_photo_files(photo: &Photo) -> Result<()> {
-	storage::delete_file(&photo.path_original, &photo.user_id).await?;
-	storage::delete_file(&photo.path_preview, &photo.user_id).await?;
-	storage::delete_file(&photo.path_thumbnail, &photo.user_id).await?;
+async fn delete_photo_files(photo: &photo_new::Photo) -> Result<()> {
+	storage::delete_file(&format!("{}-original", &photo.id), &photo.user_id).await?;
+	storage::delete_file(&format!("{}-preview", &photo.id), &photo.user_id).await?;
+	storage::delete_file(&format!("{}-thumbnail", &photo.id), &photo.user_id).await?;
 	Ok(())
 }

@@ -7,7 +7,7 @@ export interface PhotoMinimal {
 }
 
 /**
- * This class exists mainly to assign typed to the return values of functions within 'wasm.UpholiClient'
+ * This class exists mainly to assign types to the return values of functions within 'wasm.UpholiClient'
  */
 class UpholiService {
 	private _client: wasm.UpholiClient | null;
@@ -18,9 +18,6 @@ class UpholiService {
 		return this._client;
 	}
 
-	/**
-	 *
-	 */
 	constructor() {
 		this._client = null;
 	}
@@ -42,6 +39,14 @@ class UpholiService {
 	async getPhotoBase64(id: string): Promise<string> {
 		return await this.client.getPhotoBase64(id);
 	}
+
+	async deletePhoto(id: string): Promise<void> {
+		return await this.client.deletePhoto(id);
+	}
+
+	// async deletePhotos(ids: string[]): Promise<void> {
+	// 	await this.client.deletePhotos(ids);
+	// }
 }
 
 const upholiService = new UpholiService();

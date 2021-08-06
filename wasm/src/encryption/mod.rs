@@ -2,7 +2,7 @@ use upholi_lib::http::EncryptedData;
 use crate::aes256;
 use crate::Result;
 
-///
+/// Encrypt bytes
 pub fn encrypt_slice(key: &[u8], data: &[u8]) -> Result<EncryptedData> {
 	let nonce = aes256::generate_nonce();
 	let encrypted = aes256::encrypt(&key, &nonce, data)?;
@@ -13,8 +13,8 @@ pub fn encrypt_slice(key: &[u8], data: &[u8]) -> Result<EncryptedData> {
 	})
 }
 
-///
-pub fn decrypt(key: &[u8], data: &EncryptedData) -> Result<Vec<u8>> {
+/// Decrypt an EncryptedData instance
+pub fn decrypt_data(key: &[u8], data: &EncryptedData) -> Result<Vec<u8>> {
 	let nonce = data.nonce.as_bytes();
 	let data = &base64::decode_config(&data.base64, base64::STANDARD)?;
 	let decypted_bytes = aes256::decrypt(key, nonce, data)?;
@@ -22,11 +22,13 @@ pub fn decrypt(key: &[u8], data: &EncryptedData) -> Result<Vec<u8>> {
 	Ok(decypted_bytes)
 }
 
+/// Decrypt a base64 string
 pub fn decrypt_base64(key: &[u8], nonce: &[u8], base64: &str) -> Result<Vec<u8>> {
 	let bytes = &base64::decode_config(base64, base64::STANDARD)?;
 	decrypt_slice(key, nonce, bytes)
 }
 
+/// Decrypt bytes
 pub fn decrypt_slice(key: &[u8], nonce: &[u8], data: &[u8]) -> Result<Vec<u8>> {
 	let decypted_bytes = aes256::decrypt(key, nonce, data)?;
 	Ok(decypted_bytes)
@@ -53,7 +55,7 @@ mod tests {
 		let bytes = b"some kind of message";
 
 		let encrypted_data = encrypt_slice(key, bytes).unwrap();
-		let decrypted_data = decrypt(key, &encrypted_data).unwrap();
+		let decrypted_data = decrypt_data(key, &encrypted_data).unwrap();
 
 		assert_eq!(decrypted_data, bytes);
 	}

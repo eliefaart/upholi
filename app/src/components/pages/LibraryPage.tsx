@@ -235,7 +235,12 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 	}
 
 	deleteSelectedPhotos(): void {
-		PhotoService.deletePhotos(this.state.selectedPhotoIds)
+		const promises: Promise<void>[] = [];
+		for (const id of this.state.selectedPhotoIds) {
+			promises.push(upholiService.deletePhoto(id));
+		}
+
+		Promise.all(promises)
 			.then(() => {
 				const remainingPhotos = this.state.photos.filter(p =>
 					this.state.selectedPhotoIds.indexOf(p.id) === -1);
@@ -245,10 +250,7 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 					selectedPhotoIds: [],
 					confirmDeletePhotosOpen: false
 				});
-
-				toast.info("Photos deleted.");
-			})
-			.catch(console.error);
+			});
 	}
 
 	onPhotoSelectedChange(photoId: string, selected: boolean): void {
