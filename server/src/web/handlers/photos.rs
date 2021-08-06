@@ -13,7 +13,7 @@ use crate::web::http::*;
 use crate::storage;
 use crate::entities::AccessControl;
 use crate::entities::user::User;
-use crate::entities::photo::Photo;
+use crate::entities::photo::PhotoOld;
 use crate::web::handlers::responses::*;
 
 
@@ -115,6 +115,37 @@ pub async fn route_download_photo_original(session: Option<Session>, req: HttpRe
 
 pub async fn route_upload_photo_original(user: User, bytes: Bytes, req: HttpRequest) -> impl Responder {
 	upload_photo(&user.id, bytes, req, "-original").await
+}
+
+pub async fn route_upload_photo_thumbnail_multipart(user: User, payload: Multipart, req: HttpRequest) -> impl Responder {
+	let file_name_postfix = "-thumbnail";
+
+	match req.match_info().get("photo_id") {
+		Some(photo_id) => {
+			match get_form_data(payload).await {
+				Ok(form_data) => {
+					if form_data.len() > 1 {
+						create_bad_request_response(Box::from(UploadError::MoreThanOneFile))
+					}
+					else {
+						match form_data.first() {
+							Some(file) => {
+								let file_id = &format!("{}{}", photo_id, file_name_postfix);
+								match storage::store_file(file_id, &user.id, &file.bytes).await {
+									Ok(_) => create_ok_response(),
+									Err(error) => create_internal_server_error_response(Some(error))
+								}
+							}
+							None => create_bad_request_response(Box::from(UploadError::NoFile))
+						}
+					}
+				},
+				Err(error) => create_bad_request_response(error)
+			}
+		},
+		None => create_not_found_response()
+	}
+
 }
 
 pub async fn route_upload_photo_thumbnail(user: User, bytes: Bytes, req: HttpRequest) -> impl Responder {
@@ -258,11 +289,11 @@ pub async fn route_upload_photo(user: User, payload: Multipart) -> impl Responde
 						name if name.ends_with(".jpg")
 							|| name.ends_with(".jpeg")
 							|| name.ends_with(".png") =>
-							Photo::parse_image_bytes(user.id, &file.bytes, "image/jpeg").await,
+							PhotoOld::parse_image_bytes(user.id, &file.bytes, "image/jpeg").await,
 						name if name.ends_with(".png") =>
-							Photo::parse_image_bytes(user.id, &file.bytes, "image/png").await,
+							PhotoOld::parse_image_bytes(user.id, &file.bytes, "image/png").await,
 						name if name.ends_with(".mp4") =>
-							Photo::parse_mp4_bytes(user.id, &file.bytes).await,
+							PhotoOld::parse_mp4_bytes(user.id, &file.bytes).await,
 						_ => Err(Box::from("Unsupported file type"))
 					};
 
@@ -330,8 +361,8 @@ pub async fn delete_photos(user_id: String, ids: &[&str]) -> impl Responder {
 
 /// Get the HTTP response that returns a photo from disk by its id.
 /// Given user must have access to it.
-async fn create_response_for_photo(photo_id: &str, session: Option<Session>, offer_as_download: bool, select_file_id: fn(&Photo) -> &str) -> HttpResponse {
-	match Photo::get(photo_id) {
+async fn create_response_for_photo(photo_id: &str, session: Option<Session>, offer_as_download: bool, select_file_id: fn(&PhotoOld) -> &str) -> HttpResponse {
+	match PhotoOld::get(photo_id) {
 		Ok(photo) => {
 			match photo {
 				Some(photo) => {
@@ -350,7 +381,7 @@ async fn create_response_for_photo(photo_id: &str, session: Option<Session>, off
 }
 
 /// Create an HTTP response that offers photo file at given path as download
-async fn serve_photo(file_id: &str, photo: &Photo, offer_as_download: bool) -> HttpResponse {
+async fn serve_photo(file_id: &str, photo: &PhotoOld, offer_as_download: bool) -> HttpResponse {
 	match storage::get_file(file_id, &photo.user_id).await {
 		Ok(file) => {
 			match file {
