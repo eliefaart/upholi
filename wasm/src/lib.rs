@@ -155,7 +155,6 @@ struct UpholiClientInternalHelper { }
 
 impl UpholiClientInternalHelper {
 	pub async fn upload_photo(base_url: &str, private_key: &[u8], image: &PhotoUploadInfo) -> Result<()> {
-		let client = reqwest::Client::new();
 		let mut request_data = UpholiClient::get_upload_photo_request_data(&image, &private_key)?;
 
 		// Decrypt photo key
@@ -171,34 +170,18 @@ impl UpholiClientInternalHelper {
 		request_data.preview_nonce = preview_encrypted.nonce;
 		request_data.original_nonce = original_encrypted.nonce;
 
-		// Create photo
-		let url = format!("{}/api/photo", &base_url).to_owned();
-		let response = client.post(&url).json(&request_data).send().await?;
-		let photo: response::UploadPhoto = response.json().await?;
-
-		// Upload photo bytes
-		// TODO: Clojure, and/or all in one request (including json data?)
-		let url = format!("{}/api/photo/{}/thumbnail", &base_url, &photo.id).to_owned();
+		// Prepare request body
 		let multipart = multipart::MultipartBuilder::new()
+			.add_bytes("data", &serde_json::to_vec(&request_data)?)
 			.add_bytes("thumbnail", thumbnail_encrypted.base64.as_bytes())
-			.build();
-		client.put(&url).body(multipart.body)
-			.header("Content-Type", multipart.content_type)
-			.header("Content-Length", multipart.content_length)
-			.send().await?;
-		let url = format!("{}/api/photo/{}/preview", &base_url, &photo.id).to_owned();
-		let multipart = multipart::MultipartBuilder::new()
 			.add_bytes("preview", preview_encrypted.base64.as_bytes())
-			.build();
-		client.put(&url).body(multipart.body)
-			.header("Content-Type", multipart.content_type)
-			.header("Content-Length", multipart.content_length)
-			.send().await?;
-		let url = format!("{}/api/photo/{}/original", &base_url, &photo.id).to_owned();
-		let multipart = multipart::MultipartBuilder::new()
 			.add_bytes("original", original_encrypted.base64.as_bytes())
 			.build();
-		client.put(&url).body(multipart.body)
+
+		// Send request
+		let url = format!("{}/api/photo", &base_url).to_owned();
+		let client = reqwest::Client::new();
+		client.post(&url).body(multipart.body)
 			.header("Content-Type", multipart.content_type)
 			.header("Content-Length", multipart.content_length)
 			.send().await?;

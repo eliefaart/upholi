@@ -33,7 +33,8 @@ pub enum UploadError {
 	NoFile,
 	MoreThanOneFile,
 	HeaderContentDispositionMissing,
-	HeaderContentDispositionInvalid
+	HeaderContentDispositionInvalid,
+	UnsupportedMultipartName
 }
 
 /// Errors related to uploading files
@@ -93,7 +94,8 @@ impl Display for UploadError {
 				UploadError::NoFile => "Request does not contain a file",
 				UploadError::MoreThanOneFile => "Request contains more than one file",
 				UploadError::HeaderContentDispositionMissing => "Missing header Content-Disposition",
-				UploadError::HeaderContentDispositionInvalid => "Invalid header Content-Disposition"
+				UploadError::HeaderContentDispositionInvalid => "Invalid header Content-Disposition",
+				UploadError::UnsupportedMultipartName => "Multipart contains a part with an unsupported name"
 			}
 		};
 		write!(f, "{}", message)
