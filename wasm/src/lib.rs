@@ -7,7 +7,6 @@ use js_sys::Array;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::future_to_promise;
 use serde::{Deserialize,Serialize};
-use reqwest::multipart;
 use upholi_lib::http::*;
 use upholi_lib::result::Result;
 use base64::{STANDARD, display::Base64Display, encode};
@@ -25,6 +24,7 @@ mod images;
 mod exif;
 mod photos;
 mod encryption;
+mod multipart;
 
 // https://developer.mozilla.org/en-US/docs/WebAssembly/Rust_to_wasm
 
@@ -120,108 +120,41 @@ pub struct UpholiClient {
 	private_key: String,
 }
 
-pub trait MultipartFile {
-    fn name(&self) -> String;
-    fn as_bytes(&self) -> Vec<u8>;
-    fn len(&self) -> usize;
-}
-struct MyUpload {
-    pub name: String,
-    pub data: Vec<u8>,
-}
-impl MultipartFile for MyUpload {
-    fn name(&self) -> String {
-        self.name.clone()
-    }
+// struct MultipartPart {
+// 	pub name: String,
+// 	pub data: String
+// }
+// pub trait MultipartFile {
+//     fn name(&self) -> String;
+//     fn as_bytes(&self) -> Vec<u8>;
+//     fn len(&self) -> usize;
+// }
+// struct MyUpload {
+//     pub name: String,
+//     pub data: Vec<u8>,
+// }
+// impl MultipartFile for MyUpload {
+//     fn name(&self) -> String {
+//         self.name.clone()
+//     }
 
-    fn as_bytes(&self) -> Vec<u8> {
-        self.data.clone()
-    }
+//     fn as_bytes(&self) -> Vec<u8> {
+//         self.data.clone()
+//     }
 
-    fn len(&self) -> usize {
-        self.data.len()
-    }
-}
+//     fn len(&self) -> usize {
+//         self.data.len()
+//     }
+// }
 
 
-fn multipart_for_binary<T>(items: &[T]) -> (Vec<u8>, usize) where T: MultipartFile {
-	// Based on:
-	// https://www.reddit.com/r/rust/comments/69ywsr/multipartform_request_with_reqwest/dhaqszf?utm_source=share&utm_medium=web2x&context=3
 
-	let mut body = Vec::new();
-	let rn = b"\r\n";
-	let body_boundary = br"--MULTIPARTBINARY";
-	let end_boundary =  br"--MULTIPARTBINARY--";
-	let enc = br"Content-Transfer-Encoding: binary";
 
-	let field_name = match items.len() {
-		1 => "file",
-		_ => "files",
-	};
-
-	body.extend(rn);
-	body.extend(rn);
-
-	for item in items {
-		let name = item.name();
-		let data = item.as_bytes();
-		let disp = format!("Content-Disposition: form-data; name=\"{}\"; filename=\"{}\"", field_name, name);
-		let content_type = br"Content-Type: application/octet-stream";
-
-		body.extend(body_boundary.as_ref());
-		body.extend(rn);
-		body.extend(disp.as_bytes());
-		body.extend(rn);
-		body.extend(content_type.as_ref());
-		body.extend(rn);
-		body.extend(enc.as_ref());
-		body.extend(rn);
-		body.extend(rn);
-		body.extend(data.as_slice());
-		body.extend(rn);
-	}
-	body.extend(end_boundary.as_ref());
-	body.extend(rn);
-	body.extend(rn);
-
-	let content_length = body.len();
-
-	(body, content_length)
-}
 
 struct UpholiClientInternalHelper { }
 
 impl UpholiClientInternalHelper {
 	pub async fn upload_photo(base_url: &str, private_key: &[u8], image: &PhotoUploadInfo) -> Result<()> {
-
-		let form = multipart::Form::new()
-			// Adding just a simple text field...
-			.text("username", "seanmonstar");
-			// And a file...
-			//.file("photo", "/path/to/photo.png")?;
-
-		// Customize all the details of a Part if needed...
-		let bio = multipart::Part::text("hallo peeps")
-			.file_name("bio.txt")
-			.mime_str("text/plain")?;
-
-		// Add the custom part to our form...
-		let form = form.part("biography", bio);
-
-		// And finally, send the form
-		let client = reqwest::Client::new();
-		let url = format!("{}/api/photo/{}/thumbnail", &base_url, "avc").to_owned();
-		let resp = client
-			.post(url)
-			.multipart(form)
-			.send().await?;
-
-
-
-
-
-
-
 		let client = reqwest::Client::new();
 		let mut request_data = UpholiClient::get_upload_photo_request_data(&image, &private_key)?;
 
@@ -243,36 +176,32 @@ impl UpholiClientInternalHelper {
 		let response = client.post(&url).json(&request_data).send().await?;
 		let photo: response::UploadPhoto = response.json().await?;
 
-
 		// Upload photo bytes
-		// !!!! Ok, try hyper or something?
-		// I feel text()
-		//let form = reqwest::multipart::Form::new()
-			// This sends way too many bytes I think?
-			//.part("metadata", multipart::Part::text("json of photo data"))
-			//.part("thumbnail", multipart::Part::bytes(base64::decode_config(thumbnail_encrypted.base64, base64::STANDARD)?))
-			//.part("thumbnail", multipart::Part::bytes(thumbnail_encrypted.base64.as_bytes()))
-			// .part("original", multipart::Part::bytes(image.bytes())) //.file_name("thumbnail").mime_str("image/jpg"));
-			//;
-
+		// TODO: Clojure, and/or all in one request (including json data?)
 		let url = format!("{}/api/photo/{}/thumbnail", &base_url, &photo.id).to_owned();
-
-		let multipart_file = MyUpload {
-			name: "testy".into(),
-			data: thumbnail_encrypted.base64.as_bytes().into()
-		};
-		let (multipart_body, content_length) = multipart_for_binary(&vec!{multipart_file});
-		//client.put(&url).body(thumbnail_encrypted.base64).send().await?;
-		client.put(&url)
-			.body(multipart_body)
-			.header("Content-Type", format!("multipart/form-data; boundary=MULTIPARTBINARY"))
-			.header("Content-Length", content_length)
+		let multipart = multipart::MultipartBuilder::new()
+			.add_bytes("thumbnail", thumbnail_encrypted.base64.as_bytes())
+			.build();
+		client.put(&url).body(multipart.body)
+			.header("Content-Type", multipart.content_type)
+			.header("Content-Length", multipart.content_length)
 			.send().await?;
-		//client.put(&url).multipart(form).send().await?;
 		let url = format!("{}/api/photo/{}/preview", &base_url, &photo.id).to_owned();
-		client.put(&url).body(preview_encrypted.base64).send().await?;
+		let multipart = multipart::MultipartBuilder::new()
+			.add_bytes("preview", preview_encrypted.base64.as_bytes())
+			.build();
+		client.put(&url).body(multipart.body)
+			.header("Content-Type", multipart.content_type)
+			.header("Content-Length", multipart.content_length)
+			.send().await?;
 		let url = format!("{}/api/photo/{}/original", &base_url, &photo.id).to_owned();
-		client.put(&url).body(original_encrypted.base64).send().await?;
+		let multipart = multipart::MultipartBuilder::new()
+			.add_bytes("original", original_encrypted.base64.as_bytes())
+			.build();
+		client.put(&url).body(multipart.body)
+			.header("Content-Type", multipart.content_type)
+			.header("Content-Length", multipart.content_length)
+			.send().await?;
 
 		Ok(())
 	}
