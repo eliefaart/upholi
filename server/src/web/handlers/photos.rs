@@ -50,18 +50,57 @@ pub async fn route_delete_photo(user: User, req: HttpRequest) -> impl Responder 
 	delete_photos(user.id, &[photo_id]).await
 }
 
-/// Create/register a new photo
-pub async fn route_upload_photo_info(user: User, data: web::Json<request::UploadPhoto>) -> impl Responder {
-	let mut db_photo: photo_new::Photo = data.into_inner().into();
-	db_photo.user_id = user.id;
 
-	match db_photo.insert() {
-		Ok(_) => {
-			HttpResponse::Created().json(response::UploadPhoto {
-				id: db_photo.id
-			})
+pub async fn route_upload_photo(user: User, payload: Multipart) -> impl Responder {
+	match get_form_data(payload).await {
+		Ok(form_data) => {
+			let mut bytes_data: Vec<u8> = vec!{};
+			let mut bytes_thumbnail: Vec<u8> = vec!{};
+			let mut bytes_preview: Vec<u8> = vec!{};
+			let mut data_original: Vec<u8> = vec!{};
+			for part in form_data {
+				match part.name.as_str() {
+					"data" => bytes_data = part.bytes,
+					"thumbnail" => bytes_thumbnail = part.bytes,
+					"preview" => bytes_preview = part.bytes,
+					"original" => data_original = part.bytes,
+					_ => return create_bad_request_response(Box::from(UploadError::UnsupportedMultipartName))
+				}
+			}
+
+			 match serde_json::from_slice::<request::UploadPhoto>(&bytes_data) {
+				 Ok(photo) => {
+					let mut db_photo: photo_new::Photo = photo.into();
+					db_photo.user_id = user.id.clone();
+
+					let file_id_thumbnail = format!("{}-thumbnail", &db_photo.id);
+					let file_id_preview = format!("{}-preview", &db_photo.id);
+					let file_id_original = format!("{}-original", &db_photo.id);
+
+					// Insert photo into DB
+					if let Err(error) = db_photo.insert() {
+						return create_internal_server_error_response(Some(error));
+					}
+
+					// Store photo bytes
+					if let Err(error) = storage::store_file(&file_id_thumbnail, &user.id, &bytes_thumbnail).await {
+						return create_internal_server_error_response(Some(error));
+					}
+					if let Err(error) = storage::store_file(&file_id_preview, &user.id, &bytes_preview).await {
+						return create_internal_server_error_response(Some(error));
+					}
+					if let Err(error) = storage::store_file(&file_id_original, &user.id, &data_original).await {
+						return create_internal_server_error_response(Some(error));
+					}
+
+					HttpResponse::Created().json(response::UploadPhoto {
+						id: db_photo.id
+					})
+				 },
+				 Err(error) => create_bad_request_response(Box::from(format!("{:?}", error)))
+			 }
 		},
-		Err(error) => create_internal_server_error_response(Some(error))
+		Err(error) => create_bad_request_response(error)
 	}
 }
 
@@ -112,63 +151,6 @@ pub async fn route_download_photo_original(session: Option<Session>, req: HttpRe
 		None => create_not_found_response()
 	}
 }
-
-pub async fn route_upload_photo_original(user: User, bytes: Bytes, req: HttpRequest) -> impl Responder {
-	upload_photo(&user.id, bytes, req, "-original").await
-}
-
-pub async fn route_upload_photo_thumbnail_multipart(user: User, payload: Multipart, req: HttpRequest) -> impl Responder {
-	let file_name_postfix = "-thumbnail";
-
-	match req.match_info().get("photo_id") {
-		Some(photo_id) => {
-			match get_form_data(payload).await {
-				Ok(form_data) => {
-					if form_data.len() > 1 {
-						create_bad_request_response(Box::from(UploadError::MoreThanOneFile))
-					}
-					else {
-						match form_data.first() {
-							Some(file) => {
-								let file_id = &format!("{}{}", photo_id, file_name_postfix);
-								match storage::store_file(file_id, &user.id, &file.bytes).await {
-									Ok(_) => create_ok_response(),
-									Err(error) => create_internal_server_error_response(Some(error))
-								}
-							}
-							None => create_bad_request_response(Box::from(UploadError::NoFile))
-						}
-					}
-				},
-				Err(error) => create_bad_request_response(error)
-			}
-		},
-		None => create_not_found_response()
-	}
-
-}
-
-pub async fn route_upload_photo_thumbnail(user: User, bytes: Bytes, req: HttpRequest) -> impl Responder {
-	upload_photo(&user.id, bytes, req, "-thumbnail").await
-}
-
-pub async fn route_upload_photo_preview(user: User, bytes: Bytes, req: HttpRequest) -> impl Responder {
-	upload_photo(&user.id, bytes, req, "-preview").await
-}
-
-async fn upload_photo(user_id: &str, bytes: Bytes, req: HttpRequest, file_name_postfix: &str) -> impl Responder {
-	match req.match_info().get("photo_id") {
-		Some(photo_id) => {
-			let file_id = &format!("{}{}", photo_id, file_name_postfix);
-			match storage::store_file(file_id, user_id, &bytes).await {
-				Ok(_) => create_ok_response(),
-				Err(error) => create_internal_server_error_response(Some(error))
-			}
-		},
-		None => create_not_found_response()
-	}
-}
-
 
 
 
@@ -270,49 +252,49 @@ async fn upload_photo(user_id: &str, bytes: Bytes, req: HttpRequest, file_name_p
 // }
 
 /// Upload a photo
-pub async fn route_upload_photo(user: User, payload: Multipart) -> impl Responder {
-	match get_form_data(payload).await {
-		Ok(form_data) => {
-			// let mut files_iter = form_data.first();//.iter(); //.filter(|d| d.name == "file");
-			// let file_option = files_iter.next();
-			// let remaining_files = files_iter.count();
+// pub async fn route_upload_photo(user: User, payload: Multipart) -> impl Responder {
+// 	match get_form_data(payload).await {
+// 		Ok(form_data) => {
+// 			// let mut files_iter = form_data.first();//.iter(); //.filter(|d| d.name == "file");
+// 			// let file_option = files_iter.next();
+// 			// let remaining_files = files_iter.count();
 
-			if form_data.len() > 1 {
-				return create_bad_request_response(Box::from(UploadError::MoreThanOneFile));
-			}
+// 			if form_data.len() > 1 {
+// 				return create_bad_request_response(Box::from(UploadError::MoreThanOneFile));
+// 			}
 
-			let file_option = form_data.first();
+// 			let file_option = form_data.first();
 
-			match file_option {
-				Some(file) => {
-					let photo = match &file.name.to_lowercase() {
-						name if name.ends_with(".jpg")
-							|| name.ends_with(".jpeg")
-							|| name.ends_with(".png") =>
-							PhotoOld::parse_image_bytes(user.id, &file.bytes, "image/jpeg").await,
-						name if name.ends_with(".png") =>
-							PhotoOld::parse_image_bytes(user.id, &file.bytes, "image/png").await,
-						name if name.ends_with(".mp4") =>
-							PhotoOld::parse_mp4_bytes(user.id, &file.bytes).await,
-						_ => Err(Box::from("Unsupported file type"))
-					};
+// 			match file_option {
+// 				Some(file) => {
+// 					let photo = match &file.name.to_lowercase() {
+// 						name if name.ends_with(".jpg")
+// 							|| name.ends_with(".jpeg")
+// 							|| name.ends_with(".png") =>
+// 							PhotoOld::parse_image_bytes(user.id, &file.bytes, "image/jpeg").await,
+// 						name if name.ends_with(".png") =>
+// 							PhotoOld::parse_image_bytes(user.id, &file.bytes, "image/png").await,
+// 						name if name.ends_with(".mp4") =>
+// 							PhotoOld::parse_mp4_bytes(user.id, &file.bytes).await,
+// 						_ => Err(Box::from("Unsupported file type"))
+// 					};
 
-					match photo {
-						Ok(photo) => {
-							match photo.insert() {
-								Ok(_) => create_created_response(&photo.id),
-								Err(error) => create_bad_request_response(error)
-							}
-						},
-						Err(error) => create_bad_request_response(error)
-					}
-				},
-				None => create_bad_request_response(Box::from(UploadError::NoFile))
-			}
-		},
-		Err(error) => create_bad_request_response(error)
-	}
-}
+// 					match photo {
+// 						Ok(photo) => {
+// 							match photo.insert() {
+// 								Ok(_) => create_created_response(&photo.id),
+// 								Err(error) => create_bad_request_response(error)
+// 							}
+// 						},
+// 						Err(error) => create_bad_request_response(error)
+// 					}
+// 				},
+// 				None => create_bad_request_response(Box::from(UploadError::NoFile))
+// 			}
+// 		},
+// 		Err(error) => create_bad_request_response(error)
+// 	}
+// }
 
 /// Delete multiple photos from database and disk
 pub async fn delete_photos(user_id: String, ids: &[&str]) -> impl Responder {
