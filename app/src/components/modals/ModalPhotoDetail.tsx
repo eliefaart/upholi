@@ -4,27 +4,30 @@ import PhotoService from "../../services/PhotoService";
 import PhotoDetail from "../PhotoDetail";
 import { IconDownload } from "../Icons";
 import ModalPropsBase from "../../models/ModalPropsBase";
-import Photo from "../../models/Photo";
+//import Photo from "../../models/Photo";
+import upholiService, { Photo } from "../../services/UpholiService";
 
-interface ModalPhotoDetailProps extends ModalPropsBase {
+interface Props extends ModalPropsBase {
 	photoId: string
 }
 
-interface ModalPhotoDetailState {
-	photo: Photo | null
+interface State {
+	photo: Photo | null,
+	src: string
 }
 
-class ModalPhotoDetail extends React.Component<ModalPhotoDetailProps, ModalPhotoDetailState> {
+class ModalPhotoDetail extends React.Component<Props, State> {
 
 	isRequestingPhotoId: string | null;
 
-	constructor(props: ModalPhotoDetailProps) {
+	constructor(props: Props) {
 		super(props);
 
 		this.isRequestingPhotoId = null;
 
 		this.state = {
-			photo: null
+			photo: null,
+			src: ""
 		};
 	}
 
@@ -32,7 +35,7 @@ class ModalPhotoDetail extends React.Component<ModalPhotoDetailProps, ModalPhoto
 		this.getPhotoInfo();
 	}
 
-	componentDidUpdate(prevProps: ModalPhotoDetailProps): void {
+	componentDidUpdate(prevProps: Props): void {
 		if (this.props.photoId && this.isRequestingPhotoId !== this.props.photoId && (this.state.photo == null || this.state.photo?.id !== prevProps.photoId)) {
 			this.getPhotoInfo();
 		}
@@ -43,14 +46,25 @@ class ModalPhotoDetail extends React.Component<ModalPhotoDetailProps, ModalPhoto
 			const fnOnPhotoDataReceived = (photo: Photo) => {
 				this.setState({ photo });
 			};
+			const fnOnPhotoBase64Received = (base64: string) => {
+				this.setState({ src: `data:image/png;base64,${base64}` });
+			};
 
 			this.isRequestingPhotoId = this.props.photoId;
-			PhotoService.getPhotoInfo(this.props.photoId)
+
+			const getInfoPromise = upholiService.getPhoto(this.props.photoId);
+			getInfoPromise
 				.then(fnOnPhotoDataReceived)
-				.catch(console.error)
+				.catch(console.error);
+
+			const getImageSrcPromise = upholiService.getPhotoPreviewBase64(this.props.photoId);
+			getImageSrcPromise
+				.then(fnOnPhotoBase64Received)
+				.catch(console.error);
+
+			Promise.all([ getInfoPromise, getImageSrcPromise ])
 				.finally(() => this.isRequestingPhotoId = null);
 		}
-
 	}
 
 	render(): React.ReactNode {
@@ -59,7 +73,6 @@ class ModalPhotoDetail extends React.Component<ModalPhotoDetailProps, ModalPhoto
 		}
 
 		const photoBaseUrl = PhotoService.baseUrl() + "/photo/" + this.props.photoId;
-		const previewUrl = photoBaseUrl + "/preview";
 		const downloadUrl = photoBaseUrl + "/original";
 
 		const headerActions = <a className="iconOnly asButton" href={downloadUrl} download title="Download">
@@ -76,7 +89,7 @@ class ModalPhotoDetail extends React.Component<ModalPhotoDetailProps, ModalPhoto
 				okButtonText={null}
 			>
 				<PhotoDetail
-					src={previewUrl}
+					src={this.state.src}
 					isVideo={!!this.state.photo && this.state.photo.contentType.startsWith("video/")}
 					exif={this.state.photo ? this.state.photo.exif : null} />
 			</Modal>

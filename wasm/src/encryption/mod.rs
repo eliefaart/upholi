@@ -9,7 +9,8 @@ pub fn encrypt_slice(key: &[u8], data: &[u8]) -> Result<EncryptedData> {
 
 	Ok(EncryptedData {
 		nonce: String::from_utf8(nonce)?,
-		base64: base64::encode_config(&encrypted, base64::STANDARD)
+		base64: base64::encode_config(&encrypted, base64::STANDARD),
+		format_version: 1
 	})
 }
 

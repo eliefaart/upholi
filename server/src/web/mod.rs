@@ -46,14 +46,17 @@ pub async fn run_server() -> std::io::Result<()>{
 			.service(
 				// API routes
 				actix_web::web::scope("/api")
-					// .route("/photos", actix_web::web::get().to(handlers::photos::route_get_photos))
-					// .route("/photos", actix_web::web::delete().to(handlers::photos::route_delete_photos))
-					//.route("/photo", actix_web::web::post().to(handlers::photos::route_upload_photo))
-					//.route("/photo/{photo_id}", actix_web::web::get().to(handlers::photos::route_get_photo))
-					// .route("/photo/{photo_id}/original", actix_web::web::get().to(handlers::photos::route_download_photo_original))
-					// .route("/photo/{photo_id}/thumb", actix_web::web::get().to(handlers::photos::route_download_photo_thumbnail))
-					// .route("/photo/{photo_id}/preview", actix_web::web::get().to(handlers::photos::route_download_photo_preview))
-					//.route("/photo/{photo_id}", actix_web::web::delete().to(handlers::photos::route_delete_photo))
+
+					.route("/photos", actix_web::web::get().to(handlers::photos::route_get_photos))
+					.route("/photo", actix_web::web::post().to(handlers::photos::route_upload_photo))
+
+					.route("/photo/{photo_id}", actix_web::web::get().to(handlers::photos::route_get_photo))
+					.route("/photo/{photo_id}", actix_web::web::delete().to(handlers::photos::route_delete_photo))
+					.route("/photo/{photo_id}/original", actix_web::web::get().to(handlers::photos::route_download_photo_original))
+					.route("/photo/{photo_id}/thumbnail", actix_web::web::get().to(handlers::photos::route_download_photo_thumbnail))
+					.route("/photo/{photo_id}/preview", actix_web::web::get().to(handlers::photos::route_download_photo_preview))
+
+
 
 					.route("/albums", actix_web::web::get().to(handlers::albums::route_get_albums))
 					.route("/album", actix_web::web::post().to(handlers::albums::route_create_album))
@@ -74,14 +77,7 @@ pub async fn run_server() -> std::io::Result<()>{
 
 
 
-					.route("/photos", actix_web::web::get().to(handlers::photos::route_get_photos))
-					.route("/photo", actix_web::web::post().to(handlers::photos::route_upload_photo))
 
-					.route("/photo/{photo_id}", actix_web::web::get().to(handlers::photos::route_get_photo))
-					.route("/photo/{photo_id}", actix_web::web::delete().to(handlers::photos::route_delete_photo))
-					.route("/photo/{photo_id}/original", actix_web::web::get().to(handlers::photos::route_download_photo_original))
-					.route("/photo/{photo_id}/thumbnail", actix_web::web::get().to(handlers::photos::route_download_photo_thumbnail))
-					.route("/photo/{photo_id}/preview", actix_web::web::get().to(handlers::photos::route_download_photo_preview))
 			)
 	})
 	.bind(address)
