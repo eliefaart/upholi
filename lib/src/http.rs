@@ -11,14 +11,18 @@ pub struct ShareKey {
 #[serde(rename_all = "camelCase")]
 pub struct EncryptedData {
 	pub nonce: String,
-	pub base64: String
+	pub base64: String,
+	/// Version of format of data that was encrypted.
+	/// For future use.
+	pub format_version: i32
 }
 
 impl Clone for EncryptedData {
 	fn clone(&self) -> Self {
 		Self {
 			base64: self.base64.clone(),
-			nonce: self.nonce.clone()
+			nonce: self.nonce.clone(),
+			format_version: self.format_version
 		}
 	}
 }
@@ -35,13 +39,9 @@ pub mod request {
 		pub key: super::EncryptedData,
 		/// Encrypted data, contains width, height, exif, etc
 		pub data: super::EncryptedData,
-		pub data_version: u32,
 		pub share_keys: Vec<super::ShareKey>,
-		/// Nonce used for thumbnail image bytes
 		pub thumbnail_nonce: String,
-		/// Nonce used for preview image bytes
 		pub preview_nonce: String,
-		/// Nonce used for original image bytes
 		pub original_nonce: String
 	}
 }
@@ -53,6 +53,21 @@ pub mod response {
 	#[serde(rename_all = "camelCase")]
 	pub struct UploadPhoto {
 		pub id: String
+	}
+
+	#[derive(Deserialize, Serialize, Debug)]
+	#[serde(rename_all = "camelCase")]
+	pub struct Photo {
+		pub id: String,
+		pub user_id: String,
+		pub width: i32,
+		pub height: i32,
+		pub data: super::EncryptedData,
+		pub key: super::EncryptedData,
+		pub share_keys: Vec<super::ShareKey>,
+		pub thumbnail_nonce: String,
+		pub preview_nonce: String,
+		pub original_nonce: String
 	}
 
 	#[derive(Deserialize, Serialize, Debug)]

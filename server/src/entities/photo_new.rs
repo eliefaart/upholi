@@ -20,7 +20,6 @@ pub struct Photo {
 	pub height: i32,
 	/// Encrypted data, contains width, height, exif, etc
 	pub data: EncryptedData,
-	pub data_version: i32,
 	/// Key that all data and file bytes of this photo is encrypted with. This key is encrypted with the owner's private key.
 	pub key: EncryptedData,
 	pub share_keys: Vec<ShareKey>,
@@ -37,7 +36,6 @@ impl From<UploadPhoto> for Photo {
 			width: source.width as i32,
 			height: source.height as i32,
 			data: source.data,
-			data_version: source.data_version as i32,
 			key: source.key,
 			share_keys: source.share_keys,
 			thumbnail_nonce: source.thumbnail_nonce,
@@ -120,13 +118,13 @@ impl AccessControl for Photo {
 
 		// Check if photo is part of any collection,
 		// if so, photo is publically accessible too.
-		if let Ok(albums) = database::get_database().get_albums_with_photo(&self.id) {
-			for album in albums {
-				if album.can_view(session) {
-					return true;
-				}
-			}
-		}
+		// if let Ok(albums) = database::get_database().get_albums_with_photo(&self.id) {
+		// 	for album in albums {
+		// 		if album.can_view(session) {
+		// 			return true;
+		// 		}
+		// 	}
+		// }
 
 		false
 	}
@@ -137,8 +135,8 @@ impl AccessControl for Photo {
 }
 
 /// Check if Photo is owned by user of given session
-fn session_owns_photo(photo: &Photo, session_opt: &Option<Session>) -> bool {
-	if let Some(session) = session_opt {
+fn session_owns_photo(photo: &Photo, session: &Option<Session>) -> bool {
+	if let Some(session) = session {
 		if let Some(user_id) = &session.user_id {
 			if &photo.user_id == user_id {
 				return true;

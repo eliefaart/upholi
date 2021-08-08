@@ -1,9 +1,18 @@
 import * as wasm from "wasm";
+import Exif from "../models/Exif";
 
 export interface PhotoMinimal {
 	id: string,
 	width: number,
 	height: number
+}
+
+export interface Photo {
+	id: string,
+	width: number,
+	height: number,
+	contentType: string,
+	exif: Exif
 }
 
 /**
@@ -22,6 +31,16 @@ class UpholiService {
 		this._client = null;
 	}
 
+	async getPhoto(id: string): Promise<Photo> {
+		const json = await this.client.getPhoto(id);
+		const photo: Photo = JSON.parse(json);
+
+		// wasm response doesn't id for now. I'll set it here manually.
+		photo.id = id;
+
+		return photo;
+	}
+
 	async getPhotos(): Promise<PhotoMinimal[]> {
 		const photos = await this.client.getPhotos();
 
@@ -36,17 +55,21 @@ class UpholiService {
 		});
 	}
 
-	async getPhotoBase64(id: string): Promise<string> {
-		return await this.client.getPhotoBase64(id);
+	async getPhotoThumbnailBase64(id: string): Promise<string> {
+		return await this.client.getPhotoThumbnailBase64(id);
+	}
+
+	async getPhotoPreviewBase64(id: string): Promise<string> {
+		return await this.client.getPhotoPreviewBase64(id);
+	}
+
+	async getPhotoOriginalBase64(id: string): Promise<string> {
+		return await this.client.getPhotoOriginalBase64(id);
 	}
 
 	async deletePhoto(id: string): Promise<void> {
 		return await this.client.deletePhoto(id);
 	}
-
-	// async deletePhotos(ids: string[]): Promise<void> {
-	// 	await this.client.deletePhotos(ids);
-	// }
 }
 
 const upholiService = new UpholiService();

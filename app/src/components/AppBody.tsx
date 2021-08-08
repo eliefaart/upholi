@@ -4,7 +4,7 @@ import "react-toastify/dist/ReactToastify.css";
 import LibraryPage from "./pages/LibraryPage";
 import AlbumsPage from "./pages/AlbumsPage";
 import AlbumPage from "./pages/AlbumPage";
-import PhotoPage from "./pages/PhotoPage";
+//import PhotoPage from "./pages/PhotoPage";
 import SharedPage from "./pages/SharedPage";
 import SharedCollectionPage from "./pages/SharedCollectionPage";
 import Header from "./Header";
@@ -71,7 +71,7 @@ class AppBody extends React.Component<AppBodyProps, AppBodyState> {
 				{fnRenderRoute("/", LibraryPage, true)}
 				{fnRenderRoute("/albums", AlbumsPage, true)}
 				{fnRenderRoute("/shared", SharedPage, true)}
-				{fnRenderRoute("/photo/:photoId", PhotoPage, false)}
+				{/* {fnRenderRoute("/photo/:photoId", PhotoPage, false)} */}
 				{fnRenderRoute("/album/:albumId", AlbumPage, true)}
 
 				{fnRenderRoute("/s/:token", SharedCollectionPage, false)}

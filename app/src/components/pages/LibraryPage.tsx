@@ -204,7 +204,7 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 
 					//statePhoto.src = PhotoService.getThumbUrl(photoInfo.id);
 
-					upholiService.getPhotoBase64(photoInfo.id)
+					upholiService.getPhotoThumbnailBase64(photoInfo.id)
 						.then(base64 => {
 							this.setState(previousState => {
 								const photo = previousState.photos.find(p => p.id === statePhoto.id);
