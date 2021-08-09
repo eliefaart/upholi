@@ -25,6 +25,8 @@ class ModalPhotoDetail extends React.Component<Props, State> {
 
 		this.isRequestingPhotoId = null;
 
+		this.downloadPhoto = this.downloadPhoto.bind(this);
+
 		this.state = {
 			photo: null,
 			src: ""
@@ -47,7 +49,7 @@ class ModalPhotoDetail extends React.Component<Props, State> {
 				this.setState({ photo });
 			};
 			const fnOnPhotoBase64Received = (base64: string) => {
-				this.setState({ src: `data:image/png;base64,${base64}` });
+				this.setState({ src: `data:image/jpeg;base64,${base64}` });
 			};
 
 			this.isRequestingPhotoId = this.props.photoId;
@@ -67,15 +69,24 @@ class ModalPhotoDetail extends React.Component<Props, State> {
 		}
 	}
 
+	downloadPhoto(): void {
+		upholiService.getPhotoOriginalBase64(this.props.photoId)
+			.then((base64) => {
+				const imageSrc = "data:image/jpeg;base64," + base64;
+				const a = document.createElement("a");
+				a.href = imageSrc;
+				a.download = `${this.props.photoId}.jpg`;
+				a.click();
+			})
+			.catch(console.error);
+	}
+
 	render(): React.ReactNode {
 		if (!this.props.photoId) {
 			return null;
 		}
 
-		const photoBaseUrl = PhotoService.baseUrl() + "/photo/" + this.props.photoId;
-		const downloadUrl = photoBaseUrl + "/original";
-
-		const headerActions = <a className="iconOnly asButton" href={downloadUrl} download title="Download">
+		const headerActions = <a className="iconOnly asButton" download title="Download" onClick={this.downloadPhoto}>
 			<IconDownload/>
 		</a>;
 
