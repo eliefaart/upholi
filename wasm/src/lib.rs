@@ -14,7 +14,6 @@ use upholi_lib::result::Result;
  */
 
 mod error;
-mod aes256;
 mod images;
 mod exif;
 mod photos;
@@ -123,7 +122,7 @@ impl UpholiClientInternalHelper {
 		let mut request_data = Self::get_upload_photo_request_data(&image, &private_key)?;
 
 		// Decrypt photo key
-		let photo_key = encryption::decrypt_data(private_key, &request_data.key)?;
+		let photo_key = encryption::decrypt_data_base64(private_key, &request_data.key)?;
 
 		// Encrypt photo bytes
 		let thumbnail_encrypted = encryption::encrypt_slice(&photo_key, &image.bytes_thumbnail())?;
@@ -138,9 +137,9 @@ impl UpholiClientInternalHelper {
 		// Prepare request body
 		let multipart = multipart::MultipartBuilder::new()
 			.add_bytes("data", &serde_json::to_vec(&request_data)?)
-			.add_bytes("thumbnail", thumbnail_encrypted.base64.as_bytes())
-			.add_bytes("preview", preview_encrypted.base64.as_bytes())
-			.add_bytes("original", original_encrypted.base64.as_bytes())
+			.add_bytes("thumbnail", &thumbnail_encrypted.bytes)
+			.add_bytes("preview", &preview_encrypted.bytes)
+			.add_bytes("original", &original_encrypted.bytes)
 			.build();
 
 		// Send request
@@ -164,8 +163,8 @@ impl UpholiClientInternalHelper {
 
 	pub async fn get_photo_data(base_url: &str, private_key: &[u8], id: &str) -> Result<PhotoData> {
 		let photo = UpholiClientInternalHelper::get_photo_encrypted(base_url, id).await?;
-		let photo_key = encryption::decrypt_data(private_key, &photo.key)?;
-		let photo_data = encryption::decrypt_data(&photo_key, &photo.data)?;
+		let photo_key = encryption::decrypt_data_base64(private_key, &photo.key)?;
+		let photo_data = encryption::decrypt_data_base64(&photo_key, &photo.data)?;
 		let photo_data: PhotoData = serde_json::from_slice(&photo_data)?;
 
 		Ok(photo_data)
@@ -193,18 +192,17 @@ impl UpholiClientInternalHelper {
 
 		// Get photo bytes
 		let response = reqwest::get(url).await?;
-		let photo_base64_bytes = response.bytes().await?;
-		let photo_base64 = String::from_utf8(photo_base64_bytes.to_vec())?;
+		let encrypted_bytes = response.bytes().await?;
 
 		// Decrypt photo bytes
 		let photo = Self::get_photo_encrypted(base_url, id).await?;
-		let photo_key = encryption::decrypt_data(private_key, &photo.key)?;
+		let photo_key = encryption::decrypt_data_base64(private_key, &photo.key)?;
 		let nonce = match photo_variant {
 			PhotoVariant::Thumbnail => photo.thumbnail_nonce.as_bytes(),
 			PhotoVariant::Preview => photo.preview_nonce.as_bytes(),
 			PhotoVariant::Original => photo.original_nonce.as_bytes()
 		};
-		let bytes = encryption::decrypt_base64(&photo_key, nonce, &photo_base64)?;
+		let bytes = encryption::decrypt_slice(&photo_key, nonce, &encrypted_bytes)?;
 
 		Ok(base64::encode_config(&bytes, base64::STANDARD))
 	}
@@ -220,9 +218,9 @@ impl UpholiClientInternalHelper {
 	/// Get data about photo to send as part of the HTTP request's body
 	pub fn get_upload_photo_request_data(photo: &crate::PhotoUploadInfo, private_key: &[u8]) -> Result<request::UploadPhoto> {
 		// Generate a key and encrypt it
-		let photo_key = aes256::generate_key();
-		let photo_key_nonce = aes256::generate_nonce();
-		let photo_key_encrypted = aes256::encrypt(private_key, &photo_key_nonce, &photo_key)?;
+		let photo_key = encryption::aes256::generate_key();
+		let photo_key_nonce = encryption::aes256::generate_nonce();
+		let photo_key_encrypted = encryption::aes256::encrypt(private_key, &photo_key_nonce, &photo_key)?;
 
 		// Create photo data/properties and encrypt it
 		let data = PhotoData {
@@ -245,8 +243,8 @@ impl UpholiClientInternalHelper {
 		};
 		let data_json = serde_json::to_string(&data)?;
 		let data_bytes = data_json.as_bytes();
-		let data_nonce = aes256::generate_nonce();
-		let data_encrypted = aes256::encrypt(&photo_key, &data_nonce, data_bytes)?;
+		let data_nonce = encryption::aes256::generate_nonce();
+		let data_encrypted = encryption::aes256::encrypt(&photo_key, &data_nonce, data_bytes)?;
 
 		Ok(request::UploadPhoto {
 			width: photo.image.width,
