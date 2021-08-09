@@ -209,7 +209,7 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 							this.setState(previousState => {
 								const photo = previousState.photos.find(p => p.id === statePhoto.id);
 								if (photo) {
-									photo.src = `data:image/png;base64,${base64}`;
+									photo.src = `data:image/jpeg;base64,${base64}`;
 								}
 
 								return {
