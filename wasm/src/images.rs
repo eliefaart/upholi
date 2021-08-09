@@ -1,8 +1,8 @@
 use image::{GenericImageView, DynamicImage, ImageFormat};
 use crate::error::*;
 
-const DIMENSIONS_THUMB: u32 = 400;
-const DIMENSIONS_PREVIEW: u32 = 1750;
+const DIMENSIONS_THUMB: u32 = 350;
+const DIMENSIONS_PREVIEW: u32 = 1600;
 
 pub struct Image {
 	pub width: u32,

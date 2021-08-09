@@ -55,16 +55,28 @@ class UpholiService {
 		});
 	}
 
-	async getPhotoThumbnailBase64(id: string): Promise<string> {
-		return await this.client.getPhotoThumbnailBase64(id);
+	// async getPhotoThumbnailBase64(id: string): Promise<string> {
+	// 	return await this.client.getPhotoThumbnailBase64(id);
+	// }
+
+	// async getPhotoPreviewBase64(id: string): Promise<string> {
+	// 	return await this.client.getPhotoPreviewBase64(id);
+	// }
+
+	// async getPhotoOriginalBase64(id: string): Promise<string> {
+	// 	return await this.client.getPhotoOriginalBase64(id);
+	// }
+
+	async getPhotoThumbnailImageSrc(id: string): Promise<string> {
+		return await this.client.getPhotoThumbnailImageSrc(id);
 	}
 
-	async getPhotoPreviewBase64(id: string): Promise<string> {
-		return await this.client.getPhotoPreviewBase64(id);
+	async getPhotoPreviewImageSrc(id: string): Promise<string> {
+		return await this.client.getPhotoPreviewImageSrc(id);
 	}
 
-	async getPhotoOriginalBase64(id: string): Promise<string> {
-		return await this.client.getPhotoOriginalBase64(id);
+	async getPhotoOriginalImageSrc(id: string): Promise<string> {
+		return await this.client.getPhotoOriginalImageSrc(id);
 	}
 
 	async deletePhoto(id: string): Promise<void> {

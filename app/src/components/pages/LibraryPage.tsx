@@ -62,6 +62,7 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 		};
 
 		this.resetSelection = this.resetSelection.bind(this);
+		this.refreshPhotos = this.refreshPhotos.bind(this);
 
 		this.state = {
 			photos: [],
@@ -204,12 +205,12 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 
 					//statePhoto.src = PhotoService.getThumbUrl(photoInfo.id);
 
-					upholiService.getPhotoThumbnailBase64(photoInfo.id)
-						.then(base64 => {
+					upholiService.getPhotoThumbnailImageSrc(photoInfo.id)
+						.then(src => {
 							this.setState(previousState => {
 								const photo = previousState.photos.find(p => p.id === statePhoto.id);
 								if (photo) {
-									photo.src = `data:image/jpeg;base64,${base64}`;
+									photo.src = src;
 								}
 
 								return {
@@ -286,12 +287,11 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 		if (!event.dataTransfer.files || event.dataTransfer.files.length === 0)
 			return; // no files
 
-		uploadHelper.uploadPhotos(event.dataTransfer.files, (progress) => console.log(progress[0].status))
-			.then(() => {
-				console.log("Upload finished?");
-			});
-
-		// this.uploadFilesList(event.dataTransfer.files);
+		uploadHelper.uploadPhotos(event.dataTransfer.files, (progress) => {
+			console.log(progress);
+		}).then(() => {
+			this.refreshPhotos();
+		});
 	}
 
 	uploadFilesList(fileList: FileList): void {

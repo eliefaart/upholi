@@ -76,7 +76,9 @@ class UploadHelper {
 
 		const updateQueueItemStatus = (item: FileUploadQueueItem, status: FileUploadStatus) => {
 			item.status = status;
-			progressUpdated(queue);
+			if (progressUpdated) {
+				progressUpdated(queue);
+			}
 		};
 
 		// Create an upload queue from FileList
@@ -94,7 +96,9 @@ class UploadHelper {
 		}
 
 		// Upload all items in queue
-		progressUpdated(queue);
+		if (progressUpdated) {
+			progressUpdated(queue);
+		}
 		for (const queueItem of queue) {
 			updateQueueItemStatus(queueItem, FileUploadStatus.Uploading);
 
