@@ -12,7 +12,6 @@ import UploadButton from "../UploadButton";
 import { IconDelete } from "../Icons";
 import { toast } from "react-toastify";
 import UrlHelper from "../../helpers/UrlHelper";
-import Photo from "../../models/Photo";
 import File from "../../models/File";
 import GalleryPhoto from "../../models/GalleryPhoto";
 import AlbumInfo from "../../models/AlbumInfo";
@@ -287,15 +286,10 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 		if (!event.dataTransfer.files || event.dataTransfer.files.length === 0)
 			return; // no files
 
-		uploadHelper.uploadPhotos(event.dataTransfer.files, (progress) => {
-			console.log(progress);
-		}).then(() => {
-			this.refreshPhotos();
-		});
+		this.uploadFilesList(event.dataTransfer.files);
 	}
 
 	uploadFilesList(fileList: FileList): void {
-		const files = UploadHelper.convertFileListToFileArrayForUploadDialog(fileList);
 		const fnOnUploadFinished = () => {
 			this.setState({
 				uploadInProgress: false,
@@ -304,25 +298,36 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 			this.refreshPhotos();
 			toast.info("Upload finished.");
 		};
-		const fnUpdateFileUploadState = (file: globalThis.File, newState: string) => {
-			const stateFile = files.find(f => f.name === file.name);
-			if (stateFile) {
-				stateFile.status = newState;
 
-				this.setState({
-					uploadFiles: files
-				});
-			}
-		};
-
-		PhotoService.uploadPhotos(fileList, fnUpdateFileUploadState)
-			.then(fnOnUploadFinished)
-			.catch(console.error);
+		uploadHelper.uploadPhotos(fileList, (progress) => {
+			console.log(progress);
+		}).then(() => {
+			fnOnUploadFinished();
+		});
 
 		this.setState({
 			uploadInProgress: true,
-			uploadFiles: files
+			uploadFiles: []
 		});
+
+		// const files = UploadHelper.convertFileListToFileArrayForUploadDialog(fileList);
+
+		// const fnUpdateFileUploadState = (file: globalThis.File, newState: string) => {
+		// 	const stateFile = files.find(f => f.name === file.name);
+		// 	if (stateFile) {
+		// 		stateFile.status = newState;
+
+		// 		this.setState({
+		// 			uploadFiles: files
+		// 		});
+		// 	}
+		// };
+
+		// PhotoService.uploadPhotos(fileList, fnUpdateFileUploadState)
+		// 	.then(fnOnUploadFinished)
+		// 	.catch(console.error);
+
+
 	}
 
 	render(): React.ReactNode {
