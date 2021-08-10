@@ -33,6 +33,7 @@ pub mod request {
 	#[derive(Deserialize, Serialize, Debug)]
 	#[serde(rename_all = "camelCase")]
 	pub struct UploadPhoto {
+		pub hash: String,
 		pub width: u32,
 		pub height: u32,
 		/// Key that all data and file bytes of this photo is encrypted with. This key is encrypted with the owner's private key.

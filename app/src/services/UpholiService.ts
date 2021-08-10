@@ -9,6 +9,7 @@ export interface PhotoMinimal {
 
 export interface Photo {
 	id: string,
+	hash: string,
 	width: number,
 	height: number,
 	contentType: string,
