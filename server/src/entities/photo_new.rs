@@ -14,6 +14,8 @@ use super::{AccessControl, session::Session};
 #[serde(rename_all = "camelCase")]
 pub struct Photo {
 	pub id: String,
+	/// Hash of original photo file
+	pub hash: String,
 	/// Owner user id
 	pub user_id: String,
 	pub width: i32,
@@ -32,6 +34,7 @@ impl From<UploadPhoto> for Photo {
 	fn from(source: UploadPhoto) -> Self {
 		Self {
 			id: ids::create_unique_id(),
+			hash: source.hash,
 			user_id: String::new(),
 			width: source.width as i32,
 			height: source.height as i32,

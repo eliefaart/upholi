@@ -1,10 +1,11 @@
 use image::{GenericImageView, DynamicImage, ImageFormat};
-use crate::error::*;
+use crate::{error::*, hashing};
 
 const DIMENSIONS_THUMB: u32 = 350;
 const DIMENSIONS_PREVIEW: u32 = 1600;
 
 pub struct Image {
+	pub hash: String,
 	pub width: u32,
 	pub height: u32,
 	pub bytes_original: Vec<u8>,
@@ -47,6 +48,7 @@ impl Image {
 		}
 
 		Ok(Self {
+			hash: hashing::compute_md5_hash(&bytes),
 			width,
 			height,
 			bytes_original: bytes.to_vec(),

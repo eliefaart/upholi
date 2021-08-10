@@ -19,6 +19,7 @@ mod exif;
 mod photos;
 mod encryption;
 mod multipart;
+mod hashing;
 
 // https://developer.mozilla.org/en-US/docs/WebAssembly/Rust_to_wasm
 
@@ -101,6 +102,8 @@ impl PhotoUploadInfo {
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PhotoData {
+	/// Hash of original photo file
+	pub hash: String,
 	pub width: u32,
 	pub height: u32,
 	pub content_type: String,
@@ -224,6 +227,7 @@ impl UpholiClientInternalHelper {
 
 		// Create photo data/properties and encrypt it
 		let data = PhotoData {
+			hash: photo.image.hash.clone(),
 			width: photo.image.width,
 			height: photo.image.height,
 			content_type: "image/jpeg".to_string(), // TODO
@@ -247,6 +251,7 @@ impl UpholiClientInternalHelper {
 		let data_encrypted = encryption::aes256::encrypt(&photo_key, &data_nonce, data_bytes)?;
 
 		Ok(request::UploadPhoto {
+			hash: photo.image.hash.clone(),
 			width: photo.image.width,
 			height: photo.image.height,
 			data: EncryptedData {
