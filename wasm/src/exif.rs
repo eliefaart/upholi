@@ -1,7 +1,7 @@
 use serde::{Serialize, Deserialize};
 use chrono::prelude::*;
 use rexif::{TagValue, ExifTag};
-use crate::error::*;
+use upholi_lib::result::Result;
 
 #[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
