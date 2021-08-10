@@ -76,7 +76,6 @@ mod requests {
 // Response types
 mod responses {
 	use serde::Serialize;
-	use crate::entities::photo::PhotoOld;
 	use crate::entities::album::Album;
 	use crate::entities::collection::Collection;
 	use crate::database::{DatabaseEntity, DatabaseEntityBatch};
@@ -126,15 +125,15 @@ mod responses {
 		pub token: String
 	}
 
-	impl From<PhotoOld> for PhotoSmall {
-		fn from(photo: PhotoOld) -> Self {
-			Self {
-				id: photo.id,
-				width: photo.width as u16,
-				height: photo.height as u16
-			}
-		}
-	}
+	// impl From<PhotoOld> for PhotoSmall {
+	// 	fn from(photo: PhotoOld) -> Self {
+	// 		Self {
+	// 			id: photo.id,
+	// 			width: photo.width as u16,
+	// 			height: photo.height as u16
+	// 		}
+	// 	}
+	// }
 
 	impl From<Album> for ClientAlbum {
 		fn from(album: Album) -> Self {
@@ -147,29 +146,8 @@ mod responses {
 			Self {
 				id: album.id,
 				title: album.title,
-				thumb_photo: {
-					if let Some(thumb_photo_id) = album.thumb_photo_id {
-						match PhotoOld::get(&thumb_photo_id) {
-							Ok(thumb_photo_opt) => thumb_photo_opt.map(PhotoSmall::from),
-							Err(_) => None
-						}
-					} else {
-						None
-					}
-				},
-				photos: {
-					match PhotoOld::get_with_ids(&photo_ids) {
-						Ok(photos) => {
-							let mut result_photos = Vec::new();
-							for photo in photos {
-								result_photos.push(PhotoSmall::from(photo));
-							}
-
-							result_photos
-						}
-						Err(_) => vec!{}
-					}
-				},
+				thumb_photo: None,
+				photos: vec!{},
 				tags: album.tags
 			}
 		}

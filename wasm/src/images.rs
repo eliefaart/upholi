@@ -1,5 +1,7 @@
 use image::{GenericImageView, DynamicImage, ImageFormat};
-use crate::{error::*, hashing};
+use upholi_lib::result::Result;
+use crate::hashing;
+
 
 const DIMENSIONS_THUMB: u32 = 350;
 const DIMENSIONS_PREVIEW: u32 = 1600;
