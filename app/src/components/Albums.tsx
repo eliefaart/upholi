@@ -1,13 +1,13 @@
 import * as React from "react";
-import AlbumInfo from "../models/AlbumInfo";
+import { AlbumNew } from "../models/Album";
 import AppStateContext from "../contexts/AppStateContext";
 import Album from "./Album";
 
 interface AlbumProps {
-	onClick: (album: AlbumInfo) => void,
+	onClick: (album: AlbumNew) => void,
 	activeAlbumId?: string,
 	albumUrl?: (albumUrl: string) => string,
-	albums: AlbumInfo[]
+	albums: AlbumNew[]
 }
 
 class Albums extends React.Component<AlbumProps> {
@@ -21,7 +21,7 @@ class Albums extends React.Component<AlbumProps> {
 		const anyAlbumActive = this.props.albums.some(album => album.id === this.props.activeAlbumId);
 
 		const history = this.context.history;
-		const fnOnClick = this.props.onClick || ((album: AlbumInfo) => {
+		const fnOnClick = this.props.onClick || ((album: AlbumNew) => {
 			if (this.props.albumUrl) {
 				history.push(this.props.albumUrl(album.id));
 			}

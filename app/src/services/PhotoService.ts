@@ -1,7 +1,5 @@
 import Album from "../models/Album";
-import Photo from "../models/Photo";
 import Collection from "../models/Collection";
-import AlbumInfo from "../models/AlbumInfo";
 
 /**
  * Response from server on calls that create new entities such as albums
@@ -95,9 +93,9 @@ class PhotoService {
 		});
 	}
 
-	static getAlbums(): Promise<AlbumInfo[]> {
-		return PhotoService.getJson<AlbumInfo[]>("GET", PhotoService.baseUrl() + "/albums", null);
-	}
+	// static getAlbums(): Promise<AlbumInfo[]> {
+	// 	return PhotoService.getJson<AlbumInfo[]>("GET", PhotoService.baseUrl() + "/albums", null);
+	// }
 
 	static getAlbum(albumId: string): Promise<Album> {
 		return PhotoService.getJson("GET", PhotoService.baseUrl() + "/album/" + albumId, null);

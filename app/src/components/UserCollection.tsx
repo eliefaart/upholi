@@ -1,5 +1,5 @@
 import * as React from "react";
-import AlbumInfo from "../models/AlbumInfo";
+import { AlbumNew } from "../models/Album";
 import Collection from "../models/Collection";
 import PhotoService from "../services/PhotoService";
 import CollectionSharingSettings from "./CollectionSharingSettings";
@@ -19,7 +19,7 @@ interface State {
 	confirmDeleteCollectionOpen: boolean;
 	confirmRemoveAlbumFromCollectionOpen: boolean;
 	addAlbumToCollectionDialogOpen: boolean;
-	activeAlbum: AlbumInfo | null;
+	activeAlbum: AlbumNew | null;
 }
 
 export default class UserCollection extends React.Component<Props, State> {
@@ -55,7 +55,7 @@ export default class UserCollection extends React.Component<Props, State> {
 		this.setState({confirmDeleteCollectionOpen: true});
 	}
 
-	onClickRemoveAlbumFromCollection(album: AlbumInfo): void {
+	onClickRemoveAlbumFromCollection(album: AlbumNew): void {
 		this.setState({
 			confirmRemoveAlbumFromCollectionOpen: true,
 			activeAlbum: album
@@ -146,8 +146,8 @@ export default class UserCollection extends React.Component<Props, State> {
 						className="collection-albums"
 						onOrderChanged={this.onAlbumOrderChanged}>
 						{this.props.collection.albums.map(album => {
-							const albumThumbUrl = album.thumbPhotoId
-								? "url('" + PhotoService.baseUrl() + "/photo/" + album.thumbPhotoId + "/thumb')"
+							const albumThumbUrl = album.thumbnailPhotoId
+								? "url('" + PhotoService.baseUrl() + "/photo/" + album.thumbnailPhotoId + "/thumb')"
 								: "";
 
 							return (<div key={album.id}

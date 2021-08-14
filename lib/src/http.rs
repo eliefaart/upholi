@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct ShareKey {
 	id: String,
@@ -45,6 +45,14 @@ pub mod request {
 		pub preview_nonce: String,
 		pub original_nonce: String
 	}
+
+	#[derive(Deserialize, Serialize, Debug)]
+	#[serde(rename_all = "camelCase")]
+	pub struct CreateAlbum {
+		pub key: super::EncryptedData,
+		pub data: super::EncryptedData,
+		pub share_keys: Vec<super::ShareKey>
+	}
 }
 
 pub mod response {
@@ -61,6 +69,7 @@ pub mod response {
 	pub struct Photo {
 		pub id: String,
 		pub user_id: String,
+		pub hash: String,
 		pub width: i32,
 		pub height: i32,
 		pub data: super::EncryptedData,
@@ -77,5 +86,15 @@ pub mod response {
 		id: String,
 		width: u32,
 		height: u32
+	}
+
+	#[derive(Deserialize, Serialize, Debug)]
+	#[serde(rename_all = "camelCase")]
+	pub struct Album {
+		pub id: String,
+		pub user_id: String,
+		pub key: super::EncryptedData,
+		pub data: super::EncryptedData,
+		pub share_keys: Vec<super::ShareKey>
 	}
 }

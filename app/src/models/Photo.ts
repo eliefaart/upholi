@@ -1,17 +1,16 @@
 import Exif from "./Exif";
 
-interface Photo {
-	id: string;
-	name: string;
-	width: number;
-	height: number;
-	contentType: string;
-	createdOn: Date;
-	hash: string;
-	pathThumbnail: string;
-	pathPreview: string;
-	pathOriginal: string;
-	exif: Exif;
+export interface PhotoMinimal {
+	id: string,
+	width: number,
+	height: number
 }
 
-export default Photo;
+export interface Photo {
+	id: string,
+	hash: string,
+	width: number,
+	height: number,
+	contentType: string,
+	exif: Exif
+}

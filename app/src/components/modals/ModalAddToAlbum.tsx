@@ -3,11 +3,11 @@ import Modal from "./Modal";
 import AppStateContext from "../../contexts/AppStateContext";
 import AllUserAlbums from "../AllUserAlbums";
 import ModalPropsBase from "../../models/ModalPropsBase";
-import AlbumInfo from "../../models/AlbumInfo";
+import { AlbumNew } from "../../models/Album";
 
 interface ModalAddToAlbumProps extends ModalPropsBase {
 	onClickNewAlbum: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void
-	onClickExistingAlbum: (album: AlbumInfo) => void
+	onClickExistingAlbum: (album: AlbumNew) => void
 }
 
 class ModalAddToAlbum extends React.Component<ModalAddToAlbumProps> {

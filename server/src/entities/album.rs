@@ -1,45 +1,34 @@
 use crate::entities::Session;
 use serde::{Serialize, Deserialize};
+use upholi_lib::http::EncryptedData;
+use upholi_lib::http::ShareKey;
+use upholi_lib::http::request::CreateAlbum;
 
 use crate::ids;
 use crate::database;
 use crate::database::*;
 use crate::error::*;
 use crate::entities::AccessControl;
-use crate::entities::collection::Collection;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Album {
-	#[serde(default)]
 	pub id: String,
 	pub user_id: String,
-	pub title: String,
-	#[serde(default)]
-	pub thumb_photo_id: Option<String>,
-	#[serde(default)]
-	pub photos: Vec<String>,
-
-	pub tags: Vec<String>
+	pub key: EncryptedData,
+	pub data: EncryptedData,
+	pub share_keys: Vec<ShareKey>
 }
 
-impl Album {
-	pub fn new(user_id: String, title: &str) -> Self {
-		let id = ids::create_unique_id();
-
+impl From<CreateAlbum> for Album {
+	fn from(source: CreateAlbum) -> Self {
 		Self {
-			id,
-			user_id,
-			title: title.to_string(),
-			thumb_photo_id: None,
-			photos: vec!{},
-			tags: vec!{}
+			id: ids::create_unique_id(),
+			user_id: String::new(),
+			key: source.key,
+			data: source.data,
+			share_keys: source.share_keys
 		}
-	}
-
-	/// Get all collections that this album is part of.
-	pub fn get_collections(&self) -> Result<Vec<Collection>> {
-		database::get_database().get_collections_with_album(&self.id)
 	}
 }
 
@@ -107,14 +96,14 @@ impl AccessControl for Album {
 			return true;
 		}
 
-		// Check if album is part of any collection that user has access to
-		if let Ok(collections) = self.get_collections() {
-			for collection in collections {
-				if collection.can_view(session) {
-					return true;
-				}
-			}
-		}
+		// // Check if album is part of any collection that user has access to
+		// if let Ok(collections) = self.get_collections() {
+		// 	for collection in collections {
+		// 		if collection.can_view(session) {
+		// 			return true;
+		// 		}
+		// 	}
+		// }
 
 		false
 	}
@@ -135,89 +124,4 @@ fn session_owns_album(album: &Album, session_opt: &Option<Session>) -> bool {
 	}
 
 	false
-}
-
-#[cfg(test)]
-mod tests {
-	use super::*;
-	use crate::ids::create_unique_id;
-
-
-	#[test]
-	fn new() {
-		const TITLE: &str = "Hello world";
-		const USER_ID: &str = "100";
-
-		let album = Album::new(USER_ID.to_string(), TITLE);
-
-		assert!(!album.id.is_empty());
-		assert_eq!(album.title, TITLE);
-		assert_eq!(album.user_id, USER_ID);
-	}
-
-	#[test]
-	fn insert_empty_id() {
-		let album = create_dummy_album_with_id("");
-		let result = album.insert();
-
-		assert!(result.is_err());
-	}
-
-	#[test]
-	fn can_view() {
-		let session_owner = create_dummy_session(true);
-		// let session_not_owner = create_dummy_session(true);
-		// let session_anonymous = create_dummy_session(false);
-
-		let mut album = create_dummy_album_with_id("");
-		album.user_id = session_owner.user_id.to_owned().unwrap();
-
-		// Only the user that owns the album may access it
-		assert_eq!(album.can_view(&Some(session_owner)), true);
-		// TODO: can't test this anymore without DB connection
-		// assert_eq!(album.can_view(&Some(session_not_owner)), false);
-		// assert_eq!(album.can_view(&Some(session_anonymous)), false);
-		// assert_eq!(album.can_view(&None), false);
-	}
-
-	#[test]
-	fn can_update() {
-		let session_owner = create_dummy_session(true);
-		let session_not_owner = create_dummy_session(true);
-		let session_anonymous = create_dummy_session(false);
-
-		let mut album = create_dummy_album_with_id("");
-		album.user_id = session_owner.user_id.to_owned().unwrap();
-
-		// Only the user that owns the album may access it
-		assert_eq!(album.can_update(&Some(session_owner)), true);
-		assert_eq!(album.can_update(&Some(session_not_owner)), false);
-		assert_eq!(album.can_update(&Some(session_anonymous)), false);
-		assert_eq!(album.can_update(&None), false);
-	}
-
-	fn create_dummy_album_with_id(id: &str) -> Album {
-		Album{
-			id: id.to_string(),
-			user_id: create_unique_id(),
-			title: "title".to_string(),
-			thumb_photo_id: Some(bson::oid::ObjectId::new().to_hex()),
-			photos: vec!{
-				bson::oid::ObjectId::new().to_hex(),
-				bson::oid::ObjectId::new().to_hex(),
-				bson::oid::ObjectId::new().to_hex()
-			},
-			tags: vec!{}
-		}
-	}
-
-	fn create_dummy_session(with_user: bool) -> Session {
-		let mut session = Session::new();
-
-		if with_user {
-			session.user_id = Some(create_unique_id());
-		}
-
-		session
-	}
 }
