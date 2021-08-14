@@ -12,4 +12,13 @@ interface Album {
 	tags: string[]
 }
 
+
+export interface AlbumNew {
+	id: string,
+	title: string,
+	tags: string[],
+	photos: string[],
+	thumbnailPhotoId: string,
+}
+
 export default Album;

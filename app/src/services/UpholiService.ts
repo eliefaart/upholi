@@ -1,20 +1,6 @@
 import * as wasm from "wasm";
-import Exif from "../models/Exif";
-
-export interface PhotoMinimal {
-	id: string,
-	width: number,
-	height: number
-}
-
-export interface Photo {
-	id: string,
-	hash: string,
-	width: number,
-	height: number,
-	contentType: string,
-	exif: Exif
-}
+import { AlbumNew } from "../models/Album";
+import { Photo, PhotoMinimal } from "../models/Photo";
 
 /**
  * This class exists mainly to assign types to the return values of functions within 'wasm.UpholiClient'
@@ -56,18 +42,6 @@ class UpholiService {
 		});
 	}
 
-	// async getPhotoThumbnailBase64(id: string): Promise<string> {
-	// 	return await this.client.getPhotoThumbnailBase64(id);
-	// }
-
-	// async getPhotoPreviewBase64(id: string): Promise<string> {
-	// 	return await this.client.getPhotoPreviewBase64(id);
-	// }
-
-	// async getPhotoOriginalBase64(id: string): Promise<string> {
-	// 	return await this.client.getPhotoOriginalBase64(id);
-	// }
-
 	async getPhotoThumbnailImageSrc(id: string): Promise<string> {
 		return await this.client.getPhotoThumbnailImageSrc(id);
 	}
@@ -82,6 +56,26 @@ class UpholiService {
 
 	async deletePhoto(id: string): Promise<void> {
 		return await this.client.deletePhoto(id);
+	}
+
+	async getAlbums(): Promise<AlbumNew[]> {
+		const albums = await this.client.getAlbums();
+
+		return albums.map((album: any) => {
+			const typed: AlbumNew = {
+				id: album.id,
+				title: album.title,
+				thumbnailPhotoId: album.thumbnailPhotoId,
+				tags: album.tags,
+				photos: album.photos
+			};
+
+			return typed;
+		});
+	}
+
+	async createAlbum(title: string): Promise<void> {
+		return this.client.createAlbum(title);
 	}
 }
 

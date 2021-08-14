@@ -1,4 +1,4 @@
-import AlbumInfo from "./AlbumInfo";
+import { AlbumNew } from "./Album";
 
 interface CollectionSharingOptions {
 	requirePassword: boolean,
@@ -8,7 +8,7 @@ interface CollectionSharingOptions {
 interface Collection {
 	id: string,
 	title: string,
-	albums: AlbumInfo[],
+	albums: AlbumNew[],
 	sharing: CollectionSharingOptions
 }
 

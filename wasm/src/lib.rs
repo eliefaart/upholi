@@ -6,6 +6,8 @@ use upholi_lib::{PhotoVariant, http::*};
 use upholi_lib::result::Result;
 use exif::Exif;
 
+use crate::types::Album;
+
 mod types;
 mod images;
 mod exif;
@@ -181,10 +183,47 @@ impl UpholiClient {
 		})
 	}
 
-	// pub async fn get_albums(&mut self) {}
-	// pub async fn get_album(&mut self, id: String) {}
-	// pub async fn insert_album(&mut self) {}
-	// pub async fn update_album(&mut self) {}
+	#[wasm_bindgen(js_name = getAlbums)]
+	pub fn get_albums(&mut self) -> js_sys::Promise {
+		let base_url = self.base_url.to_owned();
+		let private_key = self.private_key.as_bytes().to_owned();
+
+		future_to_promise(async move {
+			match UpholiClientHelper::get_albums(&base_url, &private_key).await {
+				Ok(albums) => {
+					let mut js_array: Vec<JsValue> = Vec::new();
+
+					for album in albums {
+						let album = JsValue::from_serde(&album).unwrap_throw();
+						js_array.push(album);
+					}
+
+					let js_array = JsValue::from(js_array.iter().collect::<Array>());
+					Ok(js_array)
+				},
+				Err(error) => Err(String::from(format!("{}", error)).into())
+			}
+		})
+	}
+
+	// #[wasm_bindgen(js_name = getAlbum)]
+	// pub fn get_album(&mut self, id: String) {
+
+	// }
+
+	#[wasm_bindgen(js_name = createAlbum)]
+	pub fn create_album(&mut self, title: String) -> js_sys::Promise {
+		let base_url = self.base_url.to_owned();
+		let private_key = self.private_key.as_bytes().to_owned();
+
+		future_to_promise(async move {
+			match UpholiClientHelper::create_album(&base_url, &private_key, &title).await {
+				Ok(_) => Ok(JsValue::NULL),
+				Err(error) => Err(String::from(format!("{}", error)).into())
+			}
+		})
+	}
+	// pub fn update_album(&mut self) {}
 }
 
 /// Helper functions for UpholiClient.
@@ -325,14 +364,14 @@ impl UpholiClientHelper {
 			hash: photo.image.hash.clone(),
 			width: photo.image.width,
 			height: photo.image.height,
-			data: EncryptedData {
-				nonce: String::from_utf8(data_nonce)?,
-				base64: base64::encode_config(&data_encrypted, base64::STANDARD),
-				format_version: 1
-			},
 			key: EncryptedData {
 				nonce: String::from_utf8(photo_key_nonce)?,
 				base64: base64::encode_config(&photo_key_encrypted, base64::STANDARD),
+				format_version: 1
+			},
+			data: EncryptedData {
+				nonce: String::from_utf8(data_nonce)?,
+				base64: base64::encode_config(&data_encrypted, base64::STANDARD),
 				format_version: 1
 			},
 			share_keys: vec!{},
@@ -340,6 +379,64 @@ impl UpholiClientHelper {
 			preview_nonce: String::new(),
 			original_nonce: String::new()
 		})
+	}
+
+	pub async fn get_albums(base_url: &str, private_key: &[u8]) -> Result<Vec<Album>> {
+		let url = format!("{}/api/albums", &base_url).to_owned();
+		let response = reqwest::get(url).await?;
+		let albums = response.json::<Vec<response::Album>>().await?;
+
+		let mut decypted_albums: Vec<Album> = vec!{};
+
+		for album in albums {
+			let album_key = encryption::decrypt_data_base64(private_key, &album.key)?;
+			let album_data = encryption::decrypt_data_base64(&album_key, &album.data)?;
+			let album_data: Album = serde_json::from_slice(&album_data)?;
+
+			decypted_albums.push(album_data);
+		}
+
+		Ok(decypted_albums)
+	}
+
+	pub async fn create_album(base_url: &str, private_key: &[u8], title: &str) -> Result<()> {
+		let url = format!("{}/api/album", &base_url).to_owned();
+
+		let album_key = encryption::aes256::generate_key();
+		let album_key_nonce = encryption::aes256::generate_nonce();
+		let album_key_encrypted = encryption::aes256::encrypt(private_key, &album_key_nonce, &album_key)?;
+
+		let data = Album {
+			title: title.into(),
+			tags: vec!{},
+			photos: vec!{},
+			thumbnail_photo_id: None
+		};
+		let data_json = serde_json::to_string(&data)?;
+		let data_bytes = data_json.as_bytes();
+		let data_nonce = encryption::aes256::generate_nonce();
+		let data_encrypted = encryption::aes256::encrypt(&album_key, &data_nonce, data_bytes)?;
+
+		let body = request::CreateAlbum {
+			key: EncryptedData {
+				nonce: String::from_utf8(album_key_nonce)?,
+				base64: base64::encode_config(&album_key_encrypted, base64::STANDARD),
+				format_version: 1
+			},
+			data: EncryptedData {
+				nonce: String::from_utf8(data_nonce)?,
+				base64: base64::encode_config(&data_encrypted, base64::STANDARD),
+				format_version: 1
+			},
+			share_keys: vec!{}
+		};
+
+		let client = reqwest::Client::new();
+		client.post(&url)
+			.json(&body)
+			.send().await?;
+
+		Ok(())
 	}
 }
 

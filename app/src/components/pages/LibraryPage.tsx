@@ -2,8 +2,6 @@ import * as React from "react";
 import { PageBaseComponent, PageBaseComponentProps } from "./PageBaseComponent";
 import PhotoGallerySelectable from "../PhotoGallerySelectable";
 import ContentContainer from "../ContentContainer";
-import PhotoService from "../../services/PhotoService";
-import UploadHelper from "../../helpers/UploadHelper";
 import AppStateContext from "../../contexts/AppStateContext";
 import ModalPhotoDetail from "../modals/ModalPhotoDetail";
 import ModalConfirmation from "../modals/ModalConfirmation";
@@ -14,10 +12,11 @@ import { toast } from "react-toastify";
 import UrlHelper from "../../helpers/UrlHelper";
 import File from "../../models/File";
 import GalleryPhoto from "../../models/GalleryPhoto";
-import AlbumInfo from "../../models/AlbumInfo";
 import AddPhotosToAlbumButton from "../Buttons/AddPhotosToAlbumButton";
 import uploadHelper from "../../helpers/UploadHelperNew";
-import upholiService, { PhotoMinimal } from "../../services/UpholiService";
+import upholiService from "../../services/UpholiService";
+import { PhotoMinimal } from "../../models/Photo";
+import { AlbumNew } from "../../models/Album";
 
 const queryStringParamNamePhotoId = "photoId";
 
@@ -26,7 +25,7 @@ interface LibraryPageState {
 	selectedPhotoIds: string[],
 	openedPhotoId: string | null,
 	confirmDeletePhotosOpen: boolean,
-	albums: AlbumInfo[],
+	albums: AlbumNew[],
 	uploadInProgress: boolean,
 	uploadFiles: File[]
 }

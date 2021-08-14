@@ -1,14 +1,14 @@
 import * as React from "react";
-import PhotoService from "../services/PhotoService";
 import Albums from "../components/Albums";
-import AlbumInfo from "../models/AlbumInfo";
+import upholiService from "../services/UpholiService";
+import { AlbumNew } from "../models/Album";
 
 interface Props {
-	onClick: (album: AlbumInfo) => void
+	onClick: (album: AlbumNew) => void
 }
 
 interface State {
-	albums: AlbumInfo[],
+	albums: AlbumNew[],
 }
 
 export default class AllUserAlbums extends React.Component<Props, State> {
@@ -16,7 +16,7 @@ export default class AllUserAlbums extends React.Component<Props, State> {
 	constructor(props: Props) {
 		super(props);
 
-		PhotoService.getAlbums()
+		upholiService.getAlbums()
 			.then((albums) => {
 				this.setState({
 					albums: albums

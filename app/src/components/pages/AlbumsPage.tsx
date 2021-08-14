@@ -1,17 +1,16 @@
 import * as React from "react";
 import { PageBaseComponent, PageBaseComponentProps } from "./PageBaseComponent";
-import AllUserAlbums from "../AllUserAlbums";
 import ContentContainer from "../ContentContainer";
 import ModalCreateAlbum from "../modals/ModalCreateAlbum";
 import AppStateContext from "../../contexts/AppStateContext";
-import PhotoService from "../../services/PhotoService";
-import AlbumInfo from "../../models/AlbumInfo";
 import Album from "../Album";
 import { IconHashTag } from "../Icons";
+import upholiService from "../../services/UpholiService";
+import { AlbumNew } from "../../models/Album";
 
 interface AlbumsPageState {
 	newAlbumDialogOpen: boolean,
-	albums: AlbumInfo[]
+	albums: AlbumNew[]
 }
 
 class AlbumsPage extends PageBaseComponent<AlbumsPageState> {
@@ -26,7 +25,7 @@ class AlbumsPage extends PageBaseComponent<AlbumsPageState> {
 	}
 
 	componentDidMount(): void {
-		PhotoService.getAlbums()
+		upholiService.getAlbums()
 			.then((albums) => {
 				this.setState({
 					albums: albums
@@ -56,14 +55,14 @@ class AlbumsPage extends PageBaseComponent<AlbumsPageState> {
 	render(): React.ReactNode {
 		const history = this.context.history;
 
-		const renderAlbumsInTagContainer = function(tag: string, albums: AlbumInfo[]): React.ReactNode {
+		const renderAlbumsInTagContainer = function(tag: string, albums: AlbumNew[]): React.ReactNode {
 			return <div key={tag} className="album-tag">
 				{tag && <h2><IconHashTag/>{tag}</h2>}
 				{renderAlbums(albums)}
 			</div>;
 		};
 
-		const renderAlbums = function(albums: AlbumInfo[]): React.ReactNode {
+		const renderAlbums = function(albums: AlbumNew[]): React.ReactNode {
 			return <div className="albums">
 				{albums.map(album => {
 					return <Album key={album.id}

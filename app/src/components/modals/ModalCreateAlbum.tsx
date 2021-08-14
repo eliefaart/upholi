@@ -1,9 +1,9 @@
 import * as React from "react";
 import Modal from "./Modal";
 import AppStateContext from "../../contexts/AppStateContext";
-import PhotoService from "../../services/PhotoService";
 import { toast } from "react-toastify";
 import ModalPropsBase from "../../models/ModalPropsBase";
+import upholiService from "../../services/UpholiService";
 
 interface ModalCreateAlbumProps extends ModalPropsBase {
 	createWithPhotoIds?: string[]
@@ -23,7 +23,7 @@ class ModalCreateAlbum extends React.Component<ModalCreateAlbumProps> {
 			const history = this.context.history;
 			const title = this.titleInput.current.value;
 
-			PhotoService.createAlbum(title, this.props.createWithPhotoIds ?? [])
+			upholiService.createAlbum(title) // , this.props.createWithPhotoIds ?? []
 				.then(albumId => {
 					toast.info("Album '" + title + "' created.");
 

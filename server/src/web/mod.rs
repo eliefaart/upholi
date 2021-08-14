@@ -47,14 +47,17 @@ pub async fn run_server() -> std::io::Result<()>{
 				// API routes
 				actix_web::web::scope("/api")
 
+					//.route("/user", actix_web::web::post().to(handlers::users::route_register_user))
+
 					.route("/photos", actix_web::web::get().to(handlers::photos::route_get_photos))
 					.route("/photo", actix_web::web::post().to(handlers::photos::route_upload_photo))
-
 					.route("/photo/{photo_id}", actix_web::web::get().to(handlers::photos::route_get_photo))
 					.route("/photo/{photo_id}", actix_web::web::delete().to(handlers::photos::route_delete_photo))
 					.route("/photo/{photo_id}/original", actix_web::web::get().to(handlers::photos::route_download_photo_original))
 					.route("/photo/{photo_id}/thumbnail", actix_web::web::get().to(handlers::photos::route_download_photo_thumbnail))
 					.route("/photo/{photo_id}/preview", actix_web::web::get().to(handlers::photos::route_download_photo_preview))
+
+
 
 
 
@@ -72,12 +75,6 @@ pub async fn run_server() -> std::io::Result<()>{
 					.route("/collection/{collection_id}", actix_web::web::put().to(handlers::collections::update_collection))
 					.route("/collection/{collection_id}", actix_web::web::delete().to(handlers::collections::delete_collection))
 					.route("/collection/{collection_id}/rotate-token", actix_web::web::post().to(handlers::collections::rotate_collection_share_token))
-
-
-
-
-
-
 			)
 	})
 	.bind(address)

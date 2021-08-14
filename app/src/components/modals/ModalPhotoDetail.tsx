@@ -1,11 +1,10 @@
 import * as React from "react";
 import Modal from "./Modal";
-import PhotoService from "../../services/PhotoService";
 import PhotoDetail from "../PhotoDetail";
 import { IconDownload } from "../Icons";
 import ModalPropsBase from "../../models/ModalPropsBase";
-//import Photo from "../../models/Photo";
-import upholiService, { Photo } from "../../services/UpholiService";
+import upholiService from "../../services/UpholiService";
+import { Photo } from "../../models/Photo";
 
 interface Props extends ModalPropsBase {
 	photoId: string

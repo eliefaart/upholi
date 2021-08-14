@@ -28,20 +28,20 @@ mod requests {
 		pub state: String
 	}
 
-	#[derive(Deserialize)]
-	#[serde(rename_all = "camelCase")]
-	pub struct CreateAlbum {
-		pub title: String
-	}
+	// #[derive(Deserialize)]
+	// #[serde(rename_all = "camelCase")]
+	// pub struct CreateAlbum {
+	// 	pub title: String
+	// }
 
-	#[derive(Deserialize, Debug)]
-	#[serde(rename_all = "camelCase")]
-	pub struct UpdateAlbum {
-		pub title: Option<String>,
-		pub thumb_photo_id: Option<String>,
-		pub photos: Option<Vec<String>>,
-		pub tags: Option<Vec<String>>
-	}
+	// #[derive(Deserialize, Debug)]
+	// #[serde(rename_all = "camelCase")]
+	// pub struct UpdateAlbum {
+	// 	pub title: Option<String>,
+	// 	pub thumb_photo_id: Option<String>,
+	// 	pub photos: Option<Vec<String>>,
+	// 	pub tags: Option<Vec<String>>
+	// }
 
 	#[derive(Deserialize)]
 	#[serde(rename_all = "camelCase")]
@@ -91,15 +91,15 @@ mod responses {
 		height: u16
 	}
 
-	#[derive(Serialize)]
-	#[serde(rename_all = "camelCase")]
-	pub struct ClientAlbum {
-		pub id: String,
-		pub title: String,
-		pub thumb_photo: Option<PhotoSmall>,
-		pub photos: Vec<PhotoSmall>,
-		pub tags: Vec<String>
-	}
+	// #[derive(Serialize)]
+	// #[serde(rename_all = "camelCase")]
+	// pub struct ClientAlbum {
+	// 	pub id: String,
+	// 	pub title: String,
+	// 	pub thumb_photo: Option<PhotoSmall>,
+	// 	pub photos: Vec<PhotoSmall>,
+	// 	pub tags: Vec<String>
+	// }
 
 	#[derive(Serialize)]
 	#[serde(rename_all = "camelCase")]
@@ -135,23 +135,23 @@ mod responses {
 	// 	}
 	// }
 
-	impl From<Album> for ClientAlbum {
-		fn from(album: Album) -> Self {
-			let mut photo_ids: Vec<&str> = Vec::new();
+	// impl From<Album> for ClientAlbum {
+	// 	fn from(album: Album) -> Self {
+	// 		let mut photo_ids: Vec<&str> = Vec::new();
 
-			for id in album.photos.iter() {
-				photo_ids.push(&id[..]);
-			}
+	// 		for id in album.photos.iter() {
+	// 			photo_ids.push(&id[..]);
+	// 		}
 
-			Self {
-				id: album.id,
-				title: album.title,
-				thumb_photo: None,
-				photos: vec!{},
-				tags: album.tags
-			}
-		}
-    }
+	// 		Self {
+	// 			id: album.id,
+	// 			title: album.title,
+	// 			thumb_photo: None,
+	// 			photos: vec!{},
+	// 			tags: album.tags
+	// 		}
+	// 	}
+    // }
 
 	impl From<&Collection> for ClientCollection {
         fn from(collection: &Collection) -> Self {
@@ -169,8 +169,8 @@ mod responses {
 				if let Some(album) = album {
 					let client_album = ClientCollectionAlbum {
 						id: album.id.to_string(),
-						title: album.title.to_string(),
-						thumb_photo_id: album.thumb_photo_id.as_ref().map(|thumb_photo_id| thumb_photo_id.to_string())
+						title: String::new(),//album.title.to_string(),
+						thumb_photo_id: Some(String::new())//album.thumb_photo_id.as_ref().map(|thumb_photo_id| thumb_photo_id.to_string())
 					};
 					collection_albums.push(client_album);
 				}

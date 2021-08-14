@@ -1,6 +1,6 @@
 import * as React from "react";
 import { toast } from "react-toastify";
-import AlbumInfo from "../../models/AlbumInfo";
+import { AlbumNew } from "../../models/Album";
 import PhotoService from "../../services/PhotoService";
 import { IconAddToAlbum } from "../Icons";
 import ModalAddToAlbum from "../modals/ModalAddToAlbum";
@@ -34,7 +34,7 @@ export default class AddPhotosToAlbumButton extends React.Component<Props, State
 		};
 	}
 
-	addSelectedPhotosToAlbum(album: AlbumInfo): void {
+	addSelectedPhotosToAlbum(album: AlbumNew): void {
 		PhotoService.addPhotosToAlbum(album.id, this.props.selectedPhotoIds)
 			.then(() => {
 				this.setState({

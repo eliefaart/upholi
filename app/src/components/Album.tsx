@@ -1,12 +1,12 @@
 import * as React from "react";
-import AlbumInfo from "../models/AlbumInfo";
 import PhotoService from "../services/PhotoService";
 import AppStateContext from "../contexts/AppStateContext";
+import { AlbumNew } from "../models/Album";
 
 interface Props {
-	onClick: (album: AlbumInfo) => void,
+	onClick: (album: AlbumNew) => void,
 	className?: string,
-	album: AlbumInfo
+	album: AlbumNew
 }
 
 export default class Album extends React.Component<Props> {
@@ -18,7 +18,7 @@ export default class Album extends React.Component<Props> {
 
 	render(): React.ReactNode {
 		const album = this.props.album;
-		const thumbUrl = album.thumbPhotoId ?"url('" + PhotoService.baseUrl() + "/photo/" + album.thumbPhotoId + "/thumb')" : "";
+		const thumbUrl = album.thumbnailPhotoId ?"url('" + PhotoService.baseUrl() + "/photo/" + album.thumbnailPhotoId + "/thumb')" : "";
 
 		return <div
 			onClick={() => this.props.onClick(album)}
