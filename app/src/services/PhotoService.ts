@@ -42,35 +42,35 @@ class PhotoService {
 		return "/api";
 	}
 
-	static createAlbum(title: string, photoIds: string[]): Promise<string> {
-		const createRequestData: CreateAlbum = {
-			title
-		};
+	// static createAlbum(title: string, photoIds: string[]): Promise<string> {
+	// 	const createRequestData: CreateAlbum = {
+	// 		title
+	// 	};
 
-		return new Promise((ok, err) => {
-			PhotoService.getJson<CreatedResult>("POST", PhotoService.baseUrl() + "/album", createRequestData)
-				.then((response) => {
-					// TODO: allow setting photos and thumb in initial create call
-					const albumId = response.id;
+	// 	return new Promise((ok, err) => {
+	// 		PhotoService.getJson<CreatedResult>("POST", PhotoService.baseUrl() + "/album", createRequestData)
+	// 			.then((response) => {
+	// 				// TODO: allow setting photos and thumb in initial create call
+	// 				const albumId = response.id;
 
-					if (photoIds) {
-						const updateRequestData: UpdateAlbum = {
-							title: title,
-							thumbPhotoId: photoIds[0],
-							photos: photoIds,
-							tags: null
-						};
+	// 				if (photoIds) {
+	// 					const updateRequestData: UpdateAlbum = {
+	// 						title: title,
+	// 						thumbPhotoId: photoIds[0],
+	// 						photos: photoIds,
+	// 						tags: null
+	// 					};
 
-						PhotoService.updateAlbum(albumId, updateRequestData)
-							.then(() => ok(albumId))
-							.catch(err);
-					} else {
-						ok(albumId);
-					}
-				})
-				.catch(err);
-		});
-	}
+	// 					PhotoService.updateAlbum(albumId, updateRequestData)
+	// 						.then(() => ok(albumId))
+	// 						.catch(err);
+	// 				} else {
+	// 					ok(albumId);
+	// 				}
+	// 			})
+	// 			.catch(err);
+	// 	});
+	// }
 
 	static addPhotosToAlbum(albumId: string, photoIds: string[]): Promise<void> {
 		return new Promise((ok, err) => {
@@ -101,9 +101,9 @@ class PhotoService {
 		return PhotoService.getJson("GET", PhotoService.baseUrl() + "/album/" + albumId, null);
 	}
 
-	static deleteAlbum(albumId: string): Promise<Response> {
-		return PhotoService.sendRequest("DELETE", PhotoService.baseUrl() + "/album/" + albumId, null);
-	}
+	// static deleteAlbum(albumId: string): Promise<Response> {
+	// 	return PhotoService.sendRequest("DELETE", PhotoService.baseUrl() + "/album/" + albumId, null);
+	// }
 
 	static updateAlbumPhotos(albumId: string, newPhotoIds: string[]): Promise<Response> {
 		return PhotoService.updateAlbum(albumId, {

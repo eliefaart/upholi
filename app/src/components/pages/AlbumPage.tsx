@@ -4,7 +4,6 @@ import PhotoGallerySelectable from "../PhotoGallerySelectable";
 import ContentContainer from "../ContentContainer";
 import AppStateContext from "../../contexts/AppStateContext";
 import PhotoService from "../../services/PhotoService";
-import UploadHelper from "../../helpers/UploadHelper";
 import ModalPhotoDetail from "../modals/ModalPhotoDetail";
 import ModalConfirmation from "../modals/ModalConfirmation";
 import ModalUploadProgress from "../modals/ModalUploadProgress";
@@ -17,6 +16,7 @@ import GalleryPhoto from "../../models/GalleryPhoto";
 import ModalEditAlbum from "../modals/ModalEditAlbum";
 import Album from "../../models/Album";
 import AddPhotosToAlbumButton from "../Buttons/AddPhotosToAlbumButton";
+import upholiService from "../../services/UpholiService";
 
 const queryStringParamNamePhotoId = "photoId";
 
@@ -147,7 +147,7 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 	deleteAlbum(): void {
 		const albumTitle = this.state.album?.title;
 
-		PhotoService.deleteAlbum(this.state.albumId)
+		upholiService.deleteAlbum(this.state.albumId)
 			.then(() => {
 				toast.info("Album '" + albumTitle + "' deleted.");
 				this.context.history.push("/albums");
