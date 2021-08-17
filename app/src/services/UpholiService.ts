@@ -22,9 +22,6 @@ class UpholiService {
 		const json = await this.client.getPhoto(id);
 		const photo: Photo = JSON.parse(json);
 
-		// wasm response doesn't id for now. I'll set it here manually.
-		photo.id = id;
-
 		return photo;
 	}
 
@@ -76,6 +73,10 @@ class UpholiService {
 
 	async createAlbum(title: string): Promise<void> {
 		return this.client.createAlbum(title);
+	}
+
+	async deleteAlbum(id: string): Promise<void> {
+		return this.client.deleteAlbum(id);
 	}
 }
 

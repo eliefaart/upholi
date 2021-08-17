@@ -223,7 +223,20 @@ impl UpholiClient {
 			}
 		})
 	}
+
 	// pub fn update_album(&mut self) {}
+
+	#[wasm_bindgen(js_name = deleteAlbum)]
+	pub fn delete_album(&mut self, id: String) -> js_sys::Promise {
+		let base_url = self.base_url.to_owned();
+
+		future_to_promise(async move {
+			match UpholiClientHelper::delete_album(&base_url, &id).await {
+				Ok(_) => Ok(JsValue::NULL),
+				Err(error) => Err(String::from(format!("{}", error)).into())
+			}
+		})
+	}
 }
 
 /// Helper functions for UpholiClient.
@@ -278,7 +291,9 @@ impl UpholiClientHelper {
 		let photo = UpholiClientHelper::get_photo_encrypted(base_url, id).await?;
 		let photo_key = encryption::decrypt_data_base64(private_key, &photo.key)?;
 		let photo_data = encryption::decrypt_data_base64(&photo_key, &photo.data)?;
-		let photo_data: Photo = serde_json::from_slice(&photo_data)?;
+		let mut photo_data: Photo = serde_json::from_slice(&photo_data)?;
+
+		photo_data.id = id.into();
 
 		Ok(photo_data)
 	}
@@ -337,6 +352,7 @@ impl UpholiClientHelper {
 
 		// Create photo data/properties and encrypt it
 		let data = Photo {
+			id: String::new(),
 			hash: photo.image.hash.clone(),
 			width: photo.image.width,
 			height: photo.image.height,
@@ -391,7 +407,9 @@ impl UpholiClientHelper {
 		for album in albums {
 			let album_key = encryption::decrypt_data_base64(private_key, &album.key)?;
 			let album_data = encryption::decrypt_data_base64(&album_key, &album.data)?;
-			let album_data: Album = serde_json::from_slice(&album_data)?;
+			let mut album_data: Album = serde_json::from_slice(&album_data)?;
+
+			album_data.id = album.id;
 
 			decypted_albums.push(album_data);
 		}
@@ -407,6 +425,7 @@ impl UpholiClientHelper {
 		let album_key_encrypted = encryption::aes256::encrypt(private_key, &album_key_nonce, &album_key)?;
 
 		let data = Album {
+			id: String::new(),
 			title: title.into(),
 			tags: vec!{},
 			photos: vec!{},
@@ -435,6 +454,14 @@ impl UpholiClientHelper {
 		client.post(&url)
 			.json(&body)
 			.send().await?;
+
+		Ok(())
+	}
+
+	pub async fn delete_album(base_url: &str, id: &str) -> Result<()> {
+		let url = format!("{}/api/album", &base_url).to_owned();
+		let client = reqwest::Client::new();
+		client.delete(&url).send().await?;
 
 		Ok(())
 	}
