@@ -459,7 +459,7 @@ impl UpholiClientHelper {
 	}
 
 	pub async fn delete_album(base_url: &str, id: &str) -> Result<()> {
-		let url = format!("{}/api/album", &base_url).to_owned();
+		let url = format!("{}/api/album/{}", &base_url, &id).to_owned();
 		let client = reqwest::Client::new();
 		client.delete(&url).send().await?;
 
