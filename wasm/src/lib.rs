@@ -206,11 +206,6 @@ impl UpholiClient {
 		})
 	}
 
-	// #[wasm_bindgen(js_name = getAlbum)]
-	// pub fn get_album(&mut self, id: String) {
-
-	// }
-
 	#[wasm_bindgen(js_name = createAlbum)]
 	pub fn create_album(&mut self, title: String) -> js_sys::Promise {
 		let base_url = self.base_url.to_owned();
@@ -232,6 +227,47 @@ impl UpholiClient {
 
 		future_to_promise(async move {
 			match UpholiClientHelper::delete_album(&base_url, &id).await {
+				Ok(_) => Ok(JsValue::NULL),
+				Err(error) => Err(String::from(format!("{}", error)).into())
+			}
+		})
+	}
+
+	#[wasm_bindgen(js_name = updateAlbumCover)]
+	pub fn update_album_cover(&mut self, id: String, cover_photo_id: String) -> js_sys::Promise {
+		let base_url = self.base_url.to_owned();
+		let private_key = self.private_key.as_bytes().to_owned();
+
+		future_to_promise(async move {
+			match UpholiClientHelper::update_album_cover(&base_url, &private_key, &id, &cover_photo_id).await {
+				Ok(_) => Ok(JsValue::NULL),
+				Err(error) => Err(String::from(format!("{}", error)).into())
+			}
+		})
+	}
+
+	#[wasm_bindgen(js_name = addPhotosToAlbum)]
+	pub fn add_photos_to_album(&mut self, id: String) -> js_sys::Promise {
+		let base_url = self.base_url.to_owned();
+		let private_key = self.private_key.as_bytes().to_owned();
+		let photos: Vec<&str> = vec!{};
+
+		future_to_promise(async move {
+			match UpholiClientHelper::add_photos_to_album(&base_url, &private_key, &id, &photos).await {
+				Ok(_) => Ok(JsValue::NULL),
+				Err(error) => Err(String::from(format!("{}", error)).into())
+			}
+		})
+	}
+
+	#[wasm_bindgen(js_name = removePhotosFromAlbum)]
+	pub fn remove_photos_from_album(&mut self, id: String) -> js_sys::Promise {
+		let base_url = self.base_url.to_owned();
+		let private_key = self.private_key.as_bytes().to_owned();
+		let photos: Vec<&str> = vec!{};
+
+		future_to_promise(async move {
+			match UpholiClientHelper::remove_photos_from_album(&base_url, &private_key, &id, &photos).await {
 				Ok(_) => Ok(JsValue::NULL),
 				Err(error) => Err(String::from(format!("{}", error)).into())
 			}
@@ -397,6 +433,15 @@ impl UpholiClientHelper {
 		})
 	}
 
+	pub async fn get_album(base_url: &str, private_key: &[u8], id: &str) -> Result<Album> {
+		let albums = Self::get_albums(base_url, private_key).await?;
+		let album = albums.into_iter()
+			.find(|album| album.id == id)
+			.ok_or("Album not found")?;
+
+		Ok(album)
+	}
+
 	pub async fn get_albums(base_url: &str, private_key: &[u8]) -> Result<Vec<Album>> {
 		let url = format!("{}/api/albums", &base_url).to_owned();
 		let response = reqwest::get(url).await?;
@@ -462,6 +507,39 @@ impl UpholiClientHelper {
 		let url = format!("{}/api/album/{}", &base_url, &id).to_owned();
 		let client = reqwest::Client::new();
 		client.delete(&url).send().await?;
+
+		Ok(())
+	}
+
+	pub async fn update_album_cover(base_url: &str, private_key: &[u8], id: &str, cover_photo_id: &str) -> Result<()> {
+		Ok(())
+	}
+
+	pub async fn add_photos_to_album(base_url: &str, private_key: &[u8], id: &str, photos: &Vec<&str>) -> Result<()> {
+		Ok(())
+	}
+
+	pub async fn remove_photos_from_album(base_url: &str, private_key: &[u8], id: &str, photos: &Vec<&str>) -> Result<()> {
+		Ok(())
+	}
+
+	async fn update_album(base_url: &str, private_key: &[u8], id: &str, modify: fn(album: &mut Album) -> ()) -> Result<()> {
+		let mut album = Self::get_album(base_url, private_key, id).await?;
+		modify(&mut album);
+
+		// let data_json = serde_json::to_string(&album)?;
+		// let data_bytes = data_json.as_bytes();
+		// let data_encrypted = encryption::aes256::encrypt(&album_key, &data_nonce, data_bytes)?;
+
+		// let updated_album = request::CreateAlbum {
+		// 	key:
+		// };
+
+		let url = format!("{}/api/album/{}", base_url, &album.id).to_owned();
+		let client = reqwest::Client::new();
+		client.post(&url)
+			.json(&album)
+			.send().await?;
 
 		Ok(())
 	}
