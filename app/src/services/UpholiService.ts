@@ -78,6 +78,18 @@ class UpholiService {
 	async deleteAlbum(id: string): Promise<void> {
 		return this.client.deleteAlbum(id);
 	}
+
+	async updateAlbumCover(id: string, coverPhotoId: string): Promise<void> {
+		return this.client.updateAlbumCover(id, coverPhotoId);
+	}
+
+	async addPhotosToAlbum(id: string, photoIds: string[]): Promise<void> {
+		return this.client.addPhotosToAlbum(id);
+	}
+
+	async removePhotosFromAlbum(id: string, photoIds: string[]): Promise<void> {
+		return this.client.removePhotosFromAlbum(id);
+	}
 }
 
 const upholiService = new UpholiService();

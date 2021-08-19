@@ -72,26 +72,26 @@ class PhotoService {
 	// 	});
 	// }
 
-	static addPhotosToAlbum(albumId: string, photoIds: string[]): Promise<void> {
-		return new Promise((ok, err) => {
-			this.getAlbum(albumId)
-				.then((album) => {
-					const existingPhotoIds =  album.photos.map(photo => photo.id);
-					const updatedAlbum: UpdateAlbum = {
-						title: null,
-						thumbPhotoId: null,
-						photos: existingPhotoIds.concat(photoIds),
-						tags: null
-					};
+	// static addPhotosToAlbum(albumId: string, photoIds: string[]): Promise<void> {
+	// 	return new Promise((ok, err) => {
+	// 		this.getAlbum(albumId)
+	// 			.then((album) => {
+	// 				const existingPhotoIds =  album.photos.map(photo => photo.id);
+	// 				const updatedAlbum: UpdateAlbum = {
+	// 					title: null,
+	// 					thumbPhotoId: null,
+	// 					photos: existingPhotoIds.concat(photoIds),
+	// 					tags: null
+	// 				};
 
-					PhotoService.updateAlbum(albumId, updatedAlbum)
-						.then(() => {
-							ok();
-						});
-				})
-				.catch(err);
-		});
-	}
+	// 				PhotoService.updateAlbum(albumId, updatedAlbum)
+	// 					.then(() => {
+	// 						ok();
+	// 					});
+	// 			})
+	// 			.catch(err);
+	// 	});
+	// }
 
 	// static getAlbums(): Promise<AlbumInfo[]> {
 	// 	return PhotoService.getJson<AlbumInfo[]>("GET", PhotoService.baseUrl() + "/albums", null);
@@ -105,32 +105,32 @@ class PhotoService {
 	// 	return PhotoService.sendRequest("DELETE", PhotoService.baseUrl() + "/album/" + albumId, null);
 	// }
 
-	static updateAlbumPhotos(albumId: string, newPhotoIds: string[]): Promise<Response> {
-		return PhotoService.updateAlbum(albumId, {
-			title: null,
-			thumbPhotoId: null,
-			photos: newPhotoIds,
-			tags: null
-		});
-	}
+	// static updateAlbumPhotos(albumId: string, newPhotoIds: string[]): Promise<Response> {
+	// 	return PhotoService.updateAlbum(albumId, {
+	// 		title: null,
+	// 		thumbPhotoId: null,
+	// 		photos: newPhotoIds,
+	// 		tags: null
+	// 	});
+	// }
 
-	static updateAlbumCover(albumId: string, newCoverPhotoId: string): Promise<Response> {
-		return PhotoService.updateAlbum(albumId, {
-			title: null,
-			thumbPhotoId: newCoverPhotoId,
-			photos: null,
-			tags: null
-		});
-	}
+	// static updateAlbumCover(albumId: string, newCoverPhotoId: string): Promise<Response> {
+	// 	return PhotoService.updateAlbum(albumId, {
+	// 		title: null,
+	// 		thumbPhotoId: newCoverPhotoId,
+	// 		photos: null,
+	// 		tags: null
+	// 	});
+	// }
 
-	static updateAlbumTags(albumId: string, tags: string[]): Promise<Response> {
-		return PhotoService.updateAlbum(albumId, {
-			title: null,
-			thumbPhotoId: null,
-			photos: null,
-			tags: tags
-		});
-	}
+	// static updateAlbumTags(albumId: string, tags: string[]): Promise<Response> {
+	// 	return PhotoService.updateAlbum(albumId, {
+	// 		title: null,
+	// 		thumbPhotoId: null,
+	// 		photos: null,
+	// 		tags: tags
+	// 	});
+	// }
 
 	static updateAlbum(albumId: string, albumObjectWithModifiedProperties: UpdateAlbum): Promise<Response> {
 		return PhotoService.sendRequest("PUT", PhotoService.baseUrl() + "/album/" + albumId, albumObjectWithModifiedProperties);

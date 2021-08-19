@@ -165,7 +165,7 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 
 		const photoId = this.state.selectedPhotoIds[0];
 
-		PhotoService.updateAlbumCover(this.state.albumId, photoId)
+		upholiService.updateAlbumCover(this.state.albumId, photoId)
 			.then(() => {
 				toast.info("Album cover updated.");
 				_refreshPhotos();
@@ -183,11 +183,7 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 		const fnRefreshPhotos = () => this.refreshPhotos();
 		const fnCloseConfirmDialog = () => this.setState({ confirmRemovePhotosOpen: false });
 
-		const selectedPhotos = this.state.selectedPhotoIds;
-		const photoIds = this.state.galleryPhotos.map(p => p.id);
-		const remainingPhotosAfterRemoval = photoIds.filter(id => selectedPhotos.indexOf(id) === -1);
-
-		PhotoService.updateAlbumPhotos(this.state.albumId, remainingPhotosAfterRemoval)
+		upholiService.removePhotosFromAlbum(this.state.albumId, this.state.selectedPhotoIds)
 			.then(() => {
 				toast.info("Photos removed.");
 				fnCloseConfirmDialog();
