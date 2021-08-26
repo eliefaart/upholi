@@ -1,15 +1,15 @@
-use upholi_lib::http::EncryptedData as EncryptedDataBase64;
+use upholi_lib::EncryptedData;
 use crate::Result;
 
 pub mod aes256;
 
-pub struct EncryptedData {
+pub struct EncryptionResult {
 	pub nonce: String,
 	pub bytes: Vec<u8>
 }
 
-impl From<EncryptedDataBase64> for EncryptedData {
-	fn from(source: EncryptedDataBase64) -> Self {
+impl From<EncryptedData> for EncryptionResult {
+	fn from(source: EncryptedData) -> Self {
 		Self {
 			nonce: source.nonce.clone(),
 			bytes: base64::decode_config(&source.base64, base64::STANDARD).unwrap_or_default()
@@ -18,26 +18,26 @@ impl From<EncryptedDataBase64> for EncryptedData {
 }
 
 /// Encrypt bytes
-pub fn encrypt_slice(key: &[u8], data: &[u8]) -> Result<EncryptedData> {
+pub fn encrypt_slice(key: &[u8], data: &[u8]) -> Result<EncryptionResult> {
 	let nonce = aes256::generate_nonce();
 	let encrypted = aes256::encrypt(&key, &nonce, data)?;
 
-	Ok(EncryptedData {
+	Ok(EncryptionResult {
 		nonce: String::from_utf8(nonce)?,
 		bytes: encrypted
 	})
 }
 
 /// Decrypt an EncryptedData instance
-pub fn decrypt_data(key: &[u8], data: &EncryptedData) -> Result<Vec<u8>> {
+pub fn decrypt_data(key: &[u8], data: &EncryptionResult) -> Result<Vec<u8>> {
 	let nonce = data.nonce.as_bytes();
 	let decypted_bytes = aes256::decrypt(key, nonce, &data.bytes)?;
 
 	Ok(decypted_bytes)
 }
 
-/// Decrypt an EncryptedDataBase64 instance
-pub fn decrypt_data_base64(key: &[u8], data: &EncryptedDataBase64) -> Result<Vec<u8>> {
+/// Decrypt an EncryptedData instance
+pub fn decrypt_data_base64(key: &[u8], data: &EncryptedData) -> Result<Vec<u8>> {
 	decrypt_data(key, &data.to_owned().into())
 }
 

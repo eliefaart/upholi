@@ -1,7 +1,7 @@
 import * as React from "react";
-import PhotoService from "../services/PhotoService";
 import AppStateContext from "../contexts/AppStateContext";
 import { AlbumNew } from "../models/Album";
+import upholiService from "../services/UpholiService";
 
 interface Props {
 	onClick: (album: AlbumNew) => void,
@@ -9,16 +9,33 @@ interface Props {
 	album: AlbumNew
 }
 
-export default class Album extends React.Component<Props> {
+interface State {
+	thumbnailSrc: string
+}
+
+export default class Album extends React.Component<Props, State> {
 	static contextType = AppStateContext;
 
 	constructor(props: Props) {
 		super(props);
+
+		if (this.props.album.thumbnailPhotoId) {
+			upholiService.getPhotoThumbnailImageSrc(this.props.album.thumbnailPhotoId)
+				.then(src => {
+					this.setState({
+						thumbnailSrc: src
+					});
+				});
+		}
+
+		this.state = {
+			thumbnailSrc: ""
+		};
 	}
 
 	render(): React.ReactNode {
 		const album = this.props.album;
-		const thumbUrl = album.thumbnailPhotoId ?"url('" + PhotoService.baseUrl() + "/photo/" + album.thumbnailPhotoId + "/thumb')" : "";
+		const thumbUrl = this.state.thumbnailSrc ? `url('${this.state.thumbnailSrc}')` : "";
 
 		return <div
 			onClick={() => this.props.onClick(album)}

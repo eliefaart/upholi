@@ -1,5 +1,5 @@
 use upholi_lib::http::request::UploadPhoto;
-use upholi_lib::http::*;
+use upholi_lib::{EncryptedData, EncryptedShareKey, http::*};
 use serde::{Deserialize, Serialize};
 
 use crate::database::Database;
@@ -24,7 +24,7 @@ pub struct Photo {
 	pub data: EncryptedData,
 	/// Key that all data and file bytes of this photo is encrypted with. This key is encrypted with the owner's private key.
 	pub key: EncryptedData,
-	pub share_keys: Vec<ShareKey>,
+	pub share_keys: Vec<EncryptedShareKey>,
 	pub thumbnail_nonce: String,
 	pub preview_nonce: String,
 	pub original_nonce: String

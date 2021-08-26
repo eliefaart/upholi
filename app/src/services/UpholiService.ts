@@ -1,5 +1,5 @@
 import * as wasm from "wasm";
-import { AlbumNew } from "../models/Album";
+import Album, { AlbumNew } from "../models/Album";
 import { Photo, PhotoMinimal } from "../models/Photo";
 
 /**
@@ -71,6 +71,13 @@ class UpholiService {
 		});
 	}
 
+	async getAlbum(id: string): Promise<Album> {
+		const json = await this.client.getAlbum(id);
+		const album: Album = JSON.parse(json);
+
+		return album;
+	}
+
 	async createAlbum(title: string): Promise<void> {
 		return this.client.createAlbum(title);
 	}
@@ -84,11 +91,11 @@ class UpholiService {
 	}
 
 	async addPhotosToAlbum(id: string, photoIds: string[]): Promise<void> {
-		return this.client.addPhotosToAlbum(id);
+		return this.client.addPhotosToAlbum(id, photoIds);
 	}
 
 	async removePhotosFromAlbum(id: string, photoIds: string[]): Promise<void> {
-		return this.client.removePhotosFromAlbum(id);
+		return this.client.removePhotosFromAlbum(id, photoIds);
 	}
 }
 
