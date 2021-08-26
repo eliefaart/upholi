@@ -200,9 +200,6 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 				const photoElement = document.getElementById(statePhoto.id);
 
 				if (photoElement && photoInfo && fnElementIsInViewport(photoElement)) {
-
-					//statePhoto.src = PhotoService.getThumbUrl(photoInfo.id);
-
 					upholiService.getPhotoThumbnailImageSrc(photoInfo.id)
 						.then(src => {
 							this.setState(previousState => {

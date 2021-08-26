@@ -3,7 +3,6 @@ import { PageBaseComponent, PageBaseComponentProps } from "./PageBaseComponent";
 import PhotoGallerySelectable from "../PhotoGallerySelectable";
 import ContentContainer from "../ContentContainer";
 import AppStateContext from "../../contexts/AppStateContext";
-import PhotoService from "../../services/PhotoService";
 import ModalPhotoDetail from "../modals/ModalPhotoDetail";
 import ModalConfirmation from "../modals/ModalConfirmation";
 import ModalUploadProgress from "../modals/ModalUploadProgress";
@@ -109,20 +108,36 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 	}
 
 	refreshPhotos(): void {
-		PhotoService.getAlbum(this.state.albumId)
+		upholiService.getAlbum(this.state.albumId)
 			.then((album) => {
 				this.setState({
 					album,
 					galleryPhotos: album.photos.map((photo): GalleryPhoto => {
 						return {
 							id: photo.id,
-							src: PhotoService.baseUrl() + "/photo/" + photo.id + "/thumb",
+							src: "",
 							width: photo.width,
 							height: photo.height
 						};
 					}),
 					selectedPhotoIds: []
 				});
+
+				for (const albumPhoto of album.photos) {
+					upholiService.getPhotoThumbnailImageSrc(albumPhoto.id)
+						.then(src => {
+							this.setState(previousState => {
+								const albumPhotoToUpdate = previousState.galleryPhotos.find(p => p.id === albumPhoto.id);
+								if (albumPhotoToUpdate) {
+									albumPhotoToUpdate.src = src;
+								}
+
+								return {
+									galleryPhotos: previousState.galleryPhotos
+								};
+							});
+						});
+				}
 			});
 	}
 
@@ -161,14 +176,11 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 	}
 
 	setSelectedPhotoAsAlbumCover(): void {
-		const _refreshPhotos = () => this.refreshPhotos();
-
 		const photoId = this.state.selectedPhotoIds[0];
 
 		upholiService.updateAlbumCover(this.state.albumId, photoId)
 			.then(() => {
 				toast.info("Album cover updated.");
-				_refreshPhotos();
 			})
 			.catch(console.error);
 	}

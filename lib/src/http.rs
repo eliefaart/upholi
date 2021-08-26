@@ -1,32 +1,3 @@
-use serde::{Deserialize, Serialize};
-
-#[derive(Deserialize, Serialize, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct ShareKey {
-	id: String,
-	key: EncryptedData
-}
-
-#[derive(Deserialize, Serialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct EncryptedData {
-	pub nonce: String,
-	pub base64: String,
-	/// Version of format of data that was encrypted.
-	/// For future use.
-	pub format_version: i32
-}
-
-impl Clone for EncryptedData {
-	fn clone(&self) -> Self {
-		Self {
-			base64: self.base64.clone(),
-			nonce: self.nonce.clone(),
-			format_version: self.format_version
-		}
-	}
-}
-
 pub mod request {
 	use serde::{Deserialize, Serialize};
 
@@ -37,10 +8,10 @@ pub mod request {
 		pub width: u32,
 		pub height: u32,
 		/// Key that all data and file bytes of this photo is encrypted with. This key is encrypted with the owner's private key.
-		pub key: super::EncryptedData,
+		pub key: crate::EncryptedData,
 		/// Encrypted data, contains width, height, exif, etc
-		pub data: super::EncryptedData,
-		pub share_keys: Vec<super::ShareKey>,
+		pub data: crate::EncryptedData,
+		pub share_keys: Vec<crate::EncryptedShareKey>,
 		pub thumbnail_nonce: String,
 		pub preview_nonce: String,
 		pub original_nonce: String
@@ -49,9 +20,9 @@ pub mod request {
 	#[derive(Deserialize, Serialize, Debug)]
 	#[serde(rename_all = "camelCase")]
 	pub struct CreateAlbum {
-		pub key: super::EncryptedData,
-		pub data: super::EncryptedData,
-		pub share_keys: Vec<super::ShareKey>
+		pub key: crate::EncryptedData,
+		pub data: crate::EncryptedData,
+		pub share_keys: Vec<crate::EncryptedShareKey>
 	}
 }
 
@@ -72,9 +43,9 @@ pub mod response {
 		pub hash: String,
 		pub width: i32,
 		pub height: i32,
-		pub data: super::EncryptedData,
-		pub key: super::EncryptedData,
-		pub share_keys: Vec<super::ShareKey>,
+		pub data: crate::EncryptedData,
+		pub key: crate::EncryptedData,
+		pub share_keys: Vec<crate::EncryptedShareKey>,
 		pub thumbnail_nonce: String,
 		pub preview_nonce: String,
 		pub original_nonce: String
@@ -83,9 +54,9 @@ pub mod response {
 	#[derive(Deserialize, Serialize, Debug)]
 	#[serde(rename_all = "camelCase")]
 	pub struct PhotoMinimal {
-		id: String,
-		width: u32,
-		height: u32
+		pub id: String,
+		pub width: u32,
+		pub height: u32
 	}
 
 	#[derive(Deserialize, Serialize, Debug)]
@@ -93,8 +64,18 @@ pub mod response {
 	pub struct Album {
 		pub id: String,
 		pub user_id: String,
-		pub key: super::EncryptedData,
-		pub data: super::EncryptedData,
-		pub share_keys: Vec<super::ShareKey>
+		pub key: crate::EncryptedData,
+		pub data: crate::EncryptedData,
+		pub share_keys: Vec<crate::EncryptedShareKey>
+	}
+
+	impl Clone for PhotoMinimal {
+		fn clone(&self) -> Self {
+			Self {
+				id: self.id.clone(),
+				height: self.height,
+				width: self.width
+			}
+		}
 	}
 }

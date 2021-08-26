@@ -3,7 +3,7 @@ use chrono::prelude::*;
 use rexif::{TagValue, ExifTag};
 use upholi_lib::result::Result;
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Exif {
 	pub manufactorer: Option<String>,

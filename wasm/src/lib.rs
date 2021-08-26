@@ -1,14 +1,19 @@
-use js_sys::Array;
-use types::Photo;
+use std::ops::Deref;
+
+use entities::Entity;
+use entities::album::{AlbumData, AlbumDetailed};
+use entities::photo::PhotoData;
+use js_sys::{Array, JsString};
+use upholi_lib::http::response::{PhotoMinimal};
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::future_to_promise;
-use upholi_lib::{PhotoVariant, http::*};
+use upholi_lib::{EncryptedData, PhotoVariant, http::*};
 use upholi_lib::result::Result;
 use exif::Exif;
 
-use crate::types::Album;
+use crate::entities::album;
 
-mod types;
+mod entities;
 mod images;
 mod exif;
 mod encryption;
@@ -82,9 +87,9 @@ impl UpholiClient {
 		let base_url = self.base_url.to_owned();
 
 		future_to_promise(async move {
-			match UpholiClientHelper::get_photo_data(&base_url, &private_key, &id).await {
+			match UpholiClientHelper::get_photo(&base_url, &private_key, &id).await {
 				Ok(photo) => {
-					match serde_json::to_string(&photo) {
+					match serde_json::to_string(photo.get_data()) {
 						Ok(json) => Ok(JsValue::from(json)),
 						Err(error) => Err(String::from(format!("{}", error)).into())
 					}
@@ -194,12 +199,30 @@ impl UpholiClient {
 					let mut js_array: Vec<JsValue> = Vec::new();
 
 					for album in albums {
-						let album = JsValue::from_serde(&album).unwrap_throw();
+						let album = JsValue::from_serde(album.into_js_value()).unwrap_throw();
 						js_array.push(album);
 					}
 
 					let js_array = JsValue::from(js_array.iter().collect::<Array>());
 					Ok(js_array)
+				},
+				Err(error) => Err(String::from(format!("{}", error)).into())
+			}
+		})
+	}
+
+	#[wasm_bindgen(js_name = getAlbum)]
+	pub fn get_album(&mut self, id: String) -> js_sys::Promise {
+		let base_url = self.base_url.to_owned();
+		let private_key = self.private_key.as_bytes().to_owned();
+
+		future_to_promise(async move {
+			match UpholiClientHelper::get_album_full(&base_url, &private_key, &id).await {
+				Ok(album) => {
+					match serde_json::to_string(&album) {
+						Ok(json) => Ok(JsValue::from(json)),
+						Err(error) => Err(String::from(format!("{}", error)).into())
+					}
 				},
 				Err(error) => Err(String::from(format!("{}", error)).into())
 			}
@@ -218,8 +241,6 @@ impl UpholiClient {
 			}
 		})
 	}
-
-	// pub fn update_album(&mut self) {}
 
 	#[wasm_bindgen(js_name = deleteAlbum)]
 	pub fn delete_album(&mut self, id: String) -> js_sys::Promise {
@@ -247,13 +268,13 @@ impl UpholiClient {
 	}
 
 	#[wasm_bindgen(js_name = addPhotosToAlbum)]
-	pub fn add_photos_to_album(&mut self, id: String) -> js_sys::Promise {
+	pub fn add_photos_to_album(&mut self, id: String, photos: Box<[JsString]>) -> js_sys::Promise {
 		let base_url = self.base_url.to_owned();
 		let private_key = self.private_key.as_bytes().to_owned();
-		let photos: Vec<&str> = vec!{};
 
 		future_to_promise(async move {
-			match UpholiClientHelper::add_photos_to_album(&base_url, &private_key, &id, &photos).await {
+			let photo_ids = photos.iter().map(|photo| photo.into()).collect();
+			match UpholiClientHelper::add_photos_to_album(&base_url, &private_key, &id, &photo_ids).await {
 				Ok(_) => Ok(JsValue::NULL),
 				Err(error) => Err(String::from(format!("{}", error)).into())
 			}
@@ -261,13 +282,13 @@ impl UpholiClient {
 	}
 
 	#[wasm_bindgen(js_name = removePhotosFromAlbum)]
-	pub fn remove_photos_from_album(&mut self, id: String) -> js_sys::Promise {
+	pub fn remove_photos_from_album(&mut self, id: String, photos: Box<[JsString]>) -> js_sys::Promise {
 		let base_url = self.base_url.to_owned();
 		let private_key = self.private_key.as_bytes().to_owned();
-		let photos: Vec<&str> = vec!{};
 
 		future_to_promise(async move {
-			match UpholiClientHelper::remove_photos_from_album(&base_url, &private_key, &id, &photos).await {
+			let photo_ids = photos.iter().map(|photo| photo.into()).collect();
+			match UpholiClientHelper::remove_photos_from_album(&base_url, &private_key, &id, &photo_ids).await {
 				Ok(_) => Ok(JsValue::NULL),
 				Err(error) => Err(String::from(format!("{}", error)).into())
 			}
@@ -323,15 +344,10 @@ impl UpholiClientHelper {
 		Ok(photos)
 	}
 
-	pub async fn get_photo_data(base_url: &str, private_key: &[u8], id: &str) -> Result<Photo> {
+	pub async fn get_photo<'a>(base_url: &str, private_key: &[u8], id: &str) -> Result<entities::photo::Photo> {
 		let photo = UpholiClientHelper::get_photo_encrypted(base_url, id).await?;
-		let photo_key = encryption::decrypt_data_base64(private_key, &photo.key)?;
-		let photo_data = encryption::decrypt_data_base64(&photo_key, &photo.data)?;
-		let mut photo_data: Photo = serde_json::from_slice(&photo_data)?;
-
-		photo_data.id = id.into();
-
-		Ok(photo_data)
+		let photo = entities::photo::Photo::from_encrypted(photo, private_key)?;
+		Ok(photo)
 	}
 
 	/// Get photo as returned by server.
@@ -372,7 +388,8 @@ impl UpholiClientHelper {
 	}
 
 	async fn get_photo_image_src(base_url: &str, private_key: &[u8], id: &str, photo_variant: PhotoVariant) -> Result<String> {
-		let photo_data = Self::get_photo_data(base_url, private_key, id).await?;
+		let photo = Self::get_photo(base_url, private_key, id).await?;
+		let photo_data = photo.get_data();
 		let base64 = Self::get_photo_base64(base_url, private_key, id, photo_variant).await?;
 
 		let src = format!("data:{};base64,{}", photo_data.content_type, base64);
@@ -387,8 +404,7 @@ impl UpholiClientHelper {
 		let photo_key_encrypted = encryption::aes256::encrypt(private_key, &photo_key_nonce, &photo_key)?;
 
 		// Create photo data/properties and encrypt it
-		let data = Photo {
-			id: String::new(),
+		let data = PhotoData {
 			hash: photo.image.hash.clone(),
 			width: photo.image.width,
 			height: photo.image.height,
@@ -433,33 +449,51 @@ impl UpholiClientHelper {
 		})
 	}
 
-	pub async fn get_album(base_url: &str, private_key: &[u8], id: &str) -> Result<Album> {
+	async fn get_album(base_url: &str, private_key: &[u8], id: &str) -> Result<album::Album> {
 		let albums = Self::get_albums(base_url, private_key).await?;
 		let album = albums.into_iter()
-			.find(|album| album.id == id)
+			.find(|album| album.get_id() == id)
 			.ok_or("Album not found")?;
 
 		Ok(album)
 	}
 
-	pub async fn get_albums(base_url: &str, private_key: &[u8]) -> Result<Vec<Album>> {
-		let url = format!("{}/api/albums", &base_url).to_owned();
-		let response = reqwest::get(url).await?;
-		let albums = response.json::<Vec<response::Album>>().await?;
+	async fn get_album_full(base_url: &str, private_key: &[u8], id: &str) -> Result<AlbumDetailed> {
+		let album = Self::get_album(base_url, private_key, id).await?;
+		let album = album.into_js_value();
+		let photos = Self::get_photos(base_url).await?;
 
-		let mut decypted_albums: Vec<Album> = vec!{};
-
-		for album in albums {
-			let album_key = encryption::decrypt_data_base64(private_key, &album.key)?;
-			let album_data = encryption::decrypt_data_base64(&album_key, &album.data)?;
-			let mut album_data: Album = serde_json::from_slice(&album_data)?;
-
-			album_data.id = album.id;
-
-			decypted_albums.push(album_data);
+		let mut photos_in_album: Vec<PhotoMinimal> = vec!{};
+		for photo in &photos {
+			if album.photos.contains(&photo.id) {
+				photos_in_album.push(photo.clone());
+			}
 		}
 
-		Ok(decypted_albums)
+		let album = AlbumDetailed {
+			id: album.id.clone(),
+			title: album.title.clone(),
+			tags: album.tags.clone(),
+			photos: photos_in_album,
+			thumbnail_photo: match album.thumbnail_photo_id.clone() {
+				Some(thumbnail_photo_id) => photos.into_iter().find(|photo| photo.id == thumbnail_photo_id),
+				None => None
+			}
+		};
+
+		Ok(album)
+	}
+
+	pub async fn get_albums(base_url: &str, private_key: &[u8]) -> Result<Vec<album::Album>> {
+		let encrypted_albums = Self::get_encrypted_albums(base_url).await?;
+		let mut albums: Vec<album::Album> = vec!{};
+
+		for album in encrypted_albums {
+			let album = album::Album::from_encrypted(album, private_key)?;
+			albums.push(album);
+		}
+
+		Ok(albums)
 	}
 
 	pub async fn create_album(base_url: &str, private_key: &[u8], title: &str) -> Result<()> {
@@ -469,8 +503,7 @@ impl UpholiClientHelper {
 		let album_key_nonce = encryption::aes256::generate_nonce();
 		let album_key_encrypted = encryption::aes256::encrypt(private_key, &album_key_nonce, &album_key)?;
 
-		let data = Album {
-			id: String::new(),
+		let data = album::AlbumData {
 			title: title.into(),
 			tags: vec!{},
 			photos: vec!{},
@@ -511,37 +544,75 @@ impl UpholiClientHelper {
 		Ok(())
 	}
 
-	pub async fn update_album_cover(base_url: &str, private_key: &[u8], id: &str, cover_photo_id: &str) -> Result<()> {
-		Ok(())
+	pub async fn update_album_cover(base_url: &str, private_key: &[u8], id: &str, thumbnail_photo_id: &str) -> Result<()> {
+		let album = Self::get_album(base_url, private_key, id).await?;
+		let mut album_data = album.get_data().clone();
+		album_data.thumbnail_photo_id = Some(thumbnail_photo_id.into());
+
+		Self::update_album(base_url, private_key, id, &album_data).await
 	}
 
-	pub async fn add_photos_to_album(base_url: &str, private_key: &[u8], id: &str, photos: &Vec<&str>) -> Result<()> {
-		Ok(())
+	pub async fn add_photos_to_album(base_url: &str, private_key: &[u8], id: &str, photos: &Vec<String>) -> Result<()> {
+		let album = Self::get_album(base_url, private_key, id).await?;
+		let mut album_data = album.get_data().clone();
+		for id in photos {
+			if !album_data.photos.contains(&id) {
+				album_data.photos.push(id.to_owned());
+			}
+		}
+
+		Self::update_album(base_url, private_key, id, &album_data).await
 	}
 
-	pub async fn remove_photos_from_album(base_url: &str, private_key: &[u8], id: &str, photos: &Vec<&str>) -> Result<()> {
-		Ok(())
+	pub async fn remove_photos_from_album(base_url: &str, private_key: &[u8], id: &str, photos: &Vec<String>) -> Result<()> {
+		let album = Self::get_album(base_url, private_key, id).await?;
+		let mut album_data = album.get_data().clone();
+		album_data.photos = album_data.photos.into_iter().filter(|id| !photos.contains(id)).collect();
+
+		Self::update_album(base_url, private_key, id, &album_data).await
 	}
 
-	async fn update_album(base_url: &str, private_key: &[u8], id: &str, modify: fn(album: &mut Album) -> ()) -> Result<()> {
-		let mut album = Self::get_album(base_url, private_key, id).await?;
-		modify(&mut album);
+	async fn update_album(base_url: &str, private_key: &[u8], id: &str, album: &AlbumData) -> Result<()> {
+		let encrypted_album = Self::get_encrypted_album(base_url, id).await?;
+		let album_key = encryption::decrypt_data_base64(private_key, &encrypted_album.key)?;
 
-		// let data_json = serde_json::to_string(&album)?;
-		// let data_bytes = data_json.as_bytes();
-		// let data_encrypted = encryption::aes256::encrypt(&album_key, &data_nonce, data_bytes)?;
+		let data_json = serde_json::to_string(&album)?;
+		let data_bytes = data_json.as_bytes();
+		let data_nonce = encrypted_album.data.nonce.into_bytes();
+		let data_encrypted = encryption::aes256::encrypt(&album_key, &data_nonce, data_bytes)?;
 
-		// let updated_album = request::CreateAlbum {
-		// 	key:
-		// };
+		let updated_album = request::CreateAlbum {
+			key: encrypted_album.key,
+			data: EncryptedData {
+				nonce: String::from_utf8(data_nonce)?,
+				base64: base64::encode_config(&data_encrypted, base64::STANDARD),
+				format_version: 1
+			},
+			share_keys: encrypted_album.share_keys
+		};
 
-		let url = format!("{}/api/album/{}", base_url, &album.id).to_owned();
+		let url = format!("{}/api/album/{}", base_url, id).to_owned();
 		let client = reqwest::Client::new();
-		client.post(&url)
-			.json(&album)
+		client.put(&url)
+			.json(&updated_album)
 			.send().await?;
 
 		Ok(())
+	}
+
+	async fn get_encrypted_album(base_url: &str, id: &str) -> Result<response::Album> {
+		let albums = Self::get_encrypted_albums(base_url).await?;
+		let album = albums.into_iter()
+			.find(|album| album.id == id)
+			.ok_or("Album not found")?;
+		Ok(album)
+	}
+
+	async fn get_encrypted_albums(base_url: &str) -> Result<Vec<response::Album>> {
+		let url = format!("{}/api/albums", &base_url).to_owned();
+		let response = reqwest::get(url).await?;
+		let albums = response.json::<Vec<response::Album>>().await?;
+		Ok(albums)
 	}
 }
 
