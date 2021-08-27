@@ -86,6 +86,10 @@ class UpholiService {
 		return this.client.deleteAlbum(id);
 	}
 
+	async updateAlbumTitleTags(id: string, title: string, tags: string[]): Promise<void> {
+		return this.client.updateAlbumTitleTags(id, title, tags);
+	}
+
 	async updateAlbumCover(id: string, coverPhotoId: string): Promise<void> {
 		return this.client.updateAlbumCover(id, coverPhotoId);
 	}
