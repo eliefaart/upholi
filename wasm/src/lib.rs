@@ -230,12 +230,13 @@ impl UpholiClient {
 	}
 
 	#[wasm_bindgen(js_name = createAlbum)]
-	pub fn create_album(&mut self, title: String) -> js_sys::Promise {
+	pub fn create_album(&mut self, title: String, initial_photo_ids: Box<[JsString]>) -> js_sys::Promise {
 		let base_url = self.base_url.to_owned();
 		let private_key = self.private_key.as_bytes().to_owned();
 
 		future_to_promise(async move {
-			match UpholiClientHelper::create_album(&base_url, &private_key, &title).await {
+			let initial_photo_ids = initial_photo_ids.iter().map(|id| id.into()).collect();
+			match UpholiClientHelper::create_album(&base_url, &private_key, &title, initial_photo_ids).await {
 				Ok(_) => Ok(JsValue::NULL),
 				Err(error) => Err(String::from(format!("{}", error)).into())
 			}
@@ -510,7 +511,7 @@ impl UpholiClientHelper {
 		Ok(albums)
 	}
 
-	pub async fn create_album(base_url: &str, private_key: &[u8], title: &str) -> Result<()> {
+	pub async fn create_album(base_url: &str, private_key: &[u8], title: &str, initial_photo_ids: Vec<String>) -> Result<()> {
 		let url = format!("{}/api/album", &base_url).to_owned();
 
 		let album_key = encryption::aes256::generate_key();
@@ -520,7 +521,7 @@ impl UpholiClientHelper {
 		let data = album::AlbumData {
 			title: title.into(),
 			tags: vec!{},
-			photos: vec!{},
+			photos: initial_photo_ids,
 			thumbnail_photo_id: None
 		};
 		let data_json = serde_json::to_string(&data)?;

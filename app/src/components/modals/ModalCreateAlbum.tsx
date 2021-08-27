@@ -23,7 +23,7 @@ class ModalCreateAlbum extends React.Component<ModalCreateAlbumProps> {
 			const history = this.context.history;
 			const title = this.titleInput.current.value;
 
-			upholiService.createAlbum(title) // , this.props.createWithPhotoIds ?? []
+			upholiService.createAlbum(title, this.props.createWithPhotoIds)
 				.then(albumId => {
 					toast.info("Album '" + title + "' created.");
 
