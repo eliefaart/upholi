@@ -1,6 +1,5 @@
 import * as React from "react";
 import Modal from "./Modal";
-import PhotoService from "../../services/PhotoService";
 import ModalPropsBase from "../../models/ModalPropsBase";
 import Album from "../../models/Album";
 import upholiService from "../../services/UpholiService";
