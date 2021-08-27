@@ -7,6 +7,7 @@ import UrlHelper from "../helpers/UrlHelper";
 import Collection from "../models/Collection";
 import GalleryPhoto from "../models/GalleryPhoto";
 import Menu from "./Menu";
+import upholiService from "../services/UpholiService";
 
 const queryStringParamNameAlbumId = "albumId";
 const queryStringParamNamePhotoId = "photoId";
@@ -74,7 +75,7 @@ class CollectionView extends React.Component<CollectionViewProps, CollectionView
 	}
 
 	loadAlbum(albumId:string): void {
-		PhotoService.getAlbum(albumId)
+		upholiService.getAlbum(albumId)
 			.then((response) => {
 				this.setState({
 					activeAlbum: {

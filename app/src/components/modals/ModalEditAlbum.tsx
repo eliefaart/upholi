@@ -3,6 +3,7 @@ import Modal from "./Modal";
 import PhotoService from "../../services/PhotoService";
 import ModalPropsBase from "../../models/ModalPropsBase";
 import Album from "../../models/Album";
+import upholiService from "../../services/UpholiService";
 
 interface Props extends ModalPropsBase {
 	album: Album
@@ -34,14 +35,9 @@ export default class ModalEditAlbum extends React.Component<Props, State> {
 
 	saveChanges(): void {
 		if (this.titleInput.current && this.tagsInput.current) {
-			const promise = PhotoService.updateAlbum(this.props.album.id, {
-					title: this.titleInput.current.value,
-					thumbPhotoId: null,
-					photos: null,
-					tags: this.tagsInput.current.value.trim().toLowerCase().split(" ").filter(tag => !!tag)
-				});
-
-			promise
+			const title = this.titleInput.current.value;
+			const tags = this.tagsInput.current.value.trim().toLowerCase().split(" ").filter(tag => !!tag);
+			upholiService.updateAlbumTitleTags(this.props.album.id, title, tags)
 				.then(() => this.props.onRequestClose())
 				.catch(console.error);
 		}

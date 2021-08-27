@@ -254,6 +254,20 @@ impl UpholiClient {
 		})
 	}
 
+	#[wasm_bindgen(js_name = updateAlbumTitleTags)]
+	pub fn update_album_title_tags(&mut self, id: String, title: String, tags: Box<[JsString]>) -> js_sys::Promise {
+		let base_url = self.base_url.to_owned();
+		let private_key = self.private_key.as_bytes().to_owned();
+
+		future_to_promise(async move {
+			let tags = tags.iter().map(|tag| tag.into()).collect();
+			match UpholiClientHelper::update_album_title_tags(&base_url, &private_key, &id, &title, tags).await {
+				Ok(_) => Ok(JsValue::NULL),
+				Err(error) => Err(String::from(format!("{}", error)).into())
+			}
+		})
+	}
+
 	#[wasm_bindgen(js_name = updateAlbumCover)]
 	pub fn update_album_cover(&mut self, id: String, cover_photo_id: String) -> js_sys::Promise {
 		let base_url = self.base_url.to_owned();
@@ -542,6 +556,15 @@ impl UpholiClientHelper {
 		client.delete(&url).send().await?;
 
 		Ok(())
+	}
+
+	pub async fn update_album_title_tags(base_url: &str, private_key: &[u8], id: &str, title: &str, tags: Vec<String>) -> Result<()> {
+		let album = Self::get_album(base_url, private_key, id).await?;
+		let mut album_data = album.get_data().clone();
+		album_data.title = title.into();
+		album_data.tags = tags;
+
+		Self::update_album(base_url, private_key, id, &album_data).await
 	}
 
 	pub async fn update_album_cover(base_url: &str, private_key: &[u8], id: &str, thumbnail_photo_id: &str) -> Result<()> {
