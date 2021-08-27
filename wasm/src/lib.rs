@@ -4,7 +4,7 @@ use entities::Entity;
 use entities::album::{AlbumData, AlbumDetailed};
 use entities::photo::PhotoData;
 use js_sys::{Array, JsString};
-use upholi_lib::http::response::{PhotoMinimal};
+use upholi_lib::http::response::{CreateAlbum, PhotoMinimal};
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::future_to_promise;
 use upholi_lib::{EncryptedData, PhotoVariant, http::*};
@@ -237,7 +237,7 @@ impl UpholiClient {
 		future_to_promise(async move {
 			let initial_photo_ids = initial_photo_ids.iter().map(|id| id.into()).collect();
 			match UpholiClientHelper::create_album(&base_url, &private_key, &title, initial_photo_ids).await {
-				Ok(_) => Ok(JsValue::NULL),
+				Ok(id) => Ok(JsValue::from(id)),
 				Err(error) => Err(String::from(format!("{}", error)).into())
 			}
 		})
@@ -511,7 +511,7 @@ impl UpholiClientHelper {
 		Ok(albums)
 	}
 
-	pub async fn create_album(base_url: &str, private_key: &[u8], title: &str, initial_photo_ids: Vec<String>) -> Result<()> {
+	pub async fn create_album(base_url: &str, private_key: &[u8], title: &str, initial_photo_ids: Vec<String>) -> Result<String> {
 		let url = format!("{}/api/album", &base_url).to_owned();
 
 		let album_key = encryption::aes256::generate_key();
@@ -544,11 +544,12 @@ impl UpholiClientHelper {
 		};
 
 		let client = reqwest::Client::new();
-		client.post(&url)
+		let response = client.post(&url)
 			.json(&body)
 			.send().await?;
+		let response_body: CreateAlbum = response.json().await?;
 
-		Ok(())
+		Ok(response_body.id)
 	}
 
 	pub async fn delete_album(base_url: &str, id: &str) -> Result<()> {

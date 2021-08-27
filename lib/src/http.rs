@@ -37,6 +37,12 @@ pub mod response {
 
 	#[derive(Deserialize, Serialize, Debug)]
 	#[serde(rename_all = "camelCase")]
+	pub struct CreateAlbum {
+		pub id: String
+	}
+
+	#[derive(Deserialize, Serialize, Debug)]
+	#[serde(rename_all = "camelCase")]
 	pub struct Photo {
 		pub id: String,
 		pub user_id: String,
