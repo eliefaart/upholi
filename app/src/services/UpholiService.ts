@@ -78,7 +78,7 @@ class UpholiService {
 		return album;
 	}
 
-	async createAlbum(title: string, initialPhotoIds?: string[]): Promise<void> {
+	async createAlbum(title: string, initialPhotoIds?: string[]): Promise<string> {
 		const photoIds = initialPhotoIds ?? [];
 		return this.client.createAlbum(title, photoIds);
 	}
