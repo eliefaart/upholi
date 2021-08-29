@@ -1,10 +1,10 @@
 import * as React from "react";
 import Modal from "./Modal";
 import ModalPropsBase from "../../models/ModalPropsBase";
-import File from "../../models/File";
+import { FileUploadProgress } from "../../models/File";
 
 interface ModalUploadProgressProps extends ModalPropsBase {
-	files: File[]
+	files: FileUploadProgress[]
 }
 
 class ModalUploadProgress extends React.Component<ModalUploadProgressProps> {
@@ -23,9 +23,9 @@ class ModalUploadProgress extends React.Component<ModalUploadProgressProps> {
 				okButtonText={null}
 			>
 				{this.props.files.map(file => (
-					<div key={file.name} className="file">
+					<div key={file.file.name} className="file">
 						<img src={file.objectUrl} className="thumb"/>
-						<span className="title">{file.name}</span>
+						<span className="title">{file.file.name}</span>
 						<span className="status">{file.status}</span>
 						{/* {file.status === "Failed" && <button>retry</button>} */}
 					</div>

@@ -1,7 +1,13 @@
-interface File {
-	name: string,
-	status: string,
-	objectUrl: string
+export enum FileUploadStatus {
+	Queued = "Queued",
+	Processing = "Processing",
+	Uploading = "Uploading",
+	Done = "Done",
+	Failed = "Failed"
 }
 
-export default File;
+export interface FileUploadProgress {
+	file: globalThis.File,
+	objectUrl: string,
+	status: FileUploadStatus
+}

@@ -10,7 +10,7 @@ import UploadButton from "../UploadButton";
 import { IconRemove, IconImage } from "../Icons";
 import { toast } from "react-toastify";
 import UrlHelper from "../../helpers/UrlHelper";
-import File from "../../models/File";
+import { FileUploadProgress } from "../../models/File";
 import GalleryPhoto from "../../models/GalleryPhoto";
 import ModalEditAlbum from "../modals/ModalEditAlbum";
 import Album from "../../models/Album";
@@ -29,7 +29,7 @@ interface AlbumPageState {
 	confirmDeleteAlbumOpen: boolean,
 	confirmRemovePhotosOpen: boolean,
 	uploadInProgress: boolean,
-	uploadFiles: File[]
+	uploadFiles: FileUploadProgress[]
 }
 
 class AlbumPage extends PageBaseComponent<AlbumPageState> {
@@ -231,46 +231,6 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 
 	uploadFilesList (fileList: FileList): void {
 		console.warn("Todo: implement AlbumPage.uploadFilesList");
-		// const albumId = this.state.albumId;
-		// let photoIds = this.state.galleryPhotos.map(p => p.id);
-
-		// const files = UploadHelper.convertFileListToFileArrayForUploadDialog(fileList);
-
-		// const fnOnUploadFinished = (uploadedPhotoIds: string[]) => {
-		// 	this.setState({
-		// 		uploadInProgress: false,
-		// 		uploadFiles: []
-		// 	});
-
-		// 	const fnRefreshPhotos = () => this.refreshPhotos();
-
-		// 	if (uploadedPhotoIds && uploadedPhotoIds.length > 0) {
-		// 		toast.info("Upload finished.");
-
-		// 		photoIds = photoIds.concat(uploadedPhotoIds);
-		// 		PhotoService.updateAlbumPhotos(albumId, photoIds)
-		// 			.then(fnRefreshPhotos);
-		// 	}
-		// };
-		// const fnUpdateFileUploadState = (file: globalThis.File, newState: string) => {
-		// 	const stateFile = files.find(f => f.name === file.name);
-		// 	if (stateFile) {
-		// 		stateFile.status = newState;
-
-		// 		this.setState({
-		// 			uploadFiles: files
-		// 		});
-		// 	}
-		// };
-
-		// PhotoService.uploadPhotos(fileList, fnUpdateFileUploadState)
-		// 	.then(fnOnUploadFinished)
-		// 	.catch(console.error);
-
-		// this.setState({
-		// 	uploadInProgress: true,
-		// 	uploadFiles: files
-		// });
 	}
 
 	render(): React.ReactNode {
