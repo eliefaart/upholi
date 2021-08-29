@@ -39,18 +39,16 @@ pub fn decrypt(key: &[u8], nonce: &[u8], bytes: &[u8]) -> Result<Vec<u8>> {
 }
 
 pub fn generate_key() -> Vec<u8> {
-	// TODO: proper random bytes generation
-	uuid::Uuid::new_v4().to_simple().to_string().as_bytes().to_owned()
+	super::generate_key(16)
 }
 
 pub fn generate_nonce() -> Vec<u8> {
-	// TODO: proper random bytes generation
-	uuid::Uuid::new_v4().to_simple().to_string()[..12].as_bytes().to_owned()
+	super::generate_nonce(12)
 }
 
 fn get_cipher(key: &[u8]) -> Result<Aes128GcmSiv, > {
 	if key.len() != 16 {
-		Err(Box::from("Encryption key must be 32 bytes"))
+		Err(Box::from("Encryption key must be 16 bytes"))
 	}
 	else {
 		let key = Key::from_slice(key);

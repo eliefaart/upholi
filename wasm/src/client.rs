@@ -1,14 +1,15 @@
-use crate::entities::Entity;
-use crate::entities::album::{self, AlbumData, AlbumDetailed};
-use crate::entities::photo::{Photo, PhotoData};
-use crate::images::Image;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::future_to_promise;
 use js_sys::{Array, JsString};
 use upholi_lib::http::response::{CreateAlbum, PhotoMinimal};
-use upholi_lib::{EncryptedData, PhotoVariant, http::*};
+use upholi_lib::{PhotoVariant, http::*};
 use upholi_lib::result::Result;
+use crate::entities::Entity;
+use crate::entities::album::{self, AlbumData, AlbumDetailed};
+use crate::entities::photo::{Photo, PhotoData};
+use crate::images::Image;
 use crate::exif::Exif;
+
 
 /*
  * Info on async functions within struct implementations:
@@ -334,12 +335,12 @@ impl UpholiClientHelper {
 		let mut request_data = Self::get_upload_photo_request_data(&upload_info, &private_key)?;
 
 		// Decrypt photo key
-		let photo_key = crate::encryption::decrypt_data_base64(private_key, &request_data.key)?;
+		let photo_key = crate::encryption::symmetric::decrypt_data_base64(private_key, &request_data.key)?;
 
 		// Encrypt photo bytes
-		let thumbnail_encrypted = crate::encryption::encrypt_slice(&photo_key, &upload_info.bytes_thumbnail())?;
-		let preview_encrypted = crate::encryption::encrypt_slice(&photo_key, &upload_info.bytes_preview())?;
-		let original_encrypted = crate::encryption::encrypt_slice(&photo_key, &upload_info.bytes_original())?;
+		let thumbnail_encrypted = crate::encryption::symmetric::encrypt_slice(&photo_key, &upload_info.bytes_thumbnail())?;
+		let preview_encrypted = crate::encryption::symmetric::encrypt_slice(&photo_key, &upload_info.bytes_preview())?;
+		let original_encrypted = crate::encryption::symmetric::encrypt_slice(&photo_key, &upload_info.bytes_original())?;
 
 		// Store nonces in request data
 		request_data.thumbnail_nonce = thumbnail_encrypted.nonce;
@@ -405,13 +406,13 @@ impl UpholiClientHelper {
 
 		// Decrypt photo bytes
 		let photo = Self::get_photo_encrypted(base_url, id).await?;
-		let photo_key = crate::encryption::decrypt_data_base64(private_key, &photo.key)?;
+		let photo_key = crate::encryption::symmetric::decrypt_data_base64(private_key, &photo.key)?;
 		let nonce = match photo_variant {
 			PhotoVariant::Thumbnail => photo.thumbnail_nonce.as_bytes(),
 			PhotoVariant::Preview => photo.preview_nonce.as_bytes(),
 			PhotoVariant::Original => photo.original_nonce.as_bytes()
 		};
-		let bytes = crate::encryption::decrypt_slice(&photo_key, nonce, &encrypted_bytes)?;
+		let bytes = crate::encryption::symmetric::decrypt_slice(&photo_key, nonce, &encrypted_bytes)?;
 
 		Ok(base64::encode_config(&bytes, base64::STANDARD))
 	}
@@ -428,8 +429,8 @@ impl UpholiClientHelper {
 	/// Get data about photo to send as part of the HTTP request's body
 	pub fn get_upload_photo_request_data(photo: &PhotoUploadInfo, private_key: &[u8]) -> Result<request::UploadPhoto> {
 		// Generate a key and encrypt it
-		let photo_key = crate::encryption::generate_key();
-		let photo_key_encrypt_result = crate::encryption::encrypt_slice(private_key, &photo_key)?;
+		let photo_key = crate::encryption::symmetric::generate_key();
+		let photo_key_encrypt_result = crate::encryption::symmetric::encrypt_slice(private_key, &photo_key)?;
 
 		// Create photo data/properties and encrypt it
 		let data = PhotoData {
@@ -453,7 +454,7 @@ impl UpholiClientHelper {
 		};
 		let data_json = serde_json::to_string(&data)?;
 		let data_bytes = data_json.as_bytes();
-		let data_encrypt_result = crate::encryption::encrypt_slice(&photo_key, data_bytes)?;
+		let data_encrypt_result = crate::encryption::symmetric::encrypt_slice(&photo_key, data_bytes)?;
 
 		Ok(request::UploadPhoto {
 			hash: photo.image.hash.clone(),
@@ -518,8 +519,8 @@ impl UpholiClientHelper {
 	pub async fn create_album(base_url: &str, private_key: &[u8], title: &str, initial_photo_ids: Vec<String>) -> Result<String> {
 		let url = format!("{}/api/album", &base_url).to_owned();
 
-		let album_key = crate::encryption::generate_key();
-		let album_key_encrypt_result = crate::encryption::encrypt_slice(private_key, &album_key)?;
+		let album_key = crate::encryption::symmetric::generate_key();
+		let album_key_encrypt_result = crate::encryption::symmetric::encrypt_slice(private_key, &album_key)?;
 
 		let data = album::AlbumData {
 			title: title.into(),
@@ -529,7 +530,7 @@ impl UpholiClientHelper {
 		};
 		let data_json = serde_json::to_string(&data)?;
 		let data_bytes = data_json.as_bytes();
-		let data_encrypt_result = crate::encryption::encrypt_slice(&album_key, data_bytes)?;
+		let data_encrypt_result = crate::encryption::symmetric::encrypt_slice(&album_key, data_bytes)?;
 
 		let body = request::CreateAlbum {
 			key: album_key_encrypt_result.into(),
@@ -593,11 +594,11 @@ impl UpholiClientHelper {
 
 	async fn update_album(base_url: &str, private_key: &[u8], id: &str, album: &AlbumData) -> Result<()> {
 		let encrypted_album = Self::get_encrypted_album(base_url, id).await?;
-		let album_key = crate::encryption::decrypt_data_base64(private_key, &encrypted_album.key)?;
+		let album_key = crate::encryption::symmetric::decrypt_data_base64(private_key, &encrypted_album.key)?;
 
 		let data_json = serde_json::to_string(&album)?;
 		let data_bytes = data_json.as_bytes();
-		let data_encrypt_result = crate::encryption::encrypt_slice(&album_key, data_bytes)?;
+		let data_encrypt_result = crate::encryption::symmetric::encrypt_slice(&album_key, data_bytes)?;
 
 		let updated_album = request::CreateAlbum {
 			key: encrypted_album.key,
