@@ -18,6 +18,10 @@ class UpholiService {
 		this._client = null;
 	}
 
+	async uploadPhoto(bytes: Uint8Array): Promise<void> {
+		return await this.client.uploadPhoto(bytes);
+	}
+
 	async getPhoto(id: string): Promise<Photo> {
 		const json = await this.client.getPhoto(id);
 		const photo: Photo = JSON.parse(json);

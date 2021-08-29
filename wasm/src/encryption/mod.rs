@@ -1,6 +1,6 @@
-use upholi_lib::EncryptedData;
-use crate::Result;
+use upholi_lib::{result::Result, EncryptedData};
 
+pub mod aes128;
 pub mod aes256;
 
 pub struct EncryptionResult {
@@ -17,13 +17,36 @@ impl From<EncryptedData> for EncryptionResult {
 	}
 }
 
+impl Into<EncryptedData> for EncryptionResult {
+	fn into(self) -> EncryptedData {
+		EncryptedData {
+			nonce: self.nonce.clone(),
+			base64: base64::encode_config(&self.nonce, base64::STANDARD),
+			format_version: 1
+		}
+	}
+}
+
+pub fn generate_key() -> Vec<u8> {
+	aes256::generate_key()
+}
+
+pub fn generate_nonce() -> Vec<u8> {
+	aes256::generate_nonce()
+}
+
 /// Encrypt bytes
 pub fn encrypt_slice(key: &[u8], data: &[u8]) -> Result<EncryptionResult> {
 	let nonce = aes256::generate_nonce();
+	encrypt_slice_with_nonce(key, &nonce, data)
+}
+
+/// Encrypt bytes
+pub fn encrypt_slice_with_nonce(key: &[u8], nonce: &[u8], data: &[u8]) -> Result<EncryptionResult> {
 	let encrypted = aes256::encrypt(&key, &nonce, data)?;
 
 	Ok(EncryptionResult {
-		nonce: String::from_utf8(nonce)?,
+		nonce: String::from_utf8(nonce.into())?,
 		bytes: encrypted
 	})
 }

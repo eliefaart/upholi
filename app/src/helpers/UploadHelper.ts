@@ -1,11 +1,9 @@
-import * as wasm from "wasm";
 import { FileUploadProgress, FileUploadStatus } from "../models/File";
+import upholiService from "../services/UpholiService";
 
 class UploadHelper {
 
 	public async uploadPhotos(fileList: FileList, progressUpdated: (progress: FileUploadProgress[]) => void): Promise<void> {
-		const upholiClient = new wasm.UpholiClient("http://localhost", "e0ca4c29d5504e8daa8c52e873e66f71");
-
 		const queue: FileUploadProgress[] = [];
 
 		const updateQueueItemStatus = (item: FileUploadProgress, status: FileUploadStatus) => {
@@ -27,36 +25,24 @@ class UploadHelper {
 			}
 		}
 
-		// Upload all items in queue
 		if (progressUpdated) {
 			progressUpdated(queue);
 		}
+
+		// Upload all items in queue
 		for (const queueItem of queue) {
-			// TODO: UI hangs on this call it seems
-			updateQueueItemStatus(queueItem, FileUploadStatus.Processing);
-			const photo = await this.prepareFileForUpload(queueItem.file);
+			try {
+				updateQueueItemStatus(queueItem, FileUploadStatus.Uploading);
+				const photoBytes = await queueItem.file.arrayBuffer();
 
-			updateQueueItemStatus(queueItem, FileUploadStatus.Uploading);
-			await upholiClient.uploadPhoto(photo);
+				// TODO: Part of this call seems to block UI updates. Not sure what, since it's async
+				await upholiService.uploadPhoto(new Uint8Array(photoBytes));
 
-			updateQueueItemStatus(queueItem, FileUploadStatus.Done);
-		}
-	}
-
-	/**
-	 * Convert a File into an object that can be uploaded to server.
-	 * @param fileList
-	 */
-	async prepareFileForUpload(file: globalThis.File): Promise<wasm.PhotoUploadInfo> {
-		if (file) {
-			const fileBuffer = await file.arrayBuffer();
-			const fileBytes = new Uint8Array(fileBuffer);
-			const image = new wasm.PhotoUploadInfo(fileBytes);
-
-			return image;
-		}
-		else {
-			return Promise.reject("");
+				updateQueueItemStatus(queueItem, FileUploadStatus.Done);
+			}
+			catch {
+				updateQueueItemStatus(queueItem, FileUploadStatus.Failed);
+			}
 		}
 	}
 }
