@@ -1,4 +1,3 @@
-use crate::encryption::{encrypt, decrypt};
 use crate::entities::user::User;
 use lazy_static::lazy_static;
 use crate::error::Result;
@@ -34,9 +33,6 @@ pub async fn init_storage_for_user(user: &User) -> Result<()> {
 /// Store a file
 /// Returns a unique id for the file
 pub async fn store_file(file_id: &str, owner_user_id: &str, file_bytes: &[u8]) -> Result<String> {
-	// Encrypt file bytes
-	let file_bytes = &encrypt(&ENCRYPTION_KEY, &file_id.as_bytes()[0..12], file_bytes)?;
-
 	// Store bytes
 	match get_provider() {
 		StorageProvider::Disk(disk) => {
@@ -57,7 +53,7 @@ pub async fn get_file(file_id: &str, owner_user_id: &str) -> Result<Option<Vec<u
 	}?;
 
 	match bytes {
-		Some(bytes) => Ok(Some(decrypt(&ENCRYPTION_KEY, &file_id.as_bytes()[0..12], &bytes)?)),
+		Some(bytes) => Ok(Some(bytes)),
 		None => Ok(None)
 	}
 }

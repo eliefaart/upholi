@@ -2,6 +2,7 @@ use serde::{Deserialize,Serialize};
 use upholi_lib::{ShareKey, http::response};
 use upholi_lib::result::Result;
 use crate::encryption::decrypt_data_base64;
+use crate::exif::Exif;
 
 use super::Entity;
 
@@ -18,7 +19,7 @@ pub struct PhotoData {
 	pub width: u32,
 	pub height: u32,
 	pub content_type: String,
-	pub exif: crate::Exif
+	pub exif: Exif
 }
 
 pub struct DecryptedPhoto {
@@ -43,7 +44,7 @@ pub struct JsPhoto {
 	pub width: u32,
 	pub height: u32,
 	pub content_type: String,
-	pub exif: crate::Exif
+	pub exif: Exif
 }
 
 impl Entity for Photo {
