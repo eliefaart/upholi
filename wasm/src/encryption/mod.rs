@@ -3,6 +3,15 @@ use upholi_lib::{result::Result, EncryptedData};
 pub mod aes128;
 pub mod aes256;
 
+pub trait SymmetricCipher {
+	// let aes128 & 256 impl this, then use enum
+}
+
+// pub enum CipherSymmetric {
+// 	AES128(aes128),
+// 	AES256(aes256),
+// }
+
 pub struct EncryptionResult {
 	pub nonce: String,
 	pub bytes: Vec<u8>
@@ -21,7 +30,7 @@ impl Into<EncryptedData> for EncryptionResult {
 	fn into(self) -> EncryptedData {
 		EncryptedData {
 			nonce: self.nonce.clone(),
-			base64: base64::encode_config(&self.nonce, base64::STANDARD),
+			base64: base64::encode_config(&self.bytes, base64::STANDARD),
 			format_version: 1
 		}
 	}
@@ -29,10 +38,6 @@ impl Into<EncryptedData> for EncryptionResult {
 
 pub fn generate_key() -> Vec<u8> {
 	aes256::generate_key()
-}
-
-pub fn generate_nonce() -> Vec<u8> {
-	aes256::generate_nonce()
 }
 
 /// Encrypt bytes

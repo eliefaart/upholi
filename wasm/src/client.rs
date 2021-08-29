@@ -429,8 +429,7 @@ impl UpholiClientHelper {
 	pub fn get_upload_photo_request_data(photo: &PhotoUploadInfo, private_key: &[u8]) -> Result<request::UploadPhoto> {
 		// Generate a key and encrypt it
 		let photo_key = crate::encryption::generate_key();
-		let photo_key_nonce = crate::encryption::generate_nonce();
-		let photo_key_encrypted = crate::encryption::encrypt_slice_with_nonce(private_key, &photo_key_nonce, &photo_key)?.bytes;
+		let photo_key_encrypt_result = crate::encryption::encrypt_slice(private_key, &photo_key)?;
 
 		// Create photo data/properties and encrypt it
 		let data = PhotoData {
@@ -454,23 +453,14 @@ impl UpholiClientHelper {
 		};
 		let data_json = serde_json::to_string(&data)?;
 		let data_bytes = data_json.as_bytes();
-		let data_nonce = crate::encryption::generate_nonce();
-		let data_encrypted = crate::encryption::encrypt_slice_with_nonce(&photo_key, &data_nonce, data_bytes)?.bytes;
+		let data_encrypt_result = crate::encryption::encrypt_slice(&photo_key, data_bytes)?;
 
 		Ok(request::UploadPhoto {
 			hash: photo.image.hash.clone(),
 			width: photo.image.width,
 			height: photo.image.height,
-			key: EncryptedData {
-				nonce: String::from_utf8(photo_key_nonce)?,
-				base64: base64::encode_config(&photo_key_encrypted, base64::STANDARD),
-				format_version: 1
-			},
-			data: EncryptedData {
-				nonce: String::from_utf8(data_nonce)?,
-				base64: base64::encode_config(&data_encrypted, base64::STANDARD),
-				format_version: 1
-			},
+			key: photo_key_encrypt_result.into(),
+			data: data_encrypt_result.into(),
 			share_keys: vec!{},
 			thumbnail_nonce: String::new(),
 			preview_nonce: String::new(),
@@ -529,8 +519,7 @@ impl UpholiClientHelper {
 		let url = format!("{}/api/album", &base_url).to_owned();
 
 		let album_key = crate::encryption::generate_key();
-		let album_key_nonce = crate::encryption::generate_nonce();
-		let album_key_encrypted = crate::encryption::encrypt_slice_with_nonce(private_key, &album_key_nonce, &album_key)?.bytes;
+		let album_key_encrypt_result = crate::encryption::encrypt_slice(private_key, &album_key)?;
 
 		let data = album::AlbumData {
 			title: title.into(),
@@ -540,20 +529,11 @@ impl UpholiClientHelper {
 		};
 		let data_json = serde_json::to_string(&data)?;
 		let data_bytes = data_json.as_bytes();
-		let data_nonce = crate::encryption::generate_nonce();
-		let data_encrypted = crate::encryption::encrypt_slice_with_nonce(&album_key, &data_nonce, data_bytes)?.bytes;
+		let data_encrypt_result = crate::encryption::encrypt_slice(&album_key, data_bytes)?;
 
 		let body = request::CreateAlbum {
-			key: EncryptedData {
-				nonce: String::from_utf8(album_key_nonce)?,
-				base64: base64::encode_config(&album_key_encrypted, base64::STANDARD),
-				format_version: 1
-			},
-			data: EncryptedData {
-				nonce: String::from_utf8(data_nonce)?,
-				base64: base64::encode_config(&data_encrypted, base64::STANDARD),
-				format_version: 1
-			},
+			key: album_key_encrypt_result.into(),
+			data: data_encrypt_result.into(),
 			share_keys: vec!{}
 		};
 
@@ -617,16 +597,11 @@ impl UpholiClientHelper {
 
 		let data_json = serde_json::to_string(&album)?;
 		let data_bytes = data_json.as_bytes();
-		let data_nonce = encrypted_album.data.nonce.into_bytes();
-		let data_encrypted = crate::encryption::encrypt_slice_with_nonce(&album_key, &data_nonce, data_bytes)?.bytes;
+		let data_encrypt_result = crate::encryption::encrypt_slice(&album_key, data_bytes)?;
 
 		let updated_album = request::CreateAlbum {
 			key: encrypted_album.key,
-			data: EncryptedData {
-				nonce: String::from_utf8(data_nonce)?,
-				base64: base64::encode_config(&data_encrypted, base64::STANDARD),
-				format_version: 1
-			},
+			data: data_encrypt_result.into(),
 			share_keys: encrypted_album.share_keys
 		};
 
