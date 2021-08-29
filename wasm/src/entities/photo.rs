@@ -1,7 +1,7 @@
 use serde::{Deserialize,Serialize};
 use upholi_lib::{ShareKey, http::response};
 use upholi_lib::result::Result;
-use crate::encryption::decrypt_data_base64;
+use crate::encryption::symmetric::decrypt_data_base64;
 use crate::exif::Exif;
 
 use super::Entity;
