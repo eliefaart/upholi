@@ -2,6 +2,13 @@ use crate::error::*;
 use aes_gcm_siv::{Aes256GcmSiv, Key, Nonce};
 use aes_gcm_siv::aead::{Aead, NewAead};
 
+
+// I should pick AES128 over AES256? Faster, and really just as secure
+// https://www.ubiqsecurity.com/blog/128bit-or-256bit-encryption-which-to-use/
+// How about chacha20?
+
+
+
 pub fn encrypt(key: &[u8], nonce: &[u8], bytes: &[u8]) -> Result<Vec<u8>> {
 	if nonce.len() != 12 {
 		Err(Box::from("Nonce must be 12 bytes"))

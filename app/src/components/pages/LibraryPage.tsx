@@ -10,10 +10,10 @@ import UploadButton from "../UploadButton";
 import { IconDelete } from "../Icons";
 import { toast } from "react-toastify";
 import UrlHelper from "../../helpers/UrlHelper";
-import File from "../../models/File";
+import { FileUploadProgress } from "../../models/File";
 import GalleryPhoto from "../../models/GalleryPhoto";
 import AddPhotosToAlbumButton from "../Buttons/AddPhotosToAlbumButton";
-import uploadHelper from "../../helpers/UploadHelperNew";
+import uploadHelper from "../../helpers/UploadHelper";
 import upholiService from "../../services/UpholiService";
 import { PhotoMinimal } from "../../models/Photo";
 import { AlbumNew } from "../../models/Album";
@@ -27,7 +27,7 @@ interface LibraryPageState {
 	confirmDeletePhotosOpen: boolean,
 	albums: AlbumNew[],
 	uploadInProgress: boolean,
-	uploadFiles: File[]
+	uploadFiles: FileUploadProgress[]
 }
 
 class LibraryPage extends PageBaseComponent<LibraryPageState> {
@@ -287,43 +287,26 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 
 	uploadFilesList(fileList: FileList): void {
 		const fnOnUploadFinished = () => {
-			this.setState({
-				uploadInProgress: false,
-				uploadFiles: []
+			this.setState(() => {
+				return {
+					uploadInProgress: false,
+					uploadFiles: []
+				};
 			});
 			this.refreshPhotos();
 			toast.info("Upload finished.");
 		};
 
 		uploadHelper.uploadPhotos(fileList, (progress) => {
-			console.log(progress);
+			this.setState(() => {
+				return {
+					uploadInProgress: true,
+					uploadFiles: progress
+				};
+			});
 		}).then(() => {
 			fnOnUploadFinished();
 		});
-
-		this.setState({
-			uploadInProgress: true,
-			uploadFiles: []
-		});
-
-		// const files = UploadHelper.convertFileListToFileArrayForUploadDialog(fileList);
-
-		// const fnUpdateFileUploadState = (file: globalThis.File, newState: string) => {
-		// 	const stateFile = files.find(f => f.name === file.name);
-		// 	if (stateFile) {
-		// 		stateFile.status = newState;
-
-		// 		this.setState({
-		// 			uploadFiles: files
-		// 		});
-		// 	}
-		// };
-
-		// PhotoService.uploadPhotos(fileList, fnUpdateFileUploadState)
-		// 	.then(fnOnUploadFinished)
-		// 	.catch(console.error);
-
-
 	}
 
 	render(): React.ReactNode {
