@@ -30,7 +30,7 @@ class AppContainer extends React.Component<AppContainerProps, AppContainerState>
 		ReactModal.setAppElement("#appRoot");
 
 		// Call server to find out if user is authenticated
-		fetch("/oauth/user/info").then((response) => {
+		fetch("/api/user/info").then((response) => {
 			this.context.authenticated = response.status === 200;
 			this.setState({
 				ready: true

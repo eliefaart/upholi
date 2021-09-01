@@ -70,7 +70,7 @@ pub trait DatabaseExt : Database {
 	fn get_albums_with_photo(&self, photo_id: &str) -> Result<Vec<Album>>;
 
 	/// Get user for given ID provider name and user-ID, if it exists
-	fn get_user_for_identity_provider(&self, identity_provider: &str, identity_provider_user_id: &str) -> Result<Option<User>>;
+	fn get_user_by_username(&self, username: &str) -> Result<Option<User>>;
 
 	/// Get a single collection by its share token.
 	/// Note: this does not check if collection is shared at all.

@@ -68,10 +68,7 @@ impl AzureStorageProvider {
 				if !container_exists {
 					let container = storage_client.as_container_client(container_name);
 					match container.create().execute().await {
-						Ok(_) => {
-							println!("Created collection {}", container_name);
-							Ok(())
-						},
+						Ok(_) => Ok(()),
 						Err(err) => Err(err)
 					}
 				}

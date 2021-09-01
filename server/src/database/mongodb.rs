@@ -235,11 +235,10 @@ impl DatabaseExt for MongoDatabase {
 		get_items_from_cursor(cursor)
 	}
 
-	fn get_user_for_identity_provider(&self, identity_provider: &str, identity_provider_user_id: &str) -> Result<Option<User>> {
+	fn get_user_by_username(&self, username: &str) -> Result<Option<User>> {
 		let mongo_collection = DATABASE.collection(database::COLLECTION_USERS);
 		let query = doc!{
-			"identityProvider": identity_provider,
-			"identityProviderUserId": identity_provider_user_id
+			"username": username,
 		};
 
 		let cursor = mongo_collection.find(query, None)?;
@@ -248,7 +247,7 @@ impl DatabaseExt for MongoDatabase {
 		match users.len() {
 			1 => Ok(Some(users.into_iter().next().unwrap())),
 			0 => Ok(None),
-			_ => Err(Box::from(format!("Multiple users found for identity provider '{}' and identity provider user ID '{}'. There cannot be more than one.", identity_provider, identity_provider_user_id)))
+			_ => Err(Box::from(format!("Multiple users found with username '{}'", username)))
 		}
 	}
 

@@ -1,3 +1,4 @@
+use crate::database::DatabaseExt;
 use crate::storage::init_storage_for_user;
 use crate::ids::create_unique_id;
 use serde::{Serialize,Deserialize};
@@ -9,25 +10,25 @@ use crate::database::{Database, DatabaseEntity};
 #[serde(rename_all = "camelCase")]
 pub struct User {
 	pub id: String,
-
-	/// Name/ID of an identity provider
-	pub identity_provider: String,
-
-	/// ID of user at identity provider
-	pub identity_provider_user_id: String,
+	pub username: String,
+	pub public_key: String,
 }
 
 impl User {
-	pub async fn create(identity_provider: String, identity_provider_user_id: String) -> Result<User> {
+	pub async fn create(username: String, public_key: String) -> Result<User> {
 		let user = User{
 			id: create_unique_id(),
-			identity_provider,
-			identity_provider_user_id
+			username,
+			public_key
 		};
 
 		user.insert()?;
 		init_storage_for_user(&user).await?;
 		Ok(user)
+	}
+
+	pub async fn get_by_username(username: &str) -> Result<Option<User>> {
+		database::get_database().get_user_by_username(username)
 	}
 }
 

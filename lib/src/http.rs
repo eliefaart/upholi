@@ -24,10 +24,33 @@ pub mod request {
 		pub data: crate::EncryptedData,
 		pub share_keys: Vec<crate::EncryptedShareKey>
 	}
+
+	#[derive(Deserialize, Serialize, Debug)]
+	#[serde(rename_all = "camelCase")]
+	pub struct Register {
+		pub username: String,
+		pub public_key: String
+	}
+
+	#[derive(Deserialize, Serialize, Debug)]
+	#[serde(rename_all = "camelCase")]
+	pub struct Login {
+		pub username: String,
+		/// Username encrypted with user's private key
+		pub challenge: String
+	}
 }
 
 pub mod response {
 	use serde::{Deserialize, Serialize};
+
+	#[derive(Deserialize, Serialize, Debug)]
+	#[serde(rename_all = "camelCase")]
+	pub struct UserInfo {
+		pub id: String,
+		pub username: String,
+		pub public_key: String,
+	}
 
 	#[derive(Deserialize, Serialize, Debug)]
 	#[serde(rename_all = "camelCase")]

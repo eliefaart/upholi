@@ -1,7 +1,8 @@
+use upholi_lib::http::request::{Login, Register};
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::future_to_promise;
 use js_sys::{Array, JsString};
-use upholi_lib::http::response::{CreateAlbum, PhotoMinimal};
+use upholi_lib::http::response::{CreateAlbum, PhotoMinimal, UserInfo};
 use upholi_lib::{PhotoVariant, http::*};
 use upholi_lib::result::Result;
 use crate::entities::Entity;
@@ -69,6 +70,42 @@ impl UpholiClient {
 			base_url,
 			private_key
 		}
+	}
+
+	#[wasm_bindgen(js_name = register)]
+	pub fn register(&self, username: String, password: String) -> js_sys::Promise {
+		let base_url = self.base_url.to_owned();
+
+		future_to_promise(async move {
+			match UpholiClientHelper::register(&base_url, &username, &password).await {
+				Ok(_) => Ok(JsValue::NULL),
+				Err(error) => Err(String::from(format!("{}", error)).into())
+			}
+		})
+	}
+
+	#[wasm_bindgen(js_name = login)]
+	pub fn login(&self, username: String, password: String) -> js_sys::Promise {
+		let base_url = self.base_url.to_owned();
+
+		future_to_promise(async move {
+			match UpholiClientHelper::login(&base_url, &username, &password).await {
+				Ok(_) => Ok(JsValue::NULL),
+				Err(error) => Err(String::from(format!("{}", error)).into())
+			}
+		})
+	}
+
+	#[wasm_bindgen(js_name = getUserInfo)]
+	pub fn get_user_info(&self) -> js_sys::Promise {
+		let base_url = self.base_url.to_owned();
+
+		future_to_promise(async move {
+			match UpholiClientHelper::get_user_info(&base_url).await {
+				Ok(user_info) => Ok(JsValue::from_serde(&user_info).unwrap_throw()),
+				Err(error) => Err(String::from(format!("{}", error)).into())
+			}
+		})
 	}
 
 	/// Get all photos of current user.
@@ -331,6 +368,57 @@ impl UpholiClient {
 struct UpholiClientHelper { }
 
 impl UpholiClientHelper {
+
+	pub async fn register(base_url: &str, username: &str, password: &str) -> Result<()> {
+		// derive public/private key pair from password
+		// register by sending username and public key
+
+		let body = Register {
+			username: username.into(),
+			public_key: password.into()
+		};
+
+		let url = format!("{}/api/user/register", &base_url).to_owned();
+		let client = reqwest::Client::new();
+		client.post(&url)
+			.json(&body)
+			.send().await?;
+
+		Ok(())
+	}
+
+	pub async fn login(base_url: &str, username: &str, password: &str) -> Result<()> {
+		// derive public/private key pair from password
+		// encrypt username with private key
+		// send encrypted username to server
+		// server will verify by decrypting it using public key
+
+		let body = Login {
+			username: username.into(),
+			challenge: password.into()
+		};
+
+		let url = format!("{}/api/user/login", &base_url).to_owned();
+		let client = reqwest::Client::new();
+		client.post(&url)
+			.json(&body)
+			.send().await?;
+
+		Ok(())
+	}
+
+	pub async fn get_user_info(base_url: &str) -> Result<UserInfo> {
+		let url = format!("{}/api/user/info", &base_url).to_owned();
+		let client = reqwest::Client::new();
+		let response = client
+			.get(&url)
+			.send().await?;
+		let user_info: UserInfo = response
+			.json().await?;
+
+		Ok(user_info)
+	}
+
 	pub async fn upload_photo(base_url: &str, private_key: &[u8], upload_info: &PhotoUploadInfo) -> Result<()> {
 		let mut request_data = Self::get_upload_photo_request_data(&upload_info, &private_key)?;
 
