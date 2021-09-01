@@ -18,6 +18,18 @@ class UpholiService {
 		this._client = null;
 	}
 
+	async register(username: string, password: string): Promise<void> {
+		return await this.client.register(username, password);
+	}
+
+	async login(username: string, password: string): Promise<void> {
+		return await this.client.login(username, password);
+	}
+
+	async getUserInfo(): Promise<void> {
+		return await this.client.getUserInfo();
+	}
+
 	async uploadPhoto(bytes: Uint8Array): Promise<void> {
 		return await this.client.uploadPhoto(bytes);
 	}

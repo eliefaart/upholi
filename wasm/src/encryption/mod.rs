@@ -29,7 +29,7 @@ impl Into<EncryptedData> for EncryptionResult {
 
 fn generate_key(bytes: usize) -> Vec<u8> {
 	// TODO: proper random bytes generation
-	 uuid::Uuid::new_v4().to_simple().to_string().as_bytes().to_vec()[0..bytes].to_vec()
+	 uuid::Uuid::new_v4().to_simple().to_string()[0..bytes].as_bytes().to_vec()
 }
 
 fn generate_nonce(bytes: usize) -> Vec<u8> {

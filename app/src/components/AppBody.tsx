@@ -8,6 +8,7 @@ import AlbumPage from "./pages/AlbumPage";
 import SharedPage from "./pages/SharedPage";
 import SharedCollectionPage from "./pages/SharedCollectionPage";
 import Header from "./Header";
+import LoginPage from "./pages/LoginPage";
 
 interface AppBodyProps { }
 
@@ -69,6 +70,8 @@ class AppBody extends React.Component<AppBodyProps, AppBodyState> {
 					contextMenu={this.state.header.contextMenu}/>
 
 				{fnRenderRoute("/", LibraryPage, true)}
+				{fnRenderRoute("/login", LoginPage, false)}
+				{fnRenderRoute("/register", LoginPage, false)}
 				{fnRenderRoute("/albums", AlbumsPage, true)}
 				{fnRenderRoute("/shared", SharedPage, true)}
 				{/* {fnRenderRoute("/photo/:photoId", PhotoPage, false)} */}

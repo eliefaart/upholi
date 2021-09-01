@@ -1,4 +1,4 @@
-pub mod oauth2;
+pub mod users;
 pub mod photos;
 pub mod albums;
 pub mod collections;

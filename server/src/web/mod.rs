@@ -2,7 +2,6 @@ use actix_web::{App, HttpServer};
 
 mod handlers;
 mod http;
-mod oauth2;
 mod cookies;
 
 /// Start and run the web server
@@ -34,20 +33,23 @@ pub async fn run_server() -> std::io::Result<()>{
 			// 		res
 			// 	})
 			// })
-			.service(
-				// OAuth related routes
-				actix_web::web::scope("/oauth")
-					.route("/start", actix_web::web::get().to(handlers::oauth2::oauth_start_login))
-					.route("/user/info", actix_web::web::get().to(handlers::oauth2::oauth_user_info))
-					.route("/login", actix_web::web::get().to(handlers::oauth2::oauth_callback))
-					//TODO:
-					// .route("/logout", actix_web::web::get().to(handlers::logout))
-			)
+			// .service(
+			// 	// OAuth related routes
+			// 	actix_web::web::scope("/oauth")
+			// 		.route("/start", actix_web::web::get().to(handlers::oauth2::oauth_start_login))
+			// 		.route("/user/info", actix_web::web::get().to(handlers::oauth2::oauth_user_info))
+			// 		.route("/login", actix_web::web::get().to(handlers::oauth2::oauth_callback))
+			// 		//TODO:
+			// 		// .route("/logout", actix_web::web::get().to(handlers::logout))
+			// )
 			.service(
 				// API routes
 				actix_web::web::scope("/api")
 
-					//.route("/user", actix_web::web::post().to(handlers::users::route_register_user))
+					.route("/user/register", actix_web::web::post().to(handlers::users::route_register_user))
+					.route("/user/login", actix_web::web::post().to(handlers::users::route_login_user))
+					//.route("/user/logout", actix_web::web::post().to(handlers::users::route_logout_user))
+					.route("/user/info", actix_web::web::get().to(handlers::users::route_user_info))
 
 					.route("/photos", actix_web::web::get().to(handlers::photos::route_get_photos))
 					.route("/photo", actix_web::web::post().to(handlers::photos::route_upload_photo))
@@ -56,10 +58,6 @@ pub async fn run_server() -> std::io::Result<()>{
 					.route("/photo/{photo_id}/original", actix_web::web::get().to(handlers::photos::route_download_photo_original))
 					.route("/photo/{photo_id}/thumbnail", actix_web::web::get().to(handlers::photos::route_download_photo_thumbnail))
 					.route("/photo/{photo_id}/preview", actix_web::web::get().to(handlers::photos::route_download_photo_preview))
-
-
-
-
 
 					.route("/albums", actix_web::web::get().to(handlers::albums::route_get_albums))
 					.route("/album", actix_web::web::post().to(handlers::albums::route_create_album))

@@ -48,10 +48,7 @@ export class PageBaseComponent<TState> extends React.Component<PageBaseComponent
 
 	componentDidMount(): void {
 		if (this.props.requiresAuthentication && !this.context.authenticated) {
-			// TODO: This is a temporary implementation,
-			// should redirect to a Welcome component or something,
-			// which would have a login button that starts the login flow
-			document.location.pathname = "/oauth/start";
+			document.location.pathname = "/login";
 		}
 
 		this.updateAllPageElement();
