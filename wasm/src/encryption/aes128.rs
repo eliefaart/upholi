@@ -2,17 +2,20 @@ use upholi_lib::result::Result;
 use aes_gcm_siv::{Aes128GcmSiv, Key, Nonce};
 use aes_gcm_siv::aead::{Aead, NewAead};
 
+const KEY_LENGTH: usize = 16;
+const NONCE_LENGTH: usize = 12;
+
 pub fn generate_key() -> Vec<u8> {
-	super::generate_string(16)
+	super::generate_string(KEY_LENGTH)	// aes_gcm_siv should be able to do this?
 }
 
 pub fn generate_nonce() -> Vec<u8> {
-	super::generate_string(12)
+	super::generate_string(NONCE_LENGTH)
 }
 
 pub fn encrypt(key: &[u8], nonce: &[u8], bytes: &[u8]) -> Result<Vec<u8>> {
-	if nonce.len() != 12 {
-		Err(Box::from("Nonce must be 12 bytes"))
+	if nonce.len() != NONCE_LENGTH {
+		Err(Box::from(format!("Nonce must be {} bytes", NONCE_LENGTH)))
 	}
 	else {
 		let cipher = get_cipher(key)?;
@@ -29,8 +32,8 @@ pub fn encrypt(key: &[u8], nonce: &[u8], bytes: &[u8]) -> Result<Vec<u8>> {
 }
 
 pub fn decrypt(key: &[u8], nonce: &[u8], bytes: &[u8]) -> Result<Vec<u8>> {
-	if nonce.len() != 12 {
-		Err(Box::from("Nonce must be 12 bytes"))
+	if nonce.len() != NONCE_LENGTH {
+		Err(Box::from(format!("Nonce must be {} bytes", NONCE_LENGTH)))
 	}
 	else {
 		let cipher = get_cipher(key)?;
@@ -46,9 +49,9 @@ pub fn decrypt(key: &[u8], nonce: &[u8], bytes: &[u8]) -> Result<Vec<u8>> {
 	}
 }
 
-fn get_cipher(key: &[u8]) -> Result<Aes128GcmSiv, > {
-	if key.len() != 16 {
-		Err(Box::from("Encryption key must be 16 bytes"))
+fn get_cipher(key: &[u8]) -> Result<Aes128GcmSiv> {
+	if key.len() != KEY_LENGTH {
+		Err(Box::from(format!("Encryption key must be {} bytes", KEY_LENGTH)))
 	}
 	else {
 		let key = Key::from_slice(key);
@@ -61,8 +64,20 @@ mod tests {
 	use super::*;
 
 	#[test]
+	fn generate_key_length() {
+		let key = generate_key();
+		assert_eq!(key.len(), KEY_LENGTH);
+	}
+
+	#[test]
+	fn generate_nonce_length() {
+		let nonce = generate_key();
+		assert_eq!(nonce.len(), NONCE_LENGTH);
+	}
+
+	#[test]
 	fn encrypt_decrypt() {
-		let key = b"aa8c52e873e66f71";
+		let key = b"e0ca4c29d5504e8d";
 		let nonce = b"452b4dd698de";
 		let bytes = b"message";
 

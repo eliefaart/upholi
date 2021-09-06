@@ -9,7 +9,8 @@ class UpholiService {
 	private _client: wasm.UpholiClient | null;
 	private get client(): wasm.UpholiClient {
 		if (!this._client) {
-			this._client = new wasm.UpholiClient("http://localhost", "e0ca4c29d5504e8daa8c52e873e66f71");
+			//this._client = new wasm.UpholiClient("http://localhost", "e0ca4c29d5504e8daa8c52e873e66f71");
+			this._client = new wasm.UpholiClient("http://localhost", "e0ca4c29d5504e8d");
 		}
 		return this._client;
 	}

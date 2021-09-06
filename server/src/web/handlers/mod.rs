@@ -7,41 +7,12 @@ pub mod collections;
 mod requests {
 	use serde::Deserialize;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	#[derive(Deserialize)]
 	#[serde(rename_all = "camelCase")]
 	pub struct OauthCallback {
 		pub code: String,
 		pub state: String
 	}
-
-	// #[derive(Deserialize)]
-	// #[serde(rename_all = "camelCase")]
-	// pub struct CreateAlbum {
-	// 	pub title: String
-	// }
-
-	// #[derive(Deserialize, Debug)]
-	// #[serde(rename_all = "camelCase")]
-	// pub struct UpdateAlbum {
-	// 	pub title: Option<String>,
-	// 	pub thumb_photo_id: Option<String>,
-	// 	pub photos: Option<Vec<String>>,
-	// 	pub tags: Option<Vec<String>>
-	// }
 
 	#[derive(Deserialize)]
 	#[serde(rename_all = "camelCase")]
@@ -78,10 +49,7 @@ mod responses {
 	use serde::Serialize;
 	use crate::entities::album::Album;
 	use crate::entities::collection::Collection;
-	use crate::database::{DatabaseEntity, DatabaseEntityBatch};
-
-
-
+	use crate::database::DatabaseEntityBatch;
 
 	#[derive(Serialize)]
 	#[serde(rename_all = "camelCase")]
@@ -90,16 +58,6 @@ mod responses {
 		width: u16,
 		height: u16
 	}
-
-	// #[derive(Serialize)]
-	// #[serde(rename_all = "camelCase")]
-	// pub struct ClientAlbum {
-	// 	pub id: String,
-	// 	pub title: String,
-	// 	pub thumb_photo: Option<PhotoSmall>,
-	// 	pub photos: Vec<PhotoSmall>,
-	// 	pub tags: Vec<String>
-	// }
 
 	#[derive(Serialize)]
 	#[serde(rename_all = "camelCase")]
@@ -124,34 +82,6 @@ mod responses {
 		pub require_password: bool,
 		pub token: String
 	}
-
-	// impl From<PhotoOld> for PhotoSmall {
-	// 	fn from(photo: PhotoOld) -> Self {
-	// 		Self {
-	// 			id: photo.id,
-	// 			width: photo.width as u16,
-	// 			height: photo.height as u16
-	// 		}
-	// 	}
-	// }
-
-	// impl From<Album> for ClientAlbum {
-	// 	fn from(album: Album) -> Self {
-	// 		let mut photo_ids: Vec<&str> = Vec::new();
-
-	// 		for id in album.photos.iter() {
-	// 			photo_ids.push(&id[..]);
-	// 		}
-
-	// 		Self {
-	// 			id: album.id,
-	// 			title: album.title,
-	// 			thumb_photo: None,
-	// 			photos: vec!{},
-	// 			tags: album.tags
-	// 		}
-	// 	}
-    // }
 
 	impl From<&Collection> for ClientCollection {
         fn from(collection: &Collection) -> Self {

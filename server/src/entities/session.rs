@@ -2,7 +2,7 @@ use serde::{Serialize, Deserialize};
 use chrono::prelude::*;
 use crate::database;
 use crate::database::{Database, DatabaseEntity};
-use crate::ids;
+use upholi_lib::ids::create_unique_id;
 use crate::error::*;
 
 /// A client session
@@ -14,40 +14,20 @@ pub struct Session {
 
 	/// List of tokens (not fixed IDs) of collections that this session is authenticated to access
 	pub authenticated_for_collection_tokens: Vec<String>,
-
-	/// Contains data related to an oauth login attempt
-	/// Such as: state id, PKCE tokens.
-	/// The value of this field will be None once authorization has completed
-	pub oauth: Option<OauthData>
-}
-
-/// Contains data related to an oauth login attempt
-#[derive(Debug, Serialize, Deserialize)]
-pub struct OauthData {
-	pub state: String,
-	pub pkce_verifier: String
 }
 
 impl Session {
 	pub fn new() -> Self {
 		Self {
-			id: ids::create_unique_id(),
+			id: create_unique_id(),
 			user_id: None,
 			created_on: Utc::now(),
-			authenticated_for_collection_tokens: vec!{},
-			oauth: None
+			authenticated_for_collection_tokens: vec!{}
 		}
 	}
 
 	pub fn set_user(&mut self, user_id: &str) {
 		self.user_id = Some(user_id.to_string());
-	}
-
-	pub fn set_oauth_data(&mut self, state: &str, pkce_verifier: &str) {
-		self.oauth = Some(OauthData{
-			state: state.to_string(),
-			pkce_verifier: pkce_verifier.to_string()
-		});
 	}
 }
 
@@ -91,20 +71,5 @@ mod tests {
 
 		assert!(session.user_id.is_some());
 		assert_eq!(session.user_id.unwrap(), USER_ID);
-	}
-
-	#[test]
-	fn set_oauth_data() {
-		const STATE: &str = "aaabbbccc";
-		const PKCE_VERIFIER: &str = "abcdef123456";
-
-		let mut session = Session::new();
-		session.set_oauth_data(STATE, PKCE_VERIFIER);
-
-		assert!(session.oauth.is_some());
-
-		let oauth = session.oauth.unwrap();
-		assert_eq!(oauth.state, STATE);
-		assert_eq!(oauth.pkce_verifier, PKCE_VERIFIER);
 	}
 }
