@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 pub mod result;
 pub mod http;
 pub mod ids;
+pub mod passwords;
 
 pub enum PhotoVariant {
 	Original,

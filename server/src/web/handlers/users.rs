@@ -1,11 +1,11 @@
 use actix_web::{HttpResponse, Responder, web};
 use upholi_lib::http::{request::{Login, Register}};
 
-use crate::{database::DatabaseEntity, entities::{session::Session, user::User}, web::{cookies::create_session_cookie, http::{create_internal_server_error_response, create_not_found_response, create_ok_response, get_session_or_create_new}}};
+use crate::{database::DatabaseEntity, entities::{session::Session, user::User}, web::{cookies::create_session_cookie, http::{create_internal_server_error_response, create_not_found_response, create_ok_response, create_unauthorized_response, get_session_or_create_new}}};
 
 pub async fn route_register_user(info: web::Json<Register>) -> impl Responder {
 	let info = info.into_inner();
-	match User::create(info.username, info.public_key).await {
+	match User::create(info.username, info.password, info.key).await {
 		Ok(_) => {
 			create_ok_response()
 		}
@@ -22,23 +22,28 @@ pub async fn route_login_user(session: Option<Session>, info: web::Json<Login>) 
 		Ok(user) => {
 			match user {
 				Some(user) => {
-					match get_session_or_create_new(session) {
-						Ok(mut session) => {
-							session.set_user(&user.id);
-							match session.update() {
-								Ok(_) => {
-									let mut response = create_ok_response();
-									let cookie = create_session_cookie(&session);
+					if user.password_valid(&info.password) {
+						match get_session_or_create_new(session) {
+							Ok(mut session) => {
+								session.set_user(&user.id);
+								match session.update() {
+									Ok(_) => {
+										let mut response = create_ok_response();
+										let cookie = create_session_cookie(&session);
 
-									match response.add_cookie(&cookie) {
-										Ok(_) => response,
-										Err(error) => create_internal_server_error_response(Some(Box::new(error)))
-									}
-								},
-								Err(error) => create_internal_server_error_response(Some(error))
-							}
-						},
-						Err(error) => create_internal_server_error_response(Some(error))
+										match response.add_cookie(&cookie) {
+											Ok(_) => response,
+											Err(error) => create_internal_server_error_response(Some(Box::new(error)))
+										}
+									},
+									Err(error) => create_internal_server_error_response(Some(error))
+								}
+							},
+							Err(error) => create_internal_server_error_response(Some(error))
+						}
+					}
+					else {
+						create_unauthorized_response()
 					}
 				},
 				None => create_not_found_response()

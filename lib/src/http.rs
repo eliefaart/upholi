@@ -29,7 +29,8 @@ pub mod request {
 	#[serde(rename_all = "camelCase")]
 	pub struct Register {
 		pub username: String,
-		pub public_key: String
+		pub password: String,
+		pub key: crate::EncryptedData,
 	}
 
 	#[derive(Deserialize, Serialize, Debug)]
@@ -37,7 +38,7 @@ pub mod request {
 	pub struct Login {
 		pub username: String,
 		/// Username encrypted with user's private key
-		pub challenge: String
+		pub password: String,
 	}
 }
 
@@ -49,7 +50,7 @@ pub mod response {
 	pub struct UserInfo {
 		pub id: String,
 		pub username: String,
-		pub public_key: String,
+		pub key: crate::EncryptedData
 	}
 
 	#[derive(Deserialize, Serialize, Debug)]

@@ -1,14 +1,12 @@
 use lazy_static::lazy_static;
 use settings::Settings;
 
-mod constants;
 mod error;
 mod database;
 mod storage;
 mod settings;
 mod web;
 mod entities;
-mod passwords;
 
 lazy_static! {
 	/// Global application settings
