@@ -3,8 +3,8 @@ use serde::{Serialize, Deserialize};
 use upholi_lib::EncryptedData;
 use upholi_lib::EncryptedShareKey;
 use upholi_lib::http::request::CreateAlbum;
+use upholi_lib::ids::create_unique_id;
 
-use crate::ids;
 use crate::database;
 use crate::database::*;
 use crate::error::*;
@@ -23,7 +23,7 @@ pub struct Album {
 impl From<CreateAlbum> for Album {
 	fn from(source: CreateAlbum) -> Self {
 		Self {
-			id: ids::create_unique_id(),
+			id: create_unique_id(),
 			user_id: String::new(),
 			key: source.key,
 			data: source.data,

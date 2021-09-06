@@ -24,7 +24,6 @@ bson = "1.2.0"
 rand = "0.7.3"
 bytes = "0.5.4"
 md5 = "0.7.0"
-uuid = { version = "0.8.1", features = ["v4"] }
 lazy_static = "1.4.0"
 rexif = "0.7.3"
 chrono = { version = "0.4.11", features = ["serde"] }

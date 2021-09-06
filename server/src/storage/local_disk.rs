@@ -1,6 +1,7 @@
 use std::{fs::File, io::prelude::*};
 use std::path::Path;
-use crate::{error::Result, ids::create_unique_id};
+use crate::{error::Result};
+use upholi_lib::ids::create_unique_id;
 
 pub struct LocalDiskStorageProvider {}
 

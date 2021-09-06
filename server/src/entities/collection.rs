@@ -1,9 +1,9 @@
 use crate::{entities::Session, passwords::verify_password_hash};
 use serde::{Serialize, Deserialize};
+use upholi_lib::ids::create_unique_id;
 
 use crate::database;
 use crate::database::{Database, DatabaseExt, DatabaseEntity, DatabaseUserEntity};
-use crate::ids;
 use crate::error::*;
 use crate::entities::AccessControl;
 
@@ -28,12 +28,12 @@ pub struct CollectionSharingOptions {
 impl Collection {
 	pub fn new(user_id: &str, title: &str) -> Self {
 		Self {
-			id: ids::create_unique_id(),
+			id: create_unique_id(),
 			user_id: user_id.to_string(),
 			title: title.to_string(),
 			albums: vec!{},
 			sharing: CollectionSharingOptions {
-				token: ids::create_unique_id(),
+				token: create_unique_id(),
 				password_hash: Some(String::new()),
 			}
 		}
@@ -50,7 +50,7 @@ impl Collection {
 
 	/// Rotate the token with which a collection may be accessed by clients other than the user that owns a collection
 	pub fn rotate_share_token(&mut self) {
-		self.sharing.token = crate::ids::create_unique_id();
+		self.sharing.token = create_unique_id();
 	}
 
 	/// Verify if given (unhashed) password matches the password set in the collection.
@@ -146,7 +146,6 @@ impl AccessControl for Collection {
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::ids::create_unique_id;
 
 	#[test]
 	fn view_collection_without_password() {

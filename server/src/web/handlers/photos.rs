@@ -22,13 +22,20 @@ pub async fn route_get_photos(user: User) -> impl Responder {
 }
 
 /// Get photo
-pub async fn route_get_photo(user: User, req: HttpRequest) -> impl Responder {
+pub async fn route_get_photo(session: Option<Session>, req: HttpRequest) -> impl Responder {
 	match req.match_info().get("photo_id") {
 		Some(photo_id) => {
 			match Photo::get(&photo_id) {
 				Ok(photo) => {
 					match photo {
-						Some(photo) => HttpResponse::Ok().json(photo),
+						Some(photo) =>{
+							if photo.can_view(&session) {
+								HttpResponse::Ok().json(photo)
+							}
+							else {
+								create_unauthorized_response()
+							}
+						},
 						None => create_not_found_response()
 					}
 				}

@@ -1,9 +1,10 @@
 use upholi_lib::http::request::UploadPhoto;
-use upholi_lib::{EncryptedData, EncryptedShareKey, http::*};
+use upholi_lib::{EncryptedData, EncryptedShareKey};
+use upholi_lib::ids::create_unique_id;
 use serde::{Deserialize, Serialize};
 
 use crate::database::Database;
-use crate::{error::*, ids};
+use crate::{error::*};
 use crate::{database::{self, DatabaseEntity, DatabaseEntityBatch, DatabaseUserEntity}, error::EntityError};
 
 use super::{AccessControl, session::Session};
@@ -33,7 +34,7 @@ pub struct Photo {
 impl From<UploadPhoto> for Photo {
 	fn from(source: UploadPhoto) -> Self {
 		Self {
-			id: ids::create_unique_id(),
+			id: create_unique_id(),
 			hash: source.hash,
 			user_id: String::new(),
 			width: source.width as i32,
