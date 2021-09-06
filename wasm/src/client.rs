@@ -5,6 +5,7 @@ use js_sys::{Array, JsString};
 use upholi_lib::http::response::{CreateAlbum, PhotoMinimal, UserInfo};
 use upholi_lib::{PhotoVariant, http::*};
 use upholi_lib::result::Result;
+use crate::encryption;
 use crate::entities::Entity;
 use crate::entities::album::{self, AlbumData, AlbumDetailed};
 use crate::entities::photo::{Photo, PhotoData};
@@ -370,12 +371,18 @@ struct UpholiClientHelper { }
 impl UpholiClientHelper {
 
 	pub async fn register(base_url: &str, username: &str, password: &str) -> Result<()> {
-		// derive public/private key pair from password
-		// register by sending username and public key
+
+		// This will be the master encryption key of the user.
+		// We encrypt it using a key derived from the user's password,
+		// and the encrypted master key is stored server-side.
+		let master_key = encryption::symmetric::generate_key();
+		let password_derived_key = encryption::symmetric::derive_key_from_string(password, username)?;
+		let key_encrypted = encryption::symmetric::encrypt_slice(&password_derived_key, &master_key)?;
 
 		let body = Register {
 			username: username.into(),
-			public_key: password.into()
+			password: password.into(),
+			key: key_encrypted.into()
 		};
 
 		let url = format!("{}/api/user/register", &base_url).to_owned();
@@ -395,7 +402,7 @@ impl UpholiClientHelper {
 
 		let body = Login {
 			username: username.into(),
-			challenge: password.into()
+			password: password.into()
 		};
 
 		let url = format!("{}/api/user/login", &base_url).to_owned();

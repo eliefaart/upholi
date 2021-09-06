@@ -43,6 +43,10 @@ pub mod symmetric {
 		aes128::generate_nonce()
 	}
 
+	pub fn derive_key_from_string(input: &str, salt: &str) -> Result<Vec<u8>> {
+		aes128::derive_key_from_string(input, salt)
+	}
+
 	/// Encrypt bytes
 	pub fn encrypt_slice(key: &[u8], data: &[u8]) -> Result<EncryptionResult> {
 		let nonce = generate_nonce();
