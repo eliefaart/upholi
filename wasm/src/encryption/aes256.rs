@@ -2,6 +2,15 @@ use upholi_lib::result::Result;
 use aes_gcm_siv::{Aes256GcmSiv, Key, Nonce};
 use aes_gcm_siv::aead::{Aead, NewAead};
 
+pub fn generate_key() -> Vec<u8> {
+	// aes_gcm_siv should be able to do this?
+	super::generate_string(32)
+}
+
+pub fn generate_nonce() -> Vec<u8> {
+	super::generate_string(12)
+}
+
 pub fn encrypt(key: &[u8], nonce: &[u8], bytes: &[u8]) -> Result<Vec<u8>> {
 	if nonce.len() != 12 {
 		Err(Box::from("Nonce must be 12 bytes"))
@@ -36,14 +45,6 @@ pub fn decrypt(key: &[u8], nonce: &[u8], bytes: &[u8]) -> Result<Vec<u8>> {
 			}
 		}
 	}
-}
-
-pub fn generate_key() -> Vec<u8> {
-	super::generate_key(32)
-}
-
-pub fn generate_nonce() -> Vec<u8> {
-	super::generate_nonce(12)
 }
 
 fn get_cipher(key: &[u8]) -> Result<Aes256GcmSiv, > {

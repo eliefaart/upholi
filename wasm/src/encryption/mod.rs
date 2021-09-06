@@ -27,13 +27,9 @@ impl Into<EncryptedData> for EncryptionResult {
 	}
 }
 
-fn generate_key(bytes: usize) -> Vec<u8> {
+fn generate_string(bytes: usize) -> Vec<u8> {
 	// TODO: proper random bytes generation
 	 uuid::Uuid::new_v4().to_simple().to_string()[0..bytes].as_bytes().to_vec()
-}
-
-fn generate_nonce(bytes: usize) -> Vec<u8> {
-	generate_key(bytes)
 }
 
 pub mod symmetric {
@@ -44,9 +40,13 @@ pub mod symmetric {
 		aes256::generate_key()
 	}
 
+	pub fn generate_nonce() -> Vec<u8> {
+		aes256::generate_nonce()
+	}
+
 	/// Encrypt bytes
 	pub fn encrypt_slice(key: &[u8], data: &[u8]) -> Result<EncryptionResult> {
-		let nonce = aes256::generate_nonce();
+		let nonce = generate_nonce();
 		encrypt_slice_with_nonce(key, &nonce, data)
 	}
 
@@ -85,8 +85,8 @@ pub mod symmetric {
 
 		#[test]
 		fn encrypt() {
-			let key = b"e0ca4c29d5504e8daa8c52e873e66f71";
 			let bytes = b"some kind of message";
+			let key = &generate_key();
 
 			let encrypted_data = encrypt_slice(key, bytes).unwrap();
 
@@ -96,8 +96,8 @@ pub mod symmetric {
 
 		#[test]
 		fn encrypt_decrypt() {
-			let key = b"e0ca4c29d5504e8daa8c52e873e66f71";
 			let bytes = b"some kind of message";
+			let key = &generate_key();
 
 			let encrypted_data = encrypt_slice(key, bytes).unwrap();
 			let decrypted_data = decrypt_data(key, &encrypted_data).unwrap();
@@ -108,23 +108,15 @@ pub mod symmetric {
 }
 
 pub mod assymetric {
-
+	// Don't need this so far
 }
 
 #[cfg(test)]
 mod tests {
 	#[test]
-	fn generate_key() {
+	fn generate_string() {
 		let length = 32;
-		let key = super::generate_key(length);
-
-		assert_eq!(key.len(), length);
-	}
-
-	#[test]
-	fn generate_nonce() {
-		let length = 15;
-		let key = super::generate_nonce(length);
+		let key = super::generate_string(length);
 
 		assert_eq!(key.len(), length);
 	}
