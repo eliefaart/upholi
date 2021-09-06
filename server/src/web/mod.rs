@@ -1,3 +1,6 @@
+use std::time::Instant;
+
+use actix_service::Service;
 use actix_web::{App, HttpServer};
 
 mod handlers;
@@ -17,31 +20,24 @@ pub async fn run_server() -> std::io::Result<()>{
 			// 	Cors::default()
 			// 	//Cors::new().finish()
 			// )
-			// .wrap_fn(|req, srv| {
-			// 	// Print all requests and responses to std-out
-			// 	let now = Instant::now();
-			// 	let query_id = format!("{method} {path}?{query_string}",
-			// 		method = req.method(),
-			// 		path = req.path(),
-			// 		query_string = req.query_string());
+			.wrap_fn(|req, srv| {
+				// Middleware that prints all requests and responses to std-out
+				let now = Instant::now();
+				let query_id = format!("{method} {path}?{query_string}",
+					method = req.method(),
+					path = req.path(),
+					query_string = req.query_string());
 
-			// 	println!(">> {}", query_id);
+				println!(">> {}", query_id);
 
-			// 	srv.call(req).map(move |res| {
-			// 		let elapsed_ms = now.elapsed().as_millis();
-			// 		println!("<< {} {}ms", query_id, elapsed_ms);
-			// 		res
-			// 	})
-			// })
-			// .service(
-			// 	// OAuth related routes
-			// 	actix_web::web::scope("/oauth")
-			// 		.route("/start", actix_web::web::get().to(handlers::oauth2::oauth_start_login))
-			// 		.route("/user/info", actix_web::web::get().to(handlers::oauth2::oauth_user_info))
-			// 		.route("/login", actix_web::web::get().to(handlers::oauth2::oauth_callback))
-			// 		//TODO:
-			// 		// .route("/logout", actix_web::web::get().to(handlers::logout))
-			// )
+				let request_future = srv.call(req);
+				async move {
+					let response = request_future.await?;
+					let elapsed_ms = now.elapsed().as_millis();
+					println!("<< {} {}ms", query_id, elapsed_ms);
+					Ok(response)
+				}
+			})
 			.service(
 				// API routes
 				actix_web::web::scope("/api")
