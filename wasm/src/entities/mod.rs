@@ -13,5 +13,5 @@ pub trait Entity {
 		where Self: std::marker::Sized;
 	fn get_id(&self) -> &str;
 	fn get_data(&self) -> &Self::TData;
-	fn into_js_value(&self) -> &Self::TJavaScript;
+	fn as_js_value(&self) -> &Self::TJavaScript;
 }

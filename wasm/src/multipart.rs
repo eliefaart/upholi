@@ -61,7 +61,7 @@ impl MultipartBuilder {
 		Multipart {
 			body,
 			content_length,
-			content_type: format!("multipart/form-data; boundary=MULTIPARTBINARY")
+			content_type: "multipart/form-data; boundary=MULTIPARTBINARY".to_string()
 		}
 	}
 }

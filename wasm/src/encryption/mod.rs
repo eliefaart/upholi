@@ -16,11 +16,12 @@ impl From<EncryptedData> for EncryptionResult {
 	}
 }
 
-impl Into<EncryptedData> for EncryptionResult {
-	fn into(self) -> EncryptedData {
-		EncryptedData {
-			nonce: self.nonce.clone(),
-			base64: base64::encode_config(&self.bytes, base64::STANDARD),
+
+impl From<EncryptionResult> for EncryptedData {
+	fn from(source: EncryptionResult) -> Self {
+		Self {
+			nonce: source.nonce.clone(),
+			base64: base64::encode_config(&source.bytes, base64::STANDARD),
 			format_version: 1
 		}
 	}

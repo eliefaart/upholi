@@ -1,5 +1,5 @@
 use reqwest::StatusCode;
-use upholi_lib::http::request::{CheckPhotoExists, Login, Register};
+use upholi_lib::http::request::{Login, Register};
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::future_to_promise;
 use js_sys::{Array, JsString};
@@ -86,26 +86,24 @@ impl UpholiClient {
 		future_to_promise(async move {
 			match UpholiClientHelper::register(&base_url, &username, &password).await {
 				Ok(_) => Ok(JsValue::NULL),
-				Err(error) => Err(String::from(format!("{}", error)).into())
+				Err(error) => Err(format!("{}", error).into())
 			}
 		})
 	}
 
 	#[wasm_bindgen(js_name = login)]
 	pub fn login(base_url: String, username: String, password: String) -> js_sys::Promise {
-		let base_url = base_url.to_owned();
-		let username = username.to_owned();
-		let password = password.to_owned();
+		let base_url = base_url;
 
 		future_to_promise(async move {
 			match UpholiClientHelper::login(&base_url, &username, &password).await {
 				Ok(key) => {
 					match String::from_utf8(key) {
 						Ok(key) => Ok(JsValue::from_str(&key)),
-						Err(error) => Err(String::from(format!("{}", error)).into())
+						Err(error) => Err(format!("{}", error).into())
 					}
 				},
-				Err(error) => Err(String::from(format!("{}", error)).into())
+				Err(error) => Err(format!("{}", error).into())
 			}
 		})
 	}
@@ -117,7 +115,7 @@ impl UpholiClient {
 		future_to_promise(async move {
 			match UpholiClientHelper::get_user_info(&base_url).await {
 				Ok(user_info) => Ok(JsValue::from_serde(&user_info).unwrap_throw()),
-				Err(error) => Err(String::from(format!("{}", error)).into())
+				Err(error) => Err(format!("{}", error).into())
 			}
 		})
 	}
@@ -140,7 +138,7 @@ impl UpholiClient {
 					let js_array_photos = JsValue::from(js_array_photos.iter().collect::<Array>());
 					Ok(js_array_photos)
 				},
-				Err(error) => Err(String::from(format!("{}", error)).into())
+				Err(error) => Err(format!("{}", error).into())
 			}
 		})
 	}
@@ -156,10 +154,10 @@ impl UpholiClient {
 				Ok(photo) => {
 					match serde_json::to_string(photo.get_data()) {
 						Ok(json) => Ok(JsValue::from(json)),
-						Err(error) => Err(String::from(format!("{}", error)).into())
+						Err(error) => Err(format!("{}", error).into())
 					}
 				},
-				Err(error) => Err(String::from(format!("{}", error)).into())
+				Err(error) => Err(format!("{}", error).into())
 			}
 		})
 	}
@@ -174,7 +172,7 @@ impl UpholiClient {
 			let upload_info = PhotoUploadInfo::try_from_slice(&bytes).unwrap_throw();
 			match UpholiClientHelper::upload_photo(&base_url, &private_key, &upload_info).await {
 				Ok(id) => Ok(JsValue::from_str(&id)),
-				Err(error) => Err(String::from(format!("{}", error)).into())
+				Err(error) => Err(format!("{}", error).into())
 			}
 		})
 	}
@@ -205,7 +203,7 @@ impl UpholiClient {
 		future_to_promise(async move {
 			match UpholiClientHelper::get_photo_base64(&base_url, &private_key, &id, photo_variant).await {
 				Ok(base64) => Ok(JsValue::from(base64)),
-				Err(error) => Err(String::from(format!("{}", error)).into())
+				Err(error) => Err(format!("{}", error).into())
 			}
 		})
 	}
@@ -236,7 +234,7 @@ impl UpholiClient {
 		future_to_promise(async move {
 			match UpholiClientHelper::get_photo_image_src(&base_url, &private_key, &id, photo_variant).await {
 				Ok(base64) => Ok(JsValue::from(base64)),
-				Err(error) => Err(String::from(format!("{}", error)).into())
+				Err(error) => Err(format!("{}", error).into())
 			}
 		})
 	}
@@ -249,7 +247,7 @@ impl UpholiClient {
 		future_to_promise(async move {
 			match UpholiClientHelper::delete_photo(&base_url,&id).await {
 				Ok(_) => Ok(JsValue::UNDEFINED),
-				Err(error) => Err(String::from(format!("{}", error)).into())
+				Err(error) => Err(format!("{}", error).into())
 			}
 		})
 	}
@@ -265,14 +263,14 @@ impl UpholiClient {
 					let mut js_array: Vec<JsValue> = Vec::new();
 
 					for album in albums {
-						let album = JsValue::from_serde(album.into_js_value()).unwrap_throw();
+						let album = JsValue::from_serde(album.as_js_value()).unwrap_throw();
 						js_array.push(album);
 					}
 
 					let js_array = JsValue::from(js_array.iter().collect::<Array>());
 					Ok(js_array)
 				},
-				Err(error) => Err(String::from(format!("{}", error)).into())
+				Err(error) => Err(format!("{}", error).into())
 			}
 		})
 	}
@@ -287,10 +285,10 @@ impl UpholiClient {
 				Ok(album) => {
 					match serde_json::to_string(&album) {
 						Ok(json) => Ok(JsValue::from(json)),
-						Err(error) => Err(String::from(format!("{}", error)).into())
+						Err(error) => Err(format!("{}", error).into())
 					}
 				},
-				Err(error) => Err(String::from(format!("{}", error)).into())
+				Err(error) => Err(format!("{}", error).into())
 			}
 		})
 	}
@@ -304,7 +302,7 @@ impl UpholiClient {
 			let initial_photo_ids = initial_photo_ids.iter().map(|id| id.into()).collect();
 			match UpholiClientHelper::create_album(&base_url, &private_key, &title, initial_photo_ids).await {
 				Ok(id) => Ok(JsValue::from(id)),
-				Err(error) => Err(String::from(format!("{}", error)).into())
+				Err(error) => Err(format!("{}", error).into())
 			}
 		})
 	}
@@ -316,7 +314,7 @@ impl UpholiClient {
 		future_to_promise(async move {
 			match UpholiClientHelper::delete_album(&base_url, &id).await {
 				Ok(_) => Ok(JsValue::NULL),
-				Err(error) => Err(String::from(format!("{}", error)).into())
+				Err(error) => Err(format!("{}", error).into())
 			}
 		})
 	}
@@ -330,7 +328,7 @@ impl UpholiClient {
 			let tags = tags.iter().map(|tag| tag.into()).collect();
 			match UpholiClientHelper::update_album_title_tags(&base_url, &private_key, &id, &title, tags).await {
 				Ok(_) => Ok(JsValue::NULL),
-				Err(error) => Err(String::from(format!("{}", error)).into())
+				Err(error) => Err(format!("{}", error).into())
 			}
 		})
 	}
@@ -343,7 +341,7 @@ impl UpholiClient {
 		future_to_promise(async move {
 			match UpholiClientHelper::update_album_cover(&base_url, &private_key, &id, &cover_photo_id).await {
 				Ok(_) => Ok(JsValue::NULL),
-				Err(error) => Err(String::from(format!("{}", error)).into())
+				Err(error) => Err(format!("{}", error).into())
 			}
 		})
 	}
@@ -354,10 +352,10 @@ impl UpholiClient {
 		let private_key = self.private_key.as_bytes().to_owned();
 
 		future_to_promise(async move {
-			let photo_ids = photos.iter().map(|photo| photo.into()).collect();
+			let photo_ids: Vec<String> = photos.iter().map(|photo| photo.into()).collect();
 			match UpholiClientHelper::add_photos_to_album(&base_url, &private_key, &id, &photo_ids).await {
 				Ok(_) => Ok(JsValue::NULL),
-				Err(error) => Err(String::from(format!("{}", error)).into())
+				Err(error) => Err(format!("{}", error).into())
 			}
 		})
 	}
@@ -368,10 +366,10 @@ impl UpholiClient {
 		let private_key = self.private_key.as_bytes().to_owned();
 
 		future_to_promise(async move {
-			let photo_ids = photos.iter().map(|photo| photo.into()).collect();
+			let photo_ids: Vec<String> = photos.iter().map(|photo| photo.into()).collect();
 			match UpholiClientHelper::remove_photos_from_album(&base_url, &private_key, &id, &photo_ids).await {
 				Ok(_) => Ok(JsValue::NULL),
-				Err(error) => Err(String::from(format!("{}", error)).into())
+				Err(error) => Err(format!("{}", error).into())
 			}
 		})
 	}
@@ -502,7 +500,7 @@ impl UpholiClientHelper {
 	}
 
 	pub async fn get_photos(base_url: &str) -> Result<Vec<response::PhotoMinimal>> {
-		let url = format!("{}/api/photos", &base_url).to_owned();
+		let url = format!("{}/api/photos", &base_url);
 		let response = reqwest::get(url).await?;
 		let photos = response.json::<Vec<response::PhotoMinimal>>().await?;
 
@@ -615,7 +613,7 @@ impl UpholiClientHelper {
 
 	async fn get_album_full(base_url: &str, private_key: &[u8], id: &str) -> Result<AlbumDetailed> {
 		let album = Self::get_album(base_url, private_key, id).await?;
-		let album = album.into_js_value();
+		let album = album.as_js_value();
 		let photos = Self::get_photos(base_url).await?;
 
 		let mut photos_in_album: Vec<PhotoMinimal> = vec!{};
@@ -707,7 +705,7 @@ impl UpholiClientHelper {
 		Self::update_album(base_url, private_key, id, &album_data).await
 	}
 
-	pub async fn add_photos_to_album(base_url: &str, private_key: &[u8], id: &str, photos: &Vec<String>) -> Result<()> {
+	pub async fn add_photos_to_album(base_url: &str, private_key: &[u8], id: &str, photos: &[String]) -> Result<()> {
 		let album = Self::get_album(base_url, private_key, id).await?;
 		let mut album_data = album.get_data().clone();
 		for id in photos {
@@ -719,7 +717,7 @@ impl UpholiClientHelper {
 		Self::update_album(base_url, private_key, id, &album_data).await
 	}
 
-	pub async fn remove_photos_from_album(base_url: &str, private_key: &[u8], id: &str, photos: &Vec<String>) -> Result<()> {
+	pub async fn remove_photos_from_album(base_url: &str, private_key: &[u8], id: &str, photos: &[String]) -> Result<()> {
 		let album = Self::get_album(base_url, private_key, id).await?;
 		let mut album_data = album.get_data().clone();
 		album_data.photos = album_data.photos.into_iter().filter(|id| !photos.contains(id)).collect();
@@ -759,7 +757,7 @@ impl UpholiClientHelper {
 	}
 
 	async fn get_encrypted_albums(base_url: &str) -> Result<Vec<response::Album>> {
-		let url = format!("{}/api/albums", &base_url).to_owned();
+		let url = format!("{}/api/albums", &base_url);
 		let response = reqwest::get(url).await?;
 		let albums = response.json::<Vec<response::Album>>().await?;
 		Ok(albums)

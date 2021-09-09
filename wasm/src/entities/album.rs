@@ -93,7 +93,7 @@ impl Entity for Album {
 		&self.decrypted.data
 	}
 
-	fn into_js_value(&self) -> &Self::TJavaScript {
+	fn as_js_value(&self) -> &Self::TJavaScript {
 		&self.js_value
 	}
 }
