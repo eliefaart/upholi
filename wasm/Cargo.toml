@@ -26,4 +26,4 @@ base64 = "0.13.0"
 # https://github.com/seanmonstar/reqwest/commit/e6a1a09f0904e06de4ff1317278798c4ed28af66
 reqwest = { git = "https://github.com/seanmonstar/reqwest", rev = "e6a1a09f0904e06de4ff1317278798c4ed28af66", features = ["json", "multipart"] }
 #reqwest = { version = "0.11.4", features = ["json", "multipart"] }
-md5 = "0.7.0"
+sha2 = "0.9.8"

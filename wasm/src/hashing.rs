@@ -1,6 +1,18 @@
-pub fn compute_md5_hash(bytes: &[u8]) -> String {
-	let mut md5_context = md5::Context::new();
-	md5_context.consume(&bytes);
-	let digest = md5_context.compute();
-	format!("{:?}", digest)
+use upholi_lib::result::Result;
+use core::fmt::Write;
+use sha2::{Sha256, Digest};
+
+pub fn compute_sha256_hash(bytes: &[u8]) -> Result<String> {
+	let mut hasher = Sha256::new();
+	hasher.update(bytes);
+	let hash = hasher.finalize();
+
+	// Convert hash bytes to hex string
+	let hash = hash.as_slice();
+	let mut hash_hex = String::with_capacity(2 * hash.len());
+	for byte in hash {
+		write!(hash_hex, "{:02x}", byte)?;
+	}
+
+	Ok(hash_hex)
 }

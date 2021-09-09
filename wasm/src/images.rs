@@ -18,7 +18,7 @@ pub struct Image {
 impl Image {
 
 	/// Process image from buffer
-	pub fn from_buffer(bytes: &[u8], exif_orientation: u8) -> Result<Self>  {
+	pub fn from_buffer(bytes: &[u8], exif_orientation: u8) -> Result<Self> {
 		let image = image::load_from_memory(&bytes[0..])?;
 		let (mut width, mut height) = Self::get_image_dimensions(&image);
 
@@ -50,7 +50,7 @@ impl Image {
 		}
 
 		Ok(Self {
-			hash: hashing::compute_md5_hash(&bytes),
+			hash: hashing::compute_sha256_hash(&bytes)?,
 			width,
 			height,
 			bytes_original: bytes.to_vec(),
