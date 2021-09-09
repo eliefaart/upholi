@@ -1,6 +1,6 @@
 import * as React from "react";
 import { AlbumNew } from "../models/Album";
-import AppStateContext from "../contexts/AppStateContext";
+import appStateContext from "../contexts/AppStateContext";
 import Album from "./Album";
 
 interface AlbumProps {
@@ -11,7 +11,7 @@ interface AlbumProps {
 }
 
 class Albums extends React.Component<AlbumProps> {
-	static contextType = AppStateContext;
+	static contextType = appStateContext;
 
 	constructor(props: AlbumProps) {
 		super(props);
@@ -37,5 +37,5 @@ class Albums extends React.Component<AlbumProps> {
 	}
 }
 
-Albums.contextType = AppStateContext;
+Albums.contextType = appStateContext;
 export default Albums;

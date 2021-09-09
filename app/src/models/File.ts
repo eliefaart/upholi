@@ -3,11 +3,14 @@ export enum FileUploadStatus {
 	Processing = "Processing",
 	Uploading = "Uploading",
 	Done = "Done",
-	Failed = "Failed"
+	Failed = "Failed",
+	Cancelled = "Cancelled"
 }
 
 export interface FileUploadProgress {
 	file: globalThis.File,
 	objectUrl: string,
-	status: FileUploadStatus
+	status: FileUploadStatus,
+	/// ID of photo, returned by server once file has been succesfully uploaded
+	uploadedPhotoId: string | null
 }

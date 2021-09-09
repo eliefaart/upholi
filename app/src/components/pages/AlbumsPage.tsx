@@ -2,7 +2,7 @@ import * as React from "react";
 import { PageBaseComponent, PageBaseComponentProps } from "./PageBaseComponent";
 import ContentContainer from "../ContentContainer";
 import ModalCreateAlbum from "../modals/ModalCreateAlbum";
-import AppStateContext from "../../contexts/AppStateContext";
+import appStateContext from "../../contexts/AppStateContext";
 import Album from "../Album";
 import { IconHashTag } from "../Icons";
 import upholiService from "../../services/UpholiService";
@@ -99,5 +99,5 @@ class AlbumsPage extends PageBaseComponent<AlbumsPageState> {
 	}
 }
 
-AlbumsPage.contextType = AppStateContext;
+AlbumsPage.contextType = appStateContext;
 export default AlbumsPage;

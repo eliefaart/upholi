@@ -1,6 +1,6 @@
 import * as React from "react";
 import Modal from "./Modal";
-import AppStateContext from "../../contexts/AppStateContext";
+import appStateContext from "../../contexts/AppStateContext";
 import ModalPropsBase from "../../models/ModalPropsBase";
 
 interface ModalCreateCollectionProps extends ModalPropsBase {
@@ -37,5 +37,5 @@ class ModalCreateCollection extends React.Component<ModalCreateCollectionProps> 
 	}
 }
 
-ModalCreateCollection.contextType = AppStateContext;
+ModalCreateCollection.contextType = appStateContext;
 export default ModalCreateCollection;

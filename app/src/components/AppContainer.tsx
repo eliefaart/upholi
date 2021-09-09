@@ -5,20 +5,20 @@ import { createBrowserHistory as createHistory } from "history";
 import { ToastContainer, Zoom } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import AppBody from "../components/AppBody";
-import AppStateContext from "../contexts/AppStateContext";
+import appStateContext from "../contexts/AppStateContext";
 
-interface AppContainerProps {}
+interface Props {}
 
-interface AppContainerState {
+interface State {
 	ready: boolean
 }
 
 /**
  * Highest component in hierarchy, initializes history/router, context, modals and toast messages.
  */
-class AppContainer extends React.Component<AppContainerProps, AppContainerState> {
+class AppContainer extends React.Component<Props, State> {
 
-	constructor(props: AppContainerProps) {
+	constructor(props: Props) {
 		super(props);
 
 		this.state = {
@@ -49,9 +49,9 @@ class AppContainer extends React.Component<AppContainerProps, AppContainerState>
 
 		return (
 			<Router history={this.context.history}>
-				<AppStateContext.Provider value={this.context}>
+				<appStateContext.Provider value={this.context}>
 					<AppBody/>
-				</AppStateContext.Provider>
+				</appStateContext.Provider>
 
 				<ToastContainer position="bottom-center"
 					autoClose={3000}
@@ -67,5 +67,5 @@ class AppContainer extends React.Component<AppContainerProps, AppContainerState>
 	}
 }
 
-AppContainer.contextType = AppStateContext;
+AppContainer.contextType = appStateContext;
 export default AppContainer;

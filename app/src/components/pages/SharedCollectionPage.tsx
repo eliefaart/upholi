@@ -2,7 +2,7 @@ import * as React from "react";
 import { PageBaseComponent, PageBaseComponentProps } from "./PageBaseComponent";
 import PhotoService from "../../services/PhotoService";
 import ContentContainer from "../ContentContainer";
-import AppStateContext from "../../contexts/AppStateContext";
+import appStateContext from "../../contexts/AppStateContext";
 import CollectionView from "../CollectionView";
 import Collection from "../../models/Collection";
 import InputPassword from "../InputPassword";
@@ -102,5 +102,5 @@ class SharedCollectionPage extends PageBaseComponent<CollectionPageBaseState> {
 	}
 }
 
-SharedCollectionPage.contextType = AppStateContext;
+SharedCollectionPage.contextType = appStateContext;
 export default SharedCollectionPage;

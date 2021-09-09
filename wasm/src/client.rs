@@ -2,7 +2,7 @@ use upholi_lib::http::request::{Login, Register};
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::future_to_promise;
 use js_sys::{Array, JsString};
-use upholi_lib::http::response::{CreateAlbum, PhotoMinimal, UserInfo};
+use upholi_lib::http::response::{CreateAlbum, PhotoMinimal, UploadPhoto, UserInfo};
 use upholi_lib::{PhotoVariant, http::*};
 use upholi_lib::result::Result;
 use crate::encryption;
@@ -193,7 +193,7 @@ impl UpholiClient {
 		future_to_promise(async move {
 			let upload_info = PhotoUploadInfo::try_from_slice(&bytes).unwrap_throw();
 			match UpholiClientHelper::upload_photo(&base_url, &private_key, &upload_info).await {
-				Ok(_) => Ok(JsValue::NULL),
+				Ok(id) => Ok(JsValue::from_str(&id)),
 				Err(error) => Err(String::from(format!("{}", error)).into())
 			}
 		})
@@ -464,7 +464,7 @@ impl UpholiClientHelper {
 		Ok(user_info)
 	}
 
-	pub async fn upload_photo(base_url: &str, private_key: &[u8], upload_info: &PhotoUploadInfo) -> Result<()> {
+	pub async fn upload_photo(base_url: &str, private_key: &[u8], upload_info: &PhotoUploadInfo) -> Result<String> {
 		let mut request_data = Self::get_upload_photo_request_data(&upload_info, &private_key)?;
 
 		// Decrypt photo key
@@ -491,12 +491,13 @@ impl UpholiClientHelper {
 		// Send request
 		let url = format!("{}/api/photo", &base_url).to_owned();
 		let client = reqwest::Client::new();
-		client.post(&url).body(multipart.body)
+		let response = client.post(&url).body(multipart.body)
 			.header("Content-Type", multipart.content_type)
 			.header("Content-Length", multipart.content_length)
 			.send().await?;
+		let respone: UploadPhoto = response.json().await?;
 
-		Ok(())
+		Ok(respone.id)
 	}
 
 	pub async fn get_photos(base_url: &str) -> Result<Vec<response::PhotoMinimal>> {

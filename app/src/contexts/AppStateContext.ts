@@ -4,13 +4,14 @@ import { History } from "history";
 interface AppState {
 	authenticated: boolean,
 	history: History | null,
-	headerActions: JSX.Element | null
+	headerActions: JSX.Element | null,
+
 }
 
-const AppStateContext: React.Context<AppState> = React.createContext<AppState>({
+const appStateContext: React.Context<AppState> = React.createContext<AppState>({
 	authenticated: false,
 	history: null,
 	headerActions: null
 });
 
-export default AppStateContext;
+export default appStateContext;

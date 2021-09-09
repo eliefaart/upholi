@@ -1,5 +1,5 @@
 import * as React from "react";
-import AppStateContext from "../contexts/AppStateContext";
+import appStateContext from "../contexts/AppStateContext";
 import { IconContextMenu } from "./Icons";
 
 interface HeaderProps {
@@ -70,5 +70,5 @@ class Header extends React.Component<HeaderProps, HeaderState> {
 	}
 }
 
-Header.contextType = AppStateContext;
+Header.contextType = appStateContext;
 export default Header;

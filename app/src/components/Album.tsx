@@ -1,5 +1,5 @@
 import * as React from "react";
-import AppStateContext from "../contexts/AppStateContext";
+import appStateContext from "../contexts/AppStateContext";
 import { AlbumNew } from "../models/Album";
 import upholiService from "../services/UpholiService";
 
@@ -14,7 +14,7 @@ interface State {
 }
 
 export default class Album extends React.Component<Props, State> {
-	static contextType = AppStateContext;
+	static contextType = appStateContext;
 
 	constructor(props: Props) {
 		super(props);

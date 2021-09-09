@@ -1,5 +1,5 @@
 import * as React from "react";
-import AppStateContext from "../../contexts/AppStateContext";
+import appStateContext from "../../contexts/AppStateContext";
 import upholiService from "../../services/UpholiService";
 import ContentContainer from "../ContentContainer";
 import { PageBaseComponent, PageBaseComponentProps } from "./PageBaseComponent";
@@ -63,5 +63,5 @@ class LoginPage extends PageBaseComponent<State> {
 	}
 }
 
-LoginPage.contextType = AppStateContext;
+LoginPage.contextType = appStateContext;
 export default LoginPage;

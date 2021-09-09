@@ -4,11 +4,14 @@ import "react-toastify/dist/ReactToastify.css";
 import LibraryPage from "./pages/LibraryPage";
 import AlbumsPage from "./pages/AlbumsPage";
 import AlbumPage from "./pages/AlbumPage";
-//import PhotoPage from "./pages/PhotoPage";
 import SharedPage from "./pages/SharedPage";
 import SharedCollectionPage from "./pages/SharedCollectionPage";
 import Header from "./Header";
 import LoginPage from "./pages/LoginPage";
+import UploadProgress from "./UploadProgress";
+import appStateContext from "../contexts/AppStateContext";
+import uploadHelper from "../helpers/UploadHelper";
+import { FileUploadProgress } from "../models/File";
 
 interface AppBodyProps { }
 
@@ -17,7 +20,8 @@ interface AppBodyState {
 		renderMenu: boolean,
 		actions: JSX.Element | null,
 		contextMenu: JSX.Element | null
-	}
+	},
+	uploadProgress: FileUploadProgress[]
 }
 
 /**
@@ -27,12 +31,21 @@ class AppBody extends React.Component<AppBodyProps, AppBodyState> {
 	constructor(props: AppBodyProps) {
 		super(props);
 
+		uploadHelper.subscribe({
+			update: (uploadProgress) => {
+				this.setState({
+					uploadProgress
+				});
+			}
+		});
+
 		this.state = {
 			header: {
 				renderMenu: false,
 				actions: null,
 				contextMenu: null
-			}
+			},
+			uploadProgress: []
 		};
 	}
 
@@ -77,10 +90,11 @@ class AppBody extends React.Component<AppBodyProps, AppBodyState> {
 				{fnRenderRoute("/album/:albumId", AlbumPage, true)}
 				{fnRenderRoute("/s/:token", SharedCollectionPage, false)}
 
-				{/* <ModalUploadProgress/> */}
+				<UploadProgress progress={this.state.uploadProgress}/>
 			</React.Fragment>
 		);
 	}
 }
 
+AppBody.contextType = appStateContext;
 export default AppBody;

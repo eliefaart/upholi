@@ -2,20 +2,19 @@ import * as React from "react";
 import { PageBaseComponent, PageBaseComponentProps } from "./PageBaseComponent";
 import PhotoGallerySelectable from "../PhotoGallerySelectable";
 import ContentContainer from "../ContentContainer";
-import AppStateContext from "../../contexts/AppStateContext";
+import appStateContext from "../../contexts/AppStateContext";
 import ModalPhotoDetail from "../modals/ModalPhotoDetail";
 import ModalConfirmation from "../modals/ModalConfirmation";
-import ModalUploadProgress from "../modals/ModalUploadProgress";
 import UploadButton from "../UploadButton";
 import { IconRemove, IconImage } from "../Icons";
 import { toast } from "react-toastify";
 import UrlHelper from "../../helpers/UrlHelper";
-import { FileUploadProgress } from "../../models/File";
 import GalleryPhoto from "../../models/GalleryPhoto";
 import ModalEditAlbum from "../modals/ModalEditAlbum";
 import Album from "../../models/Album";
 import AddPhotosToAlbumButton from "../Buttons/AddPhotosToAlbumButton";
 import upholiService from "../../services/UpholiService";
+import uploadHelper from "../../helpers/UploadHelper";
 
 const queryStringParamNamePhotoId = "photoId";
 
@@ -27,9 +26,7 @@ interface AlbumPageState {
 	openedPhotoId: string | null,
 	editAlbumOpen: boolean,
 	confirmDeleteAlbumOpen: boolean,
-	confirmRemovePhotosOpen: boolean,
-	uploadInProgress: boolean,
-	uploadFiles: FileUploadProgress[]
+	confirmRemovePhotosOpen: boolean
 }
 
 class AlbumPage extends PageBaseComponent<AlbumPageState> {
@@ -49,9 +46,7 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 			openedPhotoId: null,
 			editAlbumOpen: false,
 			confirmDeleteAlbumOpen: false,
-			confirmRemovePhotosOpen: false,
-			uploadInProgress: false,
-			uploadFiles: []
+			confirmRemovePhotosOpen: false
 		};
 	}
 
@@ -109,7 +104,7 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 
 	refreshPhotos(): void {
 		upholiService.getAlbum(this.state.albumId)
-			.then((album) => {
+			.then(album => {
 				this.setState({
 					album,
 					galleryPhotos: album.photos.map((photo): GalleryPhoto => {
@@ -230,7 +225,20 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 	}
 
 	uploadFilesList (fileList: FileList): void {
-		console.warn("Todo: implement AlbumPage.uploadFilesList");
+		const fnOnUploadFinished = () => {
+			this.refreshPhotos();
+			toast.info("Upload finished.");
+		};
+
+		uploadHelper.uploadPhotos(fileList).then((queue) => {
+			if (this.state.album) {
+				const photoIds = queue
+					.map(file => file.uploadedPhotoId || "")
+					.filter(id => !!id);
+				upholiService.addPhotosToAlbum(this.state.album.id, photoIds)
+					.finally(fnOnUploadFinished);
+			}
+		});
 	}
 
 	render(): React.ReactNode {
@@ -284,13 +292,6 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 						confirmationText={this.state.selectedPhotoIds.length + " photos will be removed from album '" + this.state.album.title + "'."}
 						/>
 
-					<ModalUploadProgress
-						isOpen={this.state.uploadInProgress}
-						onRequestClose={() => this.setState({uploadInProgress: false})}
-						files={this.state.uploadFiles}
-						/>
-
-
 					{/* Hidden upload button triggered by the button in action bar. This allos me to write simpler CSS to style the action buttons. */}
 					<UploadButton className="hidden" onSubmit={(files) => this.uploadFilesList(files)}/>
 				</ContentContainer>
@@ -299,5 +300,5 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 	}
 }
 
-AlbumPage.contextType = AppStateContext;
+AlbumPage.contextType = appStateContext;
 export default AlbumPage;

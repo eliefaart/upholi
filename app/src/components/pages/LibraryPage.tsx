@@ -2,15 +2,13 @@ import * as React from "react";
 import { PageBaseComponent, PageBaseComponentProps } from "./PageBaseComponent";
 import PhotoGallerySelectable from "../PhotoGallerySelectable";
 import ContentContainer from "../ContentContainer";
-import AppStateContext from "../../contexts/AppStateContext";
+import appStateContext from "../../contexts/AppStateContext";
 import ModalPhotoDetail from "../modals/ModalPhotoDetail";
 import ModalConfirmation from "../modals/ModalConfirmation";
-import ModalUploadProgress from "../modals/ModalUploadProgress";
 import UploadButton from "../UploadButton";
 import { IconDelete } from "../Icons";
 import { toast } from "react-toastify";
 import UrlHelper from "../../helpers/UrlHelper";
-import { FileUploadProgress } from "../../models/File";
 import GalleryPhoto from "../../models/GalleryPhoto";
 import AddPhotosToAlbumButton from "../Buttons/AddPhotosToAlbumButton";
 import uploadHelper from "../../helpers/UploadHelper";
@@ -25,9 +23,7 @@ interface LibraryPageState {
 	selectedPhotoIds: string[],
 	openedPhotoId: string | null,
 	confirmDeletePhotosOpen: boolean,
-	albums: AlbumNew[],
-	uploadInProgress: boolean,
-	uploadFiles: FileUploadProgress[]
+	albums: AlbumNew[]
 }
 
 class LibraryPage extends PageBaseComponent<LibraryPageState> {
@@ -67,9 +63,7 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 			selectedPhotoIds: [],
 			openedPhotoId: null,
 			confirmDeletePhotosOpen: false,
-			albums: [],
-			uploadInProgress: false,
-			uploadFiles: []
+			albums: []
 		};
 	}
 
@@ -287,24 +281,11 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 
 	uploadFilesList(fileList: FileList): void {
 		const fnOnUploadFinished = () => {
-			this.setState(() => {
-				return {
-					uploadInProgress: false,
-					uploadFiles: []
-				};
-			});
 			this.refreshPhotos();
 			toast.info("Upload finished.");
 		};
 
-		uploadHelper.uploadPhotos(fileList, (progress) => {
-			this.setState(() => {
-				return {
-					uploadInProgress: true,
-					uploadFiles: progress
-				};
-			});
-		}).then(() => {
+		uploadHelper.uploadPhotos(fileList).then(() => {
 			fnOnUploadFinished();
 		});
 	}
@@ -329,12 +310,6 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 					confirmationText={this.state.selectedPhotoIds.length + " photos will be deleted."}
 					/>
 
-				<ModalUploadProgress
-					isOpen={this.state.uploadInProgress}
-					onRequestClose={() => this.setState({uploadInProgress: false})}
-					files={this.state.uploadFiles}
-					/>
-
 				{/* Hidden upload button triggered by the button in action bar. This allos me to write simpler CSS to style the action buttons. */}
 				<UploadButton className="hidden" onSubmit={(files) => this.uploadFilesList(files)}/>
 			</ContentContainer>
@@ -342,5 +317,5 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 	}
 }
 
-LibraryPage.contextType = AppStateContext;
+LibraryPage.contextType = appStateContext;
 export default LibraryPage;

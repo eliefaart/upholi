@@ -1,7 +1,7 @@
 import * as React from "react";
 import { PageBaseComponent, PageBaseComponentProps } from "./PageBaseComponent";
 import ContentContainer from "../ContentContainer";
-import AppStateContext from "../../contexts/AppStateContext";
+import appStateContext from "../../contexts/AppStateContext";
 import ModalCreateCollection from "../modals/ModalCreateCollection";
 import PhotoService from "../../services/PhotoService";
 import Collection from "../../models/Collection";
@@ -84,5 +84,5 @@ class SharedPage extends PageBaseComponent<SharedPageState> {
 	}
 }
 
-SharedPage.contextType = AppStateContext;
+SharedPage.contextType = appStateContext;
 export default SharedPage;

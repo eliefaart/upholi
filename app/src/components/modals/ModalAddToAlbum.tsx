@@ -1,6 +1,6 @@
 import * as React from "react";
 import Modal from "./Modal";
-import AppStateContext from "../../contexts/AppStateContext";
+import appStateContext from "../../contexts/AppStateContext";
 import AllUserAlbums from "../AllUserAlbums";
 import ModalPropsBase from "../../models/ModalPropsBase";
 import { AlbumNew } from "../../models/Album";
@@ -30,5 +30,5 @@ class ModalAddToAlbum extends React.Component<ModalAddToAlbumProps> {
 	}
 }
 
-ModalAddToAlbum.contextType = AppStateContext;
+ModalAddToAlbum.contextType = appStateContext;
 export default ModalAddToAlbum;

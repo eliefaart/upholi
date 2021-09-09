@@ -1,6 +1,6 @@
 import * as React from "react";
 import PhotoGallerySelectable from "../components/PhotoGallerySelectable";
-import AppStateContext from "../contexts/AppStateContext";
+import appStateContext from "../contexts/AppStateContext";
 import PhotoService from "../services/PhotoService";
 import ModalPhotoDetail from "./modals/ModalPhotoDetail";
 import UrlHelper from "../helpers/UrlHelper";
@@ -152,5 +152,5 @@ class CollectionView extends React.Component<CollectionViewProps, CollectionView
 	}
 }
 
-CollectionView.contextType = AppStateContext;
+CollectionView.contextType = appStateContext;
 export default CollectionView;

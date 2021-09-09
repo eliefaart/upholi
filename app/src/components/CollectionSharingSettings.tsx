@@ -1,5 +1,5 @@
 import * as React from "react";
-import AppStateContext from "../contexts/AppStateContext";
+import appStateContext from "../contexts/AppStateContext";
 import { IconCopy } from "./Icons";
 import { toast } from "react-toastify";
 import Switch from "react-switch";
@@ -181,5 +181,5 @@ class CollectionSharingSettings extends React.Component<Props, State> {
 	}
 }
 
-CollectionSharingSettings.contextType = AppStateContext;
+CollectionSharingSettings.contextType = appStateContext;
 export default CollectionSharingSettings;

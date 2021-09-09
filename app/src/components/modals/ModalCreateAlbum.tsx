@@ -1,6 +1,6 @@
 import * as React from "react";
 import Modal from "./Modal";
-import AppStateContext from "../../contexts/AppStateContext";
+import appStateContext from "../../contexts/AppStateContext";
 import { toast } from "react-toastify";
 import ModalPropsBase from "../../models/ModalPropsBase";
 import upholiService from "../../services/UpholiService";
@@ -52,5 +52,5 @@ class ModalCreateAlbum extends React.Component<ModalCreateAlbumProps> {
 	}
 }
 
-ModalCreateAlbum.contextType = AppStateContext;
+ModalCreateAlbum.contextType = appStateContext;
 export default ModalCreateAlbum;

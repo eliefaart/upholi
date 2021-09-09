@@ -1,5 +1,5 @@
 import * as React from "react";
-import AppStateContext from "../../contexts/AppStateContext";
+import appStateContext from "../../contexts/AppStateContext";
 
 export interface PageBaseComponentProps {
 	requiresAuthentication: boolean,
@@ -95,4 +95,4 @@ export class PageBaseComponent<TState> extends React.Component<PageBaseComponent
 	}
 }
 
-PageBaseComponent.contextType = AppStateContext;
+PageBaseComponent.contextType = appStateContext;
