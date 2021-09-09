@@ -1,7 +1,8 @@
 use actix_web::{web, HttpResponse, Responder};
 use serde::Serialize;
+use upholi_lib::passwords::hash_password;
 
-use crate::{database::{DatabaseEntity, DatabaseUserEntity}, passwords::hash_password, web::cookies::create_session_cookie};
+use crate::{database::{DatabaseEntity, DatabaseUserEntity}, web::cookies::create_session_cookie};
 use crate::web::http::*;
 use crate::entities::AccessControl;
 use crate::entities::user::User;
