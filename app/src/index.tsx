@@ -5,7 +5,7 @@ import "./skin/app.scss";
 
 import init from "wasm";
 
-init("dist/wasm.wasm").then(() => {
+init("/dist/wasm.wasm").then(() => {
 	// Render a page in container
 	const rootElement = document.getElementById("appRoot");
 	ReactDOM.render(<AppContainer/>, rootElement);
