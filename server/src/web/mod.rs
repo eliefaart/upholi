@@ -48,6 +48,7 @@ pub async fn run_server() -> std::io::Result<()>{
 					.route("/user/info", actix_web::web::get().to(handlers::users::route_user_info))
 
 					.route("/photos", actix_web::web::get().to(handlers::photos::route_get_photos))
+					.route("/photo", actix_web::web::head().to(handlers::photos::route_check_photo_exists))
 					.route("/photo", actix_web::web::post().to(handlers::photos::route_upload_photo))
 					.route("/photo/{photo_id}", actix_web::web::get().to(handlers::photos::route_get_photo))
 					.route("/photo/{photo_id}", actix_web::web::delete().to(handlers::photos::route_delete_photo))

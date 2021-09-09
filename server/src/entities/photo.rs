@@ -3,7 +3,7 @@ use upholi_lib::{EncryptedData, EncryptedShareKey};
 use upholi_lib::ids::create_unique_id;
 use serde::{Deserialize, Serialize};
 
-use crate::database::Database;
+use crate::database::{Database, DatabaseExt};
 use crate::{error::*};
 use crate::{database::{self, DatabaseEntity, DatabaseEntityBatch, DatabaseUserEntity}, error::EntityError};
 
@@ -46,6 +46,12 @@ impl From<UploadPhoto> for Photo {
 			preview_nonce: source.preview_nonce,
 			original_nonce: source.original_nonce,
 		}
+	}
+}
+
+impl Photo {
+	pub fn hash_exists_for_user(user_id: &str, hash: &str) -> Result<bool> {
+		database::get_database().photo_exists_for_user(user_id, hash)
 	}
 }
 

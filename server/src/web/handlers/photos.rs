@@ -1,7 +1,8 @@
 use crate::entities::photo::Photo;
 use crate::{entities::session::Session};
-use actix_web::{HttpRequest, HttpResponse, Responder};
+use actix_web::{HttpRequest, HttpResponse, Responder, web};
 use actix_multipart::Multipart;
+use upholi_lib::http::request::CheckPhotoExists;
 use upholi_lib::{PhotoVariant, http::*};
 
 use crate::error::*;
@@ -51,6 +52,21 @@ pub async fn route_delete_photo(user: User, req: HttpRequest) -> impl Responder 
 	let photo_id = req.match_info().get("photo_id").unwrap();
 
 	delete_photos(user.id, &[photo_id]).await
+}
+
+/// Check if a photo exists for user by hash
+pub async fn route_check_photo_exists(user: User, check: web::Query<CheckPhotoExists>) -> impl Responder {
+	match Photo::hash_exists_for_user(&user.id, &check.hash) {
+		Ok(exists) => {
+			if exists {
+				HttpResponse::NoContent().finish()
+			}
+			else {
+				HttpResponse::NotFound().finish()
+			}
+		},
+		Err(error) => create_internal_server_error_response(Some(error))
+	}
 }
 
 /// Uploads a photo

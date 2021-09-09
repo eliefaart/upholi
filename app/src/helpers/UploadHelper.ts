@@ -1,4 +1,4 @@
-import { FileUploadProgress, FileUploadStatus } from "../models/File";
+import { FileUploadProgress, FileUploadStatus, uploadFinishedStatusses } from "../models/File";
 import upholiService from "../services/UpholiService";
 
 interface FileUploadProgressObserver {
@@ -19,12 +19,7 @@ class UploadHelper {
 	 * Removes all completed items from the queue
 	 */
 	public clearQueue() {
-		const finishedStatusses = [
-			FileUploadStatus.Done,
-			FileUploadStatus.Failed,
-			FileUploadStatus.Cancelled
-		];
-		this.uploadQueue = this.uploadQueue.filter(item => finishedStatusses.indexOf(item.status) === -1);
+		this.uploadQueue = this.uploadQueue.filter(item => uploadFinishedStatusses.indexOf(item.status) === -1);
 		this.notifyObservers();
 	}
 
@@ -63,9 +58,12 @@ class UploadHelper {
 					const photoId = await upholiService.uploadPhoto(new Uint8Array(photoBytes));
 					queueItem.uploadedPhotoId = photoId;
 
-					this.updateQueueItemStatus(queueItem, FileUploadStatus.Done);
+					// Some 'magic'.. empty photoId means it was skipped because photo already exists
+					const finishedStatus = photoId ? FileUploadStatus.Done : FileUploadStatus.Exists;
+					this.updateQueueItemStatus(queueItem, finishedStatus);
 				}
-				catch {
+				catch (error) {
+					console.error(error);
 					this.updateQueueItemStatus(queueItem, FileUploadStatus.Failed);
 				}
 			}

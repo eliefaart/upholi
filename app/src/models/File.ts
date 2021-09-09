@@ -4,8 +4,16 @@ export enum FileUploadStatus {
 	Uploading = "Uploading",
 	Done = "Done",
 	Failed = "Failed",
-	Cancelled = "Cancelled"
+	Cancelled = "Cancelled",
+	Exists = "Exists"
 }
+
+export const uploadFinishedStatusses = [
+	FileUploadStatus.Done,
+	FileUploadStatus.Failed,
+	FileUploadStatus.Cancelled,
+	FileUploadStatus.Exists
+];
 
 export interface FileUploadProgress {
 	file: globalThis.File,

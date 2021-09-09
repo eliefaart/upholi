@@ -19,6 +19,12 @@ pub mod request {
 
 	#[derive(Deserialize, Serialize, Debug)]
 	#[serde(rename_all = "camelCase")]
+	pub struct CheckPhotoExists {
+		pub hash: String
+	}
+
+	#[derive(Deserialize, Serialize, Debug)]
+	#[serde(rename_all = "camelCase")]
 	pub struct CreateAlbum {
 		pub key: crate::EncryptedData,
 		pub data: crate::EncryptedData,

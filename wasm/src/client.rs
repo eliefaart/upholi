@@ -1,4 +1,5 @@
-use upholi_lib::http::request::{Login, Register};
+use reqwest::StatusCode;
+use upholi_lib::http::request::{CheckPhotoExists, Login, Register};
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::future_to_promise;
 use js_sys::{Array, JsString};
@@ -91,28 +92,7 @@ impl UpholiClient {
 	}
 
 	#[wasm_bindgen(js_name = login)]
-	pub fn login(&self, username: String, password: String) -> js_sys::Promise {
-		let base_url = self.base_url.to_owned();
-		let username = username.to_owned();
-		let password = password.to_owned();
-
-		future_to_promise(async move {
-			match UpholiClientHelper::login(&base_url, &username, &password).await {
-				Ok(key) => {
-					match String::from_utf8(key) {
-						Ok(key) => {
-							Ok(JsValue::from_str(&key))
-						},
-						Err(error) => Err(String::from(format!("{}", error)).into())
-					}
-				},
-				Err(error) => Err(String::from(format!("{}", error)).into())
-			}
-		})
-	}
-
-	#[wasm_bindgen(js_name = loginStatic)]
-	pub fn login_static(base_url: String, username: String, password: String) -> js_sys::Promise {
+	pub fn login(base_url: String, username: String, password: String) -> js_sys::Promise {
 		let base_url = base_url.to_owned();
 		let username = username.to_owned();
 		let password = password.to_owned();
@@ -467,37 +447,58 @@ impl UpholiClientHelper {
 	pub async fn upload_photo(base_url: &str, private_key: &[u8], upload_info: &PhotoUploadInfo) -> Result<String> {
 		let mut request_data = Self::get_upload_photo_request_data(&upload_info, &private_key)?;
 
-		// Decrypt photo key
-		let photo_key = crate::encryption::symmetric::decrypt_data_base64(private_key, &request_data.key)?;
+		let exists = Self::photo_exists(base_url, &request_data.hash).await?;
+		if exists {
+			// No error, just skipping upload.
+			Ok(String::new())
+		}
+		else {
+			// Decrypt photo key
+			let photo_key = crate::encryption::symmetric::decrypt_data_base64(private_key, &request_data.key)?;
 
-		// Encrypt photo bytes
-		let thumbnail_encrypted = crate::encryption::symmetric::encrypt_slice(&photo_key, &upload_info.bytes_thumbnail())?;
-		let preview_encrypted = crate::encryption::symmetric::encrypt_slice(&photo_key, &upload_info.bytes_preview())?;
-		let original_encrypted = crate::encryption::symmetric::encrypt_slice(&photo_key, &upload_info.bytes_original())?;
+			// Encrypt photo bytes
+			let thumbnail_encrypted = crate::encryption::symmetric::encrypt_slice(&photo_key, &upload_info.bytes_thumbnail())?;
+			let preview_encrypted = crate::encryption::symmetric::encrypt_slice(&photo_key, &upload_info.bytes_preview())?;
+			let original_encrypted = crate::encryption::symmetric::encrypt_slice(&photo_key, &upload_info.bytes_original())?;
 
-		// Store nonces in request data
-		request_data.thumbnail_nonce = thumbnail_encrypted.nonce;
-		request_data.preview_nonce = preview_encrypted.nonce;
-		request_data.original_nonce = original_encrypted.nonce;
+			// Store nonces in request data
+			request_data.thumbnail_nonce = thumbnail_encrypted.nonce;
+			request_data.preview_nonce = preview_encrypted.nonce;
+			request_data.original_nonce = original_encrypted.nonce;
 
-		// Prepare request body
-		let multipart = crate::multipart::MultipartBuilder::new()
-			.add_bytes("data", &serde_json::to_vec(&request_data)?)
-			.add_bytes("thumbnail", &thumbnail_encrypted.bytes)
-			.add_bytes("preview", &preview_encrypted.bytes)
-			.add_bytes("original", &original_encrypted.bytes)
-			.build();
+			// Prepare request body
+			let multipart = crate::multipart::MultipartBuilder::new()
+				.add_bytes("data", &serde_json::to_vec(&request_data)?)
+				.add_bytes("thumbnail", &thumbnail_encrypted.bytes)
+				.add_bytes("preview", &preview_encrypted.bytes)
+				.add_bytes("original", &original_encrypted.bytes)
+				.build();
 
-		// Send request
-		let url = format!("{}/api/photo", &base_url).to_owned();
+			// Send request
+			let url = format!("{}/api/photo", &base_url).to_owned();
+			let client = reqwest::Client::new();
+			let response = client.post(&url).body(multipart.body)
+				.header("Content-Type", multipart.content_type)
+				.header("Content-Length", multipart.content_length)
+				.send().await?;
+			let respone: UploadPhoto = response.json().await?;
+
+			Ok(respone.id)
+		}
+	}
+
+	/// Check if photo with hash already exists for current user
+	pub async fn photo_exists(base_url: &str, hash: &str) -> Result<bool> {
+		let url = format!("{}/api/photo?hash={}", &base_url, hash).to_owned();
+
 		let client = reqwest::Client::new();
-		let response = client.post(&url).body(multipart.body)
-			.header("Content-Type", multipart.content_type)
-			.header("Content-Length", multipart.content_length)
-			.send().await?;
-		let respone: UploadPhoto = response.json().await?;
+		let response = client.head(&url).send().await?;
 
-		Ok(respone.id)
+		match response.status() {
+			StatusCode::NO_CONTENT => Ok(true),
+			StatusCode::NOT_FOUND => Ok(false),
+			status_code => Err(Box::from(format!("Unexpected response code: {}", status_code)))
+		}
 	}
 
 	pub async fn get_photos(base_url: &str) -> Result<Vec<response::PhotoMinimal>> {
