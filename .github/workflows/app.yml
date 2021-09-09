@@ -26,7 +26,7 @@ jobs:
         cd ./wasm
         cargo install wasm-pack
         wasm-pack build --target web
-        ls
+        mkdir --parents ../app/wwwroot/dist/
         mv ./pkg/wasm_bg.wasm ../app/wwwroot/dist/wasm.wasm
 
     - name: Install packages
