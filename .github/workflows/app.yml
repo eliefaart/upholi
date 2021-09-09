@@ -21,6 +21,12 @@ jobs:
       with:
         node-version: 10.x
 
+    - name: Build WASM
+      run: |
+        cd ./wasm
+        wasm-pack build --target web
+        copy .\pkg\wasm_bg.wasm ..\app\wwwroot\dist\wasm.wasm
+
     - name: Install packages
       run: |
         cd ./app
