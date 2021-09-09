@@ -14,9 +14,6 @@ name = "upholi"
 # Possible values: Disk | Azure
 # Can also by set using env var HB_STORAGE_PROVIDER
 provider = "Azure"
-# 256bit encryption key used to encrypt all files
-# Can also by set using env var HB_STORAGE_ENCRYPTIONKEY
-encryption_key = ""
 # [Required if provider = "Disk"]
 # Path to directory where photos will be stored
 # Can also by set using env var HB_STORAGE_DIRECTORYPHOTOS
@@ -29,22 +26,3 @@ azure_storage_account_name = "upholi"
 # Master key of Azure Storage Account
 # Can also by set using env var HB_STORAGE_AZURESTORAGEACCOUNTKEY
 azure_storage_account_key = ""
-
-[[oauth_providers]]
-# Unique identifier to this OAuth provider
-provider_id = "github"
-# OAuth2 authorization url
-# Can also by set using env var HB_OAUTH_GITHUB_AUTHURL
-auth_url = "https://github.com/login/oauth/authorize"
-# OAuth2 token url
-# Can also by set using env var HB_OAUTH_GITHUB_TOKENURL
-token_url = "https://github.com/login/oauth/access_token"
-# Url from which information about the current use can be retreived using an oauth2 access token
-# Can also by set using env var HB_OAUTH_GITHUB_USERINFOURL
-userinfo_url = "https://api.github.com/user"
-# OAuth2 application client ID
-# Can also by set using env var HB_OAUTH_GITHUB_CLIENTID
-client_id = ""
-# OAuth2 application client secret
-# Can also by set using env var HB_OAUTH_GITHUB_CLIENTSECRET
-client_secret = ""

@@ -9,7 +9,6 @@ lazy_static! {
 	static ref STORAGE_PROVIDER: StorageProvider = match crate::SETTINGS.storage.provider {
 		crate::settings::StorageProvider::Disk => StorageProvider::Disk(local_disk::LocalDiskStorageProvider::new()),crate::settings::StorageProvider::Azure => StorageProvider::Azure(azure_storage::AzureStorageProvider::new())
 	};
-	static ref ENCRYPTION_KEY: &'static [u8] = crate::SETTINGS.storage.encryption_key.as_bytes();
 }
 
 enum StorageProvider {
