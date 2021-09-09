@@ -1,7 +1,5 @@
-use std::num::ParseIntError;
-
 use crate::result::Result;
-use pbkdf2::{Params, Pbkdf2, password_hash::{Ident, PasswordHash, PasswordHasher, PasswordVerifier, Salt, Output}};
+use pbkdf2::{Params, Pbkdf2, password_hash::{Ident, PasswordHash, PasswordHasher, PasswordVerifier, Salt}};
 
 pub const PASSWORD_HASH_ITERATIONS: u32 = 4096;
 pub const PASSWORD_HASH_LENGTH: usize = 64;
