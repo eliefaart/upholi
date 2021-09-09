@@ -74,10 +74,10 @@ class AppBody extends React.Component<AppBodyProps, AppBodyState> {
 				{fnRenderRoute("/register", LoginPage, false)}
 				{fnRenderRoute("/albums", AlbumsPage, true)}
 				{fnRenderRoute("/shared", SharedPage, true)}
-				{/* {fnRenderRoute("/photo/:photoId", PhotoPage, false)} */}
 				{fnRenderRoute("/album/:albumId", AlbumPage, true)}
-
 				{fnRenderRoute("/s/:token", SharedCollectionPage, false)}
+
+				{/* <ModalUploadProgress/> */}
 			</React.Fragment>
 		);
 	}

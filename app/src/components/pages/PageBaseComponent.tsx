@@ -48,7 +48,7 @@ export class PageBaseComponent<TState> extends React.Component<PageBaseComponent
 
 	componentDidMount(): void {
 		if (this.props.requiresAuthentication && !this.context.authenticated) {
-			document.location.pathname = "/login";
+			this.context.history.push("/login");
 		}
 
 		this.updateAllPageElement();

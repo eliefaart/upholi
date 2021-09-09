@@ -44,7 +44,10 @@ class LoginPage extends PageBaseComponent<State> {
 			const username = this.usernameInput.current.value;
 			const password = this.passwordInput.current.value;
 			upholiService.login(username, password)
-				.then(() => document.location.pathname = "/");
+				.then(() => {
+					this.context.authenticated = true;
+					this.context.history.push("/");
+				});
 		}
 	}
 
