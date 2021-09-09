@@ -73,6 +73,11 @@ impl UpholiClient {
 		}
 	}
 
+	#[wasm_bindgen(js_name = setPrivateKey)]
+	pub fn set_private_key(&mut self, private_key: String) {
+		self.private_key = private_key;
+	}
+
 	#[wasm_bindgen(js_name = register)]
 	pub fn register(&self, username: String, password: String) -> js_sys::Promise {
 		let base_url = self.base_url.to_owned();
@@ -88,10 +93,38 @@ impl UpholiClient {
 	#[wasm_bindgen(js_name = login)]
 	pub fn login(&self, username: String, password: String) -> js_sys::Promise {
 		let base_url = self.base_url.to_owned();
+		let username = username.to_owned();
+		let password = password.to_owned();
 
 		future_to_promise(async move {
 			match UpholiClientHelper::login(&base_url, &username, &password).await {
-				Ok(_) => Ok(JsValue::NULL),
+				Ok(key) => {
+					match String::from_utf8(key) {
+						Ok(key) => {
+							Ok(JsValue::from_str(&key))
+						},
+						Err(error) => Err(String::from(format!("{}", error)).into())
+					}
+				},
+				Err(error) => Err(String::from(format!("{}", error)).into())
+			}
+		})
+	}
+
+	#[wasm_bindgen(js_name = loginStatic)]
+	pub fn login_static(base_url: String, username: String, password: String) -> js_sys::Promise {
+		let base_url = base_url.to_owned();
+		let username = username.to_owned();
+		let password = password.to_owned();
+
+		future_to_promise(async move {
+			match UpholiClientHelper::login(&base_url, &username, &password).await {
+				Ok(key) => {
+					match String::from_utf8(key) {
+						Ok(key) => Ok(JsValue::from_str(&key)),
+						Err(error) => Err(String::from(format!("{}", error)).into())
+					}
+				},
 				Err(error) => Err(String::from(format!("{}", error)).into())
 			}
 		})
@@ -394,7 +427,8 @@ impl UpholiClientHelper {
 		Ok(())
 	}
 
-	pub async fn login(base_url: &str, username: &str, password: &str) -> Result<()> {
+	/// Returns the user's master encryption key when login was succesful
+	pub async fn login(base_url: &str, username: &str, password: &str) -> Result<Vec<u8>> {
 		// derive public/private key pair from password
 		// encrypt username with private key
 		// send encrypted username to server
@@ -407,11 +441,15 @@ impl UpholiClientHelper {
 
 		let url = format!("{}/api/user/login", &base_url).to_owned();
 		let client = reqwest::Client::new();
-		client.post(&url)
+		let response = client.post(&url)
 			.json(&body)
 			.send().await?;
+		let user: UserInfo = response.json().await?;
 
-		Ok(())
+		let password_derived_key = encryption::symmetric::derive_key_from_string(&password, &username)?;
+		let key = encryption::symmetric::decrypt_data_base64(&password_derived_key, &user.key)?;
+
+		Ok(key)
 	}
 
 	pub async fn get_user_info(base_url: &str) -> Result<UserInfo> {

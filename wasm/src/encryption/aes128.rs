@@ -17,7 +17,7 @@ pub fn generate_nonce() -> Vec<u8> {
 pub fn derive_key_from_string(input: &str, salt: &str) -> Result<Vec<u8>> {
 	let phc = hash_password_with_length(input, salt, KEY_LENGTH)?;
 	let hash = get_hash_from_phc(&phc)?;
-	Ok(hash.as_bytes().to_vec())
+	Ok(hash)
 }
 
 pub fn encrypt(key: &[u8], nonce: &[u8], bytes: &[u8]) -> Result<Vec<u8>> {

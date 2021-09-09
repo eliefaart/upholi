@@ -1,6 +1,7 @@
-use crate::{entities::Session, passwords::verify_password_hash};
+use crate::{entities::Session};
 use serde::{Serialize, Deserialize};
 use upholi_lib::ids::create_unique_id;
+use upholi_lib::passwords::verify_password_hash;
 
 use crate::database;
 use crate::database::{Database, DatabaseExt, DatabaseEntity, DatabaseUserEntity};

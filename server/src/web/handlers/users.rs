@@ -28,7 +28,7 @@ pub async fn route_login_user(session: Option<Session>, info: web::Json<Login>) 
 								session.set_user(&user.id);
 								match session.update() {
 									Ok(_) => {
-										let mut response = create_ok_response();
+										let mut response = HttpResponse::Ok().json(user);
 										let cookie = create_session_cookie(&session);
 
 										match response.add_cookie(&cookie) {

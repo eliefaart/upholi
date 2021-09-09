@@ -1,5 +1,7 @@
+use std::num::ParseIntError;
+
 use crate::result::Result;
-use pbkdf2::{Params, Pbkdf2, password_hash::{Ident, PasswordHash, PasswordHasher, PasswordVerifier, Salt}};
+use pbkdf2::{Params, Pbkdf2, password_hash::{Ident, PasswordHash, PasswordHasher, PasswordVerifier, Salt, Output}};
 
 pub const PASSWORD_HASH_ITERATIONS: u32 = 4096;
 pub const PASSWORD_HASH_LENGTH: usize = 64;
@@ -40,11 +42,12 @@ pub fn verify_password_hash(password: &str, phc_string: &str) -> bool {
 }
 
 /// Get the hash string of a full PHC string
-pub fn get_hash_from_phc(phc_string: &str) -> Result<String> {
+pub fn get_hash_from_phc(phc_string: &str) -> Result<Vec<u8>> {
 	match PasswordHash::new(phc_string) {
 		Ok(phc) => {
 			let hash = phc.hash.ok_or("PHC string missing hash")?;
-			Ok(hash.to_string())
+			let hash = hash.as_bytes().to_vec();
+			Ok(hash)
 		},
 		Err(error) => Err(Box::from(error.to_string()))
 	}
@@ -73,8 +76,6 @@ mod tests {
 
 		let phc = hash_password_with_length(password, salt, hash_length).unwrap();
 		let hash = get_hash_from_phc(&phc).unwrap();
-
-		println!("{}", &phc);
 
 		assert_eq!(hash.len(), hash_length);
 	}
