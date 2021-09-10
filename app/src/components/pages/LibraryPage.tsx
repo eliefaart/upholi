@@ -105,13 +105,14 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 
 	componentDidUpdate(prevProps: PageBaseComponentProps, prevState: LibraryPageState): void {
 		// Load the initial batch of photo thumbnails once all photo data has been fetched
-		if (prevState.photos.length === 0 && this.state.photos.length > 0) {
+		const anyPhotoLoaded = this.state.photos.some(p => !!p.src);
+		if (!anyPhotoLoaded) {
 			this.loadVisiblePhotos();
 
 			// Workaround:
 			// Call that function again after some time.
 			// This is because the Gallery component still seems to move and re-fit the photos a bit after its render function has completed,
-			// and I don't see any event for when it is fully finished rendering.
+			// and I don't see any event for when it has fully finished rendering.
 			setTimeout(() => this.loadVisiblePhotos(), 500);
 		}
 
