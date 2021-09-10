@@ -4,7 +4,7 @@ import ContentContainer from "../ContentContainer";
 import ModalCreateAlbum from "../modals/ModalCreateAlbum";
 import appStateContext from "../../contexts/AppStateContext";
 import Album from "../Album";
-import { IconHashTag } from "../Icons";
+import { IconCreate, IconHashTag } from "../Icons";
 import upholiService from "../../services/UpholiService";
 import { AlbumNew } from "../../models/Album";
 
@@ -36,8 +36,11 @@ class AlbumsPage extends PageBaseComponent<AlbumsPageState> {
 
 	getHeaderActions(): JSX.Element {
 		return <React.Fragment>
-			{<button onClick={() => this.onCreateAlbumClick()} title="Create album">
-				New album
+			{<button
+				className="iconOnly"
+				onClick={() => this.onCreateAlbumClick()}
+				title="Create album">
+				<IconCreate/>
 			</button>}
 		</React.Fragment>;
 	}

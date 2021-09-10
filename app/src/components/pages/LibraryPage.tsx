@@ -6,7 +6,7 @@ import appStateContext from "../../contexts/AppStateContext";
 import ModalPhotoDetail from "../modals/ModalPhotoDetail";
 import ModalConfirmation from "../modals/ModalConfirmation";
 import UploadButton from "../UploadButton";
-import { IconDelete } from "../Icons";
+import { IconDelete, IconUpload } from "../Icons";
 import { toast } from "react-toastify";
 import UrlHelper from "../../helpers/UrlHelper";
 import GalleryPhoto from "../../models/GalleryPhoto";
@@ -70,6 +70,7 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 	getHeaderActions(): JSX.Element | null {
 		return (<React.Fragment>
 			{this.state.selectedPhotoIds.length === 0 && <button
+				className="iconOnly"
 				onClick={() => {
 					const element = document.getElementById("select-photos");
 					if (element) {
@@ -77,7 +78,7 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 					}
 				}}
 				title="Upload photos">
-				Upload photos
+				<IconUpload/>
 			</button>}
 			<AddPhotosToAlbumButton
 				selectedPhotoIds={this.state.selectedPhotoIds}

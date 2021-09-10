@@ -113,7 +113,6 @@ class CollectionSharingSettings extends React.Component<Props, State> {
 
 		return <React.Fragment>
 
-
 			{/* URL */}
 			<div className="url">
 				<div className="copyUrl">

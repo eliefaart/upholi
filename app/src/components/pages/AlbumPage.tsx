@@ -6,7 +6,7 @@ import appStateContext from "../../contexts/AppStateContext";
 import ModalPhotoDetail from "../modals/ModalPhotoDetail";
 import ModalConfirmation from "../modals/ModalConfirmation";
 import UploadButton from "../UploadButton";
-import { IconRemove, IconImage } from "../Icons";
+import { IconRemove, IconImage, IconUpload, IconShare } from "../Icons";
 import { toast } from "react-toastify";
 import UrlHelper from "../../helpers/UrlHelper";
 import GalleryPhoto from "../../models/GalleryPhoto";
@@ -15,6 +15,7 @@ import Album from "../../models/Album";
 import AddPhotosToAlbumButton from "../Buttons/AddPhotosToAlbumButton";
 import upholiService from "../../services/UpholiService";
 import uploadHelper from "../../helpers/UploadHelper";
+import ModalSharingOptions, { SharingOptions } from "../modals/ModalSharingOptions";
 
 const queryStringParamNamePhotoId = "photoId";
 
@@ -25,6 +26,7 @@ interface AlbumPageState {
 	selectedPhotoIds: string[],
 	openedPhotoId: string | null,
 	editAlbumOpen: boolean,
+	sharingOptionsOpen: boolean,
 	confirmDeleteAlbumOpen: boolean,
 	confirmRemovePhotosOpen: boolean
 }
@@ -37,6 +39,7 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 		this.onEditAlbumClick = this.onEditAlbumClick.bind(this);
 		this.onDeleteAlbumClick = this.onDeleteAlbumClick.bind(this);
 		this.resetSelection = this.resetSelection.bind(this);
+		this.updateSharingOptions = this.updateSharingOptions.bind(this);
 
 		this.state = {
 			albumId: props.match.params.albumId,
@@ -45,6 +48,7 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 			selectedPhotoIds: [],
 			openedPhotoId: null,
 			editAlbumOpen: false,
+			sharingOptionsOpen: false,
 			confirmDeleteAlbumOpen: false,
 			confirmRemovePhotosOpen: false
 		};
@@ -62,6 +66,7 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 				<IconRemove/>
 			</button>}
 			{this.state.selectedPhotoIds.length === 0 && <button
+				className="iconOnly"
 				onClick={() => {
 					const selectPhotosElement = document.getElementById("select-photos");
 					if (selectPhotosElement) {
@@ -69,7 +74,13 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 					}
 				}}
 				title="Upload photos">
-				Upload photos
+					<IconUpload/>
+			</button>}
+			{this.state.selectedPhotoIds.length === 0 && <button
+				className="iconOnly"
+				onClick={() => this.setState({sharingOptionsOpen: true})}
+				title="Sharing options">
+					<IconShare/>
 			</button>}
 		</React.Fragment>;
 	}
@@ -241,6 +252,10 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 		});
 	}
 
+	updateSharingOptions(options: SharingOptions) {
+		console.log(options);
+	}
+
 	render(): React.ReactNode {
 		if (!this.state.album) {
 			return null;
@@ -268,6 +283,13 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 						photoId={this.state.openedPhotoId}
 						onRequestClose={() => this.context.history.push(document.location.pathname + "?" + UrlHelper.removeQueryStringParam(document.location.search, queryStringParamNamePhotoId))}
 					/>}
+
+					<ModalSharingOptions
+						isOpen={this.state.sharingOptionsOpen}
+						onOkButtonClick={() => null}
+						onRequestClose={() => this.setState({sharingOptionsOpen: false})}
+						onSharingOptionsUpdated={this.updateSharingOptions}
+						/>
 
 					<ModalEditAlbum
 						isOpen={this.state.editAlbumOpen}
