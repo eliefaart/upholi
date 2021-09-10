@@ -235,13 +235,14 @@ impl UpholiClient {
 	}
 
 	/// Permanently delete a photo
-	#[wasm_bindgen(js_name = deletePhoto)]
-	pub fn delete_photo(&self, id: String) -> js_sys::Promise {
+	#[wasm_bindgen(js_name = deletePhotos)]
+	pub fn delete_photos(&self, photo_ids: Box<[JsString]>) -> js_sys::Promise {
 		let private_key = self.private_key.as_bytes().to_owned();
 		let base_url = self.base_url.to_owned();
 
 		future_to_promise(async move {
-			match UpholiClientHelper::delete_photo(&base_url, &private_key, &id).await {
+			let photo_ids = photo_ids.iter().map(|id| id.into()).collect();
+			match UpholiClientHelper::delete_photos(&base_url, &private_key, &photo_ids).await {
 				Ok(_) => Ok(JsValue::UNDEFINED),
 				Err(error) => Err(format!("{}", error).into())
 			}
@@ -518,20 +519,22 @@ impl UpholiClientHelper {
 		Ok(encrypted_photo)
 	}
 
-	pub async fn delete_photo(base_url: &str, private_key: &[u8], id: &str) -> Result<()> {
-		// Remove photo from all albums it is part of
+	pub async fn delete_photos(base_url: &str, private_key: &[u8], ids: &Vec<String>) -> Result<()> {
+		// Remove photos from all albums they are part of
 		let albums = Self::get_albums(base_url, private_key).await?;
 		for album in albums {
 			let album_data = album.get_data();
-			if album_data.photos.contains(&String::from(id)) {
-				Self::remove_photos_from_album(base_url, private_key, album.get_id(), &[String::from(id)]).await?;
+			if album_data.photos.iter().any(|photo| ids.contains(photo)) {
+				Self::remove_photos_from_album(base_url, private_key, album.get_id(), ids).await?;
 			}
 		}
 
-		// Delete photo
-		let url = format!("{}/api/photo/{}", base_url, id);
-		let client = reqwest::Client::new();
-		client.delete(url).send().await?;
+		// Delete photos
+		for id in ids {
+			let url = format!("{}/api/photo/{}", base_url, id);
+			let client = reqwest::Client::new();
+			client.delete(url).send().await?;
+		}
 
 		Ok(())
 	}

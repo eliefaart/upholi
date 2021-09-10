@@ -138,8 +138,8 @@ class UpholiService {
 		return await this.client.getPhotoOriginalImageSrc(id);
 	}
 
-	async deletePhoto(id: string): Promise<void> {
-		return await this.client.deletePhoto(id);
+	async deletePhotos(ids: string[]): Promise<void> {
+		return await this.client.deletePhotos(ids);
 	}
 
 	async getAlbums(): Promise<AlbumNew[]> {

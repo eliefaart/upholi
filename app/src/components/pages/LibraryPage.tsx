@@ -226,15 +226,10 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 	}
 
 	deleteSelectedPhotos(): void {
-		const promises: Promise<void>[] = [];
-		for (const id of this.state.selectedPhotoIds) {
-			promises.push(upholiService.deletePhoto(id));
-		}
-
-		Promise.all(promises)
+		upholiService.deletePhotos(this.state.selectedPhotoIds)
 			.then(() => {
-				const remainingPhotos = this.state.photos.filter(p =>
-					this.state.selectedPhotoIds.indexOf(p.id) === -1);
+				const remainingPhotos = this.state.photos
+					.filter(p => this.state.selectedPhotoIds.indexOf(p.id) === -1);
 
 				this.setState({
 					photos: remainingPhotos,
