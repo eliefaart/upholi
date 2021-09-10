@@ -154,6 +154,8 @@ class UpholiService {
 				photos: album.photos
 			};
 
+			console.log(typed);
+
 			return typed;
 		});
 	}

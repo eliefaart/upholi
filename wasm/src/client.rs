@@ -74,11 +74,6 @@ impl UpholiClient {
 		}
 	}
 
-	#[wasm_bindgen(js_name = setPrivateKey)]
-	pub fn set_private_key(&mut self, private_key: String) {
-		self.private_key = private_key;
-	}
-
 	#[wasm_bindgen(js_name = register)]
 	pub fn register(&self, username: String, password: String) -> js_sys::Promise {
 		let base_url = self.base_url.to_owned();
@@ -242,10 +237,11 @@ impl UpholiClient {
 	/// Permanently delete a photo
 	#[wasm_bindgen(js_name = deletePhoto)]
 	pub fn delete_photo(&self, id: String) -> js_sys::Promise {
+		let private_key = self.private_key.as_bytes().to_owned();
 		let base_url = self.base_url.to_owned();
 
 		future_to_promise(async move {
-			match UpholiClientHelper::delete_photo(&base_url,&id).await {
+			match UpholiClientHelper::delete_photo(&base_url, &private_key, &id).await {
 				Ok(_) => Ok(JsValue::UNDEFINED),
 				Err(error) => Err(format!("{}", error).into())
 			}
@@ -522,7 +518,17 @@ impl UpholiClientHelper {
 		Ok(encrypted_photo)
 	}
 
-	pub async fn delete_photo(base_url: &str, id: &str) -> Result<()> {
+	pub async fn delete_photo(base_url: &str, private_key: &[u8], id: &str) -> Result<()> {
+		// Remove photo from all albums it is part of
+		let albums = Self::get_albums(base_url, private_key).await?;
+		for album in albums {
+			let album_data = album.get_data();
+			if album_data.photos.contains(&String::from(id)) {
+				Self::remove_photos_from_album(base_url, private_key, album.get_id(), &[String::from(id)]).await?;
+			}
+		}
+
+		// Delete photo
 		let url = format!("{}/api/photo/{}", base_url, id);
 		let client = reqwest::Client::new();
 		client.delete(url).send().await?;
@@ -717,10 +723,18 @@ impl UpholiClientHelper {
 		Self::update_album(base_url, private_key, id, &album_data).await
 	}
 
+	/// Remove given photo IDs from album.
+	/// Unsets the album's thumbnail if the current thumbnail is one of the photos to remove from album.
 	pub async fn remove_photos_from_album(base_url: &str, private_key: &[u8], id: &str, photos: &[String]) -> Result<()> {
 		let album = Self::get_album(base_url, private_key, id).await?;
 		let mut album_data = album.get_data().clone();
 		album_data.photos = album_data.photos.into_iter().filter(|id| !photos.contains(id)).collect();
+
+		if let Some(thumb_photo_id) = &album_data.thumbnail_photo_id {
+			if photos.contains(&thumb_photo_id) {
+				album_data.thumbnail_photo_id = None;
+			}
+		}
 
 		Self::update_album(base_url, private_key, id, &album_data).await
 	}
