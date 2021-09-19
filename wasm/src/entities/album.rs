@@ -1,12 +1,16 @@
+use std::ops::Deref;
+
 use serde::{Deserialize,Serialize};
 use upholi_lib::http::response::PhotoMinimal;
 use upholi_lib::{ShareKey, http::response};
 use upholi_lib::result::Result;
+use crate::encryption;
 use crate::encryption::symmetric::decrypt_data_base64;
 
 use super::Entity;
 
 pub struct Album {
+	source: response::Album,
 	decrypted: DecryptedAlbum,
 	js_value: JsAlbum
 }
@@ -49,6 +53,26 @@ pub struct AlbumDetailed {
 	pub thumbnail_photo: Option<PhotoMinimal>,
 }
 
+impl Album {
+	pub fn update_share_options(&self, shared: bool, password: &str) -> Result<()> {
+		let share_key = encryption::symmetric::derive_key_from_string(password, self.get_id())?;
+
+
+		// Ok...
+		// Photo. is encrypted with key k1 and nonce n1.
+		// Album. is encrypted with k2 and nonce n2.
+		//
+		// photo has shares array;
+		// - { id: "user:abc123",  data: { bytes: [enc.], nonce: sn1 } },		encrypted using user's key
+		// - { id: "album:xyz098", data: { bytes: [enc.], nonce: sn2 } },		encrypted using album's key
+		// 'enc.' = encrypted photo key bytes
+
+		//encrypted_share.
+
+		Ok(())
+	}
+}
+
 impl Entity for Album {
 	type TEncrypted = response::Album;
 	type TDecrypted = DecryptedAlbum;
@@ -80,6 +104,7 @@ impl Entity for Album {
 		};
 
 		Ok(Self {
+			source,
 			decrypted,
 			js_value
 		})

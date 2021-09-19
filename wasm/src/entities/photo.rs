@@ -100,13 +100,5 @@ impl Entity for Photo {
 
 	fn as_js_value(&self) -> &Self::TJavaScript {
 		&self.js_value
-		// &Self::TJavaScript {
-		// 	id: self.decrypted.id.clone(),
-		// 	hash: self.decrypted.data.hash.clone(),
-		// 	width: self.decrypted.data.width,
-		// 	height: self.decrypted.data.height,
-		// 	content_type: self.decrypted.data.content_type.clone(),
-		// 	exif: self.decrypted.data.exif.clone()
-		// }
 	}
 }

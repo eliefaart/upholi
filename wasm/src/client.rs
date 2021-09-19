@@ -370,6 +370,22 @@ impl UpholiClient {
 			}
 		})
 	}
+
+	#[wasm_bindgen(js_name = updateAlbumSharingOptions)]
+	pub fn update_album_sharing_options(&mut self, id: String, shared: bool, password: String) -> js_sys::Promise {
+		let base_url = self.base_url.to_owned();
+		let private_key = self.private_key.as_bytes().to_owned();
+
+		future_to_promise(async move {
+			unsafe {
+				crate::log(&format!("{}, {}", shared, password));
+				match UpholiClientHelper::update_album_sharing_options(&base_url, &private_key, &id, shared, &password).await {
+					Ok(_) => Ok(JsValue::NULL),
+					Err(error) => Err(format!("{}", error).into())
+				}
+			}
+		})
+	}
 }
 
 /// Helper functions for UpholiClient.
@@ -738,6 +754,16 @@ impl UpholiClientHelper {
 				album_data.thumbnail_photo_id = None;
 			}
 		}
+
+		Self::update_album(base_url, private_key, id, &album_data).await
+	}
+
+	/// Update an album's sharing options.
+	pub async fn update_album_sharing_options(base_url: &str, private_key: &[u8], id: &str, shared: bool, password: &str) -> Result<()> {
+		let album = Self::get_album(base_url, private_key, id).await?;
+		let mut album_data = album.get_data().clone();
+
+		album.update_share_options(shared, password)?;
 
 		Self::update_album(base_url, private_key, id, &album_data).await
 	}
