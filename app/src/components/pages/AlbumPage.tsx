@@ -15,7 +15,8 @@ import Album from "../../models/Album";
 import AddPhotosToAlbumButton from "../Buttons/AddPhotosToAlbumButton";
 import upholiService from "../../services/UpholiService";
 import uploadHelper from "../../helpers/UploadHelper";
-import ModalSharingOptions, { SharingOptions } from "../modals/ModalSharingOptions";
+import ModalSharingOptions from "../modals/ModalSharingOptions";
+import { SharingOptions } from "../../models/SharingOptions";
 
 const queryStringParamNamePhotoId = "photoId";
 
@@ -252,8 +253,13 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 		});
 	}
 
-	updateSharingOptions(options: SharingOptions) {
+	updateSharingOptions(options: SharingOptions): void {
 		console.log(options);
+
+		// derive key from password.
+		// create 'share' in album
+		// create 'share' in each album's photo
+		upholiService.updateAlbumSharingOptions(this.state.albumId, options);
 	}
 
 	render(): React.ReactNode {
@@ -285,6 +291,7 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 					/>}
 
 					<ModalSharingOptions
+						shareUrl={document.location.origin + "/s/" + "TODO"}
 						isOpen={this.state.sharingOptionsOpen}
 						onOkButtonClick={() => null}
 						onRequestClose={() => this.setState({sharingOptionsOpen: false})}

@@ -1,0 +1,8 @@
+.modalSharingOptions {
+	min-width: 600px;
+	.modalBody {
+		>*:not(button) {
+			width: 100%;
+		}
+	}
+}

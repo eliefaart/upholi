@@ -1,6 +1,7 @@
 import * as wasm from "wasm";
 import Album, { AlbumNew } from "../models/Album";
 import { Photo, PhotoMinimal } from "../models/Photo";
+import { SharingOptions } from "../models/SharingOptions";
 
 const LOCAL_STORAGE_KEY = "upholiService";
 
@@ -188,6 +189,10 @@ class UpholiService {
 
 	async removePhotosFromAlbum(id: string, photoIds: string[]): Promise<void> {
 		return this.client.removePhotosFromAlbum(id, photoIds);
+	}
+
+	async updateAlbumSharingOptions(id: string, options: SharingOptions): Promise<void> {
+		return this.client.updateAlbumSharingOptions(id, options.shared, options.password);
 	}
 }
 
