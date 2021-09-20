@@ -4,7 +4,7 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::future_to_promise;
 use js_sys::{Array, JsString};
 use upholi_lib::http::response::{CreateAlbum, PhotoMinimal, UploadPhoto, UserInfo};
-use upholi_lib::{PhotoVariant, http::*};
+use upholi_lib::{EncryptedData, EncryptedKeyInfo, PhotoVariant, http::*};
 use upholi_lib::result::Result;
 use crate::encryption;
 use crate::entities::Entity;
@@ -465,7 +465,8 @@ impl UpholiClientHelper {
 		}
 		else {
 			// Decrypt photo key
-			let photo_key = crate::encryption::symmetric::decrypt_data_base64(private_key, &request_data.key)?;
+			let owner_key = request_data.keys.iter().find(|key| key.name == crate::OWNER_KEY_NAME).ok_or("Owner key not found")?;
+			let photo_key = crate::encryption::symmetric::decrypt_data_base64(private_key, &owner_key.encrypted_key)?;
 
 			// Encrypt photo bytes
 			let thumbnail_encrypted = crate::encryption::symmetric::encrypt_slice(&photo_key, &upload_info.bytes_thumbnail())?;
@@ -564,7 +565,8 @@ impl UpholiClientHelper {
 
 		// Decrypt photo bytes
 		let photo = Self::get_photo_encrypted(base_url, id).await?;
-		let photo_key = crate::encryption::symmetric::decrypt_data_base64(private_key, &photo.key)?;
+		let owner_key = photo.keys.iter().find(|key| key.name == crate::OWNER_KEY_NAME).ok_or("Owner key not found")?;
+		let photo_key = crate::encryption::symmetric::decrypt_data_base64(private_key, &owner_key.encrypted_key)?;
 		let nonce = match photo_variant {
 			PhotoVariant::Thumbnail => photo.thumbnail_nonce.as_bytes(),
 			PhotoVariant::Preview => photo.preview_nonce.as_bytes(),
@@ -618,9 +620,17 @@ impl UpholiClientHelper {
 			hash: photo.image.hash.clone(),
 			width: photo.image.width,
 			height: photo.image.height,
-			key: photo_key_encrypt_result.into(),
 			data: data_encrypt_result.into(),
-			share_keys: vec!{},
+			keys: vec!{
+				EncryptedKeyInfo {
+					name: crate::OWNER_KEY_NAME.into(),
+					encrypted_key: EncryptedData {
+						base64: base64::encode_config(photo_key_encrypt_result.bytes, base64::STANDARD),
+						nonce: photo_key_encrypt_result.nonce,
+						format_version: 1
+					}
+				}
+			},
 			thumbnail_nonce: String::new(),
 			preview_nonce: String::new(),
 			original_nonce: String::new()
@@ -691,9 +701,17 @@ impl UpholiClientHelper {
 		let data_encrypt_result = crate::encryption::symmetric::encrypt_slice(&album_key, data_bytes)?;
 
 		let body = request::CreateAlbum {
-			key: album_key_encrypt_result.into(),
 			data: data_encrypt_result.into(),
-			share_keys: vec!{}
+			keys: vec!{
+				EncryptedKeyInfo {
+					name: crate::OWNER_KEY_NAME.into(),
+					encrypted_key: EncryptedData {
+						base64: base64::encode_config(album_key_encrypt_result.bytes, base64::STANDARD),
+						nonce: album_key_encrypt_result.nonce,
+						format_version: 1
+					}
+				}
+			}
 		};
 
 		let client = reqwest::Client::new();
@@ -770,16 +788,16 @@ impl UpholiClientHelper {
 
 	async fn update_album(base_url: &str, private_key: &[u8], id: &str, album: &AlbumData) -> Result<()> {
 		let encrypted_album = Self::get_encrypted_album(base_url, id).await?;
-		let album_key = crate::encryption::symmetric::decrypt_data_base64(private_key, &encrypted_album.key)?;
+		let owner_key = encrypted_album.keys.iter().find(|key| key.name == crate::OWNER_KEY_NAME).ok_or("Owner key not found")?;
+		let album_key = crate::encryption::symmetric::decrypt_data_base64(private_key, &owner_key.encrypted_key)?;
 
 		let data_json = serde_json::to_string(&album)?;
 		let data_bytes = data_json.as_bytes();
 		let data_encrypt_result = crate::encryption::symmetric::encrypt_slice(&album_key, data_bytes)?;
 
 		let updated_album = request::CreateAlbum {
-			key: encrypted_album.key,
 			data: data_encrypt_result.into(),
-			share_keys: encrypted_album.share_keys
+			keys: encrypted_album.keys
 		};
 
 		let url = format!("{}/api/album/{}", base_url, id).to_owned();

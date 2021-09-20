@@ -1,7 +1,7 @@
 use crate::entities::Session;
 use serde::{Serialize, Deserialize};
 use upholi_lib::EncryptedData;
-use upholi_lib::EncryptedShareKey;
+use upholi_lib::EncryptedKeyInfo;
 use upholi_lib::http::request::CreateAlbum;
 use upholi_lib::ids::create_unique_id;
 
@@ -15,9 +15,8 @@ use crate::entities::AccessControl;
 pub struct Album {
 	pub id: String,
 	pub user_id: String,
-	pub key: EncryptedData,
 	pub data: EncryptedData,
-	pub share_keys: Vec<EncryptedShareKey>
+	pub keys: Vec<EncryptedKeyInfo>
 }
 
 impl From<CreateAlbum> for Album {
@@ -25,9 +24,8 @@ impl From<CreateAlbum> for Album {
 		Self {
 			id: create_unique_id(),
 			user_id: String::new(),
-			key: source.key,
 			data: source.data,
-			share_keys: source.share_keys
+			keys: source.keys
 		}
 	}
 }

@@ -1,5 +1,5 @@
 use serde::{Deserialize,Serialize};
-use upholi_lib::{ShareKey, http::response};
+use upholi_lib::{KeyInfo, http::response};
 use upholi_lib::result::Result;
 use crate::encryption::symmetric::decrypt_data_base64;
 use crate::exif::Exif;
@@ -29,8 +29,7 @@ pub struct DecryptedPhoto {
 	pub width: i32,
 	pub height: i32,
 	pub data: PhotoData,
-	pub key: ShareKey,
-	pub share_keys: Vec<ShareKey>,
+	pub keys: Vec<KeyInfo>,
 	pub thumbnail_nonce: String,
 	pub preview_nonce: String,
 	pub original_nonce: String
@@ -54,7 +53,8 @@ impl Entity for Photo {
 	type TJavaScript = JsPhoto;
 
 	fn from_encrypted(source: Self::TEncrypted, private_key: &[u8]) -> Result<Self> {
-		let key = decrypt_data_base64(private_key, &source.key)?;
+		let owner_key = source.keys.iter().find(|key| key.name == crate::OWNER_KEY_NAME).ok_or("Owner key not found")?;
+		let key = decrypt_data_base64(private_key, &owner_key.encrypted_key)?;
 		let photo_data_json = decrypt_data_base64(&key, &source.data)?;
 		let photo_data: PhotoData = serde_json::from_slice(&photo_data_json)?;
 
@@ -77,11 +77,7 @@ impl Entity for Photo {
 			preview_nonce: source.preview_nonce,
 			original_nonce: source.original_nonce,
 			data: photo_data,
-			key: ShareKey {
-				id: String::new(),
-				key: String::new()
-			},
-			share_keys: vec!{}
+			keys: vec!{}
 		};
 
 		Ok(Self {

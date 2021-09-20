@@ -1,5 +1,5 @@
 use upholi_lib::http::request::UploadPhoto;
-use upholi_lib::{EncryptedData, EncryptedShareKey};
+use upholi_lib::{EncryptedData, EncryptedKeyInfo};
 use upholi_lib::ids::create_unique_id;
 use serde::{Deserialize, Serialize};
 
@@ -23,9 +23,7 @@ pub struct Photo {
 	pub height: i32,
 	/// Encrypted data, contains width, height, exif, etc
 	pub data: EncryptedData,
-	/// Key that all data and file bytes of this photo is encrypted with. This key is encrypted with the owner's private key.
-	pub key: EncryptedData,
-	pub share_keys: Vec<EncryptedShareKey>,
+	pub keys: Vec<EncryptedKeyInfo>,
 	pub thumbnail_nonce: String,
 	pub preview_nonce: String,
 	pub original_nonce: String
@@ -40,8 +38,7 @@ impl From<UploadPhoto> for Photo {
 			width: source.width as i32,
 			height: source.height as i32,
 			data: source.data,
-			key: source.key,
-			share_keys: source.share_keys,
+			keys: source.keys,
 			thumbnail_nonce: source.thumbnail_nonce,
 			preview_nonce: source.preview_nonce,
 			original_nonce: source.original_nonce,

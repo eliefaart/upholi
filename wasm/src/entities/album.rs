@@ -1,8 +1,6 @@
-use std::ops::Deref;
-
 use serde::{Deserialize,Serialize};
 use upholi_lib::http::response::PhotoMinimal;
-use upholi_lib::{ShareKey, http::response};
+use upholi_lib::{KeyInfo, http::response};
 use upholi_lib::result::Result;
 use crate::encryption;
 use crate::encryption::symmetric::decrypt_data_base64;
@@ -10,7 +8,6 @@ use crate::encryption::symmetric::decrypt_data_base64;
 use super::Entity;
 
 pub struct Album {
-	source: response::Album,
 	decrypted: DecryptedAlbum,
 	js_value: JsAlbum
 }
@@ -28,8 +25,7 @@ pub struct DecryptedAlbum {
 	pub id: String,
 	pub user_id: String,
 	pub data: AlbumData,
-	pub key: ShareKey,
-	pub share_keys: Vec<ShareKey>
+	pub keys: Vec<KeyInfo>
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -55,7 +51,8 @@ pub struct AlbumDetailed {
 
 impl Album {
 	pub fn update_share_options(&self, shared: bool, password: &str) -> Result<()> {
-		let share_key = encryption::symmetric::derive_key_from_string(password, self.get_id())?;
+		let key_name = format!("album:{}", &self.get_id());
+		let key = encryption::symmetric::derive_key_from_string(password, self.get_id())?;
 
 
 		// Ok...
@@ -80,7 +77,8 @@ impl Entity for Album {
 	type TJavaScript = JsAlbum;
 
 	fn from_encrypted(source: Self::TEncrypted, private_key: &[u8]) -> Result<Self> {
-		let key = decrypt_data_base64(private_key, &source.key)?;
+		let owner_key = source.keys.iter().find(|key| key.name == crate::OWNER_KEY_NAME).ok_or("Owner key not found")?;
+		let key = decrypt_data_base64(private_key, &owner_key.encrypted_key)?;
 		let album_data_json = decrypt_data_base64(&key, &source.data)?;
 		let album_data: AlbumData = serde_json::from_slice(&album_data_json)?;
 
@@ -96,15 +94,10 @@ impl Entity for Album {
 			id: source.id,
 			user_id: source.user_id,
 			data: album_data,
-			key: ShareKey {
-				id: String::new(),
-				key: String::new()
-			},
-			share_keys: vec!{}
+			keys: vec!{}
 		};
 
 		Ok(Self {
-			source,
 			decrypted,
 			js_value
 		})

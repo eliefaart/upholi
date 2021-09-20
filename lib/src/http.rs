@@ -7,11 +7,9 @@ pub mod request {
 		pub hash: String,
 		pub width: u32,
 		pub height: u32,
-		/// Key that all data and file bytes of this photo is encrypted with. This key is encrypted with the owner's private key.
-		pub key: crate::EncryptedData,
 		/// Encrypted data, contains width, height, exif, etc
 		pub data: crate::EncryptedData,
-		pub share_keys: Vec<crate::EncryptedShareKey>,
+		pub keys: Vec<crate::EncryptedKeyInfo>,
 		pub thumbnail_nonce: String,
 		pub preview_nonce: String,
 		pub original_nonce: String
@@ -26,9 +24,8 @@ pub mod request {
 	#[derive(Deserialize, Serialize, Debug)]
 	#[serde(rename_all = "camelCase")]
 	pub struct CreateAlbum {
-		pub key: crate::EncryptedData,
 		pub data: crate::EncryptedData,
-		pub share_keys: Vec<crate::EncryptedShareKey>
+		pub keys: Vec<crate::EncryptedKeyInfo>
 	}
 
 	#[derive(Deserialize, Serialize, Debug)]
@@ -80,8 +77,7 @@ pub mod response {
 		pub width: i32,
 		pub height: i32,
 		pub data: crate::EncryptedData,
-		pub key: crate::EncryptedData,
-		pub share_keys: Vec<crate::EncryptedShareKey>,
+		pub keys: Vec<crate::EncryptedKeyInfo>,
 		pub thumbnail_nonce: String,
 		pub preview_nonce: String,
 		pub original_nonce: String
@@ -100,9 +96,8 @@ pub mod response {
 	pub struct Album {
 		pub id: String,
 		pub user_id: String,
-		pub key: crate::EncryptedData,
 		pub data: crate::EncryptedData,
-		pub share_keys: Vec<crate::EncryptedShareKey>
+		pub keys: Vec<crate::EncryptedKeyInfo>
 	}
 
 	impl Clone for PhotoMinimal {

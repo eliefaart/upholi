@@ -33,17 +33,20 @@ impl Into<String> for &PhotoVariant {
 	}
 }
 
+/// A named encrypted encryption key
 #[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct EncryptedShareKey {
-	id: String,
-	key: EncryptedData
+pub struct EncryptedKeyInfo {
+	pub name: String,
+	pub encrypted_key: EncryptedData
 }
 
+/// A named encryption key encoded as base64.
 #[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct ShareKey {
-	pub id: String,
+pub struct KeyInfo {
+	pub name: String,
+	/// base64 of key bytes
 	pub key: String
 }
 
