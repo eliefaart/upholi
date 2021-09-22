@@ -6,11 +6,6 @@ use crate::exif::Exif;
 
 use super::Entity;
 
-pub struct Photo {
-	decrypted: DecryptedPhoto,
-	js_value: JsPhoto
-}
-
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PhotoData {
@@ -44,6 +39,11 @@ pub struct JsPhoto {
 	pub height: u32,
 	pub content_type: String,
 	pub exif: Exif
+}
+
+pub struct Photo {
+	decrypted: DecryptedPhoto,
+	js_value: JsPhoto
 }
 
 impl Entity for Photo {
@@ -88,6 +88,14 @@ impl Entity for Photo {
 
 	fn get_id(&self) -> &str {
 		&self.decrypted.id
+	}
+
+	fn get_data_mut(&mut self) -> &mut Self::TData {
+		&mut self.decrypted.data
+	}
+
+	fn get_decrypted(&self) -> &Self::TDecrypted {
+		&self.decrypted
 	}
 
 	fn get_data(&self) -> &Self::TData {

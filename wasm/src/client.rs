@@ -4,11 +4,11 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::future_to_promise;
 use js_sys::{Array, JsString};
 use upholi_lib::http::response::{CreateAlbum, PhotoMinimal, UploadPhoto, UserInfo};
-use upholi_lib::{EncryptedData, EncryptedKeyInfo, PhotoVariant, http::*};
+use upholi_lib::{EncryptedData, EncryptedKeyInfo, KeyInfo, PhotoVariant, http::*};
 use upholi_lib::result::Result;
 use crate::encryption;
 use crate::entities::Entity;
-use crate::entities::album::{self, AlbumData, AlbumDetailed};
+use crate::entities::album::{self, Album, AlbumData, AlbumDetailed};
 use crate::entities::photo::{Photo, PhotoData};
 use crate::images::Image;
 use crate::exif::Exif;
@@ -732,40 +732,44 @@ impl UpholiClientHelper {
 	}
 
 	pub async fn update_album_title_tags(base_url: &str, private_key: &[u8], id: &str, title: &str, tags: Vec<String>) -> Result<()> {
-		let album = Self::get_album(base_url, private_key, id).await?;
-		let mut album_data = album.get_data().clone();
+		let mut album = Self::get_album(base_url, private_key, id).await?;
+
+		let mut album_data = album.get_data_mut();
 		album_data.title = title.into();
 		album_data.tags = tags;
 
-		Self::update_album(base_url, private_key, id, &album_data).await
+		Self::update_album(base_url, id, &album).await
 	}
 
 	pub async fn update_album_cover(base_url: &str, private_key: &[u8], id: &str, thumbnail_photo_id: &str) -> Result<()> {
-		let album = Self::get_album(base_url, private_key, id).await?;
-		let mut album_data = album.get_data().clone();
+		let mut album = Self::get_album(base_url, private_key, id).await?;
+
+		let mut album_data = album.get_data_mut();
 		album_data.thumbnail_photo_id = Some(thumbnail_photo_id.into());
 
-		Self::update_album(base_url, private_key, id, &album_data).await
+		Self::update_album(base_url, id, &album).await
 	}
 
 	pub async fn add_photos_to_album(base_url: &str, private_key: &[u8], id: &str, photos: &[String]) -> Result<()> {
-		let album = Self::get_album(base_url, private_key, id).await?;
-		let mut album_data = album.get_data().clone();
+		let mut album = Self::get_album(base_url, private_key, id).await?;
+
+		let album_data = album.get_data_mut();
 		for id in photos {
 			if !album_data.photos.contains(&id) {
 				album_data.photos.push(id.to_owned());
 			}
 		}
 
-		Self::update_album(base_url, private_key, id, &album_data).await
+		Self::update_album(base_url, id, &album).await
 	}
 
 	/// Remove given photo IDs from album.
 	/// Unsets the album's thumbnail if the current thumbnail is one of the photos to remove from album.
 	pub async fn remove_photos_from_album(base_url: &str, private_key: &[u8], id: &str, photos: &[String]) -> Result<()> {
-		let album = Self::get_album(base_url, private_key, id).await?;
-		let mut album_data = album.get_data().clone();
-		album_data.photos = album_data.photos.into_iter().filter(|id| !photos.contains(id)).collect();
+		let mut album = Self::get_album(base_url, private_key, id).await?;
+
+		let mut album_data = album.get_data_mut();
+		album_data.photos.retain(|id| !photos.contains(id));
 
 		if let Some(thumb_photo_id) = &album_data.thumbnail_photo_id {
 			if photos.contains(&thumb_photo_id) {
@@ -773,48 +777,28 @@ impl UpholiClientHelper {
 			}
 		}
 
-		Self::update_album(base_url, private_key, id, &album_data).await
+		Self::update_album(base_url, id, &album).await
 	}
 
 	/// Update an album's sharing options.
 	pub async fn update_album_sharing_options(base_url: &str, private_key: &[u8], id: &str, shared: bool, password: &str) -> Result<()> {
-		let album = Self::get_album(base_url, private_key, id).await?;
-		let mut album_data = album.get_data().clone();
+		let mut album = Self::get_album(base_url, private_key, id).await?;
 
 		album.update_share_options(shared, password)?;
 
-		Self::update_album(base_url, private_key, id, &album_data).await
+		Self::update_album(base_url, id, &album).await
 	}
 
-	async fn update_album(base_url: &str, private_key: &[u8], id: &str, album: &AlbumData) -> Result<()> {
-		let encrypted_album = Self::get_encrypted_album(base_url, id).await?;
-		let owner_key = encrypted_album.keys.iter().find(|key| key.name == crate::OWNER_KEY_NAME).ok_or("Owner key not found")?;
-		let album_key = crate::encryption::symmetric::decrypt_data_base64(private_key, &owner_key.encrypted_key)?;
-
-		let data_json = serde_json::to_string(&album)?;
-		let data_bytes = data_json.as_bytes();
-		let data_encrypt_result = crate::encryption::symmetric::encrypt_slice(&album_key, data_bytes)?;
-
-		let updated_album = request::CreateAlbum {
-			data: data_encrypt_result.into(),
-			keys: encrypted_album.keys
-		};
+	async fn update_album(base_url: &str, id: &str, album: &Album) -> Result<()> {
+		let request_body = album.create_update_request_struct()?;
 
 		let url = format!("{}/api/album/{}", base_url, id).to_owned();
 		let client = reqwest::Client::new();
 		client.put(&url)
-			.json(&updated_album)
+			.json(&request_body)
 			.send().await?;
 
 		Ok(())
-	}
-
-	async fn get_encrypted_album(base_url: &str, id: &str) -> Result<response::Album> {
-		let albums = Self::get_encrypted_albums(base_url).await?;
-		let album = albums.into_iter()
-			.find(|album| album.id == id)
-			.ok_or("Album not found")?;
-		Ok(album)
 	}
 
 	async fn get_encrypted_albums(base_url: &str) -> Result<Vec<response::Album>> {

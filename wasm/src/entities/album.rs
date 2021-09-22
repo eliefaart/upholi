@@ -1,4 +1,6 @@
 use serde::{Deserialize,Serialize};
+use upholi_lib::{EncryptedData, EncryptedKeyInfo};
+use upholi_lib::http::request::CreateAlbum;
 use upholi_lib::http::response::PhotoMinimal;
 use upholi_lib::{KeyInfo, http::response};
 use upholi_lib::result::Result;
@@ -6,11 +8,6 @@ use crate::encryption;
 use crate::encryption::symmetric::decrypt_data_base64;
 
 use super::Entity;
-
-pub struct Album {
-	decrypted: DecryptedAlbum,
-	js_value: JsAlbum
-}
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -25,7 +22,6 @@ pub struct DecryptedAlbum {
 	pub id: String,
 	pub user_id: String,
 	pub data: AlbumData,
-	pub keys: Vec<KeyInfo>
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -49,24 +45,58 @@ pub struct AlbumDetailed {
 	pub thumbnail_photo: Option<PhotoMinimal>,
 }
 
+pub struct Album {
+	private_key: Vec<u8>,
+	decrypted: DecryptedAlbum,
+	keys: Vec<EncryptedKeyInfo>,
+	js_value: JsAlbum
+}
+
 impl Album {
-	pub fn update_share_options(&self, shared: bool, password: &str) -> Result<()> {
+	/// Creates/updates/removed the key for this album's public URL
+	pub fn update_share_options(&mut self, shared: bool, password: &str) -> Result<()> {
 		let key_name = format!("album:{}", &self.get_id());
-		let key = encryption::symmetric::derive_key_from_string(password, self.get_id())?;
 
+		// Remove any existing key
+		self.keys.retain(|key| key.name != key_name);
 
-		// Ok...
-		// Photo. is encrypted with key k1 and nonce n1.
-		// Album. is encrypted with k2 and nonce n2.
-		//
-		// photo has shares array;
-		// - { id: "user:abc123",  data: { bytes: [enc.], nonce: sn1 } },		encrypted using user's key
-		// - { id: "album:xyz098", data: { bytes: [enc.], nonce: sn2 } },		encrypted using album's key
-		// 'enc.' = encrypted photo key bytes
+		// Then add new/updated key if shared is true
+		if shared {
+			// Derive encryption key from password
+			let key = encryption::symmetric::derive_key_from_string(password, self.get_id())?;
 
-		//encrypted_share.
+			// Encrypt the album's key using the password-derived key
+			let owner_key = self.keys.iter().find(|key| key.name == crate::OWNER_KEY_NAME).ok_or("Owner key not found")?;
+			let album_key = crate::encryption::symmetric::decrypt_data_base64(&self.private_key, &owner_key.encrypted_key)?;
+			let key_encrypt_result = crate::encryption::symmetric::encrypt_slice(&key, &album_key)?;
+
+			let encrypted_key = EncryptedKeyInfo {
+				name: key_name,
+				encrypted_key: EncryptedData {
+					base64: base64::encode_config(key_encrypt_result.bytes, base64::STANDARD),
+					nonce: key_encrypt_result.nonce,
+					format_version: 1
+				}
+			};
+
+			self.keys.push(encrypted_key);
+		}
 
 		Ok(())
+	}
+
+	pub fn create_update_request_struct(&self) -> Result<CreateAlbum> {
+		let owner_key = self.keys.iter().find(|key| key.name == crate::OWNER_KEY_NAME).ok_or("Owner key not found")?;
+		let album_key = crate::encryption::symmetric::decrypt_data_base64(&self.private_key, &owner_key.encrypted_key)?;
+
+		let data_json = serde_json::to_string(&self.decrypted.data)?;
+		let data_bytes = data_json.as_bytes();
+		let data_encrypt_result = crate::encryption::symmetric::encrypt_slice(&album_key, data_bytes)?;
+
+		Ok(CreateAlbum {
+			data: data_encrypt_result.into(),
+			keys: self.keys.clone()
+		})
 	}
 }
 
@@ -93,18 +123,27 @@ impl Entity for Album {
 		let decrypted = DecryptedAlbum {
 			id: source.id,
 			user_id: source.user_id,
-			data: album_data,
-			keys: vec!{}
+			data: album_data
 		};
 
 		Ok(Self {
+			private_key: private_key.to_vec(),
 			decrypted,
+			keys: source.keys,
 			js_value
 		})
 	}
 
 	fn get_id(&self) -> &str {
 		&self.decrypted.id
+	}
+
+	fn get_data_mut(&mut self) -> &mut Self::TData {
+		&mut self.decrypted.data
+	}
+
+	fn get_decrypted(&self) -> &Self::TDecrypted {
+		&self.decrypted
 	}
 
 	fn get_data(&self) -> &Self::TData {
