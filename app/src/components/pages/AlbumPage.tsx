@@ -254,8 +254,6 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 	}
 
 	updateSharingOptions(options: SharingOptions): void {
-		console.log(options);
-
 		// derive key from password.
 		// create 'share' in album
 		// create 'share' in each album's photo

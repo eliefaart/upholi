@@ -378,9 +378,13 @@ impl UpholiClient {
 
 		future_to_promise(async move {
 			unsafe {
-				crate::log(&format!("{}, {}", shared, password));
 				match UpholiClientHelper::update_album_sharing_options(&base_url, &private_key, &id, shared, &password).await {
-					Ok(_) => Ok(JsValue::NULL),
+					Ok(token) => {
+						Ok(match token {
+							Some(token) => JsValue::from_str(&token),
+							None => JsValue::NULL
+						})
+					},
 					Err(error) => Err(format!("{}", error).into())
 				}
 			}
@@ -781,12 +785,13 @@ impl UpholiClientHelper {
 	}
 
 	/// Update an album's sharing options.
-	pub async fn update_album_sharing_options(base_url: &str, private_key: &[u8], id: &str, shared: bool, password: &str) -> Result<()> {
+	pub async fn update_album_sharing_options(base_url: &str, private_key: &[u8], id: &str, shared: bool, password: &str) -> Result<Option<String>> {
 		let mut album = Self::get_album(base_url, private_key, id).await?;
 
-		album.update_share_options(shared, password)?;
+		let token = album.update_share_options(shared, password)?;
+		Self::update_album(base_url, id, &album).await?;
 
-		Self::update_album(base_url, id, &album).await
+		Ok(token)
 	}
 
 	async fn update_album(base_url: &str, id: &str, album: &Album) -> Result<()> {

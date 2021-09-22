@@ -166,6 +166,15 @@ class UpholiService {
 		return album;
 	}
 
+	// async getAlbumByShareToken(token: string, password: string): Promise<Album> {
+
+	// 	// derive key from password
+	// 	// decrypt token using key = base64 encoded string
+	// 	// Then GET /album/{album_id}/s/{base64_encoded_key_name}
+
+	// 	return null;
+	// }
+
 	async createAlbum(title: string, initialPhotoIds?: string[]): Promise<string> {
 		const photoIds = initialPhotoIds ?? [];
 		return this.client.createAlbum(title, photoIds);
@@ -191,8 +200,10 @@ class UpholiService {
 		return this.client.removePhotosFromAlbum(id, photoIds);
 	}
 
-	async updateAlbumSharingOptions(id: string, options: SharingOptions): Promise<void> {
-		return this.client.updateAlbumSharingOptions(id, options.shared, options.password);
+	async updateAlbumSharingOptions(id: string, options: SharingOptions): Promise<string> {
+		const token = await this.client.updateAlbumSharingOptions(id, options.shared, options.password) as string;
+		console.log(token);
+		return token;
 	}
 }
 

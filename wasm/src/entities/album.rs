@@ -54,8 +54,10 @@ pub struct Album {
 
 impl Album {
 	/// Creates/updates/removed the key for this album's public URL
-	pub fn update_share_options(&mut self, shared: bool, password: &str) -> Result<()> {
+	/// Returns token with which album can be retreived
+	pub fn update_share_options(&mut self, shared: bool, password: &str) -> Result<Option<String>> {
 		let key_name = format!("album:{}", &self.get_id());
+		let key_name = base64::encode_config(key_name, base64::STANDARD);
 
 		// Remove any existing key
 		self.keys.retain(|key| key.name != key_name);
@@ -71,7 +73,7 @@ impl Album {
 			let key_encrypt_result = crate::encryption::symmetric::encrypt_slice(&key, &album_key)?;
 
 			let encrypted_key = EncryptedKeyInfo {
-				name: key_name,
+				name: key_name.clone(),
 				encrypted_key: EncryptedData {
 					base64: base64::encode_config(key_encrypt_result.bytes, base64::STANDARD),
 					nonce: key_encrypt_result.nonce,
@@ -80,9 +82,11 @@ impl Album {
 			};
 
 			self.keys.push(encrypted_key);
+			Ok(Some(key_name))
 		}
-
-		Ok(())
+		else {
+			Ok(None)
+		}
 	}
 
 	pub fn create_update_request_struct(&self) -> Result<CreateAlbum> {
