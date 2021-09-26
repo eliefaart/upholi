@@ -12,7 +12,7 @@ interface State {
 	album: Album | null
 }
 
-class SharedCollectionPage extends PageBaseComponent<State> {
+class SharedAlbumPage extends PageBaseComponent<State> {
 	readonly collectionToken: string;
 
 	constructor(props: PageBaseComponentProps) {
@@ -44,7 +44,10 @@ class SharedCollectionPage extends PageBaseComponent<State> {
 					});
 				})
 				.catch(error => {
-					console.log(error);
+					if (error) {
+						console.log(error);
+					}
+
 					this.setState({
 						lastPasswordIncorrect: true
 					});
@@ -58,7 +61,6 @@ class SharedCollectionPage extends PageBaseComponent<State> {
 	}
 
 	render(): React.ReactNode {
-		console.log(this.state.album);
 		return (
 			<ContentContainer>
 				{/* Password input box */}
@@ -79,5 +81,5 @@ class SharedCollectionPage extends PageBaseComponent<State> {
 	}
 }
 
-SharedCollectionPage.contextType = appStateContext;
-export default SharedCollectionPage;
+SharedAlbumPage.contextType = appStateContext;
+export default SharedAlbumPage;

@@ -5,7 +5,7 @@ import LibraryPage from "./pages/LibraryPage";
 import AlbumsPage from "./pages/AlbumsPage";
 import AlbumPage from "./pages/AlbumPage";
 import SharedPage from "./pages/SharedPage";
-import SharedCollectionPage from "./pages/SharedCollectionPage";
+import SharedAlbumPage from "./pages/SharedAlbumPage";
 import Header from "./Header";
 import LoginPage from "./pages/LoginPage";
 import UploadProgress from "./UploadProgress";
@@ -88,7 +88,7 @@ class AppBody extends React.Component<AppBodyProps, AppBodyState> {
 				{fnRenderRoute("/albums", AlbumsPage, true)}
 				{fnRenderRoute("/shared", SharedPage, true)}
 				{fnRenderRoute("/album/:albumId", AlbumPage, true)}
-				{fnRenderRoute("/s/:token", SharedCollectionPage, false)}
+				{fnRenderRoute("/s/:token", SharedAlbumPage, false)}
 
 				<UploadProgress progress={this.state.uploadProgress}/>
 			</React.Fragment>
