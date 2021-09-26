@@ -1,31 +1,17 @@
 use reqwest::StatusCode;
 use upholi_lib::http::request::{Login, Register};
-use wasm_bindgen::prelude::*;
-use wasm_bindgen_futures::future_to_promise;
-use js_sys::{Array, JsString};
 use upholi_lib::http::response::{CreateAlbum, PhotoMinimal, UploadPhoto, UserInfo};
-use upholi_lib::{EncryptedData, EncryptedKeyInfo, KeyInfo, PhotoVariant, http::*};
+use upholi_lib::{EncryptedData, EncryptedKeyInfo, PhotoVariant, http::*};
 use upholi_lib::result::Result;
 use crate::encryption;
 use crate::entities::Entity;
-use crate::entities::album::{self, Album, AlbumData, AlbumDetailed};
+use crate::entities::album::{self, Album, AlbumDetailed};
 use crate::entities::photo::{Photo, PhotoData};
 use crate::images::Image;
 use crate::exif::Exif;
 
-
-/*
- * Info on async functions within struct implementations:
- * https://github.com/rustwasm/wasm-bindgen/issues/1858
- *
- * https://developer.mozilla.org/en-US/docs/WebAssembly/Rust_to_wasm
- *
- * One time needed in ../app/:
- * npm install --save ..\wasm\pkg\
- */
-
 /// Wrapper struct containing info about bytes to upload.
-struct PhotoUploadInfo {
+pub struct PhotoUploadInfo {
 	image: Image,
 	exif: Exif
 }
@@ -56,345 +42,9 @@ impl PhotoUploadInfo {
 	}
 }
 
-/// Client for Upholi server.
-#[wasm_bindgen]
-pub struct UpholiClient {
-	base_url: String,
-	/// The master private key of current session
-	private_key: String,
-}
-
-#[wasm_bindgen]
-impl UpholiClient {
-	#[wasm_bindgen(constructor)]
-	pub fn new(base_url: String, private_key: String) -> UpholiClient {
-		UpholiClient {
-			base_url,
-			private_key
-		}
-	}
-
-	#[wasm_bindgen(js_name = register)]
-	pub fn register(&self, username: String, password: String) -> js_sys::Promise {
-		let base_url = self.base_url.to_owned();
-
-		future_to_promise(async move {
-			match UpholiClientHelper::register(&base_url, &username, &password).await {
-				Ok(_) => Ok(JsValue::NULL),
-				Err(error) => Err(format!("{}", error).into())
-			}
-		})
-	}
-
-	#[wasm_bindgen(js_name = login)]
-	pub fn login(base_url: String, username: String, password: String) -> js_sys::Promise {
-		let base_url = base_url;
-
-		future_to_promise(async move {
-			match UpholiClientHelper::login(&base_url, &username, &password).await {
-				Ok(key) => {
-					match String::from_utf8(key) {
-						Ok(key) => Ok(JsValue::from_str(&key)),
-						Err(error) => Err(format!("{}", error).into())
-					}
-				},
-				Err(error) => Err(format!("{}", error).into())
-			}
-		})
-	}
-
-	#[wasm_bindgen(js_name = getUserInfo)]
-	pub fn get_user_info(&self) -> js_sys::Promise {
-		let base_url = self.base_url.to_owned();
-
-		future_to_promise(async move {
-			match UpholiClientHelper::get_user_info(&base_url).await {
-				Ok(user_info) => Ok(JsValue::from_serde(&user_info).unwrap_throw()),
-				Err(error) => Err(format!("{}", error).into())
-			}
-		})
-	}
-
-	/// Get all photos of current user.
-	#[wasm_bindgen(js_name = getPhotos)]
-	pub fn get_photos(&self) -> js_sys::Promise {
-		let base_url = self.base_url.to_owned();
-
-		future_to_promise(async move {
-			match UpholiClientHelper::get_photos(&base_url).await {
-				Ok(photos) => {
-					let mut js_array_photos: Vec<JsValue> = Vec::new();
-
-					for photo in photos {
-						let photo = JsValue::from_serde(&photo).unwrap_throw();
-						js_array_photos.push(photo);
-					}
-
-					let js_array_photos = JsValue::from(js_array_photos.iter().collect::<Array>());
-					Ok(js_array_photos)
-				},
-				Err(error) => Err(format!("{}", error).into())
-			}
-		})
-	}
-
-	/// Get photo data
-	#[wasm_bindgen(js_name = getPhoto)]
-	pub fn get_photo(&self, id: String) -> js_sys::Promise {
-		let private_key = self.private_key.as_bytes().to_owned();
-		let base_url = self.base_url.to_owned();
-
-		future_to_promise(async move {
-			match UpholiClientHelper::get_photo(&base_url, &private_key, &id).await {
-				Ok(photo) => {
-					match serde_json::to_string(photo.get_data()) {
-						Ok(json) => Ok(JsValue::from(json)),
-						Err(error) => Err(format!("{}", error).into())
-					}
-				},
-				Err(error) => Err(format!("{}", error).into())
-			}
-		})
-	}
-
-	/// Upload/Create a photo
-	#[wasm_bindgen(js_name = uploadPhoto)]
-	pub fn upload_photo(&self, bytes: Vec<u8>) -> js_sys::Promise {
-		let private_key = self.private_key.as_bytes().to_owned();
-		let base_url = self.base_url.to_owned();
-
-		future_to_promise(async move {
-			let upload_info = PhotoUploadInfo::try_from_slice(&bytes).unwrap_throw();
-			match UpholiClientHelper::upload_photo(&base_url, &private_key, &upload_info).await {
-				Ok(id) => Ok(JsValue::from_str(&id)),
-				Err(error) => Err(format!("{}", error).into())
-			}
-		})
-	}
-
-	/// Get a base64 string of a photo's thumbnail image
-	#[wasm_bindgen(js_name = getPhotoThumbnailBase64)]
-	pub fn get_photo_thumbnail_base64(&self, id: String) -> js_sys::Promise {
-		Self::get_photo_base64(&self, id, PhotoVariant::Thumbnail)
-	}
-
-	/// Get a base64 string of a photo's preview image
-	#[wasm_bindgen(js_name = getPhotoPreviewBase64)]
-	pub fn get_photo_preview_base64(&self, id: String) -> js_sys::Promise {
-		Self::get_photo_base64(&self, id, PhotoVariant::Preview)
-	}
-
-	/// Get a base64 string of photo's original file
-	#[wasm_bindgen(js_name = getPhotoOriginalBase64)]
-	pub fn get_photo_original_base64(&self, id: String) -> js_sys::Promise {
-		Self::get_photo_base64(&self, id, PhotoVariant::Original)
-	}
-
-	/// Get a base64 string of a photo variant
-	fn get_photo_base64(&self, id: String, photo_variant: PhotoVariant) -> js_sys::Promise {
-		let private_key = self.private_key.as_bytes().to_owned();
-		let base_url = self.base_url.to_owned();
-
-		future_to_promise(async move {
-			match UpholiClientHelper::get_photo_base64(&base_url, &private_key, &id, photo_variant).await {
-				Ok(base64) => Ok(JsValue::from(base64)),
-				Err(error) => Err(format!("{}", error).into())
-			}
-		})
-	}
-
-	/// Get a base64 string of a photo's thumbnail image
-	#[wasm_bindgen(js_name = getPhotoThumbnailImageSrc)]
-	pub fn get_photo_thumbnail_image_src(&self, id: String) -> js_sys::Promise {
-		Self::get_photo_image_src(&self, id, PhotoVariant::Thumbnail)
-	}
-
-	/// Get a base64 string of a photo's preview image
-	#[wasm_bindgen(js_name = getPhotoPreviewImageSrc)]
-	pub fn get_photo_preview_image_src(&self, id: String) -> js_sys::Promise {
-		Self::get_photo_image_src(&self, id, PhotoVariant::Preview)
-	}
-
-	/// Get a base64 string of photo's original file
-	#[wasm_bindgen(js_name = getPhotoOriginalImageSrc)]
-	pub fn get_photo_original_image_src(&self, id: String) -> js_sys::Promise {
-		Self::get_photo_image_src(&self, id, PhotoVariant::Original)
-	}
-
-	/// Get a string of a photo variant that can be used within an HTML image element's src attribute
-	fn get_photo_image_src(&self, id: String, photo_variant: PhotoVariant) -> js_sys::Promise {
-		let private_key = self.private_key.as_bytes().to_owned();
-		let base_url = self.base_url.to_owned();
-
-		future_to_promise(async move {
-			match UpholiClientHelper::get_photo_image_src(&base_url, &private_key, &id, photo_variant).await {
-				Ok(base64) => Ok(JsValue::from(base64)),
-				Err(error) => Err(format!("{}", error).into())
-			}
-		})
-	}
-
-	/// Permanently delete a photo
-	#[wasm_bindgen(js_name = deletePhotos)]
-	pub fn delete_photos(&self, photo_ids: Box<[JsString]>) -> js_sys::Promise {
-		let private_key = self.private_key.as_bytes().to_owned();
-		let base_url = self.base_url.to_owned();
-
-		future_to_promise(async move {
-			let photo_ids = photo_ids.iter().map(|id| id.into()).collect();
-			match UpholiClientHelper::delete_photos(&base_url, &private_key, &photo_ids).await {
-				Ok(_) => Ok(JsValue::UNDEFINED),
-				Err(error) => Err(format!("{}", error).into())
-			}
-		})
-	}
-
-	#[wasm_bindgen(js_name = getAlbums)]
-	pub fn get_albums(&mut self) -> js_sys::Promise {
-		let base_url = self.base_url.to_owned();
-		let private_key = self.private_key.as_bytes().to_owned();
-
-		future_to_promise(async move {
-			match UpholiClientHelper::get_albums(&base_url, &private_key).await {
-				Ok(albums) => {
-					let mut js_array: Vec<JsValue> = Vec::new();
-
-					for album in albums {
-						let album = JsValue::from_serde(album.as_js_value()).unwrap_throw();
-						js_array.push(album);
-					}
-
-					let js_array = JsValue::from(js_array.iter().collect::<Array>());
-					Ok(js_array)
-				},
-				Err(error) => Err(format!("{}", error).into())
-			}
-		})
-	}
-
-	#[wasm_bindgen(js_name = getAlbum)]
-	pub fn get_album(&mut self, id: String) -> js_sys::Promise {
-		let base_url = self.base_url.to_owned();
-		let private_key = self.private_key.as_bytes().to_owned();
-
-		future_to_promise(async move {
-			match UpholiClientHelper::get_album_full(&base_url, &private_key, &id).await {
-				Ok(album) => {
-					match serde_json::to_string(&album) {
-						Ok(json) => Ok(JsValue::from(json)),
-						Err(error) => Err(format!("{}", error).into())
-					}
-				},
-				Err(error) => Err(format!("{}", error).into())
-			}
-		})
-	}
-
-	#[wasm_bindgen(js_name = createAlbum)]
-	pub fn create_album(&mut self, title: String, initial_photo_ids: Box<[JsString]>) -> js_sys::Promise {
-		let base_url = self.base_url.to_owned();
-		let private_key = self.private_key.as_bytes().to_owned();
-
-		future_to_promise(async move {
-			let initial_photo_ids = initial_photo_ids.iter().map(|id| id.into()).collect();
-			match UpholiClientHelper::create_album(&base_url, &private_key, &title, initial_photo_ids).await {
-				Ok(id) => Ok(JsValue::from(id)),
-				Err(error) => Err(format!("{}", error).into())
-			}
-		})
-	}
-
-	#[wasm_bindgen(js_name = deleteAlbum)]
-	pub fn delete_album(&mut self, id: String) -> js_sys::Promise {
-		let base_url = self.base_url.to_owned();
-
-		future_to_promise(async move {
-			match UpholiClientHelper::delete_album(&base_url, &id).await {
-				Ok(_) => Ok(JsValue::NULL),
-				Err(error) => Err(format!("{}", error).into())
-			}
-		})
-	}
-
-	#[wasm_bindgen(js_name = updateAlbumTitleTags)]
-	pub fn update_album_title_tags(&mut self, id: String, title: String, tags: Box<[JsString]>) -> js_sys::Promise {
-		let base_url = self.base_url.to_owned();
-		let private_key = self.private_key.as_bytes().to_owned();
-
-		future_to_promise(async move {
-			let tags = tags.iter().map(|tag| tag.into()).collect();
-			match UpholiClientHelper::update_album_title_tags(&base_url, &private_key, &id, &title, tags).await {
-				Ok(_) => Ok(JsValue::NULL),
-				Err(error) => Err(format!("{}", error).into())
-			}
-		})
-	}
-
-	#[wasm_bindgen(js_name = updateAlbumCover)]
-	pub fn update_album_cover(&mut self, id: String, cover_photo_id: String) -> js_sys::Promise {
-		let base_url = self.base_url.to_owned();
-		let private_key = self.private_key.as_bytes().to_owned();
-
-		future_to_promise(async move {
-			match UpholiClientHelper::update_album_cover(&base_url, &private_key, &id, &cover_photo_id).await {
-				Ok(_) => Ok(JsValue::NULL),
-				Err(error) => Err(format!("{}", error).into())
-			}
-		})
-	}
-
-	#[wasm_bindgen(js_name = addPhotosToAlbum)]
-	pub fn add_photos_to_album(&mut self, id: String, photos: Box<[JsString]>) -> js_sys::Promise {
-		let base_url = self.base_url.to_owned();
-		let private_key = self.private_key.as_bytes().to_owned();
-
-		future_to_promise(async move {
-			let photo_ids: Vec<String> = photos.iter().map(|photo| photo.into()).collect();
-			match UpholiClientHelper::add_photos_to_album(&base_url, &private_key, &id, &photo_ids).await {
-				Ok(_) => Ok(JsValue::NULL),
-				Err(error) => Err(format!("{}", error).into())
-			}
-		})
-	}
-
-	#[wasm_bindgen(js_name = removePhotosFromAlbum)]
-	pub fn remove_photos_from_album(&mut self, id: String, photos: Box<[JsString]>) -> js_sys::Promise {
-		let base_url = self.base_url.to_owned();
-		let private_key = self.private_key.as_bytes().to_owned();
-
-		future_to_promise(async move {
-			let photo_ids: Vec<String> = photos.iter().map(|photo| photo.into()).collect();
-			match UpholiClientHelper::remove_photos_from_album(&base_url, &private_key, &id, &photo_ids).await {
-				Ok(_) => Ok(JsValue::NULL),
-				Err(error) => Err(format!("{}", error).into())
-			}
-		})
-	}
-
-	#[wasm_bindgen(js_name = updateAlbumSharingOptions)]
-	pub fn update_album_sharing_options(&mut self, id: String, shared: bool, password: String) -> js_sys::Promise {
-		let base_url = self.base_url.to_owned();
-		let private_key = self.private_key.as_bytes().to_owned();
-
-		future_to_promise(async move {
-			unsafe {
-				match UpholiClientHelper::update_album_sharing_options(&base_url, &private_key, &id, shared, &password).await {
-					Ok(token) => {
-						Ok(match token {
-							Some(token) => JsValue::from_str(&token),
-							None => JsValue::NULL
-						})
-					},
-					Err(error) => Err(format!("{}", error).into())
-				}
-			}
-		})
-	}
-}
-
 /// Helper functions for UpholiClient.
 /// This object is not exposed outside the wasm.
-struct UpholiClientHelper { }
+pub struct UpholiClientHelper { }
 
 impl UpholiClientHelper {
 
@@ -525,9 +175,9 @@ impl UpholiClientHelper {
 		Ok(photos)
 	}
 
-	pub async fn get_photo<'a>(base_url: &str, private_key: &[u8], id: &str) -> Result<Photo> {
+	pub async fn get_photo(base_url: &str, private_key: &[u8], id: &str) -> Result<Photo> {
 		let photo = UpholiClientHelper::get_photo_encrypted(base_url, id).await?;
-		let photo = Photo::from_encrypted(photo, private_key)?;
+		let photo = Photo::from_encrypted(photo, crate::OWNER_KEY_NAME, private_key)?;
 		Ok(photo)
 	}
 
@@ -560,7 +210,7 @@ impl UpholiClientHelper {
 		Ok(())
 	}
 
-	async fn get_photo_base64(base_url: &str, private_key: &[u8], id: &str, photo_variant: PhotoVariant) -> Result<String> {
+	pub async fn get_photo_base64(base_url: &str, private_key: &[u8], id: &str, photo_variant: PhotoVariant) -> Result<String> {
 		let url = format!("{}/api/photo/{}/{}", base_url, id, photo_variant.to_string());
 
 		// Get photo bytes
@@ -581,7 +231,7 @@ impl UpholiClientHelper {
 		Ok(base64::encode_config(&bytes, base64::STANDARD))
 	}
 
-	async fn get_photo_image_src(base_url: &str, private_key: &[u8], id: &str, photo_variant: PhotoVariant) -> Result<String> {
+	pub async fn get_photo_image_src(base_url: &str, private_key: &[u8], id: &str, photo_variant: PhotoVariant) -> Result<String> {
 		let photo = Self::get_photo(base_url, private_key, id).await?;
 		let photo_data = photo.get_data();
 		let base64 = Self::get_photo_base64(base_url, private_key, id, photo_variant).await?;
@@ -650,7 +300,7 @@ impl UpholiClientHelper {
 		Ok(album)
 	}
 
-	async fn get_album_full(base_url: &str, private_key: &[u8], id: &str) -> Result<AlbumDetailed> {
+	pub async fn get_album_full(base_url: &str, private_key: &[u8], id: &str) -> Result<AlbumDetailed> {
 		let album = Self::get_album(base_url, private_key, id).await?;
 		let album = album.as_js_value();
 		let photos = Self::get_photos(base_url).await?;
@@ -676,12 +326,46 @@ impl UpholiClientHelper {
 		Ok(album)
 	}
 
+	pub async fn get_album_from_token(base_url: &str, token: &str, password: &str) -> Result<AlbumDetailed> {
+		let (_share_type, id) = Self::parse_share_token(token)?;
+
+		// Share type can only be album for now
+		let url = format!("{}/api/album/{}", &base_url, &id);
+		let response = reqwest::get(url).await?;
+		let album = response.json::<response::Album>().await?;
+
+		let key = encryption::symmetric::derive_key_from_string(password, &id)?;
+		let album = album::Album::from_encrypted(album, &token, &key)?;
+		let album = album.as_js_value();
+
+		let album = AlbumDetailed {
+			id: album.id.clone(),
+			title: album.title.clone(),
+			tags: album.tags.clone(),
+			photos: vec!{},
+			thumbnail_photo: None
+		};
+
+		Ok(album)
+	}
+
+	/// Parse a share token, returns the type of share, and its ID
+	fn parse_share_token(token: &str) -> Result<(String, String)> {
+		let token = base64::decode_config(token, base64::STANDARD)?;
+		let token = String::from_utf8(token)?;
+		let parts: Vec<&str> = token.split(":").collect();
+		let token_type = parts[0].to_owned();
+		let id = parts[1].to_owned();
+
+		Ok((token_type, id))
+	}
+
 	pub async fn get_albums(base_url: &str, private_key: &[u8]) -> Result<Vec<album::Album>> {
 		let encrypted_albums = Self::get_encrypted_albums(base_url).await?;
 		let mut albums: Vec<album::Album> = vec!{};
 
 		for album in encrypted_albums {
-			let album = album::Album::from_encrypted(album, private_key)?;
+			let album = album::Album::from_encrypted(album, crate::OWNER_KEY_NAME, private_key)?;
 			albums.push(album);
 		}
 

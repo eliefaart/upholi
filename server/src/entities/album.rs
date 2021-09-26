@@ -94,19 +94,13 @@ impl AccessControl for Album {
 			return true;
 		}
 
-		// // Check if album is part of any collection that user has access to
-		// if let Ok(collections) = self.get_collections() {
-		// 	for collection in collections {
-		// 		if collection.can_view(session) {
-		// 			return true;
-		// 		}
-		// 	}
-		// }
-
-		false
+		// For now, just assume session can view if the album has been shared
+		// (it has been shared if it has more than 1 key)
+		// Will figure out proper authorization later..
+		self.keys.len() > 1
 	}
 
-    fn can_update(&self, session: &Option<Session>) -> bool {
+	fn can_update(&self, session: &Option<Session>) -> bool {
 		session_owns_album(self, session)
 	}
 }

@@ -110,9 +110,9 @@ impl Entity for Album {
 	type TData = AlbumData;
 	type TJavaScript = JsAlbum;
 
-	fn from_encrypted(source: Self::TEncrypted, private_key: &[u8]) -> Result<Self> {
-		let owner_key = source.keys.iter().find(|key| key.name == crate::OWNER_KEY_NAME).ok_or("Owner key not found")?;
-		let key = decrypt_data_base64(private_key, &owner_key.encrypted_key)?;
+	fn from_encrypted(source: Self::TEncrypted, key_name: &str, key: &[u8]) -> Result<Self> {
+		let owner_key = source.keys.iter().find(|key| key.name == key_name).ok_or(format!("Key with name {} not found", key_name))?;
+		let key = decrypt_data_base64(key, &owner_key.encrypted_key)?;
 		let album_data_json = decrypt_data_base64(&key, &source.data)?;
 		let album_data: AlbumData = serde_json::from_slice(&album_data_json)?;
 
@@ -131,7 +131,7 @@ impl Entity for Album {
 		};
 
 		Ok(Self {
-			private_key: private_key.to_vec(),
+			private_key: key.to_vec(),
 			decrypted,
 			keys: source.keys,
 			js_value

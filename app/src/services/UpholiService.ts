@@ -67,7 +67,10 @@ class UpholiService {
 				this._client = new wasm.UpholiClient(this.baseUrl, key);
 			}
 			else {
-				throw Error("WASM client not initialized. Is user logged in?");
+				//throw Error("WASM client not initialized. Is user logged in?");
+				// For anonymous calls where user's private key is not needed.
+				// TODO: I am not happy with this constructor now, need to rethink it in future.
+				this._client = new wasm.UpholiClient(this.baseUrl, "");
 			}
 		}
 
@@ -75,8 +78,8 @@ class UpholiService {
 	}
 
 	constructor() {
-		this._client = null;
 		this.baseUrl = document.location.origin;
+		this._client = null;
 	}
 
 	async register(username: string, password: string): Promise<void> {
@@ -166,14 +169,12 @@ class UpholiService {
 		return album;
 	}
 
-	// async getAlbumByShareToken(token: string, password: string): Promise<Album> {
+	async getAlbumByShareToken(token: string, password: string): Promise<Album> {
+		const json = await this.client.getAlbumFromToken(token, password);
+		const album: Album = JSON.parse(json);
 
-	// 	// derive key from password
-	// 	// decrypt token using key = base64 encoded string
-	// 	// Then GET /album/{album_id}/s/{base64_encoded_key_name}
-
-	// 	return null;
-	// }
+		return album;
+	}
 
 	async createAlbum(title: string, initialPhotoIds?: string[]): Promise<string> {
 		const photoIds = initialPhotoIds ?? [];
@@ -202,7 +203,6 @@ class UpholiService {
 
 	async updateAlbumSharingOptions(id: string, options: SharingOptions): Promise<string> {
 		const token = await this.client.updateAlbumSharingOptions(id, options.shared, options.password) as string;
-		console.log(token);
 		return token;
 	}
 }

@@ -1,19 +1,18 @@
 import * as React from "react";
 import { PageBaseComponent, PageBaseComponentProps } from "./PageBaseComponent";
-import PhotoService from "../../services/PhotoService";
 import ContentContainer from "../ContentContainer";
 import appStateContext from "../../contexts/AppStateContext";
-import CollectionView from "../CollectionView";
-import Collection from "../../models/Collection";
+import Album from "../../models/Album";
 import InputPassword from "../InputPassword";
+import upholiService from "../../services/UpholiService";
 
-interface CollectionPageBaseState {
-	unauthorized: boolean,
+interface State {
+	authorized: boolean,
 	lastPasswordIncorrect: boolean,
-	collection: Collection | null
+	album: Album | null
 }
 
-class SharedCollectionPage extends PageBaseComponent<CollectionPageBaseState> {
+class SharedCollectionPage extends PageBaseComponent<State> {
 	readonly collectionToken: string;
 
 	constructor(props: PageBaseComponentProps) {
@@ -22,59 +21,33 @@ class SharedCollectionPage extends PageBaseComponent<CollectionPageBaseState> {
 		this.collectionToken = props.match.params.token;
 
 		this.state = {
-			unauthorized: false,
+			authorized: false,
 			lastPasswordIncorrect: false,
-			collection: null
+			album: null
 		};
 	}
 
-	componentDidMount(): void {
-		this.getCollection();
-	}
-
-	getCollection(): void {
-		this.setState({
-			unauthorized: false
-		});
-
-		PhotoService.getCollectionByShareToken(this.collectionToken)
-			.then((collection) => this.setState({ collection }))
-			.catch((response) => {
-				if (response.status === 401) {
-					this.setState({
-						unauthorized: true
-					});
-				}
-				else {
-					console.error(response);
-				}
-			});
-	}
-
 	getTitle(): string {
-		return this.state.collection
-			? "Collection - " + this.state.collection.title
+		return this.state.album
+			? "Album - " + this.state.album.title
 			: super.getTitle();
 	}
 
 	authenticate(password: string): void {
 		if (password) {
-			PhotoService.authenticateToCollectionByShareToken(this.collectionToken, password)
-				.then(() => {
+			upholiService.getAlbumByShareToken(this.collectionToken, password)
+				.then(album => {
 					this.setState({
-						lastPasswordIncorrect: false
+						authorized: true,
+						lastPasswordIncorrect: false,
+						album
 					});
-					this.getCollection();
 				})
-				.catch(response => {
-					if (response.status === 401) {
-						this.setState({
-							lastPasswordIncorrect: true
-						});
-					}
-					else {
-						console.error(response);
-					}
+				.catch(error => {
+					console.log(error);
+					this.setState({
+						lastPasswordIncorrect: true
+					});
 				});
 		}
 		else {
@@ -85,18 +58,22 @@ class SharedCollectionPage extends PageBaseComponent<CollectionPageBaseState> {
 	}
 
 	render(): React.ReactNode {
+		console.log(this.state.album);
 		return (
 			<ContentContainer>
 				{/* Password input box */}
-				{this.state.unauthorized && <InputPassword
+				{!this.state.authorized && <InputPassword
 					className="padding-top-50px"
-					prompt="You need to provide a password to view this collection."
+					prompt="You need to provide a password to access this content."
 					onSubmitPassword={(password) => this.authenticate(password)}
 					lastPasswordIncorrect={this.state.lastPasswordIncorrect}/>}
 
-				{/* Collection view  */}
-				{this.state.collection != null && <CollectionView
-					collection={this.state.collection}/>}
+				{/* Album view  */}
+				{this.state.album != null && (
+					<div className="topBar">
+						<h1>{this.state.album.title}</h1>
+					</div>
+				)}
 			</ContentContainer>
 		);
 	}

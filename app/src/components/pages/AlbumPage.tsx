@@ -23,6 +23,9 @@ const queryStringParamNamePhotoId = "photoId";
 interface AlbumPageState {
 	albumId: string,
 	album: Album | null,
+	sharingOptions: {
+		token: string
+	},
 	galleryPhotos: GalleryPhoto[],
 	selectedPhotoIds: string[],
 	openedPhotoId: string | null,
@@ -45,6 +48,9 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 		this.state = {
 			albumId: props.match.params.albumId,
 			album: null,
+			sharingOptions: {
+				token: ""
+			},
 			galleryPhotos: [],
 			selectedPhotoIds: [],
 			openedPhotoId: null,
@@ -257,7 +263,14 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 		// derive key from password.
 		// create 'share' in album
 		// create 'share' in each album's photo
-		upholiService.updateAlbumSharingOptions(this.state.albumId, options);
+		upholiService.updateAlbumSharingOptions(this.state.albumId, options)
+			.then(token => {
+				this.setState({
+					sharingOptions: {
+						token
+					}
+				});
+			});
 	}
 
 	render(): React.ReactNode {
@@ -289,7 +302,7 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 					/>}
 
 					<ModalSharingOptions
-						shareUrl={document.location.origin + "/s/" + "TODO"}
+						shareUrl={document.location.origin + "/s/" + this.state.sharingOptions.token}
 						isOpen={this.state.sharingOptionsOpen}
 						onOkButtonClick={() => null}
 						onRequestClose={() => this.setState({sharingOptionsOpen: false})}

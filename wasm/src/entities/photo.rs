@@ -52,9 +52,9 @@ impl Entity for Photo {
 	type TData = PhotoData;
 	type TJavaScript = JsPhoto;
 
-	fn from_encrypted(source: Self::TEncrypted, private_key: &[u8]) -> Result<Self> {
-		let owner_key = source.keys.iter().find(|key| key.name == crate::OWNER_KEY_NAME).ok_or("Owner key not found")?;
-		let key = decrypt_data_base64(private_key, &owner_key.encrypted_key)?;
+	fn from_encrypted(source: Self::TEncrypted, key_name: &str, key: &[u8]) -> Result<Self> {
+		let owner_key = source.keys.iter().find(|key| key.name == key_name).ok_or(format!("Key with name {} not found", key_name))?;
+		let key = decrypt_data_base64(key, &owner_key.encrypted_key)?;
 		let photo_data_json = decrypt_data_base64(&key, &source.data)?;
 		let photo_data: PhotoData = serde_json::from_slice(&photo_data_json)?;
 
