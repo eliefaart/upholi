@@ -2,7 +2,6 @@ use upholi_lib::http::response::PhotoMinimal;
 
 use crate::error::*;
 use crate::entities::album::Album;
-use crate::entities::collection::Collection;
 use crate::entities::user::User;
 
 mod mongodb;
@@ -11,7 +10,6 @@ pub const COLLECTION_SESSIONS: &str = "sessions";
 pub const COLLECTION_USERS: &str = "users";
 pub const COLLECTION_PHOTOS: &str = "photos";
 pub const COLLECTION_ALBUMS: &str = "albums";
-pub const COLLECTION_COLLECTIONS: &str = "collections";
 
 // Get the implementation of the database traits
 pub fn get_database() -> impl Database + DatabaseExt {
@@ -71,13 +69,6 @@ pub trait DatabaseExt : Database {
 
 	/// Get user for given ID provider name and user-ID, if it exists
 	fn get_user_by_username(&self, username: &str) -> Result<Option<User>>;
-
-	/// Get a single collection by its share token.
-	/// Note: this does not check if collection is shared at all.
-	fn get_collection_by_share_token(&self, token: &str) -> Result<Option<Collection>>;
-
-	/// Get all collections that contain given album
-	fn get_collections_with_album(&self, album_id: &str) -> Result<Vec<Collection>>;
 }
 
 /// Add standard CRUD operations to a struct

@@ -13,12 +13,12 @@ interface State {
 }
 
 class SharedAlbumPage extends PageBaseComponent<State> {
-	readonly collectionToken: string;
+	readonly token: string;
 
 	constructor(props: PageBaseComponentProps) {
 		super(props);
 
-		this.collectionToken = props.match.params.token;
+		this.token = props.match.params.token;
 
 		this.state = {
 			authorized: false,
@@ -35,7 +35,7 @@ class SharedAlbumPage extends PageBaseComponent<State> {
 
 	authenticate(password: string): void {
 		if (password) {
-			upholiService.getAlbumByShareToken(this.collectionToken, password)
+			upholiService.getAlbumByShareToken(this.token, password)
 				.then(album => {
 					this.setState({
 						authorized: true,

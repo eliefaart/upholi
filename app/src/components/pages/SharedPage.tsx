@@ -23,7 +23,7 @@ class SharedPage extends PageBaseComponent<SharedPageState> {
 
 	render(): React.ReactNode {
 		return (
-			<ContentContainer paddingTop={true} className="collections">
+			<ContentContainer paddingTop={true}>
 			</ContentContainer>
 		);
 	}

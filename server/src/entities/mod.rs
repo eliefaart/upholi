@@ -4,7 +4,6 @@ pub mod user;
 pub mod session;
 pub mod photo;
 pub mod album;
-pub mod collection;
 
 pub trait AccessControl {
     fn can_view(&self, session: &Option<Session>) -> bool;
