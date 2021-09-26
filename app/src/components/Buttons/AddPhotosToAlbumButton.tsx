@@ -1,7 +1,6 @@
 import * as React from "react";
 import { toast } from "react-toastify";
 import { AlbumNew } from "../../models/Album";
-import PhotoService from "../../services/PhotoService";
 import upholiService from "../../services/UpholiService";
 import { IconAddToAlbum } from "../Icons";
 import ModalAddToAlbum from "../modals/ModalAddToAlbum";

@@ -73,6 +73,9 @@ class SharedAlbumPage extends PageBaseComponent<State> {
 				{/* Album view  */}
 				{this.state.album != null && (
 					<div className="topBar">
+
+						{/* TODO: Create AlbumView component. With option for if photos are selectable. */}
+
 						<h1>{this.state.album.title}</h1>
 					</div>
 				)}
