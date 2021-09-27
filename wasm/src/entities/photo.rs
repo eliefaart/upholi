@@ -1,5 +1,5 @@
 use serde::{Deserialize,Serialize};
-use upholi_lib::{KeyInfo, http::response};
+use upholi_lib::http::response;
 use upholi_lib::result::Result;
 use crate::encryption::symmetric::decrypt_data_base64;
 use crate::exif::Exif;
@@ -17,19 +17,6 @@ pub struct PhotoData {
 	pub exif: Exif
 }
 
-pub struct DecryptedPhoto {
-	pub id: String,
-	pub user_id: String,
-	pub hash: String,
-	pub width: i32,
-	pub height: i32,
-	pub data: PhotoData,
-	pub keys: Vec<KeyInfo>,
-	pub thumbnail_nonce: String,
-	pub preview_nonce: String,
-	pub original_nonce: String
-}
-
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct JsPhoto {
@@ -42,13 +29,14 @@ pub struct JsPhoto {
 }
 
 pub struct Photo {
-	decrypted: DecryptedPhoto,
+	//decrypted: DecryptedPhoto,
+	encrypted: response::Photo,
+	data: PhotoData,
 	js_value: JsPhoto
 }
 
 impl Entity for Photo {
 	type TEncrypted = response::Photo;
-	type TDecrypted = DecryptedPhoto;
 	type TData = PhotoData;
 	type TJavaScript = JsPhoto;
 
@@ -67,39 +55,24 @@ impl Entity for Photo {
 			exif: photo_data.exif.clone()
 		};
 
-		let decrypted = DecryptedPhoto {
-			id: source.id.clone(),
-			user_id: source.user_id,
-			hash: source.hash,
-			width: source.width,
-			height: source.height,
-			thumbnail_nonce: source.thumbnail_nonce,
-			preview_nonce: source.preview_nonce,
-			original_nonce: source.original_nonce,
-			data: photo_data,
-			keys: vec!{}
-		};
-
 		Ok(Self {
-			decrypted,
+			//decrypted,
+			encrypted: source,
+			data: photo_data,
 			js_value
 		})
 	}
 
 	fn get_id(&self) -> &str {
-		&self.decrypted.id
+		&self.encrypted.id
 	}
 
 	fn get_data_mut(&mut self) -> &mut Self::TData {
-		&mut self.decrypted.data
-	}
-
-	fn get_decrypted(&self) -> &Self::TDecrypted {
-		&self.decrypted
+		&mut self.data
 	}
 
 	fn get_data(&self) -> &Self::TData {
-		&self.decrypted.data
+		&self.data
 	}
 
 	fn as_js_value(&self) -> &Self::TJavaScript {

@@ -1,12 +1,13 @@
 use reqwest::StatusCode;
 use upholi_lib::http::request::{Login, Register};
 use upholi_lib::http::response::{CreateAlbum, PhotoMinimal, UploadPhoto, UserInfo};
-use upholi_lib::{EncryptedData, EncryptedKeyInfo, PhotoVariant, http::*};
+use upholi_lib::{EncryptedData, EncryptedKeyInfo, PhotoVariant, ShareType, http::*};
 use upholi_lib::result::Result;
 use crate::encryption;
-use crate::entities::Entity;
+use crate::entities::{Entity, Shareable};
 use crate::entities::album::{self, Album, AlbumDetailed};
 use crate::entities::photo::{Photo, PhotoData};
+use crate::entities::share::{AlbumShareData, ShareData};
 use crate::images::Image;
 use crate::exif::Exif;
 
@@ -468,14 +469,52 @@ impl UpholiClientHelper {
 		Self::update_album(base_url, id, &album).await
 	}
 
-	/// Update an album's sharing options.
-	pub async fn update_album_sharing_options(base_url: &str, private_key: &[u8], id: &str, shared: bool, password: &str) -> Result<Option<String>> {
-		let mut album = Self::get_album(base_url, private_key, id).await?;
+	/// Creates or updates a share.
+	pub async fn upsert_share(base_url: &str, private_key: &[u8], type_: ShareType, id: &str, password: &str) -> Result<String> {
+		let url = format!("{}/api/share", &base_url).to_owned();
 
-		let token = album.update_share_options(shared, password)?;
-		Self::update_album(base_url, id, &album).await?;
+		let share_key = crate::encryption::symmetric::derive_key_from_string(&password, id)?;
+		let share_key_encrypt_result = crate::encryption::symmetric::encrypt_slice(private_key, &share_key)?;
 
-		Ok(token)
+		let data: ShareData = match type_ {
+			ShareType::Album => {
+				let album = Self::get_album(base_url, private_key, id).await?;
+				album.create_share_data(&private_key)?
+			}
+		};
+
+		let data_json = serde_json::to_string(&data)?;
+		let data_bytes = data_json.as_bytes();
+		let data_encrypt_result = crate::encryption::symmetric::encrypt_slice(&share_key, data_bytes)?;
+
+		let body = request::CreateShare {
+			data: data_encrypt_result.into(),
+			key: EncryptedKeyInfo {
+				name: crate::OWNER_KEY_NAME.into(),
+				encrypted_key: EncryptedData {
+					base64: base64::encode_config(share_key_encrypt_result.bytes, base64::STANDARD),
+					nonce: share_key_encrypt_result.nonce,
+					format_version: 1
+				}
+			}
+		};
+
+		let client = reqwest::Client::new();
+		let response = client.post(&url)
+			.json(&body)
+			.send().await?;
+		let response_body: response::CreateShare = response.json().await?;
+
+		Ok(response_body.id)
+	}
+
+	/// Deletes a share.
+	pub async fn delete_share(base_url: &str, id: &str) -> Result<()> {
+		let url = format!("{}/api/share/{}", &base_url, &id).to_owned();
+		let client = reqwest::Client::new();
+		client.delete(&url).send().await?;
+
+		Ok(())
 	}
 
 	async fn update_album(base_url: &str, id: &str, album: &Album) -> Result<()> {

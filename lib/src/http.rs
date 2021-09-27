@@ -30,6 +30,17 @@ pub mod request {
 
 	#[derive(Deserialize, Serialize, Debug)]
 	#[serde(rename_all = "camelCase")]
+	pub struct CreateShare {
+		/// IDEA:
+		/// encrypted string containing info about what this share is.
+		// So that user can easily search for certain shares without having to GET and decrypt data.
+		/// pub share_summary_id: String,
+		pub data: crate::EncryptedData,
+		pub key: crate::EncryptedKeyInfo,
+	}
+
+	#[derive(Deserialize, Serialize, Debug)]
+	#[serde(rename_all = "camelCase")]
 	pub struct Register {
 		pub username: String,
 		pub password: String,
@@ -108,5 +119,21 @@ pub mod response {
 				width: self.width
 			}
 		}
+	}
+
+	#[derive(Deserialize, Serialize, Debug)]
+	#[serde(rename_all = "camelCase")]
+	pub struct CreateShare {
+		pub id: String
+	}
+
+	#[derive(Deserialize, Serialize, Debug)]
+	#[serde(rename_all = "camelCase")]
+	pub struct Share {
+		pub id: String,
+		pub user_id: String,
+		pub type_: crate::ShareType,
+		pub key: crate::EncryptedKeyInfo,
+		pub data: crate::EncryptedData,
 	}
 }

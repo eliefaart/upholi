@@ -66,7 +66,7 @@ class SharedAlbumPage extends PageBaseComponent<State> {
 				{/* Password input box */}
 				{!this.state.authorized && <InputPassword
 					className="padding-top-50px"
-					prompt="You need to provide a password to access this content."
+					prompt="You need to provide a password to access this share."
 					onSubmitPassword={(password) => this.authenticate(password)}
 					lastPasswordIncorrect={this.state.lastPasswordIncorrect}/>}
 

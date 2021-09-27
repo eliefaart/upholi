@@ -1,7 +1,7 @@
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::future_to_promise;
 use js_sys::{Array, JsString};
-use upholi_lib::PhotoVariant;
+use upholi_lib::{PhotoVariant, ShareType};
 use crate::client::helper::{PhotoUploadInfo, UpholiClientHelper};
 
 use crate::entities::Entity;
@@ -353,19 +353,29 @@ impl UpholiClient {
 		})
 	}
 
-	#[wasm_bindgen(js_name = updateAlbumSharingOptions)]
-	pub fn update_album_sharing_options(&mut self, id: String, shared: bool, password: String) -> js_sys::Promise {
+	/// Creates or updates a share for an album
+	#[wasm_bindgen(js_name = upsertAlbumShare)]
+	pub fn upsert_album_share(&self, album_id: String, password: String) -> js_sys::Promise {
 		let base_url = self.base_url.to_owned();
 		let private_key = self.private_key.as_bytes().to_owned();
 
 		future_to_promise(async move {
-			match UpholiClientHelper::update_album_sharing_options(&base_url, &private_key, &id, shared, &password).await {
-				Ok(token) => {
-					Ok(match token {
-						Some(token) => JsValue::from_str(&token),
-						None => JsValue::NULL
-					})
-				},
+			match UpholiClientHelper::upsert_share(&base_url, &private_key, ShareType::Album, &album_id, &password).await {
+				Ok(share_id) => Ok(JsValue::from_str(&share_id)),
+				Err(error) => Err(format!("{}", error).into())
+			}
+		})
+	}
+
+	/// Deletes a share for an album
+	#[wasm_bindgen(js_name = deleteShare)]
+	pub fn delete_share(&self, id: String) -> js_sys::Promise {
+		let base_url = self.base_url.to_owned();
+
+		future_to_promise(async move {
+			// TODO: id -> album_id
+			match UpholiClientHelper::delete_share(&base_url, &id).await {
+				Ok(_) => Ok(JsValue::NULL),
 				Err(error) => Err(format!("{}", error).into())
 			}
 		})

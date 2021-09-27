@@ -260,17 +260,21 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 	}
 
 	updateSharingOptions(options: SharingOptions): void {
-		// derive key from password.
-		// create 'share' in album
-		// create 'share' in each album's photo
-		upholiService.updateAlbumSharingOptions(this.state.albumId, options)
-			.then(token => {
-				this.setState({
-					sharingOptions: {
-						token
-					}
-				});
-			});
+		if (options.shared) {
+			upholiService.shareAlbum(this.state.albumId, options.password)
+				.then(shareId => {
+					this.setState({
+						sharingOptions: {
+							token: shareId
+						}
+					});
+				})
+				.catch(console.error);
+		}
+		else {
+			upholiService.deleteShare(this.state.sharingOptions.token)
+				.catch(console.error);
+		}
 	}
 
 	render(): React.ReactNode {

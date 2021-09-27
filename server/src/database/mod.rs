@@ -10,6 +10,7 @@ pub const COLLECTION_SESSIONS: &str = "sessions";
 pub const COLLECTION_USERS: &str = "users";
 pub const COLLECTION_PHOTOS: &str = "photos";
 pub const COLLECTION_ALBUMS: &str = "albums";
+pub const COLLECTION_SHARES: &str = "shares";
 
 // Get the implementation of the database traits
 pub fn get_database() -> impl Database + DatabaseExt {

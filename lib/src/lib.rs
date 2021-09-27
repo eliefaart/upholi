@@ -50,6 +50,15 @@ pub struct KeyInfo {
 	pub key: String
 }
 
+impl KeyInfo {
+	pub fn from_bytes(name: &str, bytes: &[u8]) -> Self {
+		Self {
+			name: name.into(),
+			key: base64::encode_config(bytes, base64::STANDARD)
+		}
+	}
+}
+
 #[derive(Deserialize, Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct EncryptedData {
@@ -66,6 +75,20 @@ impl Clone for EncryptedData {
 			base64: self.base64.clone(),
 			nonce: self.nonce.clone(),
 			format_version: self.format_version
+		}
+	}
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub enum ShareType {
+	Album
+}
+
+impl Clone for ShareType {
+	fn clone(&self) -> Self {
+		match self {
+			&Self::Album => Self::Album
 		}
 	}
 }

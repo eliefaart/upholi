@@ -61,6 +61,12 @@ pub async fn run_server() -> std::io::Result<()>{
 					.route("/album/{album_id}", actix_web::web::get().to(handlers::albums::route_get_album))
 					.route("/album/{album_id}", actix_web::web::put().to(handlers::albums::route_update_album))
 					.route("/album/{album_id}", actix_web::web::delete().to(handlers::albums::route_delete_album))
+
+					.route("/shares", actix_web::web::get().to(handlers::shares::route_get_shares))
+					.route("/share", actix_web::web::post().to(handlers::shares::route_create_share))
+					.route("/share/{share_id}", actix_web::web::get().to(handlers::shares::route_get_share))
+					.route("/share/{share_id}", actix_web::web::put().to(handlers::shares::route_update_share))
+					.route("/share/{share_id}", actix_web::web::delete().to(handlers::shares::route_delete_share))
 			)
 	})
 	.bind(address)
