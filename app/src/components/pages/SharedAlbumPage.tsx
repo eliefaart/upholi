@@ -33,14 +33,15 @@ class SharedAlbumPage extends PageBaseComponent<State> {
 			: super.getTitle();
 	}
 
-	authenticate(password: string): void {
+	tryUnlockShare(password: string): void {
 		if (password) {
-			upholiService.getAlbumByShareToken(this.token, password)
-				.then(album => {
+			upholiService.getShare(this.token, password)
+				.then(share => {
+					console.log(share);
 					this.setState({
 						authorized: true,
 						lastPasswordIncorrect: false,
-						album
+						//album
 					});
 				})
 				.catch(error => {
@@ -67,7 +68,7 @@ class SharedAlbumPage extends PageBaseComponent<State> {
 				{!this.state.authorized && <InputPassword
 					className="padding-top-50px"
 					prompt="You need to provide a password to access this share."
-					onSubmitPassword={(password) => this.authenticate(password)}
+					onSubmitPassword={(password) => this.tryUnlockShare(password)}
 					lastPasswordIncorrect={this.state.lastPasswordIncorrect}/>}
 
 				{/* Album view  */}

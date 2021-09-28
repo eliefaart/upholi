@@ -1,10 +1,7 @@
 use serde::{Deserialize,Serialize};
-use upholi_lib::{EncryptedData, EncryptedKeyInfo, ShareType};
-use upholi_lib::http::request::CreateAlbum;
-use upholi_lib::http::response::PhotoMinimal;
+use upholi_lib::ShareType;
 use upholi_lib::{KeyInfo, http::response};
 use upholi_lib::result::Result;
-use crate::encryption;
 use crate::encryption::symmetric::decrypt_data_base64;
 
 use super::Entity;
@@ -18,6 +15,7 @@ pub enum ShareData {
 #[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct AlbumShareData {
+	pub share_password: String,
 	pub album_id: String,
 	pub album_key: KeyInfo,
 	pub photo_keys: Vec<KeyInfo>
@@ -27,7 +25,7 @@ pub struct AlbumShareData {
 #[serde(rename_all = "camelCase")]
 pub struct JsShare {
 	pub id: String,
-	pub type_: ShareType,
+	pub type_: ShareType
 }
 
 pub struct Share {
@@ -43,9 +41,7 @@ impl Entity for Share {
 
 	fn from_encrypted(source: Self::TEncrypted, _key_name: &str, key: &[u8]) -> Result<Self> {
 		let data_json = decrypt_data_base64(key, &source.data)?;
-		let data: ShareData = match source.type_ {
-			ShareType::Album => ShareData::Album(serde_json::from_slice(&data_json)?)
-		};
+		let data: ShareData = serde_json::from_slice(&data_json)?;
 
 		let js_value = Self::TJavaScript {
 			id: source.id.clone(),

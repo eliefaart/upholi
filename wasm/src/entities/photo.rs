@@ -29,7 +29,6 @@ pub struct JsPhoto {
 }
 
 pub struct Photo {
-	//decrypted: DecryptedPhoto,
 	encrypted: response::Photo,
 	data: PhotoData,
 	js_value: JsPhoto
@@ -56,7 +55,6 @@ impl Entity for Photo {
 		};
 
 		Ok(Self {
-			//decrypted,
 			encrypted: source,
 			data: photo_data,
 			js_value

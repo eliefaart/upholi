@@ -169,13 +169,6 @@ class UpholiService {
 		return album;
 	}
 
-	async getAlbumByShareToken(token: string, password: string): Promise<Album> {
-		const json = await this.client.getAlbumFromToken(token, password);
-		const album: Album = JSON.parse(json);
-
-		return album;
-	}
-
 	async createAlbum(title: string, initialPhotoIds?: string[]): Promise<string> {
 		const photoIds = initialPhotoIds ?? [];
 		return this.client.createAlbum(title, photoIds);
@@ -204,6 +197,10 @@ class UpholiService {
 	async shareAlbum(id: string, password: string): Promise<string> {
 		const shareId = await this.client.upsertAlbumShare(id, password) as string;
 		return shareId;
+	}
+
+	async getShare(id: string, password: string): Promise<void> {
+		return this.client.getShare(id, password);
 	}
 
 	async deleteShare(id: string): Promise<void> {

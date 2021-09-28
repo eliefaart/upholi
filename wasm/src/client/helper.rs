@@ -7,7 +7,7 @@ use crate::encryption;
 use crate::entities::{Entity, Shareable};
 use crate::entities::album::{self, Album, AlbumDetailed};
 use crate::entities::photo::{Photo, PhotoData};
-use crate::entities::share::{AlbumShareData, ShareData};
+use crate::entities::share::{Share, ShareData};
 use crate::images::Image;
 use crate::exif::Exif;
 
@@ -327,29 +327,6 @@ impl UpholiClientHelper {
 		Ok(album)
 	}
 
-	pub async fn get_album_from_token(base_url: &str, token: &str, password: &str) -> Result<AlbumDetailed> {
-		let (_share_type, id) = Self::parse_share_token(token)?;
-
-		// Share type can only be album for now
-		let url = format!("{}/api/album/{}", &base_url, &id);
-		let response = reqwest::get(url).await?;
-		let album = response.json::<response::Album>().await?;
-
-		let key = encryption::symmetric::derive_key_from_string(password, &id)?;
-		let album = album::Album::from_encrypted(album, &token, &key)?;
-		let album = album.as_js_value();
-
-		let album = AlbumDetailed {
-			id: album.id.clone(),
-			title: album.title.clone(),
-			tags: album.tags.clone(),
-			photos: vec!{},
-			thumbnail_photo: None
-		};
-
-		Ok(album)
-	}
-
 	/// Parse a share token, returns the type of share, and its ID
 	fn parse_share_token(token: &str) -> Result<(String, String)> {
 		let token = base64::decode_config(token, base64::STANDARD)?;
@@ -473,13 +450,14 @@ impl UpholiClientHelper {
 	pub async fn upsert_share(base_url: &str, private_key: &[u8], type_: ShareType, id: &str, password: &str) -> Result<String> {
 		let url = format!("{}/api/share", &base_url).to_owned();
 
-		let share_key = crate::encryption::symmetric::derive_key_from_string(&password, id)?;
+		let salt = "todo";
+		let share_key = crate::encryption::symmetric::derive_key_from_string(&password, salt)?;
 		let share_key_encrypt_result = crate::encryption::symmetric::encrypt_slice(private_key, &share_key)?;
 
 		let data: ShareData = match type_ {
 			ShareType::Album => {
 				let album = Self::get_album(base_url, private_key, id).await?;
-				album.create_share_data(&private_key)?
+				album.create_share_data(&private_key, password)?
 			}
 		};
 
@@ -488,14 +466,12 @@ impl UpholiClientHelper {
 		let data_encrypt_result = crate::encryption::symmetric::encrypt_slice(&share_key, data_bytes)?;
 
 		let body = request::CreateShare {
+			type_,
 			data: data_encrypt_result.into(),
-			key: EncryptedKeyInfo {
-				name: crate::OWNER_KEY_NAME.into(),
-				encrypted_key: EncryptedData {
-					base64: base64::encode_config(share_key_encrypt_result.bytes, base64::STANDARD),
-					nonce: share_key_encrypt_result.nonce,
-					format_version: 1
-				}
+			key: EncryptedData {
+				base64: base64::encode_config(share_key_encrypt_result.bytes, base64::STANDARD),
+				nonce: share_key_encrypt_result.nonce,
+				format_version: 1
 			}
 		};
 
@@ -515,6 +491,19 @@ impl UpholiClientHelper {
 		client.delete(&url).send().await?;
 
 		Ok(())
+	}
+
+	/// Deletes a share.
+	pub async fn get_share(base_url: &str, id: &str, password: &str) -> Result<Share> {
+		let url = format!("{}/api/share/{}", base_url, id);
+		let response = reqwest::get(url).await?;
+		let share = response.json::<response::Share>().await?;
+
+		let salt = "todo";
+		let key = encryption::symmetric::derive_key_from_string(&password, salt)?;
+		let share = Share::from_encrypted(share, "", &key)?;
+
+		Ok(share)
 	}
 
 	async fn update_album(base_url: &str, id: &str, album: &Album) -> Result<()> {

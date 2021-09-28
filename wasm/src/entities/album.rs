@@ -1,10 +1,10 @@
 use serde::{Deserialize,Serialize};
-use upholi_lib::{EncryptedData, EncryptedKeyInfo, KeyInfo};
+use upholi_lib::{EncryptedKeyInfo, KeyInfo};
 use upholi_lib::http::request::CreateAlbum;
 use upholi_lib::http::response::PhotoMinimal;
 use upholi_lib::http::response;
 use upholi_lib::result::Result;
-use crate::encryption;
+use crate::client::helper::UpholiClientHelper;
 use crate::encryption::symmetric::decrypt_data_base64;
 
 use super::share::{AlbumShareData, ShareData};
@@ -120,11 +120,15 @@ impl Entity for Album {
 }
 
 impl Shareable for Album {
-	fn create_share_data(&self, key: &[u8]) -> Result<ShareData> {
+	fn create_share_data(&self, key: &[u8], password: &str) -> Result<ShareData> {
 		let album_key = self.keys.iter().find(|key| key.name == crate::OWNER_KEY_NAME).ok_or("Owner key not found")?;
 		let album_key = decrypt_data_base64(key, &album_key.encrypted_key)?;
 
+		// How is this function going to figure out the photo's keys?
+		// It has the photo IDs
+
 		Ok(ShareData::Album(AlbumShareData {
+			share_password: password.into(),
 			album_id: self.get_id().into(),
 			album_key: KeyInfo::from_bytes("", &album_key),
 			photo_keys: vec!{}

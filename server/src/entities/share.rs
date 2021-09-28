@@ -1,7 +1,7 @@
 use crate::entities::Session;
 use serde::{Serialize, Deserialize};
 use upholi_lib::EncryptedData;
-use upholi_lib::EncryptedKeyInfo;
+use upholi_lib::ShareType;
 use upholi_lib::http::request::CreateShare;
 use upholi_lib::ids::create_unique_id;
 
@@ -15,8 +15,9 @@ use crate::entities::AccessControl;
 pub struct Share {
 	pub id: String,
 	pub user_id: String,
+	pub type_: ShareType,
 	pub data: EncryptedData,
-	pub key: EncryptedKeyInfo
+	pub key: EncryptedData
 }
 
 impl From<CreateShare> for Share {
@@ -24,6 +25,7 @@ impl From<CreateShare> for Share {
 		Self {
 			id: create_unique_id(),
 			user_id: String::new(),
+			type_: source.type_,
 			data: source.data,
 			key: source.key
 		}

@@ -67,6 +67,7 @@ pub async fn route_update_share(session: Session, req: HttpRequest, updated_shar
 								return create_unauthorized_response();
 							}
 
+							share.type_ = updated_share.type_;
 							share.data = updated_share.data;
 							share.key = updated_share.key;
 

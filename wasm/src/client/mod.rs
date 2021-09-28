@@ -6,7 +6,7 @@ use crate::client::helper::{PhotoUploadInfo, UpholiClientHelper};
 
 use crate::entities::Entity;
 
-mod helper;
+pub mod helper;
 
 /*
  * Info on async functions within struct implementations:
@@ -255,23 +255,6 @@ impl UpholiClient {
 		})
 	}
 
-	#[wasm_bindgen(js_name = getAlbumFromToken)]
-	pub fn get_album_from_token(&self, token: String, password: String) -> js_sys::Promise {
-		let base_url = self.base_url.to_owned();
-
-		future_to_promise(async move {
-			match UpholiClientHelper::get_album_from_token(&base_url, &token, &password).await {
-				Ok(album) => {
-					match serde_json::to_string(&album) {
-						Ok(json) => Ok(JsValue::from(json)),
-						Err(error) => Err(format!("{}", error).into())
-					}
-				},
-				Err(error) => Err(format!("{}", error).into())
-			}
-		})
-	}
-
 	#[wasm_bindgen(js_name = createAlbum)]
 	pub fn create_album(&mut self, title: String, initial_photo_ids: Box<[JsString]>) -> js_sys::Promise {
 		let base_url = self.base_url.to_owned();
@@ -362,6 +345,19 @@ impl UpholiClient {
 		future_to_promise(async move {
 			match UpholiClientHelper::upsert_share(&base_url, &private_key, ShareType::Album, &album_id, &password).await {
 				Ok(share_id) => Ok(JsValue::from_str(&share_id)),
+				Err(error) => Err(format!("{}", error).into())
+			}
+		})
+	}
+
+	/// Creates or updates a share for an album
+	#[wasm_bindgen(js_name = getShare)]
+	pub fn get_share(&self, share_id: String, password: String) -> js_sys::Promise {
+		let base_url = self.base_url.to_owned();
+
+		future_to_promise(async move {
+			match UpholiClientHelper::get_share(&base_url, &share_id, &password).await {
+				Ok(share) => Ok(JsValue::from_serde(share.as_js_value()).unwrap_throw()),
 				Err(error) => Err(format!("{}", error).into())
 			}
 		})
