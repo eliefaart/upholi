@@ -1,6 +1,6 @@
 use upholi_lib::http::request::UploadPhoto;
 use upholi_lib::ids::create_unique_id;
-use upholi_lib::{EncryptedData, EncryptedKeyInfo};
+use upholi_lib::EncryptedData;
 use serde::{Deserialize, Serialize};
 
 use crate::database::{Database, DatabaseExt};
@@ -9,7 +9,6 @@ use crate::{database::{self, DatabaseEntity, DatabaseEntityBatch, DatabaseUserEn
 
 use super::{AccessControl, session::Session};
 
-// Maybe a wrapper struct? {id: string, info: T}???
 // Then I can re-use the other struct which is identical.
 #[derive(Deserialize, Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -23,7 +22,7 @@ pub struct Photo {
 	pub height: i32,
 	/// Encrypted data, contains width, height, exif, etc
 	pub data: EncryptedData,
-	pub keys: Vec<EncryptedKeyInfo>,
+	pub key: EncryptedData,
 	pub key_hash: String,
 	pub thumbnail_nonce: String,
 	pub preview_nonce: String,
@@ -39,7 +38,7 @@ impl From<UploadPhoto> for Photo {
 			width: source.width as i32,
 			height: source.height as i32,
 			data: source.data,
-			keys: source.keys,
+			key: source.key,
 			key_hash: source.key_hash,
 			thumbnail_nonce: source.thumbnail_nonce,
 			preview_nonce: source.preview_nonce,

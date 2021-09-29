@@ -1,7 +1,6 @@
 use crate::entities::Session;
 use serde::{Serialize, Deserialize};
 use upholi_lib::EncryptedData;
-use upholi_lib::EncryptedKeyInfo;
 use upholi_lib::http::request::CreateAlbum;
 use upholi_lib::ids::create_unique_id;
 
@@ -16,7 +15,7 @@ pub struct Album {
 	pub id: String,
 	pub user_id: String,
 	pub data: EncryptedData,
-	pub keys: Vec<EncryptedKeyInfo>,
+	pub key: EncryptedData,
 	pub key_hash: String
 }
 
@@ -26,7 +25,7 @@ impl From<CreateAlbum> for Album {
 			id: create_unique_id(),
 			user_id: String::new(),
 			data: source.data,
-			keys: source.keys,
+			key: source.key,
 			key_hash: source.key_hash
 		}
 	}
@@ -92,14 +91,7 @@ impl DatabaseUserEntity for Album {
 impl AccessControl for Album {
 	fn can_view(&self, session: &Option<Session>) -> bool {
 		// Check if user is owner of album
-		if session_owns_album(self, session) {
-			return true;
-		}
-
-		// For now, just assume session can view if the album has been shared
-		// (it has been shared if it has more than 1 key)
-		// Will figure out proper authorization later..
-		self.keys.len() > 1
+		session_owns_album(self, session)
 	}
 
 	fn can_update(&self, session: &Option<Session>) -> bool {

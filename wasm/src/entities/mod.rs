@@ -11,7 +11,7 @@ pub trait Entity {
 	type TData;
 	type TJavaScript;
 
-	fn from_encrypted(source: Self::TEncrypted, key_name: &str, key: &[u8]) -> Result<Self>
+	fn from_encrypted(source: Self::TEncrypted, key: &[u8]) -> Result<Self>
 		where Self: std::marker::Sized;
 	fn get_id(&self) -> &str;
 	fn get_data(&self) -> &Self::TData;

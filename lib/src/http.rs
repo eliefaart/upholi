@@ -9,7 +9,7 @@ pub mod request {
 		pub height: u32,
 		/// Encrypted data, contains width, height, exif, etc
 		pub data: crate::EncryptedData,
-		pub keys: Vec<crate::EncryptedKeyInfo>,
+		pub key: crate::EncryptedData,
 		pub key_hash: String,
 		pub thumbnail_nonce: String,
 		pub preview_nonce: String,
@@ -26,7 +26,7 @@ pub mod request {
 	#[serde(rename_all = "camelCase")]
 	pub struct CreateAlbum {
 		pub data: crate::EncryptedData,
-		pub keys: Vec<crate::EncryptedKeyInfo>,
+		pub key: crate::EncryptedData,
 		pub key_hash: String
 	}
 
@@ -87,7 +87,7 @@ pub mod response {
 		pub width: i32,
 		pub height: i32,
 		pub data: crate::EncryptedData,
-		pub keys: Vec<crate::EncryptedKeyInfo>,
+		pub key: crate::EncryptedData,
 		pub thumbnail_nonce: String,
 		pub preview_nonce: String,
 		pub original_nonce: String
@@ -107,7 +107,7 @@ pub mod response {
 		pub id: String,
 		pub user_id: String,
 		pub data: crate::EncryptedData,
-		pub keys: Vec<crate::EncryptedKeyInfo>,
+		pub key: crate::EncryptedData,
 	}
 
 	impl Clone for PhotoMinimal {

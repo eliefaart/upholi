@@ -1,6 +1,6 @@
 use serde::{Deserialize,Serialize};
 use upholi_lib::ShareType;
-use upholi_lib::{KeyInfo, http::response};
+use upholi_lib::http::response;
 use upholi_lib::result::Result;
 use crate::encryption::symmetric::decrypt_data_base64;
 
@@ -17,8 +17,8 @@ pub enum ShareData {
 pub struct AlbumShareData {
 	pub share_password: String,
 	pub album_id: String,
-	pub album_key: KeyInfo,
-	pub photo_keys: Vec<KeyInfo>
+	pub album_key: Vec<u8>,
+	pub photo_keys: Vec<Vec<u8>>
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -39,7 +39,7 @@ impl Entity for Share {
 	type TData = ShareData;
 	type TJavaScript = JsShare;
 
-	fn from_encrypted(source: Self::TEncrypted, _key_name: &str, key: &[u8]) -> Result<Self> {
+	fn from_encrypted(source: Self::TEncrypted, key: &[u8]) -> Result<Self> {
 		let data_json = decrypt_data_base64(key, &source.data)?;
 		let data: ShareData = serde_json::from_slice(&data_json)?;
 

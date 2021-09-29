@@ -1,5 +1,4 @@
 use serde::{Deserialize,Serialize};
-use upholi_lib::{EncryptedKeyInfo, KeyInfo};
 use upholi_lib::http::request::CreateAlbum;
 use upholi_lib::http::response::PhotoMinimal;
 use upholi_lib::http::response;
@@ -44,14 +43,12 @@ pub struct Album {
 	private_key: Vec<u8>,
 	encrypted: response::Album,
 	data: AlbumData,
-	keys: Vec<EncryptedKeyInfo>,
 	js_value: JsAlbum
 }
 
 impl Album {
 	pub fn create_update_request_struct(&self) -> Result<CreateAlbum> {
-		let owner_key = self.keys.iter().find(|key| key.name == crate::OWNER_KEY_NAME).ok_or("Owner key not found")?;
-		let album_key = crate::encryption::symmetric::decrypt_data_base64(&self.private_key, &owner_key.encrypted_key)?;
+		let album_key = crate::encryption::symmetric::decrypt_data_base64(&self.private_key, &self.encrypted.key)?;
 
 		let data_json = serde_json::to_string(&self.data)?;
 		let data_bytes = data_json.as_bytes();
@@ -59,7 +56,7 @@ impl Album {
 
 		Ok(CreateAlbum {
 			data: data_encrypt_result.into(),
-			keys: self.keys.clone(),
+			key: self.encrypted.key.clone(),
 			key_hash: compute_sha256_hash(&album_key)?
 		})
 	}
@@ -70,9 +67,8 @@ impl Entity for Album {
 	type TData = AlbumData;
 	type TJavaScript = JsAlbum;
 
-	fn from_encrypted(source: Self::TEncrypted, key_name: &str, key: &[u8]) -> Result<Self> {
-		let owner_key = source.keys.iter().find(|key| key.name == key_name).ok_or(format!("Key with name {} not found", key_name))?;
-		let album_key = decrypt_data_base64(key, &owner_key.encrypted_key)?;
+	fn from_encrypted(source: Self::TEncrypted, key: &[u8]) -> Result<Self> {
+		let album_key = decrypt_data_base64(key, &source.key)?;
 		let album_data_json = decrypt_data_base64(&album_key, &source.data)?;
 		let album_data: AlbumData = serde_json::from_slice(&album_data_json)?;
 
@@ -84,13 +80,10 @@ impl Entity for Album {
 			thumbnail_photo_id: album_data.thumbnail_photo_id.clone(),
 		};
 
-		let keys = source.keys.clone();
-
 		Ok(Self {
 			private_key: key.to_vec(),
 			encrypted: source,
 			data: album_data,
-			keys,
 			js_value
 		})
 	}
@@ -114,8 +107,7 @@ impl Entity for Album {
 
 impl Shareable for Album {
 	fn create_share_data(&self, key: &[u8], password: &str) -> Result<ShareData> {
-		let album_key = self.keys.iter().find(|key| key.name == crate::OWNER_KEY_NAME).ok_or("Owner key not found")?;
-		let album_key = decrypt_data_base64(key, &album_key.encrypted_key)?;
+		let album_key = decrypt_data_base64(key, &self.encrypted.key)?;
 
 		// How is this function going to figure out the photo's keys?
 		// It has the photo IDs
@@ -123,7 +115,7 @@ impl Shareable for Album {
 		Ok(ShareData::Album(AlbumShareData {
 			share_password: password.into(),
 			album_id: self.get_id().into(),
-			album_key: KeyInfo::from_bytes("", &album_key),
+			album_key: album_key,
 			photo_keys: vec!{}
 		}))
 	}
