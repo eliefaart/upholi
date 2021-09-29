@@ -20,5 +20,5 @@ pub trait Entity {
 }
 
 pub trait Shareable {
-	fn create_share_data(&self, key: &[u8], password: &str) -> Result<ShareData>;
+	fn create_share_data(&self, key: &[u8]) -> Result<ShareData>;
 }

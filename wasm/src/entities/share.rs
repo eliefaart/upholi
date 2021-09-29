@@ -15,7 +15,6 @@ pub enum ShareData {
 #[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct AlbumShareData {
-	pub share_password: String,
 	pub album_id: String,
 	pub album_key: Vec<u8>,
 	pub photo_keys: Vec<Vec<u8>>
@@ -25,7 +24,8 @@ pub struct AlbumShareData {
 #[serde(rename_all = "camelCase")]
 pub struct JsShare {
 	pub id: String,
-	pub type_: ShareType
+	pub type_: ShareType,
+	pub password: String
 }
 
 pub struct Share {
@@ -43,9 +43,12 @@ impl Entity for Share {
 		let data_json = decrypt_data_base64(key, &source.data)?;
 		let data: ShareData = serde_json::from_slice(&data_json)?;
 
+		let password = decrypt_data_base64(key, &source.password)?;
+
 		let js_value = Self::TJavaScript {
 			id: source.id.clone(),
 			type_: source.type_.clone(),
+			password: String::from_utf8(password)?
 		};
 
 		Ok(Self {

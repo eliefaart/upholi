@@ -1,7 +1,7 @@
 use reqwest::StatusCode;
 use upholi_lib::http::request::{Login, Register};
 use upholi_lib::http::response::{CreateAlbum, PhotoMinimal, UploadPhoto, UserInfo};
-use upholi_lib::{EncryptedData, PhotoVariant, ShareType, http::*};
+use upholi_lib::{PhotoVariant, ShareType, http::*};
 use upholi_lib::result::Result;
 use crate::encryption;
 use crate::entities::{Entity, Shareable};
@@ -276,11 +276,7 @@ impl UpholiClientHelper {
 			width: photo.image.width,
 			height: photo.image.height,
 			data: data_encrypt_result.into(),
-			key: EncryptedData {
-				base64: base64::encode_config(photo_key_encrypt_result.bytes, base64::STANDARD),
-				nonce: photo_key_encrypt_result.nonce,
-				format_version: 1
-			},
+			key: photo_key_encrypt_result.into(),
 			key_hash: photo_key_hash,
 			thumbnail_nonce: String::new(),
 			preview_nonce: String::new(),
@@ -354,11 +350,7 @@ impl UpholiClientHelper {
 
 		let body = request::CreateAlbum {
 			data: data_encrypt_result.into(),
-			key: EncryptedData {
-				base64: base64::encode_config(album_key_encrypt_result.bytes, base64::STANDARD),
-				nonce: album_key_encrypt_result.nonce,
-				format_version: 1
-			},
+			key: album_key_encrypt_result.into(),
 			key_hash: album_key_hash
 		};
 
@@ -439,7 +431,7 @@ impl UpholiClientHelper {
 		let data: ShareData = match type_ {
 			ShareType::Album => {
 				let album = Self::get_album(base_url, private_key, id).await?;
-				album.create_share_data(&private_key, password)?
+				album.create_share_data(&private_key)?
 			}
 		};
 
@@ -447,14 +439,13 @@ impl UpholiClientHelper {
 		let data_bytes = data_json.as_bytes();
 		let data_encrypt_result = crate::encryption::symmetric::encrypt_slice(&share_key, data_bytes)?;
 
+		let password_encrypt_result = crate::encryption::symmetric::encrypt_slice(&share_key, password.as_bytes())?;
+
 		let body = request::CreateShare {
 			type_,
+			password: password_encrypt_result.into(),
 			data: data_encrypt_result.into(),
-			key: EncryptedData {
-				base64: base64::encode_config(share_key_encrypt_result.bytes, base64::STANDARD),
-				nonce: share_key_encrypt_result.nonce,
-				format_version: 1
-			}
+			key: share_key_encrypt_result.into()
 		};
 
 		let client = reqwest::Client::new();
@@ -475,11 +466,17 @@ impl UpholiClientHelper {
 		Ok(())
 	}
 
-	/// Deletes a share.
-	pub async fn get_share(base_url: &str, id: &str, password: &str) -> Result<Share> {
-		let url = format!("{}/api/share/{}", base_url, id);
-		let response = reqwest::get(url).await?;
-		let share = response.json::<response::Share>().await?;
+	/// Get a share by decrypting it using owner's key.
+	pub async fn get_share(base_url: &str, id: &str, key: &[u8]) -> Result<Share> {
+		let share = Self::fetch_share(base_url, id).await?;
+		let share = Share::from_encrypted(share, &key)?;
+
+		Ok(share)
+	}
+
+	/// Get a share by decrypting it with key derived from given password.
+	pub async fn get_share_using_password(base_url: &str, id: &str, password: &str) -> Result<Share> {
+		let share = Self::fetch_share(base_url, id).await?;
 
 		let salt = "todo";
 		let key = encryption::symmetric::derive_key_from_string(&password, salt)?;
@@ -498,6 +495,13 @@ impl UpholiClientHelper {
 			.send().await?;
 
 		Ok(())
+	}
+
+	async fn fetch_share(base_url: &str, id: &str) -> Result<response::Share> {
+		let url = format!("{}/api/share/{}", base_url, id);
+		let response = reqwest::get(url).await?;
+		let share = response.json::<response::Share>().await?;
+		Ok(share)
 	}
 
 	async fn get_encrypted_albums(base_url: &str) -> Result<Vec<response::Album>> {

@@ -34,8 +34,9 @@ pub mod request {
 	#[serde(rename_all = "camelCase")]
 	pub struct CreateShare {
 		pub type_: crate::ShareType,
+		pub password: crate::EncryptedData,
 		pub data: crate::EncryptedData,
-		pub key: crate::EncryptedData
+		pub key: crate::EncryptedData,
 	}
 
 	#[derive(Deserialize, Serialize, Debug)]
@@ -50,7 +51,6 @@ pub mod request {
 	#[serde(rename_all = "camelCase")]
 	pub struct Login {
 		pub username: String,
-		/// Username encrypted with user's private key
 		pub password: String,
 	}
 }
@@ -132,6 +132,7 @@ pub mod response {
 		pub id: String,
 		pub user_id: String,
 		pub type_: crate::ShareType,
+		pub password: crate::EncryptedData,
 		pub key: crate::EncryptedData,
 		pub data: crate::EncryptedData,
 	}

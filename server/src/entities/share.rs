@@ -16,6 +16,7 @@ pub struct Share {
 	pub id: String,
 	pub user_id: String,
 	pub type_: ShareType,
+	pub password: EncryptedData,
 	pub data: EncryptedData,
 	pub key: EncryptedData
 }
@@ -26,6 +27,7 @@ impl From<CreateShare> for Share {
 			id: create_unique_id(),
 			user_id: String::new(),
 			type_: source.type_,
+			password: source.password,
 			data: source.data,
 			key: source.key
 		}

@@ -16,7 +16,6 @@ impl From<EncryptedData> for EncryptionResult {
 	}
 }
 
-
 impl From<EncryptionResult> for EncryptedData {
 	fn from(source: EncryptionResult) -> Self {
 		Self {

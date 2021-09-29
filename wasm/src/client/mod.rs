@@ -352,11 +352,25 @@ impl UpholiClient {
 
 	/// Creates or updates a share for an album
 	#[wasm_bindgen(js_name = getShare)]
-	pub fn get_share(&self, share_id: String, password: String) -> js_sys::Promise {
+	pub fn get_share(&self, share_id: String) -> js_sys::Promise {
+		let base_url = self.base_url.to_owned();
+		let private_key = self.private_key.as_bytes().to_owned();
+
+		future_to_promise(async move {
+			match UpholiClientHelper::get_share(&base_url, &share_id, &private_key).await {
+				Ok(share) => Ok(JsValue::from_serde(share.as_js_value()).unwrap_throw()),
+				Err(error) => Err(format!("{}", error).into())
+			}
+		})
+	}
+
+	/// Creates or updates a share for an album
+	#[wasm_bindgen(js_name = getShareUsingPassword)]
+	pub fn get_share_using_password(&self, share_id: String, password: String) -> js_sys::Promise {
 		let base_url = self.base_url.to_owned();
 
 		future_to_promise(async move {
-			match UpholiClientHelper::get_share(&base_url, &share_id, &password).await {
+			match UpholiClientHelper::get_share_using_password(&base_url, &share_id, &password).await {
 				Ok(share) => Ok(JsValue::from_serde(share.as_js_value()).unwrap_throw()),
 				Err(error) => Err(format!("{}", error).into())
 			}

@@ -1,57 +1,7 @@
 import * as wasm from "wasm";
+import UpholiServiceLocalStorageHelper from "../helpers/UpholiServiceLocalStorageHelper";
 import Album, { AlbumNew } from "../models/Album";
 import { Photo, PhotoMinimal } from "../models/Photo";
-import { SharingOptions } from "../models/SharingOptions";
-
-const LOCAL_STORAGE_KEY = "upholiService";
-
-/**
- * Data this service stores in local storage
- */
-interface LocalStorageData {
-	key: string
-}
-
-/**
- * Helper class that takes care of storing data for UpholiService in localStorage.
- */
-class UpholiServiceLocalStorageHelper {
-	/**
-	 * Gets currently stored master encryption key
-	 */
-	static getKey(): string | null {
-		const localStorageDataJson = localStorage.getItem(LOCAL_STORAGE_KEY);
-		if (localStorageDataJson) {
-			const localStorageData: LocalStorageData = JSON.parse(localStorageDataJson);
-			return localStorageData.key;
-		}
-		else {
-			return null;
-		}
-	}
-
-	/**
-	 * Store a master encryption key
-	 */
-	static storeKey(key: string) {
-		// TODO: How to invalidate this when session changes,
-		// how to keep it in sync with session cookie?
-		// if session cookie expires.. the localStorage will still be there.
-
-		const localStorageData: LocalStorageData = {
-			key
-		};
-		const localStorageDataJson = JSON.stringify(localStorageData);
-		localStorage.setItem(LOCAL_STORAGE_KEY, localStorageDataJson);
-	}
-
-	/**
-	 * Delete all stored localStorage data managed by this class
-	 */
-	static clear() {
-		localStorage.removeItem(LOCAL_STORAGE_KEY);
-	}
-}
 
 /**
  * This class exists mainly to assign types to the return values of functions within 'wasm.UpholiClient'
@@ -199,9 +149,17 @@ class UpholiService {
 		return shareId;
 	}
 
-	async getShare(id: string, password: string): Promise<void> {
-		return this.client.getShare(id, password);
+	async getShare(id: string): Promise<void> {
+		return this.client.getShare(id);
 	}
+
+	async getShareUsingPassword(id: string, password: string): Promise<void> {
+		return this.client.getShareUsingPassword(id, password);
+	}
+
+	// async findAlbumShare(id: string): Promise<void> {
+	// 	return this.client.findShare("album", id);
+	// }
 
 	async deleteShare(id: string): Promise<void> {
 		await this.client.deleteShare(id);
