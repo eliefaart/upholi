@@ -1,6 +1,6 @@
 use upholi_lib::http::request::UploadPhoto;
-use upholi_lib::{EncryptedData, EncryptedKeyInfo};
 use upholi_lib::ids::create_unique_id;
+use upholi_lib::{EncryptedData, EncryptedKeyInfo};
 use serde::{Deserialize, Serialize};
 
 use crate::database::{Database, DatabaseExt};
@@ -24,6 +24,7 @@ pub struct Photo {
 	/// Encrypted data, contains width, height, exif, etc
 	pub data: EncryptedData,
 	pub keys: Vec<EncryptedKeyInfo>,
+	pub key_hash: String,
 	pub thumbnail_nonce: String,
 	pub preview_nonce: String,
 	pub original_nonce: String
@@ -39,6 +40,7 @@ impl From<UploadPhoto> for Photo {
 			height: source.height as i32,
 			data: source.data,
 			keys: source.keys,
+			key_hash: source.key_hash,
 			thumbnail_nonce: source.thumbnail_nonce,
 			preview_nonce: source.preview_nonce,
 			original_nonce: source.original_nonce,
@@ -122,16 +124,6 @@ impl AccessControl for Photo {
 		if session_owns_photo(self, session) {
 			return true;
 		}
-
-		// Check if photo is part of any collection,
-		// if so, photo is publically accessible too.
-		// if let Ok(albums) = database::get_database().get_albums_with_photo(&self.id) {
-		// 	for album in albums {
-		// 		if album.can_view(session) {
-		// 			return true;
-		// 		}
-		// 	}
-		// }
 
 		false
 	}

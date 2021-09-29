@@ -16,7 +16,8 @@ pub struct Album {
 	pub id: String,
 	pub user_id: String,
 	pub data: EncryptedData,
-	pub keys: Vec<EncryptedKeyInfo>
+	pub keys: Vec<EncryptedKeyInfo>,
+	pub key_hash: String
 }
 
 impl From<CreateAlbum> for Album {
@@ -25,7 +26,8 @@ impl From<CreateAlbum> for Album {
 			id: create_unique_id(),
 			user_id: String::new(),
 			data: source.data,
-			keys: source.keys
+			keys: source.keys,
+			key_hash: source.key_hash
 		}
 	}
 }

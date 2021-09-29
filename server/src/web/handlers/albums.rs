@@ -69,6 +69,7 @@ pub async fn route_update_album(session: Session, req: HttpRequest, updated_albu
 
 							album.data = updated_album.data;
 							album.keys = updated_album.keys;
+							album.key_hash = updated_album.key_hash;
 
 							match album.update() {
 								Ok(_) => create_ok_response(),

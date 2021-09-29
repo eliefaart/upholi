@@ -1,6 +1,7 @@
 use reqwest::StatusCode;
 use upholi_lib::http::request::{Login, Register};
 use upholi_lib::http::response::{CreateAlbum, PhotoMinimal, UploadPhoto, UserInfo};
+use upholi_lib::ids::create_unique_id;
 use upholi_lib::{EncryptedData, EncryptedKeyInfo, PhotoVariant, ShareType, http::*};
 use upholi_lib::result::Result;
 use crate::encryption;
@@ -8,6 +9,7 @@ use crate::entities::{Entity, Shareable};
 use crate::entities::album::{self, Album, AlbumDetailed};
 use crate::entities::photo::{Photo, PhotoData};
 use crate::entities::share::{Share, ShareData};
+use crate::hashing::compute_sha256_hash;
 use crate::images::Image;
 use crate::exif::Exif;
 
@@ -246,6 +248,7 @@ impl UpholiClientHelper {
 		// Generate a key and encrypt it
 		let photo_key = crate::encryption::symmetric::generate_key();
 		let photo_key_encrypt_result = crate::encryption::symmetric::encrypt_slice(private_key, &photo_key)?;
+		let photo_key_hash = compute_sha256_hash(&photo_key_encrypt_result.bytes)?;
 
 		// Create photo data/properties and encrypt it
 		let data = PhotoData {
@@ -286,6 +289,7 @@ impl UpholiClientHelper {
 					}
 				}
 			},
+			key_hash: photo_key_hash,
 			thumbnail_nonce: String::new(),
 			preview_nonce: String::new(),
 			original_nonce: String::new()
@@ -327,17 +331,6 @@ impl UpholiClientHelper {
 		Ok(album)
 	}
 
-	/// Parse a share token, returns the type of share, and its ID
-	fn parse_share_token(token: &str) -> Result<(String, String)> {
-		let token = base64::decode_config(token, base64::STANDARD)?;
-		let token = String::from_utf8(token)?;
-		let parts: Vec<&str> = token.split(":").collect();
-		let token_type = parts[0].to_owned();
-		let id = parts[1].to_owned();
-
-		Ok((token_type, id))
-	}
-
 	pub async fn get_albums(base_url: &str, private_key: &[u8]) -> Result<Vec<album::Album>> {
 		let encrypted_albums = Self::get_encrypted_albums(base_url).await?;
 		let mut albums: Vec<album::Album> = vec!{};
@@ -355,6 +348,7 @@ impl UpholiClientHelper {
 
 		let album_key = crate::encryption::symmetric::generate_key();
 		let album_key_encrypt_result = crate::encryption::symmetric::encrypt_slice(private_key, &album_key)?;
+		let album_key_hash = compute_sha256_hash(&album_key)?;
 
 		let data = album::AlbumData {
 			title: title.into(),
@@ -377,7 +371,8 @@ impl UpholiClientHelper {
 						format_version: 1
 					}
 				}
-			}
+			},
+			key_hash: album_key_hash
 		};
 
 		let client = reqwest::Client::new();

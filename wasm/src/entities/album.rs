@@ -4,8 +4,8 @@ use upholi_lib::http::request::CreateAlbum;
 use upholi_lib::http::response::PhotoMinimal;
 use upholi_lib::http::response;
 use upholi_lib::result::Result;
-use crate::client::helper::UpholiClientHelper;
 use crate::encryption::symmetric::decrypt_data_base64;
+use crate::hashing::compute_sha256_hash;
 
 use super::share::{AlbumShareData, ShareData};
 use super::{Entity, Shareable};
@@ -17,12 +17,6 @@ pub struct AlbumData {
 	pub tags: Vec<String>,
 	pub photos: Vec<String>,
 	pub thumbnail_photo_id: Option<String>,
-}
-
-pub struct DecryptedAlbum {
-	pub id: String,
-	pub user_id: String,
-	pub data: AlbumData,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -48,7 +42,8 @@ pub struct AlbumDetailed {
 
 pub struct Album {
 	private_key: Vec<u8>,
-	decrypted: DecryptedAlbum,
+	encrypted: response::Album,
+	data: AlbumData,
 	keys: Vec<EncryptedKeyInfo>,
 	js_value: JsAlbum
 }
@@ -58,13 +53,14 @@ impl Album {
 		let owner_key = self.keys.iter().find(|key| key.name == crate::OWNER_KEY_NAME).ok_or("Owner key not found")?;
 		let album_key = crate::encryption::symmetric::decrypt_data_base64(&self.private_key, &owner_key.encrypted_key)?;
 
-		let data_json = serde_json::to_string(&self.decrypted.data)?;
+		let data_json = serde_json::to_string(&self.data)?;
 		let data_bytes = data_json.as_bytes();
 		let data_encrypt_result = crate::encryption::symmetric::encrypt_slice(&album_key, data_bytes)?;
 
 		Ok(CreateAlbum {
 			data: data_encrypt_result.into(),
-			keys: self.keys.clone()
+			keys: self.keys.clone(),
+			key_hash: compute_sha256_hash(&album_key)?
 		})
 	}
 }
@@ -76,8 +72,8 @@ impl Entity for Album {
 
 	fn from_encrypted(source: Self::TEncrypted, key_name: &str, key: &[u8]) -> Result<Self> {
 		let owner_key = source.keys.iter().find(|key| key.name == key_name).ok_or(format!("Key with name {} not found", key_name))?;
-		let key = decrypt_data_base64(key, &owner_key.encrypted_key)?;
-		let album_data_json = decrypt_data_base64(&key, &source.data)?;
+		let album_key = decrypt_data_base64(key, &owner_key.encrypted_key)?;
+		let album_data_json = decrypt_data_base64(&album_key, &source.data)?;
 		let album_data: AlbumData = serde_json::from_slice(&album_data_json)?;
 
 		let js_value = Self::TJavaScript {
@@ -88,30 +84,27 @@ impl Entity for Album {
 			thumbnail_photo_id: album_data.thumbnail_photo_id.clone(),
 		};
 
-		let decrypted = DecryptedAlbum {
-			id: source.id,
-			user_id: source.user_id,
-			data: album_data
-		};
+		let keys = source.keys.clone();
 
 		Ok(Self {
 			private_key: key.to_vec(),
-			decrypted,
-			keys: source.keys,
+			encrypted: source,
+			data: album_data,
+			keys,
 			js_value
 		})
 	}
 
 	fn get_id(&self) -> &str {
-		&self.decrypted.id
+		&self.encrypted.id
 	}
 
 	fn get_data_mut(&mut self) -> &mut Self::TData {
-		&mut self.decrypted.data
+		&mut self.data
 	}
 
 	fn get_data(&self) -> &Self::TData {
-		&self.decrypted.data
+		&self.data
 	}
 
 	fn as_js_value(&self) -> &Self::TJavaScript {
