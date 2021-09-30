@@ -2,7 +2,7 @@ use crate::entities::photo::Photo;
 use crate::{entities::session::Session};
 use actix_web::{HttpRequest, HttpResponse, Responder, web};
 use actix_multipart::Multipart;
-use upholi_lib::http::request::CheckPhotoExists;
+use upholi_lib::http::request::{CheckPhotoExists, EntityAuthorizationProof};
 use upholi_lib::{PhotoVariant, http::*};
 
 use crate::error::*;
@@ -23,14 +23,19 @@ pub async fn route_get_photos(user: User) -> impl Responder {
 }
 
 /// Get photo
-pub async fn route_get_photo(session: Option<Session>, req: HttpRequest) -> impl Responder {
+pub async fn route_get_photo(session: Option<Session>, req: HttpRequest, proof: Option<web::Json<EntityAuthorizationProof>>) -> impl Responder {
+	let proof = match proof {
+		Some(proof) => Some(proof.into_inner()),
+		None => None
+	};
+
 	match req.match_info().get("photo_id") {
 		Some(photo_id) => {
 			match Photo::get(&photo_id) {
 				Ok(photo) => {
 					match photo {
 						Some(photo) =>{
-							if photo.can_view(&session) {
+							if photo.can_view(&session, proof) {
 								HttpResponse::Ok().json(photo)
 							}
 							else {
@@ -124,28 +129,33 @@ pub async fn route_upload_photo(user: User, payload: Multipart) -> impl Responde
 }
 
 /// Get the thumbnail of a photo as file
-pub async fn route_download_photo_thumbnail(user: User, session: Option<Session>, req: HttpRequest) -> impl Responder {
-	download_photo(user, session, req, &PhotoVariant::Thumbnail).await
+pub async fn route_download_photo_thumbnail(user: User, session: Option<Session>, req: HttpRequest, proof: Option<web::Json<EntityAuthorizationProof>>) -> impl Responder {
+	download_photo(user, session, req, &PhotoVariant::Thumbnail, proof).await
 }
 
 /// Get the preview (large thumbnail) of a photo as file
-pub async fn route_download_photo_preview(user: User, session: Option<Session>, req: HttpRequest) -> impl Responder {
-	download_photo(user, session, req, &PhotoVariant::Preview).await
+pub async fn route_download_photo_preview(user: User, session: Option<Session>, req: HttpRequest, proof: Option<web::Json<EntityAuthorizationProof>>) -> impl Responder {
+	download_photo(user, session, req, &PhotoVariant::Preview, proof).await
 }
 
 /// Get the original of a photo as file
-pub async fn route_download_photo_original(user: User, session: Option<Session>, req: HttpRequest) -> impl Responder {
-	download_photo(user, session, req, &PhotoVariant::Original).await
+pub async fn route_download_photo_original(user: User, session: Option<Session>, req: HttpRequest, proof: Option<web::Json<EntityAuthorizationProof>>) -> impl Responder {
+	download_photo(user, session, req, &PhotoVariant::Original, proof).await
 }
 
-async fn download_photo(user: User, session: Option<Session>, req: HttpRequest, photo_variant: &PhotoVariant) -> impl Responder {
+async fn download_photo(user: User, session: Option<Session>, req: HttpRequest, photo_variant: &PhotoVariant, proof: Option<web::Json<EntityAuthorizationProof>>) -> impl Responder {
+	let proof = match proof {
+		Some(proof) => Some(proof.into_inner()),
+		None => None
+	};
+
 	match req.match_info().get("photo_id") {
 		Some(photo_id) => {
 			match Photo::get(&photo_id) {
 				Ok(photo) => {
 					match photo {
 						Some(photo) => {
-							if !photo.can_view(&session) {
+							if !photo.can_view(&session, proof) {
 								create_unauthorized_response()
 							}
 							else {

@@ -53,6 +53,13 @@ pub mod request {
 		pub username: String,
 		pub password: String,
 	}
+
+	#[derive(Deserialize, Serialize, Debug)]
+	#[serde(rename_all = "camelCase")]
+	pub struct EntityAuthorizationProof {
+		/// Hash of the private key of an entity
+		pub key_hash: String,
+	}
 }
 
 pub mod response {

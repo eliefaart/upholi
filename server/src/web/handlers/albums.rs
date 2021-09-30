@@ -1,6 +1,6 @@
 use crate::entities::session::Session;
 use actix_web::{web, HttpRequest, HttpResponse, Responder};
-use upholi_lib::http::request::CreateAlbum;
+use upholi_lib::http::request::{CreateAlbum, EntityAuthorizationProof};
 
 use crate::database::{DatabaseEntity, DatabaseUserEntity};
 use crate::web::http::*;
@@ -20,14 +20,19 @@ pub async fn route_get_albums(user: User) -> impl Responder {
 }
 
 /// Get extended information of an album
-pub async fn route_get_album(session: Option<Session>, req: HttpRequest) -> impl Responder {
+pub async fn route_get_album(session: Option<Session>, req: HttpRequest, proof: Option<web::Json<EntityAuthorizationProof>>) -> impl Responder {
 	let album_id = req.match_info().get("album_id").unwrap();
+
+	let proof = match proof {
+		Some(proof) => Some(proof.into_inner()),
+		None => None
+	};
 
 	match Album::get(album_id) {
 		Ok(album_opt) => {
 			match album_opt {
 				Some(album) => {
-					if album.can_view(&session) {
+					if album.can_view(&session, proof) {
 						HttpResponse::Ok().json(album)
 					}
 					else {

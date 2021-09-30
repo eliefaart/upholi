@@ -2,6 +2,7 @@ use crate::entities::Session;
 use serde::{Serialize, Deserialize};
 use upholi_lib::EncryptedData;
 use upholi_lib::http::request::CreateAlbum;
+use upholi_lib::http::request::EntityAuthorizationProof;
 use upholi_lib::ids::create_unique_id;
 
 use crate::database;
@@ -89,9 +90,19 @@ impl DatabaseUserEntity for Album {
 }
 
 impl AccessControl for Album {
-	fn can_view(&self, session: &Option<Session>) -> bool {
+	fn can_view(&self, session: &Option<Session>, proof: Option<EntityAuthorizationProof>) -> bool {
 		// Check if user is owner of album
-		session_owns_album(self, session)
+		if session_owns_album(self, session) {
+			true
+		}
+		else {
+			if let Some(proof) = proof {
+				proof.key_hash == self.key_hash
+			}
+			else {
+				false
+			}
+		}
 	}
 
 	fn can_update(&self, session: &Option<Session>) -> bool {

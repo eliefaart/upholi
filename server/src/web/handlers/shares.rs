@@ -27,7 +27,7 @@ pub async fn route_get_share(session: Option<Session>, req: HttpRequest) -> impl
 		Ok(share_opt) => {
 			match share_opt {
 				Some(share) => {
-					if share.can_view(&session) {
+					if share.can_view(&session, None) {
 						HttpResponse::Ok().json(share)
 					}
 					else {

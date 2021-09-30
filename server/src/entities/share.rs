@@ -3,6 +3,7 @@ use serde::{Serialize, Deserialize};
 use upholi_lib::EncryptedData;
 use upholi_lib::ShareType;
 use upholi_lib::http::request::CreateShare;
+use upholi_lib::http::request::EntityAuthorizationProof;
 use upholi_lib::ids::create_unique_id;
 
 use crate::database;
@@ -92,7 +93,7 @@ impl DatabaseUserEntity for Share {
 }
 
 impl AccessControl for Share {
-	fn can_view(&self, _session: &Option<Session>) -> bool {
+	fn can_view(&self, _session: &Option<Session>, _proof: Option<EntityAuthorizationProof>) -> bool {
 		true
 	}
 

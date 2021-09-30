@@ -1,4 +1,4 @@
-use upholi_lib::http::request::UploadPhoto;
+use upholi_lib::http::request::{EntityAuthorizationProof, UploadPhoto};
 use upholi_lib::ids::create_unique_id;
 use upholi_lib::EncryptedData;
 use serde::{Deserialize, Serialize};
@@ -119,12 +119,19 @@ impl DatabaseUserEntity for Photo {
 }
 
 impl AccessControl for Photo {
-	fn can_view(&self, session: &Option<Session>) -> bool {
+	fn can_view(&self, session: &Option<Session>, proof: Option<EntityAuthorizationProof>) -> bool {
+		// Check if user is owner of album
 		if session_owns_photo(self, session) {
-			return true;
+			true
 		}
-
-		false
+		else {
+			if let Some(proof) = proof {
+				proof.key_hash == self.key_hash
+			}
+			else {
+				false
+			}
+		}
 	}
 
     fn can_update(&self, session: &Option<Session>) -> bool {
