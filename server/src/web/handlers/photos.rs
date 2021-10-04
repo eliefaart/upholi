@@ -2,7 +2,7 @@ use crate::entities::photo::Photo;
 use crate::{entities::session::Session};
 use actix_web::{HttpRequest, HttpResponse, Responder, web};
 use actix_multipart::Multipart;
-use upholi_lib::http::request::{CheckPhotoExists, EntityAuthorizationProof};
+use upholi_lib::http::request::{CheckPhotoExists, EntityAuthorizationProof, RequestedEntity};
 use upholi_lib::{PhotoVariant, http::*};
 
 use crate::error::*;
@@ -17,6 +17,19 @@ use crate::entities::user::User;
 /// Get all photos
 pub async fn route_get_photos(user: User) -> impl Responder {
 	match database::get_database().get_photos_for_user(&user.id) {
+		Ok(photos) => HttpResponse::Ok().json(photos),
+		Err(error) => create_internal_server_error_response(Some(error))
+	}
+}
+
+/// Retreive 1..n requested photos.
+pub async fn route_find_photos(_user: Option<User>, requested_photos: web::Json<Vec<RequestedEntity>>) -> impl Responder {
+	let requested_photos = requested_photos.into_inner();
+
+	// TODO: If no user, then proof for each photo must be present.. or something
+	// Either way function feels weird still.
+
+	match database::get_database().get_photos(requested_photos) {
 		Ok(photos) => HttpResponse::Ok().json(photos),
 		Err(error) => create_internal_server_error_response(Some(error))
 	}

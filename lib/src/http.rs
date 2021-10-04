@@ -3,6 +3,13 @@ pub mod request {
 
 	#[derive(Deserialize, Serialize, Debug)]
 	#[serde(rename_all = "camelCase")]
+	pub struct RequestedEntity {
+		pub id: String,
+		pub key_hash: Option<String>
+	}
+
+	#[derive(Deserialize, Serialize, Debug)]
+	#[serde(rename_all = "camelCase")]
 	pub struct UploadPhoto {
 		pub hash: String,
 		pub width: u32,
@@ -55,7 +62,7 @@ pub mod request {
 	}
 
 	#[derive(Deserialize, Serialize, Debug)]
-	#[serde(rename_all = "camelCase")]
+	//#[serde(rename_all = "camelCase")]
 	pub struct EntityAuthorizationProof {
 		/// Hash of the private key of an entity
 		pub key_hash: String,

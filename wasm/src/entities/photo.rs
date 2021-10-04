@@ -29,6 +29,7 @@ pub struct JsPhoto {
 }
 
 pub struct Photo {
+	key: Vec<u8>,
 	encrypted: response::Photo,
 	data: PhotoData,
 	js_value: JsPhoto
@@ -40,7 +41,6 @@ impl Entity for Photo {
 	type TJavaScript = JsPhoto;
 
 	fn from_encrypted(source: Self::TEncrypted, key: &[u8]) -> Result<Self> {
-		let key = decrypt_data_base64(key, &source.key)?;
 		let photo_data_json = decrypt_data_base64(&key, &source.data)?;
 		let photo_data: PhotoData = serde_json::from_slice(&photo_data_json)?;
 
@@ -54,10 +54,20 @@ impl Entity for Photo {
 		};
 
 		Ok(Self {
+			key: key.clone().to_vec(),
 			encrypted: source,
 			data: photo_data,
 			js_value
 		})
+	}
+
+	fn from_encrypted_with_owner_key(source: Self::TEncrypted, key: &[u8]) -> Result<Self> {
+		let photo_key = decrypt_data_base64(key, &source.key)?;
+		Self::from_encrypted(source, &photo_key)
+	}
+
+	fn get_key(&self) -> &[u8] {
+		&self.key
 	}
 
 	fn get_id(&self) -> &str {

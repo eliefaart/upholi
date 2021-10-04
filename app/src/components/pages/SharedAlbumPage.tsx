@@ -35,13 +35,13 @@ class SharedAlbumPage extends PageBaseComponent<State> {
 
 	tryUnlockShare(password: string): void {
 		if (password) {
-			upholiService.getShareUsingPassword(this.token, password)
-				.then(share => {
-					console.log(share);
+			upholiService.getAlbumFromShare(this.token, password)
+				.then(album => {
+					console.log(album);
 					this.setState({
 						authorized: true,
 						lastPasswordIncorrect: false,
-						//album
+						album
 					});
 				})
 				.catch(error => {

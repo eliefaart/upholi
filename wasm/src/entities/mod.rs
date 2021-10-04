@@ -1,6 +1,7 @@
+use serde::{Deserialize,Serialize};
 use upholi_lib::result::Result;
 
-use self::share::ShareData;
+use self::{photo::Photo, share::ShareData};
 
 pub mod photo;
 pub mod album;
@@ -11,8 +12,13 @@ pub trait Entity {
 	type TData;
 	type TJavaScript;
 
+	/// Init from encrypted data using the entity's key.
 	fn from_encrypted(source: Self::TEncrypted, key: &[u8]) -> Result<Self>
 		where Self: std::marker::Sized;
+	/// Init from encrypted data using the entity's owner's private key.
+	fn from_encrypted_with_owner_key(source: Self::TEncrypted, key: &[u8]) -> Result<Self>
+		where Self: std::marker::Sized;
+	fn get_key(&self) -> &[u8];
 	fn get_id(&self) -> &str;
 	fn get_data(&self) -> &Self::TData;
 	fn get_data_mut(&mut self) -> &mut Self::TData;
@@ -20,5 +26,19 @@ pub trait Entity {
 }
 
 pub trait Shareable {
-	fn create_share_data(&self, key: &[u8]) -> Result<ShareData>;
+	fn create_share_data(&self, key: &[u8], photos: &Vec<Photo>) -> Result<ShareData>;
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct EntityWithProof {
+	pub id: String,
+	pub proof: String
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct EntityKey {
+	pub id: String,
+	pub key: String
 }

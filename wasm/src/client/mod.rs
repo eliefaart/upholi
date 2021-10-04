@@ -6,7 +6,8 @@ use crate::client::helper::{PhotoUploadInfo, UpholiClientHelper};
 
 use crate::entities::Entity;
 
-pub mod helper;
+mod helper;
+mod http;
 
 /*
  * Info on async functions within struct implementations:
@@ -372,6 +373,19 @@ impl UpholiClient {
 		future_to_promise(async move {
 			match UpholiClientHelper::get_share_using_password(&base_url, &share_id, &password).await {
 				Ok(share) => Ok(JsValue::from_serde(share.as_js_value()).unwrap_throw()),
+				Err(error) => Err(format!("{}", error).into())
+			}
+		})
+	}
+
+	/// Creates or updates a share for an album
+	#[wasm_bindgen(js_name = getAlbumFromShare)]
+	pub fn get_album_from_share(&self, share_id: String, password: String) -> js_sys::Promise {
+		let base_url = self.base_url.to_owned();
+
+		future_to_promise(async move {
+			match UpholiClientHelper::get_album_from_share(&base_url, &share_id, &password).await {
+				Ok(album) => Ok(JsValue::from_serde(&album).unwrap_throw()),
 				Err(error) => Err(format!("{}", error).into())
 			}
 		})

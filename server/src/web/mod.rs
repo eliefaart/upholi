@@ -56,6 +56,9 @@ pub async fn run_server() -> std::io::Result<()>{
 					.route("/photo/{photo_id}/thumbnail", actix_web::web::get().to(handlers::photos::route_download_photo_thumbnail))
 					.route("/photo/{photo_id}/preview", actix_web::web::get().to(handlers::photos::route_download_photo_preview))
 
+					// ?
+					.route("/photos/find", actix_web::web::post().to(handlers::photos::route_find_photos))
+
 					.route("/albums", actix_web::web::get().to(handlers::albums::route_get_albums))
 					.route("/album", actix_web::web::post().to(handlers::albums::route_create_album))
 					.route("/album/{album_id}", actix_web::web::get().to(handlers::albums::route_get_album))

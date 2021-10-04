@@ -4,8 +4,10 @@ use upholi_lib::http::response::PhotoMinimal;
 use upholi_lib::http::response;
 use upholi_lib::result::Result;
 use crate::encryption::symmetric::decrypt_data_base64;
+use crate::entities::{EntityKey, EntityWithProof};
 use crate::hashing::compute_sha256_hash;
 
+use super::photo::Photo;
 use super::share::{AlbumShareData, ShareData};
 use super::{Entity, Shareable};
 
@@ -40,7 +42,7 @@ pub struct AlbumDetailed {
 }
 
 pub struct Album {
-	private_key: Vec<u8>,
+	key: Vec<u8>,
 	encrypted: response::Album,
 	data: AlbumData,
 	js_value: JsAlbum
@@ -48,16 +50,14 @@ pub struct Album {
 
 impl Album {
 	pub fn create_update_request_struct(&self) -> Result<CreateAlbum> {
-		let album_key = crate::encryption::symmetric::decrypt_data_base64(&self.private_key, &self.encrypted.key)?;
-
 		let data_json = serde_json::to_string(&self.data)?;
 		let data_bytes = data_json.as_bytes();
-		let data_encrypt_result = crate::encryption::symmetric::encrypt_slice(&album_key, data_bytes)?;
+		let data_encrypt_result = crate::encryption::symmetric::encrypt_slice(&self.key, data_bytes)?;
 
 		Ok(CreateAlbum {
 			data: data_encrypt_result.into(),
 			key: self.encrypted.key.clone(),
-			key_hash: compute_sha256_hash(&album_key)?
+			key_hash: compute_sha256_hash(&self.key)?
 		})
 	}
 }
@@ -68,8 +68,7 @@ impl Entity for Album {
 	type TJavaScript = JsAlbum;
 
 	fn from_encrypted(source: Self::TEncrypted, key: &[u8]) -> Result<Self> {
-		let album_key = decrypt_data_base64(key, &source.key)?;
-		let album_data_json = decrypt_data_base64(&album_key, &source.data)?;
+		let album_data_json = decrypt_data_base64(key, &source.data)?;
 		let album_data: AlbumData = serde_json::from_slice(&album_data_json)?;
 
 		let js_value = Self::TJavaScript {
@@ -81,11 +80,20 @@ impl Entity for Album {
 		};
 
 		Ok(Self {
-			private_key: key.to_vec(),
+			key: key.to_vec(),
 			encrypted: source,
 			data: album_data,
 			js_value
 		})
+	}
+
+	fn from_encrypted_with_owner_key(source: Self::TEncrypted, key: &[u8]) -> Result<Self> {
+		let album_key = decrypt_data_base64(key, &source.key)?;
+		Self::from_encrypted(source, &album_key)
+	}
+
+	fn get_key(&self) -> &[u8] {
+		&self.key
 	}
 
 	fn get_id(&self) -> &str {
@@ -106,16 +114,24 @@ impl Entity for Album {
 }
 
 impl Shareable for Album {
-	fn create_share_data(&self, key: &[u8]) -> Result<ShareData> {
+	fn create_share_data(&self, key: &[u8], photos: &Vec<Photo>) -> Result<ShareData> {
 		let album_key = decrypt_data_base64(key, &self.encrypted.key)?;
 
 		// How is this function going to figure out the photo's keys?
 		// It has the photo IDs
+		let mut photos_info = vec!{};
+		for photo in photos {
+			let entity = EntityKey {
+				id: photo.get_id().to_string(),
+				key: base64::encode_config(photo.get_key(), base64::STANDARD)
+			};
+			photos_info.push(entity);
+		}
 
 		Ok(ShareData::Album(AlbumShareData {
 			album_id: self.get_id().into(),
 			album_key: album_key,
-			photo_keys: vec!{}
+			photos: photos_info
 		}))
 	}
 }

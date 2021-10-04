@@ -4,7 +4,7 @@ use upholi_lib::http::response;
 use upholi_lib::result::Result;
 use crate::encryption::symmetric::decrypt_data_base64;
 
-use super::Entity;
+use super::{Entity, EntityKey};
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -17,7 +17,7 @@ pub enum ShareData {
 pub struct AlbumShareData {
 	pub album_id: String,
 	pub album_key: Vec<u8>,
-	pub photo_keys: Vec<Vec<u8>>
+	pub photos: Vec<EntityKey>
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -29,6 +29,7 @@ pub struct JsShare {
 }
 
 pub struct Share {
+	key: Vec<u8>,
 	encrypted: response::Share,
 	data: ShareData,
 	js_value: JsShare
@@ -52,10 +53,20 @@ impl Entity for Share {
 		};
 
 		Ok(Self {
+			key: key.to_vec(),
 			encrypted: source,
 			data,
 			js_value
 		})
+	}
+
+	fn from_encrypted_with_owner_key(source: Self::TEncrypted, key: &[u8]) -> Result<Self> {
+		let share_key = decrypt_data_base64(key, &source.key)?;
+		Self::from_encrypted(source, &share_key)
+	}
+
+	fn get_key(&self) -> &[u8] {
+		&self.key
 	}
 
 	fn get_id(&self) -> &str {

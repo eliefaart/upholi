@@ -153,6 +153,10 @@ class UpholiService {
 		return this.client.getShare(id);
 	}
 
+	async getAlbumFromShare(id: string, password: string): Promise<Album> {
+		return await this.client.getAlbumFromShare(id, password);
+	}
+
 	async getShareUsingPassword(id: string, password: string): Promise<void> {
 		return this.client.getShareUsingPassword(id, password);
 	}

@@ -2,6 +2,7 @@
 use mongodb::{sync::Client, options::ClientOptions};
 use bson::doc;
 use lazy_static::lazy_static;
+use upholi_lib::http::request::RequestedEntity;
 use upholi_lib::http::response::PhotoMinimal;
 use crate::database;
 use crate::database::{Database, DatabaseExt, SortField};
@@ -173,6 +174,53 @@ impl DatabaseExt for MongoDatabase {
 
 		let cursor = mongo_collection.aggregate(pipeline, None)?;
 		get_items_from_cursor(cursor)
+	}
+
+	fn get_photos(&self, photos: Vec<RequestedEntity>) -> Result<Vec<PhotoMinimal>> {
+		let mongo_collection = DATABASE.collection(database::COLLECTION_PHOTOS);
+
+		let mut photo_filter_docs: Vec<bson::Document> = Vec::new();
+		for photo in photos {
+			let filter_doc = match photo.key_hash {
+				Some(key_hash) => {
+					doc!{
+						"id": photo.id,
+						"keyHash": key_hash
+					}
+				},
+				None => {
+					doc!{
+						"id": photo.id,
+					}
+				}
+			};
+
+			photo_filter_docs.push(filter_doc);
+		}
+
+		if photo_filter_docs.len() > 0 {
+			let pipeline = vec!{
+				doc!{
+					"$match": {
+						"$or": photo_filter_docs
+					}
+				},
+				doc!{
+					"$project": {
+						"id": "$id",
+						"width": "$width",
+						"height": "$height"
+					}
+				}
+			};
+
+			let cursor = mongo_collection.aggregate(pipeline, None)?;
+			get_items_from_cursor(cursor)
+		}
+		else {
+			// Nothing to query
+			Ok(vec!{})
+		}
 	}
 
 	fn remove_photos_from_all_albums(&self, photo_ids: &[&str]) -> Result<()> {

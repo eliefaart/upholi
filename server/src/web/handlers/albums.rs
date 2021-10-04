@@ -20,7 +20,7 @@ pub async fn route_get_albums(user: User) -> impl Responder {
 }
 
 /// Get extended information of an album
-pub async fn route_get_album(session: Option<Session>, req: HttpRequest, proof: Option<web::Json<EntityAuthorizationProof>>) -> impl Responder {
+pub async fn route_get_album(session: Option<Session>, req: HttpRequest, proof: Option<web::Query<EntityAuthorizationProof>>) -> impl Responder {
 	let album_id = req.match_info().get("album_id").unwrap();
 
 	let proof = match proof {
