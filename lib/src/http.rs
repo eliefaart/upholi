@@ -112,7 +112,8 @@ pub mod response {
 	pub struct PhotoMinimal {
 		pub id: String,
 		pub width: u32,
-		pub height: u32
+		pub height: u32,
+		pub key_hash: Option<String>
 	}
 
 	#[derive(Deserialize, Serialize, Debug)]
@@ -129,7 +130,8 @@ pub mod response {
 			Self {
 				id: self.id.clone(),
 				height: self.height,
-				width: self.width
+				width: self.width,
+				key_hash: self.key_hash.clone()
 			}
 		}
 	}

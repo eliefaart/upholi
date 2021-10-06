@@ -59,36 +59,25 @@ class UpholiService {
 		return id;
 	}
 
-	async getPhoto(id: string): Promise<Photo> {
-		const json = await this.client.getPhoto(id);
-		const photo: Photo = JSON.parse(json);
+	async getPhotos(): Promise<PhotoMinimal[]> {
+		const photos: PhotoMinimal[] = await this.client.getPhotos();
+		return photos;
+	}
 
+	async getPhoto(id: string, keyHash?: string): Promise<Photo> {
+		const photo: Photo = await this.client.getPhoto(id);
 		return photo;
 	}
 
-	async getPhotos(): Promise<PhotoMinimal[]> {
-		const photos = await this.client.getPhotos();
-
-		return photos.map((photo: any) => {
-			const typed: PhotoMinimal = {
-				id: photo.id,
-				width: photo.width,
-				height: photo.height
-			};
-
-			return typed;
-		});
-	}
-
-	async getPhotoThumbnailImageSrc(id: string): Promise<string> {
+	async getPhotoThumbnailImageSrc(id: string, keyHash?: string): Promise<string> {
 		return await this.client.getPhotoThumbnailImageSrc(id);
 	}
 
-	async getPhotoPreviewImageSrc(id: string): Promise<string> {
+	async getPhotoPreviewImageSrc(id: string, keyHash?: string): Promise<string> {
 		return await this.client.getPhotoPreviewImageSrc(id);
 	}
 
-	async getPhotoOriginalImageSrc(id: string): Promise<string> {
+	async getPhotoOriginalImageSrc(id: string, keyHash?: string): Promise<string> {
 		return await this.client.getPhotoOriginalImageSrc(id);
 	}
 
@@ -97,25 +86,12 @@ class UpholiService {
 	}
 
 	async getAlbums(): Promise<AlbumNew[]> {
-		const albums = await this.client.getAlbums();
-
-		return albums.map((album: any) => {
-			const typed: AlbumNew = {
-				id: album.id,
-				title: album.title,
-				thumbnailPhotoId: album.thumbnailPhotoId,
-				tags: album.tags,
-				photos: album.photos
-			};
-
-			return typed;
-		});
+		const albums: AlbumNew[] = await this.client.getAlbums();
+		return albums;
 	}
 
 	async getAlbum(id: string): Promise<Album> {
-		const json = await this.client.getAlbum(id);
-		const album: Album = JSON.parse(json);
-
+		const album: Album = await this.client.getAlbum(id);
 		return album;
 	}
 
@@ -145,8 +121,7 @@ class UpholiService {
 	}
 
 	async shareAlbum(id: string, password: string): Promise<string> {
-		const shareId = await this.client.upsertAlbumShare(id, password) as string;
-		return shareId;
+		return await this.client.upsertAlbumShare(id, password) as string;
 	}
 
 	async getShare(id: string): Promise<void> {

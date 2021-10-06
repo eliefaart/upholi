@@ -105,7 +105,7 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 	}
 
 	componentDidMount(): void {
-		this.refreshPhotos();
+		this.refreshAlbum();
 		super.componentDidMount();
 	}
 
@@ -121,7 +121,7 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 		super.componentDidUpdate(prevProps, prevState);
 	}
 
-	refreshPhotos(): void {
+	refreshAlbum(): void {
 		upholiService.getAlbum(this.state.albumId)
 			.then(album => {
 				this.setState({
@@ -136,22 +136,6 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 					}),
 					selectedPhotoIds: []
 				});
-
-				for (const albumPhoto of album.photos) {
-					upholiService.getPhotoThumbnailImageSrc(albumPhoto.id)
-						.then(src => {
-							this.setState(previousState => {
-								const albumPhotoToUpdate = previousState.galleryPhotos.find(p => p.id === albumPhoto.id);
-								if (albumPhotoToUpdate) {
-									albumPhotoToUpdate.src = src;
-								}
-
-								return {
-									galleryPhotos: previousState.galleryPhotos
-								};
-							});
-						});
-				}
 			});
 	}
 
@@ -206,7 +190,7 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 	}
 
 	removeSelectedPhotosFromAlbum(): void {
-		const fnRefreshPhotos = () => this.refreshPhotos();
+		const fnRefreshPhotos = () => this.refreshAlbum();
 		const fnCloseConfirmDialog = () => this.setState({ confirmRemovePhotosOpen: false });
 
 		upholiService.removePhotosFromAlbum(this.state.albumId, this.state.selectedPhotoIds)
@@ -245,7 +229,7 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 
 	uploadFilesList (fileList: FileList): void {
 		const fnOnUploadFinished = () => {
-			this.refreshPhotos();
+			this.refreshAlbum();
 			toast.info("Upload finished.");
 		};
 
@@ -285,28 +269,7 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 		else {
 			return (
 				<ContentContainer onDrop={(event) => this.onFilesDropped(event)}>
-					{/* <div className="topBar">
-						<h1>{this.state.album.title}</h1>
-					</div>
-
-					{!!this.state.album.title && this.state.galleryPhotos.length === 0 &&
-						<span className="centerText">This album has no photos.</span>
-					}
-
-					{this.state.galleryPhotos.length > 0 && <PhotoGallerySelectable
-						onClick={(_, target) => this.onPhotoClicked(target.index)}
-						photos={this.state.galleryPhotos}
-						selectedItems={this.state.selectedPhotoIds}
-						onPhotoSelectedChange={(photoId, selected) => this.onPhotoSelectedChange(photoId, selected)}/>
-					}
-
-					{this.state.openedPhotoId && <ModalPhotoDetail
-						isOpen={!!this.state.openedPhotoId}
-						photoId={this.state.openedPhotoId}
-						onRequestClose={() => this.context.history.push(document.location.pathname + "?" + UrlHelper.removeQueryStringParam(document.location.search, queryStringParamNamePhotoId))}
-					/>} */}
-
-					<AlbumView album={this.state.album}/>
+					<AlbumView album={this.state.album} />
 
 					<ModalSharingOptions
 						shareUrl={document.location.origin + "/s/" + this.state.sharingOptions.token}

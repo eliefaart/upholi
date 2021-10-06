@@ -1,7 +1,8 @@
 interface AlbumPhoto {
 	id: string,
 	width: number,
-	height: number
+	height: number,
+	keyHash: string | null
 }
 
 interface Album {

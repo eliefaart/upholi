@@ -112,12 +112,7 @@ impl UpholiClient {
 
 		future_to_promise(async move {
 			match UpholiClientHelper::get_photo(&base_url, &private_key, &id).await {
-				Ok(photo) => {
-					match serde_json::to_string(photo.get_data()) {
-						Ok(json) => Ok(JsValue::from(json)),
-						Err(error) => Err(format!("{}", error).into())
-					}
-				},
+				Ok(photo) => Ok(JsValue::from_serde(photo.get_data()).unwrap_throw()),
 				Err(error) => Err(format!("{}", error).into())
 			}
 		})
@@ -245,12 +240,7 @@ impl UpholiClient {
 
 		future_to_promise(async move {
 			match UpholiClientHelper::get_album_full(&base_url, &private_key, &id).await {
-				Ok(album) => {
-					match serde_json::to_string(&album) {
-						Ok(json) => Ok(JsValue::from(json)),
-						Err(error) => Err(format!("{}", error).into())
-					}
-				},
+				Ok(album) => Ok(JsValue::from_serde(&album).unwrap_throw()),
 				Err(error) => Err(format!("{}", error).into())
 			}
 		})

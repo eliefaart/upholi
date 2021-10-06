@@ -4,7 +4,7 @@ use upholi_lib::http::response::PhotoMinimal;
 use upholi_lib::http::response;
 use upholi_lib::result::Result;
 use crate::encryption::symmetric::decrypt_data_base64;
-use crate::entities::{EntityKey, EntityWithProof};
+use crate::entities::EntityKey;
 use crate::hashing::compute_sha256_hash;
 
 use super::photo::Photo;

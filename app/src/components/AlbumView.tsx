@@ -37,6 +37,10 @@ export default class AlbumView extends React.Component<Props, State> {
 		};
 	}
 
+	componentDidMount(): void {
+		this.fetchPhotoSources();
+	}
+
 	componentDidUpdate(): void {
 		// Open photo, if indicated as such by query string
 		const queryStringPhotoId = UrlHelper.getQueryStringParamValue(location.search, queryStringParamNamePhotoId);
@@ -76,7 +80,8 @@ export default class AlbumView extends React.Component<Props, State> {
 
 			// Fetch each missing one
 			for (const photo of photoSourcesMissing) {
-				upholiService.getPhotoThumbnailImageSrc(photo.photoId)
+				const albumPhoto = this.props.album.photos.find(p => p.id === photo.photoId);
+				upholiService.getPhotoThumbnailImageSrc(photo.photoId, albumPhoto?.keyHash ?? undefined)
 					.then(src => {
 						this.setState(previousState => {
 							const photoSourceToUpdate = previousState.photoSources.find(p => p.photoId === photo.photoId);

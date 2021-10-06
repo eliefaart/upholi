@@ -71,7 +71,7 @@ class SharedAlbumPage extends PageBaseComponent<State> {
 					onSubmitPassword={(password) => this.tryUnlockShare(password)}
 					lastPasswordIncorrect={this.state.lastPasswordIncorrect}/>}
 
-				{this.state.album != null && <AlbumView album={this.state.album}/>}
+				{this.state.album != null && <AlbumView album={this.state.album} />}
 			</ContentContainer>
 		);
 	}

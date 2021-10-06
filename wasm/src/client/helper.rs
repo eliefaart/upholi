@@ -5,7 +5,7 @@ use upholi_lib::{PhotoVariant, ShareType, http::*};
 use upholi_lib::result::Result;
 use crate::client::http;
 use crate::encryption;
-use crate::entities::{Entity, EntityKey, EntityWithProof, Shareable};
+use crate::entities::{Entity, EntityWithProof, Shareable};
 use crate::entities::album::{self, Album, AlbumDetailed};
 use crate::entities::photo::{Photo, PhotoData};
 use crate::entities::share::{Share, ShareData};
@@ -521,7 +521,14 @@ impl UpholiClientHelper {
 						proof: compute_sha256_hash(photo.key.as_bytes())?
 					});
 				}
-				let photos = http::get_photos_using_key_access_proof(base_url, &photos_proof).await?;
+
+				let mut photos = http::get_photos_using_key_access_proof(base_url, &photos_proof).await?;
+				for mut photo in &mut photos {
+					let photo_with_proof = photos_proof.iter().find(|p| p.id == photo.id);
+					if let Some(photo_with_proof) = photo_with_proof {
+						photo.key_hash = Some(photo_with_proof.proof.clone());
+					}
+				}
 
 				let thumbnail_photo = match album_data.thumbnail_photo_id.clone() {
 					Some(thumbnail_photo_id) => photos.iter().cloned().find(|photo| photo.id == thumbnail_photo_id),
