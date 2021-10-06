@@ -17,6 +17,7 @@ import upholiService from "../../services/UpholiService";
 import uploadHelper from "../../helpers/UploadHelper";
 import ModalSharingOptions from "../modals/ModalSharingOptions";
 import { SharingOptions } from "../../models/SharingOptions";
+import AlbumView from "../AlbumView";
 
 const queryStringParamNamePhotoId = "photoId";
 
@@ -284,7 +285,7 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 		else {
 			return (
 				<ContentContainer onDrop={(event) => this.onFilesDropped(event)}>
-					<div className="topBar">
+					{/* <div className="topBar">
 						<h1>{this.state.album.title}</h1>
 					</div>
 
@@ -303,7 +304,9 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 						isOpen={!!this.state.openedPhotoId}
 						photoId={this.state.openedPhotoId}
 						onRequestClose={() => this.context.history.push(document.location.pathname + "?" + UrlHelper.removeQueryStringParam(document.location.search, queryStringParamNamePhotoId))}
-					/>}
+					/>} */}
+
+					<AlbumView album={this.state.album}/>
 
 					<ModalSharingOptions
 						shareUrl={document.location.origin + "/s/" + this.state.sharingOptions.token}

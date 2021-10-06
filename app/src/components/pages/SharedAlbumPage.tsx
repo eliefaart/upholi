@@ -5,6 +5,7 @@ import appStateContext from "../../contexts/AppStateContext";
 import Album from "../../models/Album";
 import InputPassword from "../InputPassword";
 import upholiService from "../../services/UpholiService";
+import AlbumView from "../AlbumView";
 
 interface State {
 	authorized: boolean,
@@ -37,7 +38,6 @@ class SharedAlbumPage extends PageBaseComponent<State> {
 		if (password) {
 			upholiService.getAlbumFromShare(this.token, password)
 				.then(album => {
-					console.log(album);
 					this.setState({
 						authorized: true,
 						lastPasswordIncorrect: false,
@@ -71,15 +71,7 @@ class SharedAlbumPage extends PageBaseComponent<State> {
 					onSubmitPassword={(password) => this.tryUnlockShare(password)}
 					lastPasswordIncorrect={this.state.lastPasswordIncorrect}/>}
 
-				{/* Album view  */}
-				{this.state.album != null && (
-					<div className="topBar">
-
-						{/* TODO: Create AlbumView component. With option for if photos are selectable. */}
-
-						<h1>{this.state.album.title}</h1>
-					</div>
-				)}
+				{this.state.album != null && <AlbumView album={this.state.album}/>}
 			</ContentContainer>
 		);
 	}

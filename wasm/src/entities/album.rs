@@ -120,12 +120,15 @@ impl Shareable for Album {
 		// How is this function going to figure out the photo's keys?
 		// It has the photo IDs
 		let mut photos_info = vec!{};
-		for photo in photos {
-			let entity = EntityKey {
-				id: photo.get_id().to_string(),
-				key: base64::encode_config(photo.get_key(), base64::STANDARD)
-			};
-			photos_info.push(entity);
+		for photo_id in &self.data.photos {
+			let photo = photos.iter().find(|p| p.get_id() == photo_id);
+			if let Some(photo) = photo {
+				let entity = EntityKey {
+					id: photo_id.clone(),
+					key: base64::encode_config(photo.get_key(), base64::STANDARD)
+				};
+				photos_info.push(entity);
+			}
 		}
 
 		Ok(ShareData::Album(AlbumShareData {
