@@ -111,7 +111,21 @@ impl UpholiClient {
 		let base_url = self.base_url.to_owned();
 
 		future_to_promise(async move {
-			match UpholiClientHelper::get_photo(&base_url, &private_key, &id).await {
+			match UpholiClientHelper::get_photo(&base_url, &private_key, &id, &None).await {
+				Ok(photo) => Ok(JsValue::from_serde(photo.get_data()).unwrap_throw()),
+				Err(error) => Err(format!("{}", error).into())
+			}
+		})
+	}
+
+	/// Get photo data
+	#[wasm_bindgen(js_name = getPhotoWithProof)]
+	pub fn get_photo_with_proof(&self, id: String, key_hash: String) -> js_sys::Promise {
+		let private_key = self.private_key.as_bytes().to_owned();
+		let base_url = self.base_url.to_owned();
+
+		future_to_promise(async move {
+			match UpholiClientHelper::get_photo(&base_url, &private_key, &id, &Some(key_hash)).await {
 				Ok(photo) => Ok(JsValue::from_serde(photo.get_data()).unwrap_throw()),
 				Err(error) => Err(format!("{}", error).into())
 			}
@@ -157,7 +171,7 @@ impl UpholiClient {
 		let base_url = self.base_url.to_owned();
 
 		future_to_promise(async move {
-			match UpholiClientHelper::get_photo_base64(&base_url, &private_key, &id, photo_variant).await {
+			match UpholiClientHelper::get_photo_base64(&base_url, &private_key, &id, photo_variant, &None).await {
 				Ok(base64) => Ok(JsValue::from(base64)),
 				Err(error) => Err(format!("{}", error).into())
 			}
@@ -167,28 +181,46 @@ impl UpholiClient {
 	/// Get a base64 string of a photo's thumbnail image
 	#[wasm_bindgen(js_name = getPhotoThumbnailImageSrc)]
 	pub fn get_photo_thumbnail_image_src(&self, id: String) -> js_sys::Promise {
-		Self::get_photo_image_src(&self, id, PhotoVariant::Thumbnail)
+		Self::get_photo_image_src(&self, id, PhotoVariant::Thumbnail, None)
 	}
 
 	/// Get a base64 string of a photo's preview image
 	#[wasm_bindgen(js_name = getPhotoPreviewImageSrc)]
 	pub fn get_photo_preview_image_src(&self, id: String) -> js_sys::Promise {
-		Self::get_photo_image_src(&self, id, PhotoVariant::Preview)
+		Self::get_photo_image_src(&self, id, PhotoVariant::Preview, None)
 	}
 
 	/// Get a base64 string of photo's original file
 	#[wasm_bindgen(js_name = getPhotoOriginalImageSrc)]
 	pub fn get_photo_original_image_src(&self, id: String) -> js_sys::Promise {
-		Self::get_photo_image_src(&self, id, PhotoVariant::Original)
+		Self::get_photo_image_src(&self, id, PhotoVariant::Original, None)
+	}
+
+	/// Get a base64 string of a photo's thumbnail image
+	#[wasm_bindgen(js_name = getPhotoThumbnailImageSrcWithProof)]
+	pub fn get_photo_thumbnail_image_src_with_proof(&self, id: String, key_hash: String) -> js_sys::Promise {
+		Self::get_photo_image_src(&self, id, PhotoVariant::Thumbnail, Some(key_hash))
+	}
+
+	/// Get a base64 string of a photo's preview image
+	#[wasm_bindgen(js_name = getPhotoPreviewImageSrcWithProof)]
+	pub fn get_photo_preview_image_src_with_proof(&self, id: String, key_hash: String) -> js_sys::Promise {
+		Self::get_photo_image_src(&self, id, PhotoVariant::Preview, Some(key_hash))
+	}
+
+	/// Get a base64 string of photo's original file
+	#[wasm_bindgen(js_name = getPhotoOriginalImageSrcWithProof)]
+	pub fn get_photo_original_image_src_with_proof(&self, id: String, key_hash: String) -> js_sys::Promise {
+		Self::get_photo_image_src(&self, id, PhotoVariant::Original, Some(key_hash))
 	}
 
 	/// Get a string of a photo variant that can be used within an HTML image element's src attribute
-	fn get_photo_image_src(&self, id: String, photo_variant: PhotoVariant) -> js_sys::Promise {
+	fn get_photo_image_src(&self, id: String, photo_variant: PhotoVariant, key_hash: Option<String>) -> js_sys::Promise {
 		let private_key = self.private_key.as_bytes().to_owned();
 		let base_url = self.base_url.to_owned();
 
 		future_to_promise(async move {
-			match UpholiClientHelper::get_photo_image_src(&base_url, &private_key, &id, photo_variant).await {
+			match UpholiClientHelper::get_photo_image_src(&base_url, &private_key, &id, photo_variant, &key_hash).await {
 				Ok(base64) => Ok(JsValue::from(base64)),
 				Err(error) => Err(format!("{}", error).into())
 			}

@@ -177,15 +177,20 @@ impl UpholiClientHelper {
 		Ok(photos)
 	}
 
-	pub async fn get_photo(base_url: &str, private_key: &[u8], id: &str) -> Result<Photo> {
-		let photo = UpholiClientHelper::get_photo_encrypted(base_url, id).await?;
+	pub async fn get_photo(base_url: &str, private_key: &[u8], id: &str, key_hash: &Option<String>) -> Result<Photo> {
+		let photo = UpholiClientHelper::get_photo_encrypted(base_url, id, &key_hash).await?;
 		let photo = Photo::from_encrypted_with_owner_key(photo, private_key)?;
 		Ok(photo)
 	}
 
 	/// Get photo as returned by server.
-	pub async fn get_photo_encrypted(base_url: &str, id: &str) -> Result<response::Photo> {
-		let url = format!("{}/api/photo/{}", base_url, id);
+	pub async fn get_photo_encrypted(base_url: &str, id: &str, key_hash: &Option<String>) -> Result<response::Photo> {
+		let mut url = format!("{}/api/photo/{}", base_url, id);
+
+		if let Some(key_hash) = key_hash {
+			url = format!("{}?key_hash={}", url, key_hash);
+		}
+
 		let response = reqwest::get(url).await?;
 		let encrypted_photo = response.json::<response::Photo>().await?;
 
@@ -212,15 +217,19 @@ impl UpholiClientHelper {
 		Ok(())
 	}
 
-	pub async fn get_photo_base64(base_url: &str, private_key: &[u8], id: &str, photo_variant: PhotoVariant) -> Result<String> {
-		let url = format!("{}/api/photo/{}/{}", base_url, id, photo_variant.to_string());
+	pub async fn get_photo_base64(base_url: &str, private_key: &[u8], id: &str, photo_variant: PhotoVariant, key_hash: &Option<String>) -> Result<String> {
+		let mut url = format!("{}/api/photo/{}/{}", base_url, id, photo_variant.to_string());
+
+		if let Some(key_hash) = key_hash {
+			url = format!("{}?key_hash={}", url, key_hash);
+		}
 
 		// Get photo bytes
 		let response = reqwest::get(url).await?;
 		let encrypted_bytes = response.bytes().await?;
 
 		// Decrypt photo bytes
-		let photo = Self::get_photo_encrypted(base_url, id).await?;
+		let photo = Self::get_photo_encrypted(base_url, id, key_hash).await?;
 		let photo_key = crate::encryption::symmetric::decrypt_data_base64(private_key, &photo.key)?;
 		let nonce = match photo_variant {
 			PhotoVariant::Thumbnail => photo.thumbnail_nonce.as_bytes(),
@@ -232,10 +241,10 @@ impl UpholiClientHelper {
 		Ok(base64::encode_config(&bytes, base64::STANDARD))
 	}
 
-	pub async fn get_photo_image_src(base_url: &str, private_key: &[u8], id: &str, photo_variant: PhotoVariant) -> Result<String> {
-		let photo = Self::get_photo(base_url, private_key, id).await?;
+	pub async fn get_photo_image_src(base_url: &str, private_key: &[u8], id: &str, photo_variant: PhotoVariant, key_hash: &Option<String>) -> Result<String> {
+		let photo = Self::get_photo(base_url, private_key, id, key_hash).await?;
 		let photo_data = photo.get_data();
-		let base64 = Self::get_photo_base64(base_url, private_key, id, photo_variant).await?;
+		let base64 = Self::get_photo_base64(base_url, private_key, id, photo_variant, &key_hash).await?;
 
 		let src = format!("data:{};base64,{}", photo_data.content_type, base64);
 		Ok(src)
@@ -245,8 +254,8 @@ impl UpholiClientHelper {
 	pub fn get_upload_photo_request_data(photo: &PhotoUploadInfo, private_key: &[u8]) -> Result<request::UploadPhoto> {
 		// Generate a key and encrypt it
 		let photo_key = crate::encryption::symmetric::generate_key();
+		let photo_key_hash = compute_sha256_hash(&photo_key)?;
 		let photo_key_encrypt_result = crate::encryption::symmetric::encrypt_slice(private_key, &photo_key)?;
-		let photo_key_hash = compute_sha256_hash(&photo_key_encrypt_result.bytes)?;
 
 		// Create photo data/properties and encrypt it
 		let data = PhotoData {
@@ -443,7 +452,7 @@ impl UpholiClientHelper {
 		let photos = Self::get_photos(base_url).await?;
 		let mut album_photos: Vec<Photo> = vec!{};
 		for photo in photos {
-			let photo = Self::get_photo(base_url, private_key, &photo.id).await?;
+			let photo = Self::get_photo(base_url, private_key, &photo.id, &None).await?;
 			album_photos.push(photo);
 		}
 
@@ -516,9 +525,10 @@ impl UpholiClientHelper {
 
 				let mut photos_proof = vec!{};
 				for photo in &share_data.photos {
+					let photo_key = base64::decode_config(&photo.key, base64::STANDARD)?;
 					photos_proof.push(EntityWithProof {
 						id: photo.id.clone(),
-						proof: compute_sha256_hash(photo.key.as_bytes())?
+						proof: compute_sha256_hash(&photo_key)?
 					});
 				}
 

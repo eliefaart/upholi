@@ -65,20 +65,28 @@ class UpholiService {
 	}
 
 	async getPhoto(id: string, keyHash?: string): Promise<Photo> {
-		const photo: Photo = await this.client.getPhoto(id);
+		const photo: Photo = keyHash === undefined
+			? await this.client.getPhoto(id)
+			: await this.client.getPhotoWithProof(id, keyHash);
 		return photo;
 	}
 
 	async getPhotoThumbnailImageSrc(id: string, keyHash?: string): Promise<string> {
-		return await this.client.getPhotoThumbnailImageSrc(id);
+		return keyHash === undefined
+			? await this.client.getPhotoThumbnailImageSrc(id)
+			: await this.client.getPhotoThumbnailImageSrcWithProof(id, keyHash);
 	}
 
 	async getPhotoPreviewImageSrc(id: string, keyHash?: string): Promise<string> {
-		return await this.client.getPhotoPreviewImageSrc(id);
+		return keyHash === undefined
+			? await this.client.getPhotoPreviewImageSrc(id)
+			: await this.client.getPhotoPreviewImageSrcWithProof(id, keyHash);
 	}
 
 	async getPhotoOriginalImageSrc(id: string, keyHash?: string): Promise<string> {
-		return await this.client.getPhotoOriginalImageSrc(id);
+		return keyHash === undefined
+			? await this.client.getPhotoOriginalImageSrc(id)
+			: await this.client.getPhotoOriginalImageSrcWithProof(id, keyHash);
 	}
 
 	async deletePhotos(ids: string[]): Promise<void> {
