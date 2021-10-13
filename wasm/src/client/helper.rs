@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use reqwest::StatusCode;
 use upholi_lib::http::request::{Login, Register};
 use upholi_lib::http::response::{CreateAlbum, PhotoMinimal, UploadPhoto, UserInfo};
@@ -6,7 +8,7 @@ use upholi_lib::result::Result;
 use crate::client::http;
 use crate::encryption;
 use crate::entities::{Entity, EntityWithProof, Shareable};
-use crate::entities::album::{self, Album, AlbumDetailed};
+use crate::entities::album::{self, Album, JsAlbumFull, JsAlbumPhoto};
 use crate::entities::photo::{Photo, PhotoData};
 use crate::entities::share::{Share, ShareData};
 use crate::hashing::compute_sha256_hash;
@@ -177,17 +179,21 @@ impl UpholiClientHelper {
 		Ok(photos)
 	}
 
-	pub async fn get_photo(base_url: &str, private_key: &[u8], id: &str, key_hash: &Option<String>) -> Result<Photo> {
-		let photo = UpholiClientHelper::get_photo_encrypted(base_url, id, &key_hash).await?;
-		let photo = Photo::from_encrypted_with_owner_key(photo, private_key)?;
+	pub async fn get_photo(base_url: &str, private_key: &[u8], id: &str, key: &Option<String>) -> Result<Photo> {
+		let photo = UpholiClientHelper::get_photo_encrypted(base_url, id, &key).await?;
+		let photo = match key {
+			Some(photo_key) => Photo::from_encrypted(photo, &base64::decode_config(photo_key, base64::STANDARD)?)?,
+			None => Photo::from_encrypted_with_owner_key(photo, private_key)?
+		};
 		Ok(photo)
 	}
 
 	/// Get photo as returned by server.
-	pub async fn get_photo_encrypted(base_url: &str, id: &str, key_hash: &Option<String>) -> Result<response::Photo> {
+	pub async fn get_photo_encrypted(base_url: &str, id: &str, key: &Option<String>) -> Result<response::Photo> {
 		let mut url = format!("{}/api/photo/{}", base_url, id);
 
-		if let Some(key_hash) = key_hash {
+		if let Some(key) = key {
+			let key_hash = compute_sha256_hash(&base64::decode_config(key, base64::STANDARD)?)?;
 			url = format!("{}?key_hash={}", url, key_hash);
 		}
 
@@ -217,10 +223,11 @@ impl UpholiClientHelper {
 		Ok(())
 	}
 
-	pub async fn get_photo_base64(base_url: &str, private_key: &[u8], id: &str, photo_variant: PhotoVariant, key_hash: &Option<String>) -> Result<String> {
+	pub async fn get_photo_base64(base_url: &str, private_key: &[u8], id: &str, photo_variant: PhotoVariant, key: &Option<String>) -> Result<String> {
 		let mut url = format!("{}/api/photo/{}/{}", base_url, id, photo_variant.to_string());
 
-		if let Some(key_hash) = key_hash {
+		if let Some(key) = key {
+			let key_hash = compute_sha256_hash(&base64::decode_config(key, base64::STANDARD)?)?;
 			url = format!("{}?key_hash={}", url, key_hash);
 		}
 
@@ -229,8 +236,11 @@ impl UpholiClientHelper {
 		let encrypted_bytes = response.bytes().await?;
 
 		// Decrypt photo bytes
-		let photo = Self::get_photo_encrypted(base_url, id, key_hash).await?;
-		let photo_key = crate::encryption::symmetric::decrypt_data_base64(private_key, &photo.key)?;
+		let photo = Self::get_photo_encrypted(base_url, id, key).await?;
+		let photo_key = match key {
+			Some(photo_key) => base64::decode_config(&photo_key, base64::STANDARD)?,
+			None => crate::encryption::symmetric::decrypt_data_base64(private_key, &photo.key)?
+		};
 		let nonce = match photo_variant {
 			PhotoVariant::Thumbnail => photo.thumbnail_nonce.as_bytes(),
 			PhotoVariant::Preview => photo.preview_nonce.as_bytes(),
@@ -241,10 +251,10 @@ impl UpholiClientHelper {
 		Ok(base64::encode_config(&bytes, base64::STANDARD))
 	}
 
-	pub async fn get_photo_image_src(base_url: &str, private_key: &[u8], id: &str, photo_variant: PhotoVariant, key_hash: &Option<String>) -> Result<String> {
-		let photo = Self::get_photo(base_url, private_key, id, key_hash).await?;
+	pub async fn get_photo_image_src(base_url: &str, private_key: &[u8], id: &str, photo_variant: PhotoVariant, key: &Option<String>) -> Result<String> {
+		let photo = Self::get_photo(base_url, private_key, id, key).await?;
 		let photo_data = photo.get_data();
-		let base64 = Self::get_photo_base64(base_url, private_key, id, photo_variant, &key_hash).await?;
+		let base64 = Self::get_photo_base64(base_url, private_key, id, photo_variant, &key).await?;
 
 		let src = format!("data:{};base64,{}", photo_data.content_type, base64);
 		Ok(src)
@@ -314,25 +324,39 @@ impl UpholiClientHelper {
 		Ok(album)
 	}
 
-	pub async fn get_album_full(base_url: &str, private_key: &[u8], id: &str) -> Result<AlbumDetailed> {
+	pub async fn get_album_full(base_url: &str, private_key: &[u8], id: &str) -> Result<JsAlbumFull> {
 		let album = Self::get_album(base_url, private_key, id).await?;
 		let album = album.as_js_value();
 		let photos = Self::get_photos(base_url).await?;
 
-		let mut photos_in_album: Vec<PhotoMinimal> = vec!{};
+		let mut photos_in_album: Vec<JsAlbumPhoto> = vec!{};
 		for photo in &photos {
 			if album.photos.contains(&photo.id) {
-				photos_in_album.push(photo.clone());
+				photos_in_album.push(JsAlbumPhoto {
+					id: photo.id.clone(),
+					width: photo.width,
+					height: photo.height,
+					key: None
+				});
 			}
 		}
 
-		let album = AlbumDetailed {
+		let album = JsAlbumFull {
 			id: album.id.clone(),
 			title: album.title.clone(),
 			tags: album.tags.clone(),
 			photos: photos_in_album,
 			thumbnail_photo: match album.thumbnail_photo_id.clone() {
-				Some(thumbnail_photo_id) => photos.into_iter().find(|photo| photo.id == thumbnail_photo_id),
+				Some(thumbnail_photo_id) => {
+					let photo = photos.into_iter().find(|photo| photo.id == thumbnail_photo_id)
+						.ok_or(format!("Photo not found for thumbnail of album {}", &album.id))?;
+					Some(JsAlbumPhoto {
+						id: photo.id,
+						width: photo.width,
+						height: photo.height,
+						key: None
+					})
+				},
 				None => None
 			}
 		};
@@ -514,7 +538,7 @@ impl UpholiClientHelper {
 	}
 
 	/// Get a share by decrypting it using owner's key.
-	pub async fn get_album_from_share(base_url: &str, share_id: &str, password: &str) -> Result<AlbumDetailed> {
+	pub async fn get_album_from_share(base_url: &str, share_id: &str, password: &str) -> Result<JsAlbumFull> {
 		let share = Self::get_share_using_password(base_url, share_id, password).await?;
 		let data = share.get_data();
 
@@ -524,32 +548,57 @@ impl UpholiClientHelper {
 				let album_data = album.get_data();
 
 				let mut photos_proof = vec!{};
+				let mut photo_keys = HashMap::new();
+
 				for photo in &share_data.photos {
 					let photo_key = base64::decode_config(&photo.key, base64::STANDARD)?;
 					photos_proof.push(EntityWithProof {
 						id: photo.id.clone(),
 						proof: compute_sha256_hash(&photo_key)?
 					});
+					photo_keys.insert(&photo.id, photo_key);
 				}
 
 				let mut photos = http::get_photos_using_key_access_proof(base_url, &photos_proof).await?;
+				let mut js_photos: Vec<JsAlbumPhoto> = Vec::new();
 				for mut photo in &mut photos {
 					let photo_with_proof = photos_proof.iter().find(|p| p.id == photo.id);
 					if let Some(photo_with_proof) = photo_with_proof {
 						photo.key_hash = Some(photo_with_proof.proof.clone());
+						js_photos.push(JsAlbumPhoto {
+							id: photo.id.clone(),
+							width: photo.width,
+							height: photo.height,
+							key: match photo_keys.get(&photo.id) {
+								Some(bytes) => Some(base64::encode_config(bytes, base64::STANDARD)),
+								None => None
+							}
+						});
 					}
 				}
 
 				let thumbnail_photo = match album_data.thumbnail_photo_id.clone() {
-					Some(thumbnail_photo_id) => photos.iter().cloned().find(|photo| photo.id == thumbnail_photo_id),
+					Some(thumbnail_photo_id) => {
+						let photo = photos.iter().cloned().find(|photo| photo.id == thumbnail_photo_id)
+							.ok_or(format!("Photo not found for thumbnail of album {}", album.get_id()))?;
+						Some(JsAlbumPhoto {
+							id: photo.id.clone(),
+							width: photo.width,
+							height: photo.height,
+							key: match photo_keys.get(&photo.id) {
+								Some(bytes) => Some(base64::encode_config(bytes, base64::STANDARD)),
+								None => None
+							}
+						})
+					},
 					None => None
 				};
 
-				let album = AlbumDetailed {
+				let album = JsAlbumFull {
 					id: album.get_id().to_string(),
 					title: album_data.title.clone(),
 					tags: album_data.tags.clone(),
-					photos,
+					photos: js_photos,
 					thumbnail_photo
 				};
 

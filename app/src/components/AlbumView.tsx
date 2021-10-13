@@ -81,7 +81,7 @@ export default class AlbumView extends React.Component<Props, State> {
 			// Fetch each missing one
 			for (const photo of photoSourcesMissing) {
 				const albumPhoto = this.props.album.photos.find(p => p.id === photo.photoId);
-				upholiService.getPhotoThumbnailImageSrc(photo.photoId, albumPhoto?.keyHash ?? undefined)
+				upholiService.getPhotoThumbnailImageSrc(photo.photoId, albumPhoto?.key ?? undefined)
 					.then(src => {
 						this.setState(previousState => {
 							const photoSourceToUpdate = previousState.photoSources.find(p => p.photoId === photo.photoId);

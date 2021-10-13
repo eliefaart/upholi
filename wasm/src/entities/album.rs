@@ -33,12 +33,21 @@ pub struct JsAlbum {
 /// Album, but with enriched photo data
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct AlbumDetailed {
+pub struct JsAlbumFull {
 	pub id: String,
 	pub title: String,
 	pub tags: Vec<String>,
-	pub photos: Vec<PhotoMinimal>,
-	pub thumbnail_photo: Option<PhotoMinimal>,
+	pub photos: Vec<JsAlbumPhoto>,
+	pub thumbnail_photo: Option<JsAlbumPhoto>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct JsAlbumPhoto {
+	pub id: String,
+	pub width: u32,
+	pub height: u32,
+	pub key: Option<String>
 }
 
 pub struct Album {

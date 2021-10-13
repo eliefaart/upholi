@@ -142,21 +142,21 @@ pub async fn route_upload_photo(user: User, payload: Multipart) -> impl Responde
 }
 
 /// Get the thumbnail of a photo as file
-pub async fn route_download_photo_thumbnail(user: User, session: Option<Session>, req: HttpRequest, proof: Option<web::Query<EntityAuthorizationProof>>) -> impl Responder {
-	download_photo(user, session, req, &PhotoVariant::Thumbnail, proof).await
+pub async fn route_download_photo_thumbnail(session: Option<Session>, req: HttpRequest, proof: Option<web::Query<EntityAuthorizationProof>>) -> impl Responder {
+	download_photo(session, req, &PhotoVariant::Thumbnail, proof).await
 }
 
 /// Get the preview (large thumbnail) of a photo as file
-pub async fn route_download_photo_preview(user: User, session: Option<Session>, req: HttpRequest, proof: Option<web::Query<EntityAuthorizationProof>>) -> impl Responder {
-	download_photo(user, session, req, &PhotoVariant::Preview, proof).await
+pub async fn route_download_photo_preview(session: Option<Session>, req: HttpRequest, proof: Option<web::Query<EntityAuthorizationProof>>) -> impl Responder {
+	download_photo(session, req, &PhotoVariant::Preview, proof).await
 }
 
 /// Get the original of a photo as file
-pub async fn route_download_photo_original(user: User, session: Option<Session>, req: HttpRequest, proof: Option<web::Query<EntityAuthorizationProof>>) -> impl Responder {
-	download_photo(user, session, req, &PhotoVariant::Original, proof).await
+pub async fn route_download_photo_original(session: Option<Session>, req: HttpRequest, proof: Option<web::Query<EntityAuthorizationProof>>) -> impl Responder {
+	download_photo(session, req, &PhotoVariant::Original, proof).await
 }
 
-async fn download_photo(user: User, session: Option<Session>, req: HttpRequest, photo_variant: &PhotoVariant, proof: Option<web::Query<EntityAuthorizationProof>>) -> impl Responder {
+async fn download_photo(session: Option<Session>, req: HttpRequest, photo_variant: &PhotoVariant, proof: Option<web::Query<EntityAuthorizationProof>>) -> impl Responder {
 	let proof = match proof {
 		Some(proof) => Some(proof.into_inner()),
 		None => None
@@ -173,7 +173,7 @@ async fn download_photo(user: User, session: Option<Session>, req: HttpRequest, 
 							}
 							else {
 								let file_id = &format!("{}-{}", photo_id, &photo_variant.to_string());
-								match storage::get_file(file_id, &user.id).await {
+								match storage::get_file(file_id, &photo.user_id).await {
 									Ok(bytes) => {
 										match bytes {
 											Some(bytes) => HttpResponse::Ok().body(bytes),

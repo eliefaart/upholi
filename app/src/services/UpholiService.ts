@@ -64,29 +64,29 @@ class UpholiService {
 		return photos;
 	}
 
-	async getPhoto(id: string, keyHash?: string): Promise<Photo> {
-		const photo: Photo = keyHash === undefined
+	async getPhoto(id: string, key?: string): Promise<Photo> {
+		const photo: Photo = key === undefined
 			? await this.client.getPhoto(id)
-			: await this.client.getPhotoWithProof(id, keyHash);
+			: await this.client.getPhotoWithProof(id, key);
 		return photo;
 	}
 
-	async getPhotoThumbnailImageSrc(id: string, keyHash?: string): Promise<string> {
-		return keyHash === undefined
+	async getPhotoThumbnailImageSrc(id: string, key?: string): Promise<string> {
+		return key === undefined
 			? await this.client.getPhotoThumbnailImageSrc(id)
-			: await this.client.getPhotoThumbnailImageSrcWithProof(id, keyHash);
+			: await this.client.getPhotoThumbnailImageSrcWithProof(id, key);
 	}
 
-	async getPhotoPreviewImageSrc(id: string, keyHash?: string): Promise<string> {
-		return keyHash === undefined
+	async getPhotoPreviewImageSrc(id: string, key?: string): Promise<string> {
+		return key === undefined
 			? await this.client.getPhotoPreviewImageSrc(id)
-			: await this.client.getPhotoPreviewImageSrcWithProof(id, keyHash);
+			: await this.client.getPhotoPreviewImageSrcWithProof(id, key);
 	}
 
-	async getPhotoOriginalImageSrc(id: string, keyHash?: string): Promise<string> {
-		return keyHash === undefined
+	async getPhotoOriginalImageSrc(id: string, key?: string): Promise<string> {
+		return key === undefined
 			? await this.client.getPhotoOriginalImageSrc(id)
-			: await this.client.getPhotoOriginalImageSrcWithProof(id, keyHash);
+			: await this.client.getPhotoOriginalImageSrcWithProof(id, key);
 	}
 
 	async deletePhotos(ids: string[]): Promise<void> {
