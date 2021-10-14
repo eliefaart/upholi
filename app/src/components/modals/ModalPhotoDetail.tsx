@@ -7,7 +7,8 @@ import upholiService from "../../services/UpholiService";
 import { Photo } from "../../models/Photo";
 
 interface Props extends ModalPropsBase {
-	photoId: string
+	photoId: string,
+	photoKey?: string,
 }
 
 interface State {
@@ -53,12 +54,12 @@ class ModalPhotoDetail extends React.Component<Props, State> {
 
 			this.isRequestingPhotoId = this.props.photoId;
 
-			const getInfoPromise = upholiService.getPhoto(this.props.photoId);
+			const getInfoPromise = upholiService.getPhoto(this.props.photoId, this.props.photoKey);
 			getInfoPromise
 				.then(fnOnPhotoDataReceived)
 				.catch(console.error);
 
-			const getImageSrcPromise = upholiService.getPhotoPreviewImageSrc(this.props.photoId);
+			const getImageSrcPromise = upholiService.getPhotoPreviewImageSrc(this.props.photoId, this.props.photoKey);
 			getImageSrcPromise
 				.then(fnOnPhotoBase64Received)
 				.catch(console.error);
@@ -69,7 +70,7 @@ class ModalPhotoDetail extends React.Component<Props, State> {
 	}
 
 	downloadPhoto(): void {
-		upholiService.getPhotoOriginalImageSrc(this.props.photoId)
+		upholiService.getPhotoOriginalImageSrc(this.props.photoId, this.props.photoKey)
 			.then((src) => {
 				const imageSrc = src;
 				const aElement = document.createElement("a");

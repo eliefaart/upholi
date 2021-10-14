@@ -151,6 +151,7 @@ export default class AlbumView extends React.Component<Props, State> {
 			{this.state.openedPhotoId && <ModalPhotoDetail
 				isOpen={!!this.state.openedPhotoId}
 				photoId={this.state.openedPhotoId}
+				photoKey={this.props.album.photos.find(p => p.id === this.state.openedPhotoId)?.key ?? undefined}
 				onRequestClose={() => this.context.history.push(document.location.pathname + "?" + UrlHelper.removeQueryStringParam(document.location.search, queryStringParamNamePhotoId))}
 			/>}
 		</div>;
