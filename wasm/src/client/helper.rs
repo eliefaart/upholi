@@ -518,6 +518,19 @@ impl UpholiClientHelper {
 		Ok(())
 	}
 
+		/// Get a share by decrypting it using owner's key.
+		pub async fn get_shares(base_url: &str, key: &[u8]) -> Result<Vec<Share>> {
+			let encrypted_shares = http::get_shares(base_url).await?;
+			let mut shares = Vec::new();
+
+			for share in encrypted_shares {
+				let share = Share::from_encrypted_with_owner_key(share, &key)?;
+				shares.push(share);
+			}
+
+			Ok(shares)
+		}
+
 	/// Get a share by decrypting it using owner's key.
 	pub async fn get_share(base_url: &str, id: &str, key: &[u8]) -> Result<Share> {
 		let share = http::get_share(base_url, id).await?;

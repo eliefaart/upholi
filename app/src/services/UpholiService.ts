@@ -132,6 +132,10 @@ class UpholiService {
 		return await this.client.upsertAlbumShare(id, password) as string;
 	}
 
+	async getShares(): Promise<void> {
+		return this.client.getShares();
+	}
+
 	async getShare(id: string): Promise<void> {
 		return this.client.getShare(id);
 	}

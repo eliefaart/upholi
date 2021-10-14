@@ -343,16 +343,33 @@ impl UpholiClient {
 	}
 
 	/// Creates or updates a share for an album
+	#[wasm_bindgen(js_name = getShares)]
+	pub fn get_shares(&self) -> js_sys::Promise {
+		let base_url = self.base_url.to_owned();
+		let private_key = self.private_key.as_bytes().to_owned();
+
+		future_to_promise(async move {
+			let shares = UpholiClientHelper::get_shares(&base_url, &private_key).await.unwrap_throw();
+			let mut js_array: Vec<JsValue> = Vec::new();
+
+			for share in shares {
+				let share = JsValue::from_serde(share.as_js_value()).unwrap_throw();
+				js_array.push(share);
+			}
+
+			Ok(JsValue::from(js_array.iter().collect::<Array>()))
+		})
+	}
+
+	/// Creates or updates a share for an album
 	#[wasm_bindgen(js_name = getShare)]
 	pub fn get_share(&self, share_id: String) -> js_sys::Promise {
 		let base_url = self.base_url.to_owned();
 		let private_key = self.private_key.as_bytes().to_owned();
 
 		future_to_promise(async move {
-			match UpholiClientHelper::get_share(&base_url, &share_id, &private_key).await {
-				Ok(share) => Ok(JsValue::from_serde(share.as_js_value()).unwrap_throw()),
-				Err(error) => Err(format!("{}", error).into())
-			}
+			let share = UpholiClientHelper::get_share(&base_url, &share_id, &private_key).await.unwrap_throw();
+			Ok(JsValue::from_serde(share.as_js_value()).unwrap_throw())
 		})
 	}
 

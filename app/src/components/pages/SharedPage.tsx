@@ -2,8 +2,10 @@ import * as React from "react";
 import { PageBaseComponent, PageBaseComponentProps } from "./PageBaseComponent";
 import ContentContainer from "../ContentContainer";
 import appStateContext from "../../contexts/AppStateContext";
+import upholiService from "../../services/UpholiService";
 
 interface SharedPageState {
+
 }
 
 class SharedPage extends PageBaseComponent<SharedPageState> {
@@ -13,8 +15,13 @@ class SharedPage extends PageBaseComponent<SharedPageState> {
 		this.state = { };
 	}
 
+	componentDidMount(): void {
+		upholiService.getShares()
+			.then(console.log);
+	}
+
 	getHeaderActions(): JSX.Element | null {
-		return  <React.Fragment></React.Fragment>;
+		return <></>;
 	}
 
 	getTitle(): string {
