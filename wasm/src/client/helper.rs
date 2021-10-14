@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use reqwest::StatusCode;
 use upholi_lib::http::request::{Login, Register};
-use upholi_lib::http::response::{CreateAlbum, PhotoMinimal, UploadPhoto, UserInfo};
+use upholi_lib::http::response::{CreateAlbum, UploadPhoto, UserInfo};
 use upholi_lib::{PhotoVariant, ShareType, http::*};
 use upholi_lib::result::Result;
 use crate::client::http;
@@ -559,22 +559,18 @@ impl UpholiClientHelper {
 					photo_keys.insert(&photo.id, photo_key);
 				}
 
-				let mut photos = http::get_photos_using_key_access_proof(base_url, &photos_proof).await?;
+				let photos = http::get_photos_using_key_access_proof(base_url, &photos_proof).await?;
 				let mut js_photos: Vec<JsAlbumPhoto> = Vec::new();
-				for mut photo in &mut photos {
-					let photo_with_proof = photos_proof.iter().find(|p| p.id == photo.id);
-					if let Some(photo_with_proof) = photo_with_proof {
-						photo.key_hash = Some(photo_with_proof.proof.clone());
-						js_photos.push(JsAlbumPhoto {
-							id: photo.id.clone(),
-							width: photo.width,
-							height: photo.height,
-							key: match photo_keys.get(&photo.id) {
-								Some(bytes) => Some(base64::encode_config(bytes, base64::STANDARD)),
-								None => None
-							}
-						});
-					}
+				for photo in &photos {
+					js_photos.push(JsAlbumPhoto {
+						id: photo.id.clone(),
+						width: photo.width,
+						height: photo.height,
+						key: match photo_keys.get(&photo.id) {
+							Some(bytes) => Some(base64::encode_config(bytes, base64::STANDARD)),
+							None => None
+						}
+					});
 				}
 
 				let thumbnail_photo = match album_data.thumbnail_photo_id.clone() {
