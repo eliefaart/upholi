@@ -1,9 +1,7 @@
 import * as React from "react";
 import { PageBaseComponent, PageBaseComponentProps } from "./PageBaseComponent";
-import PhotoGallerySelectable from "../PhotoGallerySelectable";
 import ContentContainer from "../ContentContainer";
 import appStateContext from "../../contexts/AppStateContext";
-import ModalPhotoDetail from "../modals/ModalPhotoDetail";
 import ModalConfirmation from "../modals/ModalConfirmation";
 import UploadButton from "../UploadButton";
 import { IconRemove, IconImage, IconUpload, IconShare } from "../Icons";
@@ -11,7 +9,7 @@ import { toast } from "react-toastify";
 import UrlHelper from "../../helpers/UrlHelper";
 import GalleryPhoto from "../../models/GalleryPhoto";
 import ModalEditAlbum from "../modals/ModalEditAlbum";
-import Album from "../../models/Album";
+import { Album } from "../../models/Album";
 import AddPhotosToAlbumButton from "../Buttons/AddPhotosToAlbumButton";
 import upholiService from "../../services/UpholiService";
 import uploadHelper from "../../helpers/UploadHelper";
@@ -179,13 +177,15 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 		upholiService.updateAlbumCover(this.state.albumId, photoId)
 			.then(() => {
 				toast.info("Album cover updated.");
+				this.resetSelection();
 			})
 			.catch(console.error);
 	}
 
 	onRemovePhotosClick(): void {
 		this.setState({
-			confirmRemovePhotosOpen: true
+			confirmRemovePhotosOpen: true,
+			selectedPhotoIds: []
 		});
 	}
 
@@ -200,23 +200,6 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 				fnRefreshPhotos();
 			})
 			.catch(console.error);
-	}
-
-	onPhotoSelectedChange(photoId: string, selected: boolean): void {
-		const selectedPhotos = this.state.selectedPhotoIds;
-
-		if (selected) {
-			selectedPhotos.push(photoId);
-		} else {
-			const index = selectedPhotos.indexOf(photoId);
-			if (index > -1) {
-				selectedPhotos.splice(index, 1);
-			}
-		}
-
-		this.setState({
-			selectedPhotoIds: selectedPhotos
-		});
 	}
 
 	onFilesDropped(event: React.DragEvent<HTMLElement>): void {
@@ -269,7 +252,11 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 		else {
 			return (
 				<ContentContainer onDrop={(event) => this.onFilesDropped(event)}>
-					<AlbumView album={this.state.album} />
+					<AlbumView
+						album={this.state.album}
+						selectedPhotos={this.state.selectedPhotoIds}
+						onSelectionChanged={(selectedPhotoIds) => this.setState({selectedPhotoIds})}
+						/>
 
 					<ModalSharingOptions
 						shareUrl={document.location.origin + "/s/" + this.state.sharingOptions.token}

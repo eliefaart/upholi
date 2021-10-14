@@ -1,7 +1,7 @@
 import * as React from "react";
 import Modal from "./Modal";
 import ModalPropsBase from "../../models/ModalPropsBase";
-import Album from "../../models/Album";
+import { Album } from "../../models/Album";
 import upholiService from "../../services/UpholiService";
 
 interface Props extends ModalPropsBase {

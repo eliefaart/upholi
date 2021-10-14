@@ -33,8 +33,10 @@ class PhotoGallerySelectable extends React.Component<PhotoGallerySelectableProps
 	render(): React.ReactNode {
 		const photoHeight = 200;	// Target height for algorithm, but exact height will vary a bit.
 		const photoMargin = 3;
+		const photosSelectable = this.props.onPhotoSelectedChange !== undefined;
 
 		const galleryViewModel = this.getGalleryViewModel(this.props.photos);
+
 
 		// Inline-component representing one photo tile.
 		//{ index: number, onClick, photo: Photo, margin: number, direction: string, top: number, left: number, key: string }
@@ -68,6 +70,7 @@ class PhotoGallerySelectable extends React.Component<PhotoGallerySelectableProps
 				const isSelected = this.props.selectedItems.indexOf(renderImageProps.photo.key) !== -1;
 				const anySelected = this.props.selectedItems.length > 0;
 				const cssClass = "photo"
+					+ " " + (photosSelectable ? "selectable" : "")
 					+ " " + (isSelected ? "selected" : "")
 					+ " " + (anySelected ? "any-other-selected" : "");
 
@@ -81,10 +84,6 @@ class PhotoGallerySelectable extends React.Component<PhotoGallerySelectableProps
 						renderImageProps.onClick(event, {
 							index: renderImageProps.index
 						});
-						// {
-						// 	photo: renderImageProps.photo
-						// 	index: renderImageProps.index
-						// });
 					}
 				};
 
@@ -96,12 +95,12 @@ class PhotoGallerySelectable extends React.Component<PhotoGallerySelectableProps
 					}
 				};
 
-				const onContextMenu = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+				const onContextMenu = photosSelectable ? (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
 					event.preventDefault();
 					if (this.props.onPhotoSelectedChange && renderImageProps.photo.key) {
 						this.props.onPhotoSelectedChange(renderImageProps.photo.key, !isSelected);
 					}
-				};
+				} : undefined;
 
 				return <div key={renderImageProps.photo.key} style={containerStyle} className={cssClass}>
 					<input type="checkbox" id={checkboxId} name={checkboxId}
@@ -125,7 +124,11 @@ class PhotoGallerySelectable extends React.Component<PhotoGallerySelectableProps
 
 		return (
 			<div className="photoGallery">
-				<Gallery photos={galleryViewModel} onClick={(e, d) => { !!this.props.onClick && this.props.onClick(e, d);}} margin={photoMargin} targetRowHeight={photoHeight} renderImage={imageRenderer}/>
+				<Gallery photos={galleryViewModel}
+					onClick={(e, d) => { !!this.props.onClick && this.props.onClick(e, d);}}
+					margin={photoMargin}
+					targetRowHeight={photoHeight}
+					renderImage={imageRenderer}/>
 			</div>
 		);
 	}

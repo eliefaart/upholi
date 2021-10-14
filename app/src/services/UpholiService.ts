@@ -1,6 +1,6 @@
 import * as wasm from "wasm";
 import UpholiServiceLocalStorageHelper from "../helpers/UpholiServiceLocalStorageHelper";
-import Album, { AlbumNew } from "../models/Album";
+import { Album, AlbumNew } from "../models/Album";
 import { Photo, PhotoMinimal } from "../models/Photo";
 
 /**

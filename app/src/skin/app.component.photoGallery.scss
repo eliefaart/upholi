@@ -21,7 +21,7 @@
 			border-width: 5px;
 		}
 
-		&:hover, &.any-other-selected {
+		&.selectable:hover, &.any-other-selected {
 			label {
 				display: unset;
 			}

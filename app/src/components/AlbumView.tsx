@@ -1,7 +1,7 @@
 import * as React from "react";
 import appStateContext from "../contexts/AppStateContext";
 import UrlHelper from "../helpers/UrlHelper";
-import Album from "../models/Album";
+import { Album } from "../models/Album";
 import GalleryPhoto from "../models/GalleryPhoto";
 import upholiService from "../services/UpholiService";
 import ModalPhotoDetail from "./modals/ModalPhotoDetail";
@@ -10,12 +10,15 @@ import PhotoGallerySelectable from "./PhotoGallerySelectable";
 const queryStringParamNamePhotoId = "photoId";
 
 interface Props {
-	album: Album
+	album: Album,
+	/** IDs of photos currently selected. */
+	selectedPhotos?: string[],
+	/** Called when selection changes. */
+	onSelectionChanged?: (selectedPhotoIds: string[]) => void
 }
 
 interface State {
 	photoSources: StatePhotoSource[],
-	selectedPhotoIds: string[],
 	openedPhotoId: string
 }
 
@@ -32,7 +35,6 @@ export default class AlbumView extends React.Component<Props, State> {
 
 		this.state = {
 			photoSources: [],
-			selectedPhotoIds: [],
 			openedPhotoId: ""
 		};
 	}
@@ -104,20 +106,20 @@ export default class AlbumView extends React.Component<Props, State> {
 	}
 
 	onPhotoSelectedChange(photoId: string, selected: boolean): void {
-		const selectedPhotos = this.state.selectedPhotoIds;
+		if (this.props.onSelectionChanged) {
+			const selectedPhotos = this.props.selectedPhotos ?? [];
 
-		if (selected) {
-			selectedPhotos.push(photoId);
-		} else {
-			const index = selectedPhotos.indexOf(photoId);
-			if (index > -1) {
-				selectedPhotos.splice(index, 1);
+			if (selected) {
+				selectedPhotos.push(photoId);
+			} else {
+				const index = selectedPhotos.indexOf(photoId);
+				if (index > -1) {
+					selectedPhotos.splice(index, 1);
+				}
 			}
-		}
 
-		this.setState({
-			selectedPhotoIds: selectedPhotos
-		});
+			this.props.onSelectionChanged(selectedPhotos);
+		}
 	}
 
 	render(): React.ReactNode {
@@ -142,8 +144,8 @@ export default class AlbumView extends React.Component<Props, State> {
 			{galleryPhotos.length > 0 && <PhotoGallerySelectable
 				onClick={(_, target) => this.onPhotoClicked(target.index)}
 				photos={galleryPhotos}
-				selectedItems={this.state.selectedPhotoIds}
-				onPhotoSelectedChange={(photoId, selected) => this.onPhotoSelectedChange(photoId, selected)}/>
+				selectedItems={this.props.selectedPhotos ?? []}
+				onPhotoSelectedChange={this.props.onSelectionChanged ? (photoId, selected) => this.onPhotoSelectedChange(photoId, selected) : undefined}/>
 			}
 
 			{this.state.openedPhotoId && <ModalPhotoDetail

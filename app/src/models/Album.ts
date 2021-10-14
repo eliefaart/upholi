@@ -1,11 +1,11 @@
-interface AlbumPhoto {
+export interface AlbumPhoto {
 	id: string,
 	width: number,
 	height: number,
 	key: string | null
 }
 
-interface Album {
+export interface Album {
 	id: string,
 	title: string,
 	thumbPhoto: AlbumPhoto | null,
@@ -21,5 +21,3 @@ export interface AlbumNew {
 	photos: string[],
 	thumbnailPhotoId: string,
 }
-
-export default Album;
