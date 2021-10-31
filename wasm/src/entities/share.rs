@@ -2,7 +2,7 @@ use serde::{Deserialize,Serialize};
 use upholi_lib::ShareType;
 use upholi_lib::http::response;
 use upholi_lib::result::Result;
-use crate::encryption::symmetric::decrypt_data_base64;
+use crate::{encryption::symmetric::decrypt_data_base64, hashing};
 
 use super::{Entity, EntityKey};
 
@@ -24,8 +24,9 @@ pub struct AlbumShareData {
 #[serde(rename_all = "camelCase")]
 pub struct JsShare {
 	pub id: String,
+	pub identifier_hash: String,
 	pub type_: ShareType,
-	pub password: String
+	pub password: String,
 }
 
 pub struct Share {
@@ -33,6 +34,18 @@ pub struct Share {
 	encrypted: response::Share,
 	data: ShareData,
 	js_value: JsShare
+}
+
+impl Share {
+	pub fn get_identifier_hash(type_: &ShareType, type_id: &str) -> Result<String> {
+		let identifier_string = match type_ {
+			ShareType::Album => {
+				format!("album:{}", type_id)
+			}
+		};
+
+		hashing::compute_sha256_hash(identifier_string.as_bytes())
+	}
 }
 
 impl Entity for Share {
@@ -49,6 +62,7 @@ impl Entity for Share {
 		let js_value = Self::TJavaScript {
 			id: source.id.clone(),
 			type_: source.type_.clone(),
+			identifier_hash: source.identifier_hash.clone(),
 			password: String::from_utf8(password)?
 		};
 

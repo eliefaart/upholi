@@ -494,6 +494,7 @@ impl UpholiClientHelper {
 		let password_encrypt_result = crate::encryption::symmetric::encrypt_slice(&share_key, password.as_bytes())?;
 
 		let body = request::CreateShare {
+			identifier_hash: Share::get_identifier_hash(&type_, id)?,
 			type_,
 			password: password_encrypt_result.into(),
 			data: data_encrypt_result.into(),

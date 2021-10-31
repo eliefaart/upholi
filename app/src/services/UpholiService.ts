@@ -2,6 +2,7 @@ import * as wasm from "wasm";
 import UpholiServiceLocalStorageHelper from "../helpers/UpholiServiceLocalStorageHelper";
 import { Album, AlbumNew } from "../models/Album";
 import { Photo, PhotoMinimal } from "../models/Photo";
+import { Share } from "../models/Share";
 
 /**
  * This class exists mainly to assign types to the return values of functions within 'wasm.UpholiClient'
@@ -132,7 +133,7 @@ class UpholiService {
 		return await this.client.upsertAlbumShare(id, password) as string;
 	}
 
-	async getShares(): Promise<void> {
+	async getShares(): Promise<Share[]> {
 		return this.client.getShares();
 	}
 
@@ -147,10 +148,6 @@ class UpholiService {
 	async getShareUsingPassword(id: string, password: string): Promise<void> {
 		return this.client.getShareUsingPassword(id, password);
 	}
-
-	// async findAlbumShare(id: string): Promise<void> {
-	// 	return this.client.findShare("album", id);
-	// }
 
 	async deleteShare(id: string): Promise<void> {
 		await this.client.deleteShare(id);

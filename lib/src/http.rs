@@ -40,6 +40,7 @@ pub mod request {
 	#[derive(Deserialize, Serialize, Debug)]
 	#[serde(rename_all = "camelCase")]
 	pub struct CreateShare {
+		pub identifier_hash: String,
 		pub type_: crate::ShareType,
 		pub password: crate::EncryptedData,
 		pub data: crate::EncryptedData,
@@ -145,6 +146,7 @@ pub mod response {
 	pub struct Share {
 		pub id: String,
 		pub user_id: String,
+		pub identifier_hash: String,
 		pub type_: crate::ShareType,
 		pub password: crate::EncryptedData,
 		pub key: crate::EncryptedData,
