@@ -4,6 +4,7 @@ use upholi_lib::EncryptedData;
 use upholi_lib::ShareType;
 use upholi_lib::http::request::CreateShare;
 use upholi_lib::http::request::EntityAuthorizationProof;
+use upholi_lib::http::request::FindSharesFilter;
 use upholi_lib::ids::create_unique_id;
 
 use crate::database;
@@ -21,6 +22,12 @@ pub struct Share {
 	pub password: EncryptedData,
 	pub data: EncryptedData,
 	pub key: EncryptedData
+}
+
+impl Share {
+	pub fn find_shares(user_id: &str, filters: FindSharesFilter) -> Result<Vec<Self>> {
+		database::get_database().find_shares(user_id, filters)
+	}
 }
 
 impl From<CreateShare> for Share {

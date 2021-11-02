@@ -1,3 +1,4 @@
+use upholi_lib::http::request::FindSharesFilter;
 use upholi_lib::result::Result;
 use upholi_lib::http::*;
 
@@ -22,8 +23,14 @@ pub async fn get_albums(base_url: &str) -> Result<Vec<response::Album>> {
 	Ok(albums)
 }
 
-pub async fn get_shares(base_url: &str) -> Result<Vec<response::Share>> {
-	let url = format!("{}/api/shares", base_url);
+pub async fn get_shares(base_url: &str, filters: Option<FindSharesFilter>) -> Result<Vec<response::Share>> {
+	let mut url = format!("{}/api/shares", base_url);
+	if let Some(filters) = filters {
+		if let Some(identifier_hash) = filters.identifier_hash {
+			url = format!("{}?identifierHash={}", url, identifier_hash);
+		}
+	}
+
 	let response = reqwest::get(url).await?;
 	let shares = response.json().await?;
 	Ok(shares)

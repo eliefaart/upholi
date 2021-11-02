@@ -149,6 +149,10 @@ class UpholiService {
 		return this.client.getShareUsingPassword(id, password);
 	}
 
+	async findAlbumShare(id: string): Promise<Share | null> {
+		return this.client.findAlbumShare(id);
+	}
+
 	async deleteShare(id: string): Promise<void> {
 		await this.client.deleteShare(id);
 	}

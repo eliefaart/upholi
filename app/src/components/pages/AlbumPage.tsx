@@ -16,6 +16,7 @@ import uploadHelper from "../../helpers/UploadHelper";
 import ModalSharingOptions from "../modals/ModalSharingOptions";
 import { SharingOptions } from "../../models/SharingOptions";
 import AlbumView from "../AlbumView";
+import { Share } from "../../models/Share";
 
 const queryStringParamNamePhotoId = "photoId";
 
@@ -25,6 +26,7 @@ interface AlbumPageState {
 	sharingOptions: {
 		token: string
 	},
+	share: Share | null,
 	galleryPhotos: GalleryPhoto[],
 	selectedPhotoIds: string[],
 	openedPhotoId: string | null,
@@ -50,6 +52,7 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 			sharingOptions: {
 				token: ""
 			},
+			share: null,
 			galleryPhotos: [],
 			selectedPhotoIds: [],
 			openedPhotoId: null,
@@ -104,6 +107,7 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 
 	componentDidMount(): void {
 		this.refreshAlbum();
+		this.refreshShare();
 		super.componentDidMount();
 	}
 
@@ -134,6 +138,14 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 					}),
 					selectedPhotoIds: []
 				});
+			});
+	}
+
+	refreshShare(): void {
+		upholiService.findAlbumShare(this.state.albumId)
+			.then(share => {
+				console.log(share);
+				this.setState({ share });
 			});
 	}
 

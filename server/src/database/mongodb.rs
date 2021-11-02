@@ -2,10 +2,11 @@
 use mongodb::{sync::Client, options::ClientOptions};
 use bson::doc;
 use lazy_static::lazy_static;
-use upholi_lib::http::request::RequestedEntity;
+use upholi_lib::http::request::{FindSharesFilter, RequestedEntity};
 use upholi_lib::http::response::PhotoMinimal;
 use crate::database;
 use crate::database::{Database, DatabaseExt, SortField};
+use crate::entities::share::Share;
 use crate::error::*;
 use crate::entities::album::Album;
 use crate::entities::user::User;
@@ -296,6 +297,20 @@ impl DatabaseExt for MongoDatabase {
 			0 => Ok(None),
 			_ => Err(Box::from(format!("Multiple users found with username '{}'", username)))
 		}
+	}
+
+	fn find_shares(&self, user_id: &str, filters: FindSharesFilter) -> Result<Vec<Share>> {
+		let mongo_collection = DATABASE.collection(database::COLLECTION_SHARES);
+		let mut query = doc!{
+			"userId": user_id,
+		};
+
+		if let Some(identifier_hash) = filters.identifier_hash {
+			query.extend(doc!{"identifierHash": identifier_hash});
+		}
+
+		let cursor = mongo_collection.find(query, None)?;
+		get_items_from_cursor(cursor)
 	}
 }
 

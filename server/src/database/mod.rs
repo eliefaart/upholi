@@ -1,6 +1,7 @@
-use upholi_lib::http::request::RequestedEntity;
+use upholi_lib::http::request::{FindSharesFilter, RequestedEntity};
 use upholi_lib::http::response::PhotoMinimal;
 
+use crate::entities::share::Share;
 use crate::error::*;
 use crate::entities::album::Album;
 use crate::entities::user::User;
@@ -74,6 +75,9 @@ pub trait DatabaseExt : Database {
 
 	/// Get user for given ID provider name and user-ID, if it exists
 	fn get_user_by_username(&self, username: &str) -> Result<Option<User>>;
+
+	/// Find shares based on certain filters
+	fn find_shares(&self, user_id: &str, filters: FindSharesFilter) -> Result<Vec<Share>>;
 }
 
 /// Add standard CRUD operations to a struct

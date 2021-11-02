@@ -1,6 +1,6 @@
 use crate::entities::session::Session;
 use actix_web::{web, HttpRequest, HttpResponse, Responder};
-use upholi_lib::http::request::CreateShare;
+use upholi_lib::http::request::{CreateShare, FindSharesFilter};
 
 use crate::database::{DatabaseEntity, DatabaseUserEntity};
 use crate::web::http::*;
@@ -9,8 +9,9 @@ use crate::entities::user::User;
 use crate::entities::share::Share;
 
 /// Get all shares
-pub async fn route_get_shares(user: User) -> impl Responder {
-	match Share::get_all_as_user(user.id) {
+pub async fn route_get_shares(user: User, filters: web::Query<FindSharesFilter>) -> impl Responder {
+	let filters = filters.into_inner();
+	match Share::find_shares(&user.id, filters) {
 		Ok(shares) => HttpResponse::Ok().json(shares),
 		Err(error) => {
 			println!("{}", error);

@@ -63,10 +63,14 @@ pub mod request {
 	}
 
 	#[derive(Deserialize, Serialize, Debug)]
-	//#[serde(rename_all = "camelCase")]
 	pub struct EntityAuthorizationProof {
 		/// Hash of the private key of an entity
 		pub key_hash: String,
+	}
+
+	#[derive(Deserialize, Serialize, Debug)]
+	pub struct FindSharesFilter {
+		pub identifier_hash: Option<String>
 	}
 }
 

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use reqwest::StatusCode;
-use upholi_lib::http::request::{Login, Register};
+use upholi_lib::http::request::{FindSharesFilter, Login, Register};
 use upholi_lib::http::response::{CreateAlbum, UploadPhoto, UserInfo};
 use upholi_lib::{PhotoVariant, ShareType, http::*};
 use upholi_lib::result::Result;
@@ -10,7 +10,7 @@ use crate::encryption;
 use crate::entities::{Entity, EntityWithProof, Shareable};
 use crate::entities::album::{self, Album, JsAlbumFull, JsAlbumPhoto};
 use crate::entities::photo::{Photo, PhotoData};
-use crate::entities::share::{Share, ShareData};
+use crate::entities::share::{JsShare, Share, ShareData};
 use crate::hashing::compute_sha256_hash;
 use crate::images::Image;
 use crate::exif::Exif;
@@ -519,18 +519,18 @@ impl UpholiClientHelper {
 		Ok(())
 	}
 
-		/// Get a share by decrypting it using owner's key.
-		pub async fn get_shares(base_url: &str, key: &[u8]) -> Result<Vec<Share>> {
-			let encrypted_shares = http::get_shares(base_url).await?;
-			let mut shares = Vec::new();
+	/// Get a share by decrypting it using owner's key.
+	pub async fn get_shares(base_url: &str, key: &[u8], filters: Option<FindSharesFilter>) -> Result<Vec<Share>> {
+		let encrypted_shares = http::get_shares(base_url, filters).await?;
+		let mut shares = Vec::new();
 
-			for share in encrypted_shares {
-				let share = Share::from_encrypted_with_owner_key(share, &key)?;
-				shares.push(share);
-			}
-
-			Ok(shares)
+		for share in encrypted_shares {
+			let share = Share::from_encrypted_with_owner_key(share, &key)?;
+			shares.push(share);
 		}
+
+		Ok(shares)
+	}
 
 	/// Get a share by decrypting it using owner's key.
 	pub async fn get_share(base_url: &str, id: &str, key: &[u8]) -> Result<Share> {
@@ -615,6 +615,15 @@ impl UpholiClientHelper {
 				Ok(album)
 			}
 		}
+	}
+
+	/// Find a share based on its identifier string
+	pub async fn find_share(base_url: &str, key: &[u8], share_type: &ShareType, id: &str) -> Result<Option<Share>> {
+		let identifier_hash = Share::get_identifier_hash(&share_type, id)?;
+		let shares = Self::get_shares(base_url, key, Some(FindSharesFilter {
+			identifier_hash: Some(identifier_hash)
+		})).await?;
+		Ok(shares.into_iter().nth(0))
 	}
 
 	async fn update_album(base_url: &str, id: &str, album: &Album) -> Result<()> {
