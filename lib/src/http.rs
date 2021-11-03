@@ -39,7 +39,7 @@ pub mod request {
 
 	#[derive(Deserialize, Serialize, Debug)]
 	#[serde(rename_all = "camelCase")]
-	pub struct CreateShare {
+	pub struct UpsertShare {
 		pub identifier_hash: String,
 		pub type_: crate::ShareType,
 		pub password: crate::EncryptedData,

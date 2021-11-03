@@ -2,7 +2,7 @@ use crate::entities::Session;
 use serde::{Serialize, Deserialize};
 use upholi_lib::EncryptedData;
 use upholi_lib::ShareType;
-use upholi_lib::http::request::CreateShare;
+use upholi_lib::http::request::UpsertShare;
 use upholi_lib::http::request::EntityAuthorizationProof;
 use upholi_lib::http::request::FindSharesFilter;
 use upholi_lib::ids::create_unique_id;
@@ -30,8 +30,8 @@ impl Share {
 	}
 }
 
-impl From<CreateShare> for Share {
-	fn from(source: CreateShare) -> Self {
+impl From<UpsertShare> for Share {
+	fn from(source: UpsertShare) -> Self {
 		Self {
 			id: create_unique_id(),
 			user_id: String::new(),

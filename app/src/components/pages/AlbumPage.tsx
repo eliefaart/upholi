@@ -23,9 +23,6 @@ const queryStringParamNamePhotoId = "photoId";
 interface AlbumPageState {
 	albumId: string,
 	album: Album | null,
-	sharingOptions: {
-		token: string
-	},
 	share: Share | null,
 	galleryPhotos: GalleryPhoto[],
 	selectedPhotoIds: string[],
@@ -49,9 +46,6 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 		this.state = {
 			albumId: props.match.params.albumId,
 			album: null,
-			sharingOptions: {
-				token: ""
-			},
 			share: null,
 			galleryPhotos: [],
 			selectedPhotoIds: [],
@@ -144,7 +138,6 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 	refreshShare(): void {
 		upholiService.findAlbumShare(this.state.albumId)
 			.then(share => {
-				console.log(share);
 				this.setState({ share });
 			});
 	}
@@ -241,19 +234,18 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 
 	updateSharingOptions(options: SharingOptions): void {
 		if (options.shared) {
-			upholiService.shareAlbum(this.state.albumId, options.password)
-				.then(shareId => {
-					this.setState({
-						sharingOptions: {
-							token: shareId
-						}
-					});
+			upholiService.upsertAlbumShare(this.state.albumId, options.password)
+				.then(() => {
+					this.refreshShare();
 				})
 				.catch(console.error);
 		}
 		else {
-			upholiService.deleteShare(this.state.sharingOptions.token)
-				.catch(console.error);
+			if (this.state.share) {
+				upholiService.deleteShare(this.state.share.id)
+					.then(() => this.setState({ share: null }))
+					.catch(console.error);
+			}
 		}
 	}
 
@@ -271,7 +263,7 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 						/>
 
 					<ModalSharingOptions
-						shareUrl={document.location.origin + "/s/" + this.state.sharingOptions.token}
+						share={this.state.share}
 						isOpen={this.state.sharingOptionsOpen}
 						onOkButtonClick={() => null}
 						onRequestClose={() => this.setState({sharingOptionsOpen: false})}

@@ -1,6 +1,6 @@
 use crate::entities::session::Session;
 use actix_web::{web, HttpRequest, HttpResponse, Responder};
-use upholi_lib::http::request::{CreateShare, FindSharesFilter};
+use upholi_lib::http::request::{UpsertShare, FindSharesFilter};
 
 use crate::database::{DatabaseEntity, DatabaseUserEntity};
 use crate::web::http::*;
@@ -43,7 +43,7 @@ pub async fn route_get_share(session: Option<Session>, req: HttpRequest) -> impl
 }
 
 /// Create a new share
-pub async fn route_create_share(user: User, share: web::Json<CreateShare>) -> impl Responder {
+pub async fn route_create_share(user: User, share: web::Json<UpsertShare>) -> impl Responder {
 	let mut share = Share::from(share.into_inner());
 	share.user_id = user.id;
 
@@ -54,7 +54,7 @@ pub async fn route_create_share(user: User, share: web::Json<CreateShare>) -> im
 }
 
 /// Update an share
-pub async fn route_update_share(session: Session, req: HttpRequest, updated_share: web::Json<CreateShare>) -> impl Responder {
+pub async fn route_update_share(session: Session, req: HttpRequest, updated_share: web::Json<UpsertShare>) -> impl Responder {
 	let share_id = req.match_info().get("share_id").unwrap();
 	let updated_share = updated_share.into_inner();
 
@@ -71,6 +71,8 @@ pub async fn route_update_share(session: Session, req: HttpRequest, updated_shar
 							share.type_ = updated_share.type_;
 							share.data = updated_share.data;
 							share.key = updated_share.key;
+							share.password = updated_share.password;
+							share.identifier_hash = updated_share.identifier_hash;
 
 							match share.update() {
 								Ok(_) => create_ok_response(),

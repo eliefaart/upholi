@@ -4,9 +4,10 @@ import Switch from "react-switch";
 import { IconCopy } from "../Icons";
 import { toast } from "react-toastify";
 import { SharingOptions } from "../../models/SharingOptions";
+import { Share } from "../../models/Share";
 
 interface Props {
-	shareUrl: string,
+	share: Share | null,
 	isOpen: boolean,
 	onRequestClose?: () => void,
 	onOkButtonClick: (password: string) => void,
@@ -31,7 +32,7 @@ export default class ModalSharingOptions extends React.Component<Props, State> {
 		this.copyUrlToClipboard = this.copyUrlToClipboard.bind(this);
 
 		this.state = {
-			shared: false,
+			shared: !!this.props.share,
 			password: ""
 		};
 	}
@@ -70,6 +71,8 @@ export default class ModalSharingOptions extends React.Component<Props, State> {
 	}
 
 	render(): React.ReactNode {
+		const shareUrl = document.location.origin + "/s/" + this.props.share?.id;
+
 		return <Modal
 			title="Sharing options"
 			className="modalSharingOptions"
@@ -97,10 +100,10 @@ export default class ModalSharingOptions extends React.Component<Props, State> {
 				{this.state.shared && <div className="url">
 					Sharing URL
 					<div className="copyUrl">
-						<input className="urlToCopy" type="text" value={this.props.shareUrl}
+						<input className="urlToCopy" type="text" value={shareUrl}
 							// Prevent changes to the value of this input by resetting value in onchange event.
 							// I cannot make it 'disabled', because then I cannot copy the text using JS
-							onChange={(event) => event.target.value = this.props.shareUrl}/>
+							onChange={(event) => event.target.value = shareUrl}/>
 						<button className="iconOnly" onClick={this.copyUrlToClipboard} title="Copy URL">
 							<IconCopy/>
 						</button>
@@ -109,7 +112,7 @@ export default class ModalSharingOptions extends React.Component<Props, State> {
 
 				{this.state.shared && <label>
 					Password
-					<input type="text" ref={this.passwordInput} placeholder=""/>
+					<input type="text" defaultValue={this.props.share?.password} ref={this.passwordInput} placeholder=""/>
 				</label>}
 		</Modal>;
 	}

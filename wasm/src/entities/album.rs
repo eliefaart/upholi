@@ -1,6 +1,5 @@
 use serde::{Deserialize,Serialize};
 use upholi_lib::http::request::CreateAlbum;
-use upholi_lib::http::response::PhotoMinimal;
 use upholi_lib::http::response;
 use upholi_lib::result::Result;
 use crate::encryption::symmetric::decrypt_data_base64;

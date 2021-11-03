@@ -129,8 +129,8 @@ class UpholiService {
 		return this.client.removePhotosFromAlbum(id, photoIds);
 	}
 
-	async shareAlbum(id: string, password: string): Promise<string> {
-		return await this.client.upsertAlbumShare(id, password) as string;
+	async upsertAlbumShare(albumId: string, password: string): Promise<string> {
+		return await this.client.upsertAlbumShare(albumId, password) as string;
 	}
 
 	async getShares(): Promise<Share[]> {

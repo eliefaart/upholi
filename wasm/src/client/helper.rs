@@ -10,7 +10,7 @@ use crate::encryption;
 use crate::entities::{Entity, EntityWithProof, Shareable};
 use crate::entities::album::{self, Album, JsAlbumFull, JsAlbumPhoto};
 use crate::entities::photo::{Photo, PhotoData};
-use crate::entities::share::{JsShare, Share, ShareData};
+use crate::entities::share::{Share, ShareData};
 use crate::hashing::compute_sha256_hash;
 use crate::images::Image;
 use crate::exif::Exif;
@@ -467,7 +467,11 @@ impl UpholiClientHelper {
 
 	/// Creates or updates a share.
 	pub async fn upsert_share(base_url: &str, private_key: &[u8], type_: ShareType, id: &str, password: &str) -> Result<String> {
-		let url = format!("{}/api/share", &base_url).to_owned();
+		let existing_share_for_album = Self::find_share(base_url, private_key, &type_, id).await?;
+		let url = match &existing_share_for_album {
+			Some(share) => format!("{}/api/share/{}", &base_url, share.get_id()).to_owned(),
+			None => format!("{}/api/share", &base_url).to_owned()
+		};
 
 		let salt = "todo";
 		let share_key = crate::encryption::symmetric::derive_key_from_string(&password, salt)?;
@@ -486,14 +490,13 @@ impl UpholiClientHelper {
 				album.create_share_data(&private_key, &album_photos)?
 			}
 		};
-
 		let data_json = serde_json::to_string(&data)?;
 		let data_bytes = data_json.as_bytes();
 		let data_encrypt_result = crate::encryption::symmetric::encrypt_slice(&share_key, data_bytes)?;
 
 		let password_encrypt_result = crate::encryption::symmetric::encrypt_slice(&share_key, password.as_bytes())?;
 
-		let body = request::CreateShare {
+		let body = request::UpsertShare {
 			identifier_hash: Share::get_identifier_hash(&type_, id)?,
 			type_,
 			password: password_encrypt_result.into(),
@@ -502,7 +505,11 @@ impl UpholiClientHelper {
 		};
 
 		let client = reqwest::Client::new();
-		let response = client.post(&url)
+		let request = match existing_share_for_album.is_some() {
+			true => client.put(&url),
+			false => client.post(&url)
+		};
+		let response = request
 			.json(&body)
 			.send().await?;
 		let response_body: response::CreateShare = response.json().await?;
@@ -520,12 +527,12 @@ impl UpholiClientHelper {
 	}
 
 	/// Get a share by decrypting it using owner's key.
-	pub async fn get_shares(base_url: &str, key: &[u8], filters: Option<FindSharesFilter>) -> Result<Vec<Share>> {
+	pub async fn get_shares(base_url: &str, private_key: &[u8], filters: Option<FindSharesFilter>) -> Result<Vec<Share>> {
 		let encrypted_shares = http::get_shares(base_url, filters).await?;
 		let mut shares = Vec::new();
 
 		for share in encrypted_shares {
-			let share = Share::from_encrypted_with_owner_key(share, &key)?;
+			let share = Share::from_encrypted_with_owner_key(share, &private_key)?;
 			shares.push(share);
 		}
 
@@ -533,9 +540,9 @@ impl UpholiClientHelper {
 	}
 
 	/// Get a share by decrypting it using owner's key.
-	pub async fn get_share(base_url: &str, id: &str, key: &[u8]) -> Result<Share> {
+	pub async fn get_share(base_url: &str, id: &str, private_key: &[u8]) -> Result<Share> {
 		let share = http::get_share(base_url, id).await?;
-		let share = Share::from_encrypted_with_owner_key(share, &key)?;
+		let share = Share::from_encrypted_with_owner_key(share, &private_key)?;
 
 		Ok(share)
 	}
@@ -618,9 +625,9 @@ impl UpholiClientHelper {
 	}
 
 	/// Find a share based on its identifier string
-	pub async fn find_share(base_url: &str, key: &[u8], share_type: &ShareType, id: &str) -> Result<Option<Share>> {
+	pub async fn find_share(base_url: &str, private_key: &[u8], share_type: &ShareType, id: &str) -> Result<Option<Share>> {
 		let identifier_hash = Share::get_identifier_hash(&share_type, id)?;
-		let shares = Self::get_shares(base_url, key, Some(FindSharesFilter {
+		let shares = Self::get_shares(base_url, private_key, Some(FindSharesFilter {
 			identifier_hash: Some(identifier_hash)
 		})).await?;
 		Ok(shares.into_iter().nth(0))
