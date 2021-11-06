@@ -4,9 +4,13 @@ import ContentContainer from "../ContentContainer";
 import appStateContext from "../../contexts/AppStateContext";
 import upholiService from "../../services/UpholiService";
 import { Share } from "../../models/Share";
+import { AlbumNew } from "../../models/Album";
+import { IconDelete } from "../Icons";
+import CopyUrl from "../CopyUrl";
 
 interface SharedPageState {
-	shares: Share[]
+	shares: Share[],
+	albums: AlbumNew[]
 }
 
 class SharedPage extends PageBaseComponent<SharedPageState> {
@@ -15,8 +19,16 @@ class SharedPage extends PageBaseComponent<SharedPageState> {
 
 		this.deleteShare = this.deleteShare.bind(this);
 
+		upholiService.getAlbums()
+			.then(albums => {
+				this.setState({
+					albums
+				});
+			});
+
 		this.state = {
-			shares: []
+			shares: [],
+			albums: []
 		};
 	}
 
@@ -52,12 +64,23 @@ class SharedPage extends PageBaseComponent<SharedPageState> {
 
 	render(): React.ReactNode {
 		return (
-			<ContentContainer paddingTop={true}>
+			<ContentContainer paddingTop={true} className="shares">
 				{this.state.shares.map(share => {
+					const shareUrl = document.location.origin + "/s/" + share.id;
+					const shareAlbum = this.state.albums.find(album => album.id === share.data.album.albumId);
+
 					return <div key={share.id} className="share">
-						<span>{share.type}</span>
-						<a href={`/s/${share.id}`}>{share.id}</a>
-						<button onClick={() => this.deleteShare(share)}>Delete</button>
+						<div className="head">
+							<h2>Album - {shareAlbum?.title}</h2>
+						</div>
+						<div className="body">
+							<CopyUrl shareUrl={shareUrl}/>
+							<div className="actions">
+							<button onClick={() => this.deleteShare(share)}>
+								Delete share
+							</button>
+							</div>
+						</div>
 					</div>;
 				})}
 			</ContentContainer>

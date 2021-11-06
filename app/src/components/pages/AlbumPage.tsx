@@ -10,7 +10,7 @@ import UrlHelper from "../../helpers/UrlHelper";
 import GalleryPhoto from "../../models/GalleryPhoto";
 import ModalEditAlbum from "../modals/ModalEditAlbum";
 import { Album } from "../../models/Album";
-import AddPhotosToAlbumButton from "../Buttons/AddPhotosToAlbumButton";
+import AddPhotosToAlbumButton from "../buttons/AddPhotosToAlbumButton";
 import upholiService from "../../services/UpholiService";
 import uploadHelper from "../../helpers/UploadHelper";
 import ModalSharingOptions from "../modals/ModalSharingOptions";

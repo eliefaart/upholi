@@ -6,6 +6,13 @@ use crate::{encryption::symmetric::decrypt_data_base64, hashing};
 
 use super::{Entity, EntityKey};
 
+pub struct Share {
+	key: Vec<u8>,
+	encrypted: response::Share,
+	data: ShareData,
+	js_value: JsShare
+}
+
 #[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub enum ShareData {
@@ -27,13 +34,30 @@ pub struct JsShare {
 	pub identifier_hash: String,
 	pub type_: ShareType,
 	pub password: String,
+	/// Fine, while all shares represent albums.
+	pub data: JsShareData
 }
 
-pub struct Share {
-	key: Vec<u8>,
-	encrypted: response::Share,
-	data: ShareData,
-	js_value: JsShare
+#[derive(Debug, Deserialize, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub enum JsShareData {
+	Album(JsAlbumShareData)
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct JsAlbumShareData {
+	pub album_id: String
+}
+
+impl From<&ShareData> for JsShareData {
+	fn from(data: &ShareData) -> Self {
+		match data {
+			ShareData::Album(album_data) => JsShareData::Album(JsAlbumShareData {
+				album_id: album_data.album_id.clone()
+			})
+		}
+	}
 }
 
 impl Share {
@@ -63,7 +87,8 @@ impl Entity for Share {
 			id: source.id.clone(),
 			type_: source.type_.clone(),
 			identifier_hash: source.identifier_hash.clone(),
-			password: String::from_utf8(password)?
+			password: String::from_utf8(password)?,
+			data: (&data).into()
 		};
 
 		Ok(Self {

@@ -23,6 +23,7 @@
     "rules": {
         "semi": ["error", "always"],
         "quotes": ["error", "double"],
-        "@typescript-eslint/no-empty-interface": 0
+        "@typescript-eslint/no-empty-interface": 0,
+        "react/prop-types": "off"
     }
 }

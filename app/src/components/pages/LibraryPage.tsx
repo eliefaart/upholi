@@ -10,7 +10,7 @@ import { IconDelete, IconUpload } from "../Icons";
 import { toast } from "react-toastify";
 import UrlHelper from "../../helpers/UrlHelper";
 import GalleryPhoto from "../../models/GalleryPhoto";
-import AddPhotosToAlbumButton from "../Buttons/AddPhotosToAlbumButton";
+import AddPhotosToAlbumButton from "../buttons/AddPhotosToAlbumButton";
 import uploadHelper from "../../helpers/UploadHelper";
 import upholiService from "../../services/UpholiService";
 import { PhotoMinimal } from "../../models/Photo";

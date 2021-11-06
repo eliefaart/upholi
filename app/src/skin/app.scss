@@ -59,6 +59,7 @@ html {
 @import "app.component.modal";
 @import "app.component.header";
 @import "app.component.albums";
+@import "app.component.shares";
 @import "app.component.photoGallery";
 @import "app.component.photoDetail";
 @import "app.component.uploadProgress";
@@ -69,6 +70,7 @@ html {
 @import "app.component.switch";
 @import "app.component.inputPassword";
 @import "app.component.menu";
+
 
 label {
 	width: 100%;

@@ -1,10 +1,9 @@
 import * as React from "react";
 import Modal from "./Modal";
 import Switch from "react-switch";
-import { IconCopy } from "../Icons";
-import { toast } from "react-toastify";
 import { SharingOptions } from "../../models/SharingOptions";
 import { Share } from "../../models/Share";
+import CopyUrl from "../CopyUrl";
 
 interface Props {
 	share: Share | null,
@@ -29,7 +28,6 @@ export default class ModalSharingOptions extends React.Component<Props, State> {
 
 		this.updateSharedState = this.updateSharedState.bind(this);
 		this.updateSharingOptions = this.updateSharingOptions.bind(this);
-		this.copyUrlToClipboard = this.copyUrlToClipboard.bind(this);
 
 		this.state = {
 			shared: !!this.props.share,
@@ -52,22 +50,6 @@ export default class ModalSharingOptions extends React.Component<Props, State> {
 		};
 
 		this.props.onSharingOptionsUpdated(options);
-	}
-
-	copyUrlToClipboard(): void {
-		const publicUrlElement = document.getElementsByClassName("urlToCopy")[0] as HTMLInputElement;
-
-		// Select text
-		publicUrlElement.select();
-		publicUrlElement.setSelectionRange(0, 99999);
-
-		// Copy to clipboard
-		document.execCommand("copy");
-
-		// Deselect text
-		publicUrlElement.blur();
-
-		toast.info("URL copied to clipboard.");
 	}
 
 	render(): React.ReactNode {
@@ -99,15 +81,7 @@ export default class ModalSharingOptions extends React.Component<Props, State> {
 
 				{this.state.shared && <div className="url">
 					Sharing URL
-					<div className="copyUrl">
-						<input className="urlToCopy" type="text" value={shareUrl}
-							// Prevent changes to the value of this input by resetting value in onchange event.
-							// I cannot make it 'disabled', because then I cannot copy the text using JS
-							onChange={(event) => event.target.value = shareUrl}/>
-						<button className="iconOnly" onClick={this.copyUrlToClipboard} title="Copy URL">
-							<IconCopy/>
-						</button>
-					</div>
+					<CopyUrl shareUrl={shareUrl}/>
 				</div>}
 
 				{this.state.shared && <label>
