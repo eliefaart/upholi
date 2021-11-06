@@ -3,7 +3,7 @@ import { PageBaseComponent, PageBaseComponentProps } from "./PageBaseComponent";
 import ContentContainer from "../ContentContainer";
 import appStateContext from "../../contexts/AppStateContext";
 import ModalConfirmation from "../modals/ModalConfirmation";
-import UploadButton from "../UploadButton";
+import UploadButton from "../misc/UploadButton";
 import { IconRemove, IconImage, IconUpload, IconShare } from "../Icons";
 import { toast } from "react-toastify";
 import UrlHelper from "../../helpers/UrlHelper";

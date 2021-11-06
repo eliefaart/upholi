@@ -5,7 +5,7 @@ import ContentContainer from "../ContentContainer";
 import appStateContext from "../../contexts/AppStateContext";
 import ModalPhotoDetail from "../modals/ModalPhotoDetail";
 import ModalConfirmation from "../modals/ModalConfirmation";
-import UploadButton from "../UploadButton";
+import UploadButton from "../misc/UploadButton";
 import { IconDelete, IconUpload } from "../Icons";
 import { toast } from "react-toastify";
 import UrlHelper from "../../helpers/UrlHelper";

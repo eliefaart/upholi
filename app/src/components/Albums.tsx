@@ -3,35 +3,24 @@ import { AlbumNew } from "../models/Album";
 import appStateContext from "../contexts/AppStateContext";
 import Album from "./Album";
 
-interface AlbumProps {
+interface Props {
 	onClick: (album: AlbumNew) => void,
-	activeAlbumId?: string,
-	albumUrl?: (albumUrl: string) => string,
 	albums: AlbumNew[]
 }
 
-class Albums extends React.Component<AlbumProps> {
+class Albums extends React.Component<Props> {
 	static contextType = appStateContext;
 
-	constructor(props: AlbumProps) {
+	constructor(props: Props) {
 		super(props);
 	}
 
 	render(): React.ReactNode {
-		const anyAlbumActive = this.props.albums.some(album => album.id === this.props.activeAlbumId);
-
-		const history = this.context.history;
-		const fnOnClick = this.props.onClick || ((album: AlbumNew) => {
-			if (this.props.albumUrl) {
-				history.push(this.props.albumUrl(album.id));
-			}
-		});
-
 		const albums = this.props.albums.map((album) => (
-			<Album key={album.id} album={album} onClick={fnOnClick} />
+			<Album key={album.id} album={album} onClick={this.props.onClick} />
 		));
 
-		return <div className={"albums " + (anyAlbumActive ? "anyActive" : "")}>
+		return <div className="albums">
 			{albums}
 		</div>;
 	}

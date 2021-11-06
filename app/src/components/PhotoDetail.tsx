@@ -1,5 +1,5 @@
 import * as React from "react";
-import ExifData from "../components/ExifData";
+import ExifData from "./misc/ExifData";
 import Exif from "../models/Exif";
 
 interface PhotoDetailProps {

@@ -8,44 +8,32 @@ import SharedPage from "./pages/SharedPage";
 import SharedAlbumPage from "./pages/SharedAlbumPage";
 import Header from "./Header";
 import LoginPage from "./pages/LoginPage";
-import UploadProgress from "./UploadProgress";
+import UploadProgress from "./misc/UploadProgress";
 import appStateContext from "../contexts/AppStateContext";
-import uploadHelper from "../helpers/UploadHelper";
-import { FileUploadProgress } from "../models/File";
 
-interface AppBodyProps { }
+interface Props { }
 
-interface AppBodyState {
+interface State {
 	header: {
 		renderMenu: boolean,
 		actions: JSX.Element | null,
 		contextMenu: JSX.Element | null
-	},
-	uploadProgress: FileUploadProgress[]
+	}
 }
 
 /**
  * Renders headers and route components.
  */
-class AppBody extends React.Component<AppBodyProps, AppBodyState> {
-	constructor(props: AppBodyProps) {
+class AppBody extends React.Component<Props, State> {
+	constructor(props: Props) {
 		super(props);
-
-		uploadHelper.subscribe({
-			update: (uploadProgress) => {
-				this.setState({
-					uploadProgress
-				});
-			}
-		});
 
 		this.state = {
 			header: {
 				renderMenu: false,
 				actions: null,
 				contextMenu: null
-			},
-			uploadProgress: []
+			}
 		};
 	}
 
@@ -90,7 +78,7 @@ class AppBody extends React.Component<AppBodyProps, AppBodyState> {
 				{fnRenderRoute("/album/:albumId", AlbumPage, true)}
 				{fnRenderRoute("/s/:token", SharedAlbumPage, false)}
 
-				<UploadProgress progress={this.state.uploadProgress}/>
+				<UploadProgress/>
 			</React.Fragment>
 		);
 	}

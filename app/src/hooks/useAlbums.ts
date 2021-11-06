@@ -3,15 +3,14 @@ import { AlbumNew } from "../models/Album";
 import upholiService from "../services/UpholiService";
 
 export default function useAlbums(): AlbumNew[] {
-	const [data, setData] = useState<AlbumNew[]>([]);
+	const [albums, setAlbums] = useState<AlbumNew[]>([]);
 
 	useEffect(() => {
 		const fetchData = async () =>{
-			const albums = await upholiService.getAlbums();
-			setData(albums);
+			setAlbums(await upholiService.getAlbums());
 		};
 		fetchData();
 	});
 
-	return data;
+	return albums;
 }

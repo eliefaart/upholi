@@ -3,7 +3,7 @@ import Modal from "./Modal";
 import Switch from "react-switch";
 import { SharingOptions } from "../../models/SharingOptions";
 import { Share } from "../../models/Share";
-import CopyUrl from "../CopyUrl";
+import CopyUrl from "../misc/CopyUrl";
 
 interface Props {
 	share: Share | null,

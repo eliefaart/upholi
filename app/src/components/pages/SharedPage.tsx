@@ -5,7 +5,7 @@ import appStateContext from "../../contexts/AppStateContext";
 import upholiService from "../../services/UpholiService";
 import { Share } from "../../models/Share";
 import { AlbumNew } from "../../models/Album";
-import CopyUrl from "../CopyUrl";
+import CopyUrl from "../misc/CopyUrl";
 
 interface SharedPageState {
 	shares: Share[],
