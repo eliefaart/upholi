@@ -5,7 +5,6 @@ import appStateContext from "../../contexts/AppStateContext";
 import upholiService from "../../services/UpholiService";
 import { Share } from "../../models/Share";
 import { AlbumNew } from "../../models/Album";
-import { IconDelete } from "../Icons";
 import CopyUrl from "../CopyUrl";
 
 interface SharedPageState {
@@ -63,6 +62,8 @@ class SharedPage extends PageBaseComponent<SharedPageState> {
 	}
 
 	render(): React.ReactNode {
+		const history = this.context.history;
+
 		return (
 			<ContentContainer paddingTop={true} className="shares">
 				{this.state.shares.map(share => {
@@ -71,7 +72,9 @@ class SharedPage extends PageBaseComponent<SharedPageState> {
 
 					return <div key={share.id} className="share">
 						<div className="head">
-							<h2>Album - {shareAlbum?.title}</h2>
+							<h2 onClick={() => history.push("/album/" + shareAlbum?.id)}>
+								{shareAlbum?.title}
+							</h2>
 						</div>
 						<div className="body">
 							<CopyUrl shareUrl={shareUrl}/>
