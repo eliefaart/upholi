@@ -1,7 +1,7 @@
 import * as React from "react";
 import Modal from "./Modal";
 import PhotoDetail from "../PhotoDetail";
-import { IconDownload } from "../Icons";
+import { IconDownload } from "../misc/Icons";
 import ModalPropsBase from "../../models/ModalPropsBase";
 import upholiService from "../../services/UpholiService";
 import { Photo } from "../../models/Photo";

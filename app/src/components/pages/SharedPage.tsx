@@ -1,6 +1,6 @@
 import * as React from "react";
 import { PageBaseComponent, PageBaseComponentProps } from "./PageBaseComponent";
-import ContentContainer from "../ContentContainer";
+import ContentContainer from "../misc/ContentContainer";
 import appStateContext from "../../contexts/AppStateContext";
 import upholiService from "../../services/UpholiService";
 import { Share } from "../../models/Share";

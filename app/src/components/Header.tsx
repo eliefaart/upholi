@@ -1,6 +1,6 @@
 import * as React from "react";
 import appStateContext from "../contexts/AppStateContext";
-import { IconContextMenu } from "./Icons";
+import { IconContextMenu } from "./misc/Icons";
 
 interface HeaderProps {
 	renderMenu: boolean,

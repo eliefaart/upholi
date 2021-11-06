@@ -2,7 +2,7 @@ import * as React from "react";
 import { FC } from "react";
 import { toast } from "react-toastify";
 import { copyElementContentToClipboard } from "../../utils/elements";
-import { IconCopy } from "../Icons";
+import { IconCopy } from "./Icons";
 
 interface Props {
 	shareUrl: string

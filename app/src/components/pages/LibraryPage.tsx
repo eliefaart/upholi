@@ -1,12 +1,12 @@
 import * as React from "react";
 import { PageBaseComponent, PageBaseComponentProps } from "./PageBaseComponent";
 import PhotoGallerySelectable from "../PhotoGallerySelectable";
-import ContentContainer from "../ContentContainer";
+import ContentContainer from "../misc/ContentContainer";
 import appStateContext from "../../contexts/AppStateContext";
 import ModalPhotoDetail from "../modals/ModalPhotoDetail";
 import ModalConfirmation from "../modals/ModalConfirmation";
 import UploadButton from "../misc/UploadButton";
-import { IconDelete, IconUpload } from "../Icons";
+import { IconDelete, IconUpload } from "../misc/Icons";
 import { toast } from "react-toastify";
 import UrlHelper from "../../helpers/UrlHelper";
 import GalleryPhoto from "../../models/GalleryPhoto";

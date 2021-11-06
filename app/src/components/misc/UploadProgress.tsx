@@ -1,7 +1,7 @@
 import * as React from "react";
 import { FC } from "react";
 import { uploadFinishedStatusses } from "../../models/File";
-import { IconClose } from "../Icons";
+import { IconClose } from "./Icons";
 import uploadHelper from "../../helpers/UploadHelper";
 import useUploadProgress from "../../hooks/useUploadProgress";
 

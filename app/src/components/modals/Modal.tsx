@@ -1,6 +1,6 @@
 import * as React from "react";
 import * as ReactModal from "react-modal";
-import { IconClose } from "../Icons";
+import { IconClose } from "../misc/Icons";
 import ModalPropsBase from "../../models/ModalPropsBase";
 
 interface ModalProps extends ModalPropsBase {

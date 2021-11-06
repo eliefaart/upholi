@@ -1,10 +1,10 @@
 import * as React from "react";
 import { PageBaseComponent, PageBaseComponentProps } from "./PageBaseComponent";
-import ContentContainer from "../ContentContainer";
+import ContentContainer from "../misc/ContentContainer";
 import appStateContext from "../../contexts/AppStateContext";
 import ModalConfirmation from "../modals/ModalConfirmation";
 import UploadButton from "../misc/UploadButton";
-import { IconRemove, IconImage, IconUpload, IconShare } from "../Icons";
+import { IconRemove, IconImage, IconUpload, IconShare } from "../misc/Icons";
 import { toast } from "react-toastify";
 import UrlHelper from "../../helpers/UrlHelper";
 import GalleryPhoto from "../../models/GalleryPhoto";

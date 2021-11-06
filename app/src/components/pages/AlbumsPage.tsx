@@ -1,10 +1,10 @@
 import * as React from "react";
 import { PageBaseComponent, PageBaseComponentProps } from "./PageBaseComponent";
-import ContentContainer from "../ContentContainer";
+import ContentContainer from "../misc/ContentContainer";
 import ModalCreateAlbum from "../modals/ModalCreateAlbum";
 import appStateContext from "../../contexts/AppStateContext";
 import Album from "../Album";
-import { IconCreate, IconHashTag } from "../Icons";
+import { IconCreate, IconHashTag } from "../misc/Icons";
 import upholiService from "../../services/UpholiService";
 import { AlbumNew } from "../../models/Album";
 

@@ -6,11 +6,10 @@ export default function useAlbums(): AlbumNew[] {
 	const [albums, setAlbums] = useState<AlbumNew[]>([]);
 
 	useEffect(() => {
-		const fetchData = async () =>{
-			setAlbums(await upholiService.getAlbums());
-		};
-		fetchData();
-	});
+		upholiService.getAlbums()
+			.then(setAlbums)
+			.catch(console.error);
+	}, []);
 
 	return albums;
 }

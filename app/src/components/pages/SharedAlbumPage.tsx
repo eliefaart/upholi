@@ -1,9 +1,9 @@
 import * as React from "react";
 import { PageBaseComponent, PageBaseComponentProps } from "./PageBaseComponent";
-import ContentContainer from "../ContentContainer";
+import ContentContainer from "../misc/ContentContainer";
 import appStateContext from "../../contexts/AppStateContext";
 import { Album } from "../../models/Album";
-import InputPassword from "../InputPassword";
+import InputPassword from "../misc/InputPassword";
 import upholiService from "../../services/UpholiService";
 import AlbumView from "../AlbumView";
 

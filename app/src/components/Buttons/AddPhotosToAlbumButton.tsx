@@ -2,7 +2,7 @@ import * as React from "react";
 import { toast } from "react-toastify";
 import { AlbumNew } from "../../models/Album";
 import upholiService from "../../services/UpholiService";
-import { IconAddToAlbum } from "../Icons";
+import { IconAddToAlbum } from "../misc/Icons";
 import ModalAddToAlbum from "../modals/ModalAddToAlbum";
 import ModalCreateAlbum from "../modals/ModalCreateAlbum";
 
