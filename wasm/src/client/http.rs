@@ -27,7 +27,7 @@ pub async fn get_shares(base_url: &str, filters: Option<FindSharesFilter>) -> Re
 	let mut url = format!("{}/api/shares", base_url);
 	if let Some(filters) = filters {
 		if let Some(identifier_hash) = filters.identifier_hash {
-			url = format!("{}?identifierHash={}", url, identifier_hash);
+			url = format!("{}?identifier_hash={}", url, identifier_hash);
 		}
 	}
 

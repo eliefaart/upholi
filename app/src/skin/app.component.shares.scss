@@ -1,5 +1,8 @@
 .shares {
 	padding: $spacingLarge;
+	display: flex;
+	flex-direction: column;
+	gap: $spacingLarge;
 
 	.share {
 		background-color: var(--colorBackgroundAlt);
