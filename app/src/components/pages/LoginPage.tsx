@@ -1,7 +1,7 @@
 import * as React from "react";
 import appStateContext from "../../contexts/AppStateContext";
 import upholiService from "../../services/UpholiService";
-import ContentContainer from "../layout/ContentContainer";
+import Content from "../layout/Content";
 import { PageBaseComponent, PageBaseComponentProps } from "./PageBaseComponent";
 
 interface State { }
@@ -53,12 +53,12 @@ class LoginPage extends PageBaseComponent<State> {
 
 	render(): React.ReactNode {
 		return (
-			<ContentContainer>
+			<Content>
 				<input type="text" placeholder="username" ref={this.usernameInput}/>
 				<input type="password" placeholder="password" ref={this.passwordInput}/>
 				<button onClick={this.register}>Register</button>
 				<button onClick={this.login}>Login</button>
-			</ContentContainer>
+			</Content>
 		);
 	}
 }

@@ -18,16 +18,14 @@ const ModalPhotoDetail: FC<Props> = (props) => {
 	const [photoSrc, setPhotoSrc] = React.useState<string>("");
 
 	React.useEffect(() => {
-		if (!photo || photo.id !== props.photoId) {
-			upholiService.getPhoto(props.photoId, props.photoKey)
-				.then(setPhoto)
-				.catch(console.error);
+		upholiService.getPhoto(props.photoId, props.photoKey)
+			.then(setPhoto)
+			.catch(console.error);
 
-			upholiService.getPhotoPreviewImageSrc(props.photoId, props.photoKey)
-				.then(setPhotoSrc)
-				.catch(console.error);
-		}
-	});
+		upholiService.getPhotoPreviewImageSrc(props.photoId, props.photoKey)
+			.then(setPhotoSrc)
+			.catch(console.error);
+	}, [props.photoId]);
 
 	const headerActions = <a className="iconOnly asButton" title="Download" onClick={() => downloadPhoto(props.photoId, props.photoKey)}>
 		<IconDownload/>

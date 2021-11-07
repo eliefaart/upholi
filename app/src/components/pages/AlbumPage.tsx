@@ -1,6 +1,6 @@
 import * as React from "react";
 import { PageBaseComponent, PageBaseComponentProps } from "./PageBaseComponent";
-import ContentContainer from "../layout/ContentContainer";
+import Content from "../layout/Content";
 import appStateContext from "../../contexts/AppStateContext";
 import ModalConfirmation from "../modals/ModalConfirmation";
 import UploadButton from "../misc/UploadButton";
@@ -100,12 +100,18 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 	}
 
 	componentDidMount(): void {
+		this.context.headerActions = this.getHeaderActions();
+		this.context.headerContextMenu = this.getHeaderContextMenu();
+
 		this.refreshAlbum();
 		this.refreshShare();
 		super.componentDidMount();
 	}
 
 	componentDidUpdate(prevProps: PageBaseComponentProps, prevState: AlbumPageState): void {
+		this.context.headerActions = this.getHeaderActions();
+		this.context.headerContextMenu = this.getHeaderContextMenu();
+
 		// Open photo, if indicated as such by query string
 		const queryStringPhotoId = UrlHelper.getQueryStringParamValue(location.search, queryStringParamNamePhotoId);
 		if (this.state.openedPhotoId !== queryStringPhotoId) {
@@ -255,7 +261,7 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 		}
 		else {
 			return (
-				<ContentContainer onDrop={(event) => this.onFilesDropped(event)}>
+				<Content onDrop={(event) => this.onFilesDropped(event)}>
 					<AlbumView
 						album={this.state.album}
 						selectedPhotos={this.state.selectedPhotoIds}
@@ -295,7 +301,7 @@ class AlbumPage extends PageBaseComponent<AlbumPageState> {
 
 					{/* Hidden upload button triggered by the button in action bar. This allos me to write simpler CSS to style the action buttons. */}
 					<UploadButton className="hidden" onSubmit={(files) => this.uploadFilesList(files)}/>
-				</ContentContainer>
+				</Content>
 			);
 		}
 	}

@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import * as ReactModal from "react-modal";
-import AppContainer from "./components/AppContainer";
+import App from "./components/App";
 
 import init from "wasm";
 import "./skin/app.scss";
@@ -12,5 +12,5 @@ init("/dist/wasm.wasm").then(() => {
 		ReactModal.setAppElement(rootElement);
 	}
 
-	ReactDOM.render(<AppContainer/>, rootElement);
+	ReactDOM.render(<App/>, rootElement);
 });

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { PageBaseComponent, PageBaseComponentProps } from "./PageBaseComponent";
-import ContentContainer from "../layout/ContentContainer";
+import Content from "../layout/Content";
 import appStateContext from "../../contexts/AppStateContext";
 import upholiService from "../../services/UpholiService";
 import { Share } from "../../models/Share";
@@ -32,6 +32,9 @@ class SharedPage extends PageBaseComponent<SharedPageState> {
 	}
 
 	componentDidMount(): void {
+		this.context.headerActions = this.getHeaderActions();
+		this.context.headerContextMenu = this.getHeaderContextMenu();
+
 		upholiService.getShares()
 			.then(shares => {
 				this.setState({
@@ -65,7 +68,7 @@ class SharedPage extends PageBaseComponent<SharedPageState> {
 		const history = this.context.history;
 
 		return (
-			<ContentContainer paddingTop={true} className="shares">
+			<Content paddingTop={true} className="shares">
 				{this.state.shares.map(share => {
 					const shareUrl = document.location.origin + "/s/" + share.id;
 					const shareAlbum = this.state.albums.find(album => album.id === share.data.album.albumId);
@@ -86,7 +89,7 @@ class SharedPage extends PageBaseComponent<SharedPageState> {
 						</div>
 					</div>;
 				})}
-			</ContentContainer>
+			</Content>
 		);
 	}
 }

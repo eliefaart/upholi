@@ -2,7 +2,6 @@ import * as React from "react";
 import appStateContext from "../../contexts/AppStateContext";
 
 export interface PageBaseComponentProps {
-	requiresAuthentication: boolean,
 	renderHeaderNavMenu: boolean,
 	onHeaderUpdated: (renderHeaderNavMenu: boolean, headerActions: JSX.Element | null, headerContextMenu: JSX.Element | null) => void,
 	// eslint-disable-next-line  @typescript-eslint/no-explicit-any
@@ -42,15 +41,7 @@ export class PageBaseComponent<TState> extends React.Component<PageBaseComponent
 		return null;
 	}
 
-	getTitle(): string {
-		return "upholi";
-	}
-
 	componentDidMount(): void {
-		if (this.props.requiresAuthentication && !this.context.authenticated) {
-			this.context.history.push("/login");
-		}
-
 		this.updateAllPageElement();
 	}
 
@@ -63,36 +54,36 @@ export class PageBaseComponent<TState> extends React.Component<PageBaseComponent
 
 	updateAllPageElement(): void {
 		this.updatePageTitle();
-		this.updateHeader();
+		//this.updateHeader();
 	}
 
 	/**
 	 * Update title displayed in browser tab
 	 */
 	updatePageTitle(): void {
-		const title = this.getTitle();
+		const title = "deprecated: use hook useTitle";
 		document.title = title;
 	}
 
-	/**
-	 * Notify parent component if the content of the header changed.
-	 */
-	updateHeader(): void {
-		if (this.props.onHeaderUpdated) {
-			const headerActions = this.getHeaderActions();
-			const headerActionsJson = JSON.stringify(headerActions);
+	// /**
+	//  * Notify parent component if the content of the header changed.
+	//  */
+	// updateHeader(): void {
+	// 	if (this.props.onHeaderUpdated) {
+	// 		const headerActions = this.getHeaderActions();
+	// 		const headerActionsJson = JSON.stringify(headerActions);
 
-			const headerContextMenu = this.getHeaderContextMenu();
-			const headerContextMenuJson = JSON.stringify(headerContextMenu);
+	// 		const headerContextMenu = this.getHeaderContextMenu();
+	// 		const headerContextMenuJson = JSON.stringify(headerContextMenu);
 
-			const headerJson = headerActionsJson + headerContextMenuJson;
+	// 		const headerJson = headerActionsJson + headerContextMenuJson;
 
-			if (this.lastHeaderJson !== headerJson) {
-				this.props.onHeaderUpdated(this.props.renderHeaderNavMenu, headerActions, headerContextMenu);
-				this.lastHeaderJson = headerJson;
-			}
-		}
-	}
+	// 		if (this.lastHeaderJson !== headerJson) {
+	// 			this.props.onHeaderUpdated(this.props.renderHeaderNavMenu, headerActions, headerContextMenu);
+	// 			this.lastHeaderJson = headerJson;
+	// 		}
+	// 	}
+	// }
 }
 
 PageBaseComponent.contextType = appStateContext;

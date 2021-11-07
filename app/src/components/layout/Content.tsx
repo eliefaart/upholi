@@ -12,7 +12,7 @@ interface Props {
  * I feel like I don't really need this component..
  * Perhaps I can include this functionality in PageBaseComponent somehow? Or AppBody?
  */
-const ContentContainer: FC<Props> = (props) => {
+const Content: FC<Props> = (props) => {
 	let className: string | undefined = props.className || "";
 
 	if (props.paddingTop === true){
@@ -31,4 +31,4 @@ const ContentContainer: FC<Props> = (props) => {
 	</main>);
 };
 
-export default ContentContainer;
+export default Content;

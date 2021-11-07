@@ -1,106 +1,77 @@
 import * as React from "react";
-import { PageBaseComponent, PageBaseComponentProps } from "./PageBaseComponent";
-import ContentContainer from "../layout/ContentContainer";
+import { FC } from "react";
+import Content from "../layout/Content";
 import ModalCreateAlbum from "../modals/ModalCreateAlbum";
 import appStateContext from "../../contexts/AppStateContext";
 import Album from "../misc/Album";
 import { IconCreate, IconHashTag } from "../misc/Icons";
-import upholiService from "../../services/UpholiService";
 import { AlbumNew } from "../../models/Album";
+import { useTitle } from "../../hooks/useTitle";
+import { setHeader } from "../../hooks/useHeader";
+import useAlbums from "../../hooks/useAlbums";
 
-interface AlbumsPageState {
-	newAlbumDialogOpen: boolean,
-	albums: AlbumNew[]
-}
-
-class AlbumsPage extends PageBaseComponent<AlbumsPageState> {
-
-	constructor(props: PageBaseComponentProps) {
-		super(props);
-
-		this.state = {
-			newAlbumDialogOpen: false,
-			albums: []
-		};
-	}
-
-	componentDidMount(): void {
-		upholiService.getAlbums()
-			.then((albums) => {
-				this.setState({
-					albums: albums
-				});
-			})
-			.catch(console.error);
-	}
-
-	getHeaderActions(): JSX.Element {
-		return <React.Fragment>
+const AlbumsPage: FC = () => {
+	const [ newAlbumDialogOpen, setNewAlbumDialogOpen ] = React.useState(false);
+	const albums = useAlbums();
+	const context = React.useContext(appStateContext);
+	useTitle("Albums");
+	setHeader({
+		visible: true,
+		headerActions: <React.Fragment>
 			{<button
 				className="iconOnly"
-				onClick={() => this.onCreateAlbumClick()}
+				onClick={() => onCreateAlbumClick()}
 				title="Create album">
 				<IconCreate/>
 			</button>}
-		</React.Fragment>;
-	}
+		</React.Fragment>
+	});
 
-	getTitle(): string {
-		return "Albums";
-	}
+	const onCreateAlbumClick = (): void => {
+		setNewAlbumDialogOpen(true);
+	};
 
-	onCreateAlbumClick(): void {
-		this.setState({
-			newAlbumDialogOpen: true
-		});
-	}
+	const renderAlbumsInTagContainer = function(tag: string, albums: AlbumNew[]): React.ReactNode {
+		return <div key={tag} className="album-tag">
+			{tag && <h2><IconHashTag/>{tag}</h2>}
+			{renderAlbums(albums)}
+		</div>;
+	};
 
-	render(): React.ReactNode {
-		const history = this.context.history;
+	const renderAlbums = function(albums: AlbumNew[]): React.ReactNode {
+		return <div className="albums">
+			{albums.map(album => {
+				return <Album key={album.id}
+					album={album}
+					onClick={album => context.history.push("/album/" + album.id)}
+				/>;
+			})}
+		</div>;
+	};
 
-		const renderAlbumsInTagContainer = function(tag: string, albums: AlbumNew[]): React.ReactNode {
-			return <div key={tag} className="album-tag">
-				{tag && <h2><IconHashTag/>{tag}</h2>}
-				{renderAlbums(albums)}
-			</div>;
-		};
+	const tags = albums.flatMap(a => a.tags)
+		.filter((tag ,index, array) => array.indexOf(tag) === index)
+		.sort();
+	const albumsWithoutTag = albums.filter(album => album.tags.length === 0);
 
-		const renderAlbums = function(albums: AlbumNew[]): React.ReactNode {
-			return <div className="albums">
-				{albums.map(album => {
-					return <Album key={album.id}
-						album={album}
-						onClick={album => history.push("/album/" + album.id)}
-					/>;
-				})}
-			</div>;
-		};
+	return (
+		<Content paddingTop={false}>
+			{/* Render albums per tag. An album may appear in multiple tags. */}
+			{tags.map(tag => {
+				const albumsWithTag = albums
+					.filter(album => album.tags.some(t => t === tag));
 
-		const tags = this.state.albums.flatMap(a => a.tags)
-			.filter((tag ,index, array) => array.indexOf(tag) === index)
-			.sort();
-		const albumsWithoutTag = this.state.albums.filter(album => album.tags.length === 0);
+				return renderAlbumsInTagContainer(tag, albumsWithTag);
+			})}
 
-		return (
-			<ContentContainer paddingTop={false}>
-				{/* Render albums per tag. An album may appear in multiple tags. */}
-				{tags.map(tag => {
-					const albumsWithTag = this.state.albums
-						.filter(album => album.tags.some(t => t === tag));
+			{/* Also render all albums that do not have any tags */}
+			{albumsWithoutTag.length > 0 && renderAlbumsInTagContainer(tags.length === 0 ? "" : "no-tag", albumsWithoutTag)}
 
-					return renderAlbumsInTagContainer(tag, albumsWithTag);
-				})}
+			<ModalCreateAlbum
+				isOpen={newAlbumDialogOpen}
+				onRequestClose={() => setNewAlbumDialogOpen(false)}/>
+		</Content>
+	);
+};
 
-				{/* Also render all albums that do not have any tags */}
-				{albumsWithoutTag.length > 0 && renderAlbumsInTagContainer(tags.length === 0 ? "" : "no-tag", albumsWithoutTag)}
-
-				<ModalCreateAlbum
-					isOpen={this.state.newAlbumDialogOpen}
-					onRequestClose={() => this.setState({newAlbumDialogOpen: false})}/>
-			</ContentContainer>
-		);
-	}
-}
-
-AlbumsPage.contextType = appStateContext;
 export default AlbumsPage;

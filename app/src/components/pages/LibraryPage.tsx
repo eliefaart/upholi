@@ -1,7 +1,7 @@
 import * as React from "react";
 import { PageBaseComponent, PageBaseComponentProps } from "./PageBaseComponent";
 import PhotoGallery from "../misc/PhotoGallery";
-import ContentContainer from "../layout/ContentContainer";
+import Content from "../layout/Content";
 import appStateContext from "../../contexts/AppStateContext";
 import ModalPhotoDetail from "../modals/ModalPhotoDetail";
 import ModalConfirmation from "../modals/ModalConfirmation";
@@ -105,6 +105,9 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 	}
 
 	componentDidUpdate(prevProps: PageBaseComponentProps, prevState: LibraryPageState): void {
+		this.context.headerActions = this.getHeaderActions();
+		this.context.headerContextMenu = this.getHeaderContextMenu();
+
 		// Load the initial batch of photo thumbnails once all photo data has been fetched
 		const anyPhotoLoaded = this.state.photos.some(p => !!p.src);
 		if (!anyPhotoLoaded) {
@@ -289,7 +292,7 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 
 	render(): React.ReactNode {
 		return (
-			<ContentContainer onDrop={(event) => this.onFilesDropped(event)}>
+			<Content onDrop={(event) => this.onFilesDropped(event)}>
 				<PhotoGallery photos={this.state.photos} onClick={(_, target) => this.onPhotoClicked(target.index)} selectedItems={this.state.selectedPhotoIds} onPhotoSelectedChange={(photoId, selected) => this.onPhotoSelectedChange(photoId, selected)} />
 
 				{this.state.openedPhotoId && <ModalPhotoDetail
@@ -309,7 +312,7 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 
 				{/* Hidden upload button triggered by the button in action bar. This allos me to write simpler CSS to style the action buttons. */}
 				<UploadButton className="hidden" onSubmit={(files) => this.uploadFilesList(files)}/>
-			</ContentContainer>
+			</Content>
 		);
 	}
 }
