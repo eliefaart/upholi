@@ -1,9 +1,5 @@
 import { useEffect, useState } from "react";
-
-interface User {
-	id: string,
-	username: string
-}
+import { User } from "../models/User";
 
 export default function useUser(): User | null {
 	const [user, setUser] = useState<User | null>(null);
