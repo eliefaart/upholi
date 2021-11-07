@@ -4,7 +4,7 @@ import { Router } from "react-router-dom";
 import { createBrowserHistory as createHistory } from "history";
 import { ToastContainer, Zoom } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import AppBody from "../components/AppBody";
+import AppBody from "./layout/AppBody";
 import appStateContext from "../contexts/AppStateContext";
 
 interface Props {}

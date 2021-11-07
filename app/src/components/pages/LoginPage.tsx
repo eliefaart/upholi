@@ -1,7 +1,7 @@
 import * as React from "react";
 import appStateContext from "../../contexts/AppStateContext";
 import upholiService from "../../services/UpholiService";
-import ContentContainer from "../misc/ContentContainer";
+import ContentContainer from "../layout/ContentContainer";
 import { PageBaseComponent, PageBaseComponentProps } from "./PageBaseComponent";
 
 interface State { }

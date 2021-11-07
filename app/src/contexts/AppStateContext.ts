@@ -1,7 +1,7 @@
 import * as React from "react";
 import { History } from "history";
 
-interface AppState {
+export interface AppState {
 	authenticated: boolean,
 	history: History | null,
 	headerActions: JSX.Element | null,

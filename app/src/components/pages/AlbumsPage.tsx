@@ -1,6 +1,6 @@
 import * as React from "react";
 import { PageBaseComponent, PageBaseComponentProps } from "./PageBaseComponent";
-import ContentContainer from "../misc/ContentContainer";
+import ContentContainer from "../layout/ContentContainer";
 import ModalCreateAlbum from "../modals/ModalCreateAlbum";
 import appStateContext from "../../contexts/AppStateContext";
 import Album from "../Album";
