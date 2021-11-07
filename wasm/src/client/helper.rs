@@ -252,12 +252,17 @@ impl UpholiClientHelper {
 	}
 
 	pub async fn get_photo_image_src(base_url: &str, private_key: &[u8], id: &str, photo_variant: PhotoVariant, key: &Option<String>) -> Result<String> {
-		let photo = Self::get_photo(base_url, private_key, id, key).await?;
-		let photo_data = photo.get_data();
-		let base64 = Self::get_photo_base64(base_url, private_key, id, photo_variant, &key).await?;
+		if id == "" {
+			Ok(String::new())
+		}
+		else {
+			let photo = Self::get_photo(base_url, private_key, id, key).await?;
+			let photo_data = photo.get_data();
+			let base64 = Self::get_photo_base64(base_url, private_key, id, photo_variant, &key).await?;
 
-		let src = format!("data:{};base64,{}", photo_data.content_type, base64);
-		Ok(src)
+			let src = format!("data:{};base64,{}", photo_data.content_type, base64);
+			Ok(src)
+		}
 	}
 
 	/// Get data about photo to send as part of the HTTP request's body

@@ -12,8 +12,10 @@ interface Props {
 const Album: FC<Props> = (props) => {
 	const [thumbnailSrc, setThumbnailSrc] = React.useState("");
 
-	upholiService.getPhotoThumbnailImageSrc(props.album.thumbnailPhotoId)
-		.then(setThumbnailSrc);
+	if (props.album.thumbnailPhotoId) {
+		upholiService.getPhotoThumbnailImageSrc(props.album.thumbnailPhotoId)
+			.then(setThumbnailSrc);
+	}
 
 	const thumbUrl = `url('${thumbnailSrc}')`;
 

@@ -5,6 +5,7 @@ import { IconDownload } from "../misc/Icons";
 import ModalPropsBase from "../../models/ModalPropsBase";
 import upholiService from "../../services/UpholiService";
 import { Photo } from "../../models/Photo";
+import { downloadPhoto } from "../../utils/files";
 
 interface Props extends ModalPropsBase {
 	photoId: string,
@@ -24,8 +25,6 @@ class ModalPhotoDetail extends React.Component<Props, State> {
 		super(props);
 
 		this.isRequestingPhotoId = null;
-
-		this.downloadPhoto = this.downloadPhoto.bind(this);
 
 		this.state = {
 			photo: null,
@@ -69,24 +68,12 @@ class ModalPhotoDetail extends React.Component<Props, State> {
 		}
 	}
 
-	downloadPhoto(): void {
-		upholiService.getPhotoOriginalImageSrc(this.props.photoId, this.props.photoKey)
-			.then((src) => {
-				const imageSrc = src;
-				const aElement = document.createElement("a");
-				aElement.href = imageSrc;
-				aElement.download = `${this.props.photoId}.jpg`;
-				aElement.click();
-			})
-			.catch(console.error);
-	}
-
 	render(): React.ReactNode {
 		if (!this.props.photoId) {
 			return null;
 		}
 
-		const headerActions = <a className="iconOnly asButton" title="Download" onClick={this.downloadPhoto}>
+		const headerActions = <a className="iconOnly asButton" title="Download" onClick={() => downloadPhoto(this.props.photoId, this.props.photoKey)}>
 			<IconDownload/>
 		</a>;
 

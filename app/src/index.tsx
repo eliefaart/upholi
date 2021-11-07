@@ -1,12 +1,16 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
+import * as ReactModal from "react-modal";
 import AppContainer from "./components/AppContainer";
-import "./skin/app.scss";
 
 import init from "wasm";
+import "./skin/app.scss";
 
 init("/dist/wasm.wasm").then(() => {
-	// Render a page in container
 	const rootElement = document.getElementById("appRoot");
+	if (rootElement) {
+		ReactModal.setAppElement(rootElement);
+	}
+
 	ReactDOM.render(<AppContainer/>, rootElement);
 });
