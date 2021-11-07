@@ -1,4 +1,5 @@
 import * as React from "react";
+import { FC } from "react";
 import Modal from "./Modal";
 
 interface Props {
@@ -6,36 +7,22 @@ interface Props {
 	onOkButtonClick: (password: string) => void
 }
 
-export default class ModalSetPassword extends React.Component<Props> {
-	passwordInput: React.RefObject<HTMLInputElement>;
+const ModalSetPassword: FC<Props> = (props) => {
+	const passwordInput = React.createRef<HTMLInputElement>();
 
-	constructor(props:Props) {
-		super(props);
+	return <Modal
+		title="Set password"
+		className="modalSetPassword"
+		isOpen={true}
+		onRequestClose={() => !!props.onRequestClose && props.onRequestClose()}
+		okButtonText="Save"
+		onOkButtonClick={() => passwordInput.current && props.onOkButtonClick(passwordInput.current.value)}
+		>
+			<label>
+				Password
+				<input type="password" ref={passwordInput} placeholder="password"/>
+			</label>
+	</Modal>;
+};
 
-		this.passwordInput = React.createRef();
-
-		this.state = {};
-	}
-
-	onOkButtonClick(): void {
-		if (this.passwordInput.current) {
-			this.props.onOkButtonClick(this.passwordInput.current.value);
-		}
-	}
-
-	render(): React.ReactNode {
-		return <Modal
-			title="Set password"
-			className="modalSetPassword"
-			isOpen={true}
-			onRequestClose={() => {!!this.props.onRequestClose && this.props.onRequestClose();}}
-			okButtonText="Save"
-			onOkButtonClick={() => this.onOkButtonClick()}
-			>
-				<label>
-					Password
-					<input type="password" ref={this.passwordInput} placeholder="password"/>
-				</label>
-		</Modal>;
-	}
-}
+export default ModalSetPassword;

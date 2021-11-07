@@ -10,10 +10,9 @@ export default function useUser(): User | null {
 
 	useEffect(() => {
 		fetch("/api/user/info").then(response => {
-			console.log(response);
 			setUser({
-				id: "a",
-				username: "b"
+				id: "_",
+				username: "_"
 			});
 		}).catch(console.error);
 	}, []);

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { PageBaseComponent, PageBaseComponentProps } from "./PageBaseComponent";
-import PhotoGallerySelectable from "../PhotoGallerySelectable";
+import PhotoGallery from "../misc/PhotoGallery";
 import ContentContainer from "../layout/ContentContainer";
 import appStateContext from "../../contexts/AppStateContext";
 import ModalPhotoDetail from "../modals/ModalPhotoDetail";
@@ -290,7 +290,7 @@ class LibraryPage extends PageBaseComponent<LibraryPageState> {
 	render(): React.ReactNode {
 		return (
 			<ContentContainer onDrop={(event) => this.onFilesDropped(event)}>
-				<PhotoGallerySelectable photos={this.state.photos} onClick={(_, target) => this.onPhotoClicked(target.index)} selectedItems={this.state.selectedPhotoIds} onPhotoSelectedChange={(photoId, selected) => this.onPhotoSelectedChange(photoId, selected)} />
+				<PhotoGallery photos={this.state.photos} onClick={(_, target) => this.onPhotoClicked(target.index)} selectedItems={this.state.selectedPhotoIds} onPhotoSelectedChange={(photoId, selected) => this.onPhotoSelectedChange(photoId, selected)} />
 
 				{this.state.openedPhotoId && <ModalPhotoDetail
 					isOpen={!!this.state.openedPhotoId}

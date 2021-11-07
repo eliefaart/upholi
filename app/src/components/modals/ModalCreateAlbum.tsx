@@ -1,56 +1,46 @@
 import * as React from "react";
+import { FC } from "react";
 import Modal from "./Modal";
 import appStateContext from "../../contexts/AppStateContext";
 import { toast } from "react-toastify";
 import ModalPropsBase from "../../models/ModalPropsBase";
 import upholiService from "../../services/UpholiService";
 
-interface ModalCreateAlbumProps extends ModalPropsBase {
+interface Props extends ModalPropsBase {
 	createWithPhotoIds?: string[]
 }
 
-class ModalCreateAlbum extends React.Component<ModalCreateAlbumProps> {
-	titleInput: React.RefObject<HTMLInputElement>;
+const ModalCreateAlbum: FC<Props> = (props) => {
+	const titleInput: React.RefObject<HTMLInputElement> = React.createRef();
+	const context = React.useContext(appStateContext);
 
-	constructor(props: ModalCreateAlbumProps) {
-		super(props);
+	const submitCreateAlbum = (): void => {
+		if (titleInput.current) {
+			const history = context.history;
+			const title = titleInput.current.value;
 
-		this.titleInput = React.createRef();
-	}
-
-	submitCreateAlbum(): void {
-		if (this.titleInput.current) {
-			const history = this.context.history;
-			const title = this.titleInput.current.value;
-
-			upholiService.createAlbum(title, this.props.createWithPhotoIds)
+			upholiService.createAlbum(title, props.createWithPhotoIds)
 				.then(albumId => {
 					toast.info("Album '" + title + "' created.");
-
-					if (history) {
-						history.push("/album/" + albumId);
-					}
+					history.push("/album/" + albumId);
 				})
 				.catch(console.error);
 		}
-	}
+	};
 
-	render(): React.ReactNode {
-		return <Modal
-			title="Create album"
-			className={this.props.className + " modalCreateAlbum"}
-			isOpen={this.props.isOpen}
-			onRequestClose={this.props.onRequestClose}
-			onOkButtonClick={() => this.submitCreateAlbum()}
-			okButtonText="Create"
-			>
-				<label>
-					Title
-					<input type="text" name="title" placeholder="Title" maxLength={40} ref={this.titleInput} />
-				</label>
-		</Modal>;
-	}
-}
+	return <Modal
+		title="Create album"
+		className={props.className + " modalCreateAlbum"}
+		isOpen={props.isOpen}
+		onRequestClose={props.onRequestClose}
+		onOkButtonClick={() => submitCreateAlbum()}
+		okButtonText="Create"
+		>
+			<label>
+				Title
+				<input type="text" name="title" placeholder="Title" maxLength={40} ref={titleInput} />
+			</label>
+	</Modal>;
+};
 
-ModalCreateAlbum.contextType = appStateContext;
 export default ModalCreateAlbum;

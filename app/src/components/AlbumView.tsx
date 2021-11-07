@@ -5,7 +5,7 @@ import { Album } from "../models/Album";
 import GalleryPhoto from "../models/GalleryPhoto";
 import upholiService from "../services/UpholiService";
 import ModalPhotoDetail from "./modals/ModalPhotoDetail";
-import PhotoGallerySelectable from "./PhotoGallerySelectable";
+import PhotoGallery from "./misc/PhotoGallery";
 
 const queryStringParamNamePhotoId = "photoId";
 
@@ -141,7 +141,7 @@ export default class AlbumView extends React.Component<Props, State> {
 				<span className="centerText">This album has no photos.</span>
 			}
 
-			{galleryPhotos.length > 0 && <PhotoGallerySelectable
+			{galleryPhotos.length > 0 && <PhotoGallery
 				onClick={(_, target) => this.onPhotoClicked(target.index)}
 				photos={galleryPhotos}
 				selectedItems={this.props.selectedPhotos ?? []}

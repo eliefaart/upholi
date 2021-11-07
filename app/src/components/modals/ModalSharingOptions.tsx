@@ -1,4 +1,5 @@
 import * as React from "react";
+import { FC } from "react";
 import Modal from "./Modal";
 import Switch from "react-switch";
 import { SharingOptions } from "../../models/SharingOptions";
@@ -13,81 +14,54 @@ interface Props {
 	onSharingOptionsUpdated: (options: SharingOptions) => void
 }
 
-interface State {
-	shared: boolean,
-	password: string
-}
+const ModalSharingOptions: FC<Props> = (props) => {
+	const [shared, setShared] = React.useState(!!props.share);
+	const passwordInput = React.createRef<HTMLInputElement>();
+	const shareUrl = document.location.origin + "/s/" + props.share?.id;
 
-export default class ModalSharingOptions extends React.Component<Props, State> {
-	passwordInput: React.RefObject<HTMLInputElement>;
-
-	constructor(props:Props) {
-		super(props);
-
-		this.passwordInput = React.createRef();
-
-		this.updateSharedState = this.updateSharedState.bind(this);
-		this.updateSharingOptions = this.updateSharingOptions.bind(this);
-
-		this.state = {
-			shared: !!this.props.share,
-			password: ""
-		};
-	}
-
-	updateSharedState(shared: boolean): void {
-		this.setState({
-			shared
-		}, () => {
-			this.updateSharingOptions();
-		});
-	}
-
-	updateSharingOptions(): void {
+	const updateSharingOptions = (): void => {
 		const options: SharingOptions = {
-			shared: this.state.shared,
-			password: this.passwordInput.current ? this.passwordInput.current.value : ""
+			shared,
+			password: passwordInput.current ? passwordInput.current.value : ""
 		};
 
-		this.props.onSharingOptionsUpdated(options);
-	}
+		props.onSharingOptionsUpdated(options);
+	};
 
-	render(): React.ReactNode {
-		const shareUrl = document.location.origin + "/s/" + this.props.share?.id;
+	return <Modal
+		title="Sharing options"
+		className="modalSharingOptions"
+		isOpen={props.isOpen}
+		onRequestClose={() => {!!props.onRequestClose && props.onRequestClose();}}
+		okButtonText="Save"
+		onOkButtonClick={() => updateSharingOptions()}
+		>
+			<div>
+				<label className="switch">
+					<Switch checked={shared}
+						width={40}
+						height={15}
+						handleDiameter={25}
+						onColor="#20aced"
+						offColor="#1c1c1c"
+						checkedIcon={<span className="checkedIcon"/>}
+						uncheckedIcon={<span className="uncheckedIcon"/>}
+						onChange={setShared}
+						/>
+					<span>Share via URL</span>
+				</label>
+			</div>
 
-		return <Modal
-			title="Sharing options"
-			className="modalSharingOptions"
-			isOpen={this.props.isOpen}
-			onRequestClose={() => {!!this.props.onRequestClose && this.props.onRequestClose();}}
-			okButtonText="Save"
-			onOkButtonClick={() => this.updateSharingOptions()}
-			>
-				<div>
-					<label className="switch">
-						<Switch checked={this.state.shared}
-							width={40}
-							height={15}
-							handleDiameter={25}
-							onColor="#20aced"
-							offColor="#1c1c1c"
-							checkedIcon={<span className="checkedIcon"/>}
-							uncheckedIcon={<span className="uncheckedIcon"/>}
-							onChange={this.updateSharedState}
-							/>
-						<span>Share via URL</span>
-					</label>
-				</div>
+			{shared && <div className="url">
+				Sharing URL
+				<CopyUrl shareUrl={shareUrl}/>
+			</div>}
 
-				{this.state.shared && <div className="url">
-					Sharing URL
-					<CopyUrl shareUrl={shareUrl}/>
-				</div>}
+			{shared && <label>
+				Password
+				<input type="text" defaultValue={props.share?.password} ref={passwordInput} placeholder=""/>
+			</label>}
+	</Modal>;
+};
 
-				{this.state.shared && <label>
-					Password
-					<input type="text" defaultValue={this.props.share?.password} ref={this.passwordInput} placeholder=""/>
-				</label>}
-		</Modal>;
-	}
-}
+export default ModalSharingOptions;
