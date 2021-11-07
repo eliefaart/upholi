@@ -2,16 +2,16 @@ import * as React from "react";
 import { default as Gallery, RenderImageProps, PhotoProps} from "react-photo-gallery";
 import GalleryPhoto from "../models/GalleryPhoto";
 
-interface PhotoGallerySelectableProps {
+interface Props {
 	photos: GalleryPhoto[],
 	selectedItems: string[],
 	onPhotoSelectedChange?: (photoId: string, selected: boolean) => void,
 	onClick: (event: React.MouseEvent<Element, MouseEvent>, photo: { index: number }) => void
 }
 
-class PhotoGallerySelectable extends React.Component<PhotoGallerySelectableProps> {
+class PhotoGallerySelectable extends React.Component<Props> {
 
-	constructor(props: PhotoGallerySelectableProps) {
+	constructor(props: Props) {
 		super(props);
 	}
 

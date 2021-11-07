@@ -1,55 +1,30 @@
 import * as React from "react";
-import * as ReactModal from "react-modal";
+import { FC } from "react";
 import { Router } from "react-router-dom";
-import { createBrowserHistory as createHistory } from "history";
 import { ToastContainer, Zoom } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import AppBody from "./layout/AppBody";
 import appStateContext from "../contexts/AppStateContext";
-
-interface Props {}
-
-interface State {
-	ready: boolean
-}
+import useUser from "../hooks/useUser";
 
 /**
  * Highest component in hierarchy, initializes history/router, context, modals and toast messages.
  */
-class AppContainer extends React.Component<Props, State> {
+const AppContainer: FC = () => {
+	const user = useUser();
 
-	constructor(props: Props) {
-		super(props);
+	// Create a new browser history object
+	// Store this in a context, so any component can access it and navigate
+	const context = React.useContext(appStateContext);
+	context.authenticated = !!user;
 
-		this.state = {
-			ready: false
-		};
+	if (!context.authenticated) {
+		return null;
 	}
-
-	componentDidMount(): void {
-		ReactModal.setAppElement("#appRoot");
-
-		// Call server to find out if user is authenticated
-		fetch("/api/user/info").then((response) => {
-			this.context.authenticated = response.status === 200;
-			this.setState({
-				ready: true
-			});
-		}).catch(console.error);
-	}
-
-	render(): React.ReactNode {
-		if (!this.state.ready)
-			return null;
-
-		// Create a new browser history object
-		// Store this in a context, so any component can access it and navigate
-		const history = createHistory();
-		this.context.history = history;
-
+	else {
 		return (
-			<Router history={this.context.history}>
-				<appStateContext.Provider value={this.context}>
+			<Router history={context.history}>
+				<appStateContext.Provider value={context}>
 					<AppBody/>
 				</appStateContext.Provider>
 
@@ -65,7 +40,6 @@ class AppContainer extends React.Component<Props, State> {
 			</Router>
 		);
 	}
-}
+};
 
-AppContainer.contextType = appStateContext;
 export default AppContainer;

@@ -2,7 +2,7 @@ import * as React from "react";
 import { FC } from "react";
 import useAlbums from "../../hooks/useAlbums";
 import { AlbumNew } from "../../models/Album";
-import Album from "../Album";
+import Album from "./Album";
 
 interface Props {
 	onClick: (album: AlbumNew) => void,

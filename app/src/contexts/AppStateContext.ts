@@ -1,17 +1,14 @@
 import * as React from "react";
-import { History } from "history";
+import { History, createBrowserHistory } from "history";
 
 export interface AppState {
 	authenticated: boolean,
-	history: History | null,
-	headerActions: JSX.Element | null,
-
+	history: History
 }
 
 const appStateContext: React.Context<AppState> = React.createContext<AppState>({
 	authenticated: false,
-	history: null,
-	headerActions: null
+	history: createBrowserHistory()
 });
 
 export default appStateContext;

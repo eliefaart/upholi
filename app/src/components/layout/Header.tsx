@@ -18,7 +18,6 @@ const Header: FC<Props> = (props) => {
 		{ path: "/albums", title: "Albums" },
 		{ path: "/shared", title: "Shared" }
 	];
-	const gotoPage = (path: string) => !!history && history.push(path);
 
 	const headerEmpty = !props.renderMenu && !props.actions && !props.contextMenu;
 	if (headerEmpty) {
@@ -30,7 +29,7 @@ const Header: FC<Props> = (props) => {
 			{props.renderMenu !== false && <nav>
 				{menuItems.map((menuItem) =>
 					(<span key={menuItem.path}
-						onClick={() => gotoPage(menuItem.path)}
+						onClick={() => history.push(menuItem.path)}
 						className={location.pathname === menuItem.path ? "active" : ""}
 						>{menuItem.title}</span>)
 				)}

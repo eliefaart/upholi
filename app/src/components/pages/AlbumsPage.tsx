@@ -3,7 +3,7 @@ import { PageBaseComponent, PageBaseComponentProps } from "./PageBaseComponent";
 import ContentContainer from "../layout/ContentContainer";
 import ModalCreateAlbum from "../modals/ModalCreateAlbum";
 import appStateContext from "../../contexts/AppStateContext";
-import Album from "../Album";
+import Album from "../misc/Album";
 import { IconCreate, IconHashTag } from "../misc/Icons";
 import upholiService from "../../services/UpholiService";
 import { AlbumNew } from "../../models/Album";
