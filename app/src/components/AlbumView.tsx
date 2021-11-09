@@ -105,22 +105,22 @@ export default class AlbumView extends React.Component<Props, State> {
 		this.context.history.push(document.location.pathname + "?photoId=" + photo.id);
 	}
 
-	onPhotoSelectedChange(photoId: string, selected: boolean): void {
-		if (this.props.onSelectionChanged) {
-			const selectedPhotos = this.props.selectedPhotos ?? [];
+	// onPhotoSelectedChange(photoId: string, selected: boolean): void {
+	// 	if (this.props.onSelectionChanged) {
+	// 		const selectedPhotos = this.props.selectedPhotos ?? [];
 
-			if (selected) {
-				selectedPhotos.push(photoId);
-			} else {
-				const index = selectedPhotos.indexOf(photoId);
-				if (index > -1) {
-					selectedPhotos.splice(index, 1);
-				}
-			}
+	// 		if (selected) {
+	// 			selectedPhotos.push(photoId);
+	// 		} else {
+	// 			const index = selectedPhotos.indexOf(photoId);
+	// 			if (index > -1) {
+	// 				selectedPhotos.splice(index, 1);
+	// 			}
+	// 		}
 
-			this.props.onSelectionChanged(selectedPhotos);
-		}
-	}
+	// 		this.props.onSelectionChanged(selectedPhotos);
+	// 	}
+	// }
 
 	render(): React.ReactNode {
 		const galleryPhotos = this.props.album.photos.map((photo): GalleryPhoto => {
@@ -145,7 +145,7 @@ export default class AlbumView extends React.Component<Props, State> {
 				onClick={(_, target) => this.onPhotoClicked(target.index)}
 				photos={galleryPhotos}
 				selectedItems={this.props.selectedPhotos ?? []}
-				onPhotoSelectedChange={this.props.onSelectionChanged ? (photoId, selected) => this.onPhotoSelectedChange(photoId, selected) : undefined}/>
+				onPhotoSelectionChanged={this.props.onSelectionChanged}/>
 			}
 
 			{this.state.openedPhotoId && <ModalPhotoDetail

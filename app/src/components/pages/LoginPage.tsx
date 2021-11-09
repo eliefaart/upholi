@@ -1,67 +1,45 @@
 import * as React from "react";
+import { FC } from "react";
 import appStateContext from "../../contexts/AppStateContext";
+import { useTitle } from "../../hooks/useTitle";
 import upholiService from "../../services/UpholiService";
 import Content from "../layout/Content";
-import { PageBaseComponent, PageBaseComponentProps } from "./PageBaseComponent";
 
-interface State { }
 
-class LoginPage extends PageBaseComponent<State> {
+const LoginPage: FC = () => {
+	useTitle("Login");
 
-	usernameInput: React.RefObject<HTMLInputElement>;
-	passwordInput: React.RefObject<HTMLInputElement>;
+	const context = React.useContext(appStateContext);
+	const usernameInput = React.createRef<HTMLInputElement>();
+	const passwordInput = React.createRef<HTMLInputElement>();
 
-	constructor(props: PageBaseComponentProps) {
-		super(props);
-
-		this.register = this.register.bind(this);
-		this.login = this.login.bind(this);
-
-		this.usernameInput = React.createRef();
-		this.passwordInput = React.createRef();
-
-		this.state = { };
-	}
-
-	getHeaderActions(): JSX.Element | null {
-		return null;
-	}
-
-	getTitle(): string {
-		return "Login";
-	}
-
-	register(): void {
-		if (this.usernameInput.current && this.passwordInput.current) {
-			const username = this.usernameInput.current.value;
-			const password = this.passwordInput.current.value;
+	const register = (): void => {
+		if (usernameInput.current && passwordInput.current) {
+			const username = usernameInput.current.value;
+			const password = passwordInput.current.value;
 			upholiService.register(username, password);
 		}
-	}
+	};
 
-	login(): void {
-		if (this.usernameInput.current && this.passwordInput.current) {
-			const username = this.usernameInput.current.value;
-			const password = this.passwordInput.current.value;
+	const login = (): void => {
+		if (usernameInput.current && passwordInput.current) {
+			const username = usernameInput.current.value;
+			const password = passwordInput.current.value;
 			upholiService.login(username, password)
 				.then(() => {
-					this.context.authenticated = true;
-					this.context.history.push("/");
+					context.history.push("/");
 				});
 		}
-	}
+	};
 
-	render(): React.ReactNode {
-		return (
-			<Content>
-				<input type="text" placeholder="username" ref={this.usernameInput}/>
-				<input type="password" placeholder="password" ref={this.passwordInput}/>
-				<button onClick={this.register}>Register</button>
-				<button onClick={this.login}>Login</button>
-			</Content>
-		);
-	}
-}
+	return (
+		<Content>
+			<input type="text" placeholder="username" ref={usernameInput}/>
+			<input type="password" placeholder="password" ref={passwordInput}/>
+			<button onClick={register}>Register</button>
+			<button onClick={login}>Login</button>
+		</Content>
+	);
+};
 
-LoginPage.contextType = appStateContext;
 export default LoginPage;

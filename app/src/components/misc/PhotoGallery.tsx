@@ -10,7 +10,7 @@ const PHOTO_MARGIN = 3;
 interface Props {
 	photos: GalleryPhoto[],
 	selectedItems: string[],
-	onPhotoSelectedChange?: (photoId: string, selected: boolean) => void,
+	onPhotoSelectionChanged?: (photoIds: string[]) => void,
 	onClick: (event: React.MouseEvent<Element, MouseEvent>, photo: { index: number }) => void
 }
 
@@ -26,13 +26,14 @@ function getGalleryViewModel(photos: GalleryPhoto[]): PhotoProps[] {
 }
 
 const PhotoGallery: FC<Props> = (props) => {
-	const photosSelectable = props.onPhotoSelectedChange !== undefined;
+	const photosSelectable = props.onPhotoSelectionChanged !== undefined;
 	const galleryViewModel = getGalleryViewModel(props.photos);
 
 	// Inline-component representing one photo tile.
 	//{ index: number, onClick, photo: Photo, margin: number, direction: string, top: number, left: number, key: string }
 	const imageRenderer: FC<RenderImageProps<Record<string, never>>> = (renderImageProps: RenderImageProps<Record<string, never>>) => {
 		if (renderImageProps.photo.key) {
+			const photoId = renderImageProps.photo.key;
 			const imgStyle: React.CSSProperties = {
 				backgroundImage: "url(\"" + renderImageProps.photo.src + "\")",
 				margin: renderImageProps.margin,
@@ -57,19 +58,36 @@ const PhotoGallery: FC<Props> = (props) => {
 				left: 0 + (photoMargin * 2),
 			};
 
-			const checkboxId = "photo_select_" + renderImageProps.photo.key;
-			const isSelected = props.selectedItems.indexOf(renderImageProps.photo.key) !== -1;
+			const checkboxId = "photo_select_" + photoId;
+			const isSelected = props.selectedItems.indexOf(photoId) !== -1;
 			const anySelected = props.selectedItems.length > 0;
 			const cssClass = "photo"
 				+ " " + (photosSelectable ? "selectable" : "")
 				+ " " + (isSelected ? "selected" : "")
 				+ " " + (anySelected ? "any-other-selected" : "");
 
+			const changePhotoSelectedState = (selected: boolean): void => {
+				console.log("changePhotoSelectedState");
+				if (props.onPhotoSelectionChanged && photoId) {
+					const newSelection = props.selectedItems;
+
+					if (selected) {
+						newSelection.push(photoId);
+					}
+					else {
+						const index = props.selectedItems.indexOf(photoId);
+						if (index > -1) {
+							newSelection.splice(index, 1);
+						}
+					}
+
+					props.onPhotoSelectionChanged(newSelection);
+				}
+			};
+
 			const onPhotoClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
 				if (anySelected) {
-					if (props.onPhotoSelectedChange && renderImageProps.photo.key) {
-						props.onPhotoSelectedChange(renderImageProps.photo.key, !isSelected);
-					}
+					changePhotoSelectedState(props.selectedItems.indexOf(photoId) === -1);
 				}
 				else if (renderImageProps.onClick) {
 					renderImageProps.onClick(event, {
@@ -80,27 +98,23 @@ const PhotoGallery: FC<Props> = (props) => {
 
 			const onPhotoSelectedChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
 				const checked = event.target.checked;
-
-				if (props.onPhotoSelectedChange && renderImageProps.photo.key) {
-					props.onPhotoSelectedChange(renderImageProps.photo.key, checked);
-				}
+				changePhotoSelectedState(checked);
 			};
 
 			const onContextMenu = photosSelectable ? (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
 				event.preventDefault();
-				if (props.onPhotoSelectedChange && renderImageProps.photo.key) {
-					props.onPhotoSelectedChange(renderImageProps.photo.key, !isSelected);
-				}
+
+				changePhotoSelectedState(props.selectedItems.indexOf(photoId) === -1);
 			} : undefined;
 
-			return <div key={renderImageProps.photo.key} style={containerStyle} className={cssClass}>
+			return <div key={photoId} style={containerStyle} className={cssClass}>
 				<input type="checkbox" id={checkboxId} name={checkboxId}
 					checked={isSelected}
 					onChange={onPhotoSelectedChanged}/>
 				<label htmlFor={checkboxId} style={checkboxLabelStyle}></label>
 				{/* Render a div instead of an img element. This is solely to prevent the default (longpress) context menu to appear in mobile browsers */}
 				<div
-					id={renderImageProps.photo.key}
+					id={photoId}
 					className="photoImg"
 					style={imgStyle}
 					onClick={onPhotoClick}

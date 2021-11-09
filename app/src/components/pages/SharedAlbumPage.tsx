@@ -17,11 +17,10 @@ const SharedAlbumPage: FC<Props> = (props) => {
 	const [lastPasswordIncorrect, setLastPasswordIncorrect] = useState(false);
 	const [album, setAlbum] = useState<Album | null>(null);
 
+	useTitle(album?.title ?? "");
 	setHeader({
 		visible: true
 	});
-
-	useTitle("SHARED PAGE");
 
 	const token = props.match.params.token;
 
