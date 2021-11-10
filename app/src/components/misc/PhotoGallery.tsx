@@ -32,8 +32,9 @@ const PhotoGallery: FC<Props> = (props) => {
 	// Inline-component representing one photo tile.
 	//{ index: number, onClick, photo: Photo, margin: number, direction: string, top: number, left: number, key: string }
 	const imageRenderer: FC<RenderImageProps<Record<string, never>>> = (renderImageProps: RenderImageProps<Record<string, never>>) => {
-		if (renderImageProps.photo.key) {
-			const photoId = renderImageProps.photo.key;
+		const photoId = renderImageProps.photo.key;
+
+		if (photoId) {
 			const imgStyle: React.CSSProperties = {
 				backgroundImage: "url(\"" + renderImageProps.photo.src + "\")",
 				margin: renderImageProps.margin,
@@ -59,11 +60,11 @@ const PhotoGallery: FC<Props> = (props) => {
 			};
 
 			const checkboxId = "photo_select_" + photoId;
-			const isSelected = props.selectedItems.indexOf(photoId) !== -1;
+			const selected = props.selectedItems.indexOf(photoId) !== -1;
 			const anySelected = props.selectedItems.length > 0;
 			const cssClass = "photo"
 				+ " " + (photosSelectable ? "selectable" : "")
-				+ " " + (isSelected ? "selected" : "")
+				+ " " + (selected ? "selected" : "")
 				+ " " + (anySelected ? "any-other-selected" : "");
 
 			const changePhotoSelectedState = (selected: boolean): void => {
@@ -109,7 +110,7 @@ const PhotoGallery: FC<Props> = (props) => {
 
 			return <div key={photoId} style={containerStyle} className={cssClass}>
 				<input type="checkbox" id={checkboxId} name={checkboxId}
-					checked={isSelected}
+					checked={selected}
 					onChange={onPhotoSelectedChanged}/>
 				<label htmlFor={checkboxId} style={checkboxLabelStyle}></label>
 				{/* Render a div instead of an img element. This is solely to prevent the default (longpress) context menu to appear in mobile browsers */}

@@ -130,6 +130,7 @@ const LibraryPage: FC = () => {
 			.then(() => {
 				setConfirmDeletePhotosOpen(false);
 				setSelectedPhotoIds([]);
+				refreshPhotos();
 			});
 	};
 

@@ -169,7 +169,7 @@ const AlbumPage: FC<Props> = (props) => {
 		</>,
 		headerContextMenu: <>
 			{<button onClick={() => setEditAlbumOpen(true)}>Edit album</button>}
-			{<button onClick={() => setConfirmDeleteAlbumOpen(false)}>Delete album</button>}
+			{<button onClick={() => setConfirmDeleteAlbumOpen(true)}>Delete album</button>}
 		</>
 	});
 
