@@ -114,6 +114,7 @@ const AlbumPage: FC<Props> = (props) => {
 			upholiService.upsertAlbumShare(albumId, options.password)
 				.then(() => {
 					refreshShare();
+					setSharingOptionsOpen(false);
 				})
 				.catch(console.error);
 		}

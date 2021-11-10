@@ -6,21 +6,25 @@ import uploadHelper from "../../helpers/UploadHelper";
 import useUploadProgress from "../../hooks/useUploadProgress";
 
 const UploadProgress: FC = () => {
+	const [queueFinished, setQueueFinished] = React.useState(false);
+	const [queueEmpty, setQueueEmpty] = React.useState(false);
 	const uploadProgress = useUploadProgress();
-	const queueEmpty = uploadProgress.length === 0;
+
+	if (queueFinished !== uploadProgress.every(item => uploadFinishedStatusses.indexOf(item.status) !== -1)) {
+		setQueueFinished(!queueFinished);
+	}
+
+	if (queueEmpty !== (uploadProgress.length === 0)) {
+		setQueueEmpty(!queueEmpty);
+	}
 
 	if (queueEmpty) {
 		return null;
 	}
 	else {
-		const allItemsInQueueFinished = uploadProgress.every(item => uploadFinishedStatusses.indexOf(item.status) !== -1);
-
-		console.log(uploadFinishedStatusses);
-		console.log(allItemsInQueueFinished);
-
 		return <div className="uploadProgress">
 			<div className="header">
-				{allItemsInQueueFinished && <button
+				{queueFinished && <button
 					onClick={() => uploadHelper.clearQueue()}
 					className="iconOnly">
 					<IconClose/>
