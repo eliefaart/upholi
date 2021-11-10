@@ -10,13 +10,13 @@ interface Props {
 }
 
 const Albums: FC<Props> = (props) => {
-	const stateAlbums = useAlbums();
-	const albums = stateAlbums.map((album) => (
+	const [albums, refreshAlbums] = useAlbums();
+	const albumElements = albums.map((album) => (
 		<Album key={album.id} album={album} onClick={props.onClick} />
 	));
 
 	return <div className="albums">
-		{albums}
+		{albumElements}
 	</div>;
 };
 

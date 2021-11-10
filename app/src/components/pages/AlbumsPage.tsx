@@ -12,7 +12,7 @@ import useAlbums from "../../hooks/useAlbums";
 
 const AlbumsPage: FC = () => {
 	const [ newAlbumDialogOpen, setNewAlbumDialogOpen ] = React.useState(false);
-	const albums = useAlbums();
+	const [albums, refreshAlbums] = useAlbums();
 	const context = React.useContext(appStateContext);
 	useTitle("Albums");
 	setHeader({

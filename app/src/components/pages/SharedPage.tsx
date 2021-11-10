@@ -12,8 +12,9 @@ import useShares from "../../hooks/useShares";
 
 const SharedPage: FC = () => {
 	const context = React.useContext(appStateContext);
-	const albums = useAlbums();
-	const shares = useShares();
+	const [albums, refreshAlbums] = useAlbums();
+	//const shares = useShares();
+	const [shares, refreshShares] = useShares();
 
 	useTitle("Shared");
 	setHeader({
@@ -24,6 +25,7 @@ const SharedPage: FC = () => {
 		upholiService.deleteShare(share.id)
 			.then(() => {
 				// update shares hook somehow?
+				refreshShares();
 			})
 			.catch(console.error);
 	};

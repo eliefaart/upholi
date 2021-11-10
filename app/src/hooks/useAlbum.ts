@@ -1,15 +1,7 @@
-import { useEffect, useState } from "react";
 import { Album } from "../models/Album";
 import upholiService from "../services/UpholiService";
+import { useApiResource } from "./useApiResource";
 
-export default function useAlbum(albumId: string): Album | null {
-	const [album, setAlbum] = useState<Album | null>(null);
-
-	useEffect(() => {
-		upholiService.getAlbum(albumId)
-			.then(setAlbum)
-			.catch(console.error);
-	}, [albumId]);
-
-	return album;
+export default function useAlbum(albumId: string): [Album | undefined, () => void] {
+	return useApiResource<Album | undefined>(() => upholiService.getAlbum(albumId), undefined);
 }

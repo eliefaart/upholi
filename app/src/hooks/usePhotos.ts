@@ -1,15 +1,7 @@
-import { useEffect, useState } from "react";
 import { PhotoMinimal } from "../models/Photo";
 import upholiService from "../services/UpholiService";
+import { useApiResource } from "./useApiResource";
 
-export default function usePhotos(): PhotoMinimal[] {
-	const [photos, setPhotos] = useState<PhotoMinimal[]>([]);
-
-	useEffect(() => {
-		upholiService.getPhotos()
-			.then(setPhotos)
-			.catch(console.error);
-	}, []);
-
-	return photos;
+export default function usePhotos(): [PhotoMinimal[], () => void] {
+	return useApiResource<PhotoMinimal[]>(() => upholiService.getPhotos(), []);
 }

@@ -1,6 +1,5 @@
 import * as React from "react";
 import { FC } from "react";
-import { PageBaseComponent, PageBaseComponentProps } from "./PageBaseComponent";
 import Content from "../layout/Content";
 import appStateContext from "../../contexts/AppStateContext";
 import ModalConfirmation from "../modals/ModalConfirmation";
@@ -38,8 +37,8 @@ interface Props {
 
 const AlbumPage: FC<Props> = (props) => {
 	const albumId = props.match.params.albumId;
-	const album = useAlbum(albumId);
-	const share = useFoundAlbumShare(albumId);
+	const [album, refreshAlbum] = useAlbum(albumId);
+	const [share, refreshShare] = useFoundAlbumShare(albumId);
 	const [selectedPhotoIds, setSelectedPhotoIds] = React.useState<string[]>([]);
 	const [editAlbumOpen, setEditAlbumOpen] = React.useState<boolean>(false);
 	const [sharingOptionsOpen, setSharingOptionsOpen] = React.useState<boolean>(false);
@@ -96,6 +95,7 @@ const AlbumPage: FC<Props> = (props) => {
 	const uploadFilesList = (fileList: FileList): void => {
 		const fnOnUploadFinished = () => {
 			toast.info("Upload finished.");
+			refreshAlbum();
 		};
 
 		uploadHelper.uploadPhotos(fileList).then((queue) => {
@@ -113,7 +113,7 @@ const AlbumPage: FC<Props> = (props) => {
 		if (options.shared) {
 			upholiService.upsertAlbumShare(albumId, options.password)
 				.then(() => {
-					//this.refreshShare();
+					refreshShare();
 				})
 				.catch(console.error);
 		}
@@ -121,7 +121,7 @@ const AlbumPage: FC<Props> = (props) => {
 			if (share) {
 				upholiService.deleteShare(share.id)
 					.then(() => {
-						//this.setState({ share: null }
+						refreshShare();
 					})
 					.catch(console.error);
 			}

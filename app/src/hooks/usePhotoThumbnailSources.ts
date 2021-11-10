@@ -11,8 +11,6 @@ const cache: PhotoSource[] = [];
 
 export default function usePhotoThumbnailSources(photos: PhotoMinimal[]): PhotoSource[] {
 	const [sources, setSources] = useState<PhotoSource[]>([]);
-	const sourcesRef = useRef<PhotoSource[]>([]);
-	sourcesRef.current = sources;
 
 	// Find photos that we still have to fetch.
 	const notInCache = photos.filter(photo => !cache.some(ci => ci.photoId === photo.id));

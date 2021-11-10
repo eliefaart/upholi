@@ -21,7 +21,7 @@ const queryStringParamNamePhotoId = "photoId";
 
 const LibraryPage: FC = () => {
 	const context = React.useContext(appStateContext);
-	const photos = usePhotos();
+	const [photos, refreshPhotos] = usePhotos();
 	const photoSources = usePhotoThumbnailSources(photos);
 	const [selectedPhotoIds, setSelectedPhotoIds] = useState<string[]>([]);
 	const [openedPhotoId, setOpenedPhotoId] = useState<string>("");
@@ -163,7 +163,7 @@ const LibraryPage: FC = () => {
 
 	const uploadFilesList = (fileList: FileList): void => {
 		const fnOnUploadFinished = () => {
-			//this.refreshPhotos();
+			refreshPhotos();
 			toast.info("Upload finished.");
 		};
 

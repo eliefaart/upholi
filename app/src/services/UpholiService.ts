@@ -149,7 +149,7 @@ class UpholiService {
 		return this.client.getShareUsingPassword(id, password);
 	}
 
-	async findAlbumShare(id: string): Promise<Share | null> {
+	async findAlbumShare(id: string): Promise<Share> {
 		return this.client.findAlbumShare(id);
 	}
 

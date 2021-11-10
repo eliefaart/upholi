@@ -15,7 +15,10 @@ const UploadProgress: FC = () => {
 	else {
 		const allItemsInQueueFinished = uploadProgress.every(item => uploadFinishedStatusses.indexOf(item.status) !== -1);
 
-		return queueEmpty ? null : <div className="uploadProgress">
+		console.log(uploadFinishedStatusses);
+		console.log(allItemsInQueueFinished);
+
+		return <div className="uploadProgress">
 			<div className="header">
 				{allItemsInQueueFinished && <button
 					onClick={() => uploadHelper.clearQueue()}

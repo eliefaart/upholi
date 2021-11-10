@@ -7,7 +7,7 @@ import { Share } from "../../models/Share";
 import CopyUrl from "../misc/CopyUrl";
 
 interface Props {
-	share: Share | null,
+	share?: Share,
 	isOpen: boolean,
 	onRequestClose?: () => void,
 	onOkButtonClick: (password: string) => void,
