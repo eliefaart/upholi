@@ -5,6 +5,7 @@
 
 	.photo {
 		cursor: pointer;
+		position: relative;
 
 		.photoImg {
 			display: block;
@@ -42,6 +43,9 @@
 		}
 
 		label {
+			position: absolute;
+			top: 5px;
+			left: 5px;
 			display: none;
 			cursor: pointer;
 			background: var(--colorText);

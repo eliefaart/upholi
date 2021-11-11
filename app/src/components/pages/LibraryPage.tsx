@@ -1,6 +1,6 @@
 import * as React from "react";
 import { FC, useState } from "react";
-import PhotoGallery from "../misc/PhotoGallery";
+import PhotoGallery from "../gallery/PhotoGallery";
 import Content from "../layout/Content";
 import appStateContext from "../../contexts/AppStateContext";
 import ModalPhotoDetail from "../modals/ModalPhotoDetail";
@@ -149,9 +149,10 @@ const LibraryPage: FC = () => {
 	// 	setSelectedPhotoIds(selectedPhotos);
 	// };
 
-	const onPhotoClicked = (index: number): void => {
-		const photo = photos[index];
-		context.history.push(document.location.pathname + "?photoId=" + photo.id);
+	const onPhotoClicked = (photoId: string): void => {
+		if (photoId) {
+			context.history.push(document.location.pathname + "?photoId=" + photoId);
+		}
 	};
 
 	const onFilesDropped = (event: React.DragEvent<HTMLElement>): void => {
@@ -221,7 +222,7 @@ const LibraryPage: FC = () => {
 
 	return <Content onDrop={onFilesDropped}>
 			<PhotoGallery photos={galleryPhotos}
-				onClick={(_, target) => onPhotoClicked(target.index)}
+				onClick={onPhotoClicked}
 				selectedItems={selectedPhotoIds}
 				onPhotoSelectionChanged={setSelectedPhotoIds}
 				/>

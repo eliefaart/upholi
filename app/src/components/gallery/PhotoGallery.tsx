@@ -2,6 +2,7 @@ import * as React from "react";
 import { FC } from "react";
 import { default as Gallery, RenderImageProps, PhotoProps} from "react-photo-gallery";
 import GalleryPhoto from "../../models/GalleryPhoto";
+import { default as GalleryPhotoItem } from "./GalleryPhoto";
 
 /** Target height for algorithm, but exact height will vary a bit. */
 const PHOTO_HEIGHT = 200;
@@ -11,7 +12,7 @@ interface Props {
 	photos: GalleryPhoto[],
 	selectedItems: string[],
 	onPhotoSelectionChanged?: (photoIds: string[]) => void,
-	onClick: (event: React.MouseEvent<Element, MouseEvent>, photo: { index: number }) => void
+	onClick: (photoId: string) => void
 }
 
 function getGalleryViewModel(photos: GalleryPhoto[]): PhotoProps[] {
@@ -68,7 +69,6 @@ const PhotoGallery: FC<Props> = (props) => {
 				+ " " + (anySelected ? "any-other-selected" : "");
 
 			const changePhotoSelectedState = (selected: boolean): void => {
-				console.log("changePhotoSelectedState");
 				if (props.onPhotoSelectionChanged && photoId) {
 					const newSelection = props.selectedItems;
 
@@ -131,10 +131,33 @@ const PhotoGallery: FC<Props> = (props) => {
 	return (
 		<div className="photoGallery">
 			<Gallery photos={galleryViewModel}
-				onClick={(e, d) => { !!props.onClick && props.onClick(e, d);}}
+				//onClick={(e, d) => { !!props.onClick && props.onClick(e, d);}}
 				margin={PHOTO_MARGIN}
 				targetRowHeight={PHOTO_HEIGHT}
-				renderImage={imageRenderer}/>
+				//renderImage={imageRenderer}
+				renderImage={(renderProps) => {
+					const photoId = renderProps.photo.key ?? "";
+					const selected = props.selectedItems.indexOf(photoId) !== -1;
+
+					const gpiProps = {
+						...renderProps,
+						selected,
+						anySiblingPhotoSelected: props.selectedItems.length > 0,
+						onClick: () => props.onClick(photoId),
+						onToggleSelect: () => {
+							if (props.onPhotoSelectionChanged) {
+								// If selected, then on callback we must unselect. And visa versa
+								const newSelectedPhotoIds = selected
+									? props.selectedItems.filter(pId => pId !== photoId)
+									: [photoId, ...props.selectedItems];
+
+								props.onPhotoSelectionChanged(newSelectedPhotoIds);
+							}
+						},
+					};
+					return GalleryPhotoItem(gpiProps);
+				}}
+				/>
 		</div>
 	);
 };

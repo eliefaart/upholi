@@ -5,7 +5,7 @@ import { Album } from "../models/Album";
 import GalleryPhoto from "../models/GalleryPhoto";
 import upholiService from "../services/UpholiService";
 import ModalPhotoDetail from "./modals/ModalPhotoDetail";
-import PhotoGallery from "./misc/PhotoGallery";
+import PhotoGallery from "./gallery/PhotoGallery";
 
 const queryStringParamNamePhotoId = "photoId";
 
