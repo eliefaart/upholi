@@ -181,31 +181,34 @@ const LibraryPage: FC = () => {
 	}, []);
 
 	useTitle("Library");
-	setHeader({
-		visible: true,
-		headerActions: <React.Fragment>
-			{selectedPhotoIds.length === 0 && <button
-				className="iconOnly"
-				onClick={() => {
-					const element = document.getElementById("select-photos");
-					if (element) {
-						element.click();
-					}
-				}}
-				title="Upload photos">
-				<IconUpload/>
-			</button>}
-			<AddPhotosToAlbumButton
-				selectedPhotoIds={selectedPhotoIds}
-				onSelectionAddedToAlbum={() => setSelectedPhotoIds([])}/>
-			{selectedPhotoIds.length > 0 && <button
-				className="iconOnly"
-				onClick={() => setConfirmDeletePhotosOpen(true)}
-				title="Delete photos">
-				<IconDelete/>
-			</button>}
-		</React.Fragment>
-	});
+	//React.useEffect(() => {
+		setHeader({
+			visible: true,
+			headerActions: <React.Fragment>
+				{selectedPhotoIds.length === 0 && <button
+					className="iconOnly"
+					onClick={() => {
+						const element = document.getElementById("select-photos");
+						if (element) {
+							element.click();
+						}
+					}}
+					title="Upload photos">
+					<IconUpload/>
+				</button>}
+				<AddPhotosToAlbumButton
+					selectedPhotoIds={selectedPhotoIds}
+					onSelectionAddedToAlbum={() => setSelectedPhotoIds([])}/>
+				{selectedPhotoIds.length > 0 && <button
+					className="iconOnly"
+					onClick={() => setConfirmDeletePhotosOpen(true)}
+					title="Delete photos">
+					<IconDelete/>
+				</button>}
+			</React.Fragment>
+		});
+	//}, [selectedPhotoIds.length]);
+
 
 	const galleryPhotos = photos.map(photo => {
 		return {

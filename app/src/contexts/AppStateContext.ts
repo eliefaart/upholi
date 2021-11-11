@@ -1,18 +1,17 @@
 import * as React from "react";
 import { History, createBrowserHistory } from "history";
+import { HeaderSettings } from "../hooks/useHeader";
 
 export interface AppState {
 	history: History,
-
-	// Temp: Until I can switch to using hooks for this
-	headerActions: JSX.Element | null,
-	headerContextMenu: JSX.Element | null,
+	header: HeaderSettings
 }
 
 const appStateContext: React.Context<AppState> = React.createContext<AppState>({
 	history: createBrowserHistory(),
-	headerActions: null,
-	headerContextMenu: null
+	header: {
+		visible: false
+	}
 });
 
 export default appStateContext;

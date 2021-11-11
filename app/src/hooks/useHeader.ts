@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-interface HeaderSettings {
+export interface HeaderSettings {
 	visible: boolean,
 	headerActions?: JSX.Element | null,
 	headerContextMenu?: JSX.Element | null

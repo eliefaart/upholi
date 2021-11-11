@@ -5,15 +5,12 @@ import { useHeader } from "../../hooks/useHeader";
 import { IconContextMenu } from "../misc/Icons";
 
 interface Props {
-	// renderMenu: boolean,
-	// actions: JSX.Element | null,
-	// contextMenu: JSX.Element | null
 }
 
 const Header: FC<Props> = (props) => {
 	const header = useHeader();
 	const [contextMenuOpen, setContextMenuOpen] = React.useState(false);
-	const { history } = React.useContext<AppState>(appStateContext);
+	const context = React.useContext<AppState>(appStateContext);
 
 	const menuItems = [
 		{ path: "/", title: "Library" },
@@ -31,7 +28,7 @@ const Header: FC<Props> = (props) => {
 			{header.visible !== false && <nav>
 				{menuItems.map((menuItem) =>
 					(<span key={menuItem.path}
-						onClick={() => history.push(menuItem.path)}
+						onClick={() => context.history.push(menuItem.path)}
 						className={location.pathname === menuItem.path ? "active" : ""}
 						>{menuItem.title}</span>)
 				)}
