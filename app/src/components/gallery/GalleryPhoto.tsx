@@ -10,8 +10,6 @@ interface Props {
 		height: number
 	},
 	margin?: string,
-	// top?: string,
-	// left?: string,
 
 	selected: boolean,
 	anySiblingPhotoSelected: boolean,
@@ -30,7 +28,6 @@ const GalleryPhoto: FC<Props> = (props: Props) => {
 	}
 	else {
 		const cssClass = "photo"
-			// + " " + (photosSelectable ? "selectable" : "")
 			+ " " + (props.selected ? "selected" : "")
 			+ " " + (props.anySiblingPhotoSelected ? "any-other-selected" : "")
 			;
@@ -40,18 +37,9 @@ const GalleryPhoto: FC<Props> = (props: Props) => {
 			margin: props.margin,
 			width: props.photo.width,
 			height: props.photo.height,
-			// top: props.top,
-			// left: props.left
 		};
 
-		const checkboxElementId = `photo_select_${photoId}`;
-
 		return <div key={photoId} className={cssClass}>
-			<input type="checkbox" id={checkboxElementId} name={checkboxElementId}
-				checked={props.selected}
-				// onChange={onPhotoSelectedChanged}
-				/>
-			<label htmlFor={checkboxElementId}></label>
 			{/* Render a div instead of an img element. This is solely to prevent the default (longpress) context menu to appear in mobile browsers */}
 			<div
 				id={photoId}

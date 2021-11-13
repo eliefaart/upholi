@@ -21,38 +21,5 @@
 			box-sizing: border-box;
 			border-width: 5px;
 		}
-
-		&.selectable:hover, &.any-other-selected {
-			label {
-				display: unset;
-			}
-
-			&.any-other-selected {
-				label {
-					opacity: 100%;
-				}
-			}
-		}
-
-		input {
-			display: none;
-
-			&:checked+label {
-				background: var(--colorSecondaryAccent);
-			}
-		}
-
-		label {
-			position: absolute;
-			top: 5px;
-			left: 5px;
-			display: none;
-			cursor: pointer;
-			background: var(--colorText);
-			width: 20px;
-			height: 20px;
-			border-radius: 20px;
-			opacity: 50%;
-		}
 	}
 }

@@ -100,9 +100,10 @@ export default class AlbumView extends React.Component<Props, State> {
 		}
 	}
 
-	onPhotoClicked(photoIndex: number): void {
-		const photo = this.props.album.photos[photoIndex];
-		this.context.history.push(document.location.pathname + "?photoId=" + photo.id);
+	onPhotoClicked(photoId: string): void {
+		if (photoId) {
+			this.context.history.push(document.location.pathname + "?photoId=" + photoId);
+		}
 	}
 
 	// onPhotoSelectedChange(photoId: string, selected: boolean): void {
@@ -142,7 +143,7 @@ export default class AlbumView extends React.Component<Props, State> {
 			}
 
 			{galleryPhotos.length > 0 && <PhotoGallery
-				onClick={(_, target) => this.onPhotoClicked(target.index)}
+				onClick={this.onPhotoClicked}
 				photos={galleryPhotos}
 				selectedItems={this.props.selectedPhotos ?? []}
 				onPhotoSelectionChanged={this.props.onSelectionChanged}/>
