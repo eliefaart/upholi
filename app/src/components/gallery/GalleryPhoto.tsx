@@ -1,6 +1,6 @@
 import * as React from "react";
 import { FC } from "react";
-import usePhotoThumbnailSource from "../../hooks/usePhotoThumbnailSource";
+import { IconCheck } from "../misc/Icons";
 
 interface Props {
 	photo: {
@@ -42,7 +42,6 @@ const GalleryPhoto: FC<Props> = (props: Props) => {
 		return <div key={photoId} className={cssClass}>
 			{/* Render a div instead of an img element. This is solely to prevent the default (longpress) context menu to appear in mobile browsers */}
 			<div
-				id={photoId}
 				className="photoImg"
 				style={imgStyle}
 				onClick={props.onClick}
@@ -50,7 +49,12 @@ const GalleryPhoto: FC<Props> = (props: Props) => {
 					event.preventDefault();
 					props.onToggleSelect();
 				}}
-			/>
+			>
+				{props.selected && <div className="selected-overlay">
+					<IconCheck/>
+				</div>}
+			</div>
+
 		</div>;
 	}
 };

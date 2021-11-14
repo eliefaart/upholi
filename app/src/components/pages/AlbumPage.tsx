@@ -66,6 +66,8 @@ const AlbumPage: FC<Props> = (props) => {
 			.then(() => {
 				toast.info("Photos removed.");
 				setConfirmRemovePhotosOpen(false);
+				setSelectedPhotoIds([]);
+				refreshAlbum();
 			})
 			.catch(console.error);
 	};

@@ -8,13 +8,29 @@
 		position: relative;
 
 		.photoImg {
+			position: relative;
 			display: block;
 			background-size: cover;
 			background-position: center center;
 			background-repeat: no-repeat;
 			background-color: var(--colorBackgroundAlt);
-			border: 0px solid var(--colorSecondaryAccent);
+			border: 0px solid white;//var(--colorSecondaryAccent);
 			transition-property: border-width;
+
+			.selected-overlay {
+				position: absolute;
+				width: 100%;
+				height: 100%;
+				background-color: rgba(0, 0, 0, 0.5);
+				pointer-events: none;
+				//padding: 5px;
+				display: flex;
+				justify-content: center;
+
+				svg {
+					size: 200%;
+				}
+			}
 		}
 
 		&.selected .photoImg{
