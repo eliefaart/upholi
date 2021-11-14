@@ -26,7 +26,7 @@ html {
 		transition-property: none;
 		transition-duration: $transitionSpeed;
 		scrollbar-width: thin;
-		scrollbar-color: var(--colorSecondaryAccent) var(--colorBackground);
+		scrollbar-color: var(--colorAccent) var(--colorBackground);
 	}
 
 	body {

@@ -21,12 +21,11 @@
 			padding-left: $spacingLarge;
 
 			&:hover {
-				color: var(--colorAccent);
+				color: var(--colorSecondaryAccent);
 			}
 
 			&.active {
 				color: var(--colorAccent);
-				//border-bottom: 4px solid var(--colorAccent);
 			}
 		}
 	}
