@@ -22,19 +22,6 @@ interface Props {
 	match: any
 }
 
-// interface AlbumPageState {
-// 	albumId: string,
-// 	album: Album | null,
-// 	share: Share | null,
-// 	galleryPhotos: GalleryPhoto[],
-// 	selectedPhotoIds: string[],
-// 	openedPhotoId: string | null,
-// 	editAlbumOpen: boolean,
-// 	sharingOptionsOpen: boolean,
-// 	confirmDeleteAlbumOpen: boolean,
-// 	confirmRemovePhotosOpen: boolean
-// }
-
 const AlbumPage: FC<Props> = (props) => {
 	const albumId = props.match.params.albumId;
 	const [album, refreshAlbum] = useAlbum(albumId);
@@ -72,11 +59,10 @@ const AlbumPage: FC<Props> = (props) => {
 
 	const onRemovePhotosClick = (): void => {
 		setConfirmRemovePhotosOpen(true);
-		setSelectedPhotoIds([]);
 	};
 
-	const removeSelectedPhotosFromAlbum = (): void => {
-		upholiService.removePhotosFromAlbum(albumId, selectedPhotoIds)
+	const removeSelectedPhotosFromAlbum = (photoIds: string[]): void => {
+		upholiService.removePhotosFromAlbum(albumId, photoIds)
 			.then(() => {
 				toast.info("Photos removed.");
 				setConfirmRemovePhotosOpen(false);
@@ -212,7 +198,7 @@ const AlbumPage: FC<Props> = (props) => {
 					title="Remove photos"
 					isOpen={confirmRemovePhotosOpen}
 					onRequestClose={() => setConfirmRemovePhotosOpen(false)}
-					onOkButtonClick={() => removeSelectedPhotosFromAlbum()}
+					onOkButtonClick={() => removeSelectedPhotosFromAlbum(selectedPhotoIds)}
 					okButtonText="Remove"
 					confirmationText={selectedPhotoIds.length + " photos will be removed from album '" + album.title + "'."}
 					/>

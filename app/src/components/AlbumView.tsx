@@ -3,9 +3,10 @@ import appStateContext from "../contexts/AppStateContext";
 import UrlHelper from "../helpers/UrlHelper";
 import { Album } from "../models/Album";
 import GalleryPhoto from "../models/GalleryPhoto";
-import upholiService from "../services/UpholiService";
 import ModalPhotoDetail from "./modals/ModalPhotoDetail";
 import PhotoGallery from "./gallery/PhotoGallery";
+import usePhotoThumbnailSources from "../hooks/usePhotoThumbnailSources";
+import { FC, useContext, useState } from "react";
 
 const queryStringParamNamePhotoId = "photoId";
 
@@ -17,144 +18,55 @@ interface Props {
 	onSelectionChanged?: (selectedPhotoIds: string[]) => void
 }
 
-interface State {
-	photoSources: StatePhotoSource[],
-	openedPhotoId: string
-}
+const AlbumView: FC<Props> = (props: Props) => {
+	const context = useContext(appStateContext);
+	const photoSources = usePhotoThumbnailSources(props.album.photos);
+	const [openedPhotoId, setOpenedPhotoId] = useState<string>("");
 
-interface StatePhotoSource {
-	photoId: string,
-	src: string
-}
-
-export default class AlbumView extends React.Component<Props, State> {
-	static contextType = appStateContext;
-
-	constructor(props: Props) {
-		super(props);
-
-		this.state = {
-			photoSources: [],
-			openedPhotoId: ""
-		};
+	// Open photo, if indicated as such by query string
+	const queryStringPhotoId = UrlHelper.getQueryStringParamValue(location.search, queryStringParamNamePhotoId);
+	if (openedPhotoId !== queryStringPhotoId) {
+		setOpenedPhotoId(queryStringPhotoId);
 	}
 
-	componentDidMount(): void {
-		this.fetchPhotoSources();
-	}
-
-	componentDidUpdate(): void {
-		// Open photo, if indicated as such by query string
-		const queryStringPhotoId = UrlHelper.getQueryStringParamValue(location.search, queryStringParamNamePhotoId);
-		if (this.state.openedPhotoId !== queryStringPhotoId) {
-			this.setState(() => {
-				return {
-					openedPhotoId: queryStringPhotoId
-				};
-			});
-		}
-
-		this.fetchPhotoSources();
-	}
-
-	fetchPhotoSources(): void {
-		const photoSourcesMissing: StatePhotoSource[] = this.props.album.photos
-			.filter(photo => !this.state.photoSources.some(ps => ps.photoId === photo.id))
-			.map(photo => {
-				return {
-					photoId: photo.id,
-					src: ""
-				};
-			});
-
-		// Update state with prepared photoSource objects
-		if (photoSourcesMissing.length > 0) {
-			this.setState(previousState => {
-				const photoSources = previousState.photoSources;
-				for (const photoSource of photoSourcesMissing) {
-					photoSources.push(photoSource);
-				}
-
-				return {
-					photoSources
-				};
-			});
-
-			// Fetch each missing one
-			for (const photo of photoSourcesMissing) {
-				const albumPhoto = this.props.album.photos.find(p => p.id === photo.photoId);
-				upholiService.getPhotoThumbnailImageSrc(photo.photoId, albumPhoto?.key ?? undefined)
-					.then(src => {
-						this.setState(previousState => {
-							const photoSourceToUpdate = previousState.photoSources.find(p => p.photoId === photo.photoId);
-							if (photoSourceToUpdate) {
-								photoSourceToUpdate.src = src;
-							}
-
-							return {
-								photoSources: previousState.photoSources
-							};
-						});
-					});
-			}
-		}
-	}
-
-	onPhotoClicked(photoId: string): void {
+	const onPhotoClicked = (photoId: string): void => {
 		if (photoId) {
-			this.context.history.push(document.location.pathname + "?photoId=" + photoId);
+			context.history.push(document.location.pathname + "?photoId=" + photoId);
 		}
-	}
+	};
 
-	// onPhotoSelectedChange(photoId: string, selected: boolean): void {
-	// 	if (this.props.onSelectionChanged) {
-	// 		const selectedPhotos = this.props.selectedPhotos ?? [];
+	const galleryPhotos = props.album.photos.map((photo): GalleryPhoto => {
+		return {
+			id: photo.id,
+			src: photoSources.find(ps => ps.photoId === photo.id)?.src ?? "",
+			width: photo.width,
+			height: photo.height
+		};
+	});
 
-	// 		if (selected) {
-	// 			selectedPhotos.push(photoId);
-	// 		} else {
-	// 			const index = selectedPhotos.indexOf(photoId);
-	// 			if (index > -1) {
-	// 				selectedPhotos.splice(index, 1);
-	// 			}
-	// 		}
+	return <div className="album-view">
+		<div className="topBar">
+			<h1>{props.album.title}</h1>
+		</div>
 
-	// 		this.props.onSelectionChanged(selectedPhotos);
-	// 	}
-	// }
+		{!!props.album.title && galleryPhotos.length === 0 &&
+			<span className="centerText">This album has no photos.</span>
+		}
 
-	render(): React.ReactNode {
-		const galleryPhotos = this.props.album.photos.map((photo): GalleryPhoto => {
-			return {
-				id: photo.id,
-				src: this.state.photoSources.find(ps => ps.photoId === photo.id)?.src ?? "",
-				width: photo.width,
-				height: photo.height
-			};
-		});
+		{galleryPhotos.length > 0 && <PhotoGallery
+			onClick={onPhotoClicked}
+			photos={galleryPhotos}
+			selectedItems={props.selectedPhotos ?? []}
+			onPhotoSelectionChanged={props.onSelectionChanged}/>
+		}
 
-		return <div className="album-view">
-			<div className="topBar">
-				<h1>{this.props.album.title}</h1>
-			</div>
+		{openedPhotoId && <ModalPhotoDetail
+			isOpen={!!openedPhotoId}
+			photoId={openedPhotoId}
+			photoKey={props.album.photos.find(p => p.id === openedPhotoId)?.key ?? undefined}
+			onRequestClose={() => context.history.push(document.location.pathname + "?" + UrlHelper.removeQueryStringParam(document.location.search, queryStringParamNamePhotoId))}
+		/>}
+	</div>;
+};
 
-			{!!this.props.album.title && galleryPhotos.length === 0 &&
-				<span className="centerText">This album has no photos.</span>
-			}
-
-			{galleryPhotos.length > 0 && <PhotoGallery
-				onClick={this.onPhotoClicked}
-				photos={galleryPhotos}
-				selectedItems={this.props.selectedPhotos ?? []}
-				onPhotoSelectionChanged={this.props.onSelectionChanged}/>
-			}
-
-			{this.state.openedPhotoId && <ModalPhotoDetail
-				isOpen={!!this.state.openedPhotoId}
-				photoId={this.state.openedPhotoId}
-				photoKey={this.props.album.photos.find(p => p.id === this.state.openedPhotoId)?.key ?? undefined}
-				onRequestClose={() => this.context.history.push(document.location.pathname + "?" + UrlHelper.removeQueryStringParam(document.location.search, queryStringParamNamePhotoId))}
-			/>}
-		</div>;
-	}
-}
+export default AlbumView;

@@ -27,7 +27,6 @@ function getGalleryViewModel(photos: GalleryPhotoModel[]): PhotoProps[] {
 }
 
 const PhotoGallery: FC<Props> = (props) => {
-	const photosSelectable = props.onPhotoSelectionChanged !== undefined;
 	const galleryViewModel = getGalleryViewModel(props.photos);
 
 	return (

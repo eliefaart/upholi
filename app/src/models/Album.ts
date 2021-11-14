@@ -1,7 +1,6 @@
-export interface AlbumPhoto {
-	id: string,
-	width: number,
-	height: number,
+import { PhotoMinimal } from "./Photo";
+
+export interface AlbumPhoto extends PhotoMinimal {
 	key: string | null
 }
 
