@@ -1,14 +1,14 @@
 import * as React from "react";
 import { FC } from "react";
 import appStateContext, { AppState } from "../../contexts/AppStateContext";
-import { useHeader } from "../../hooks/useHeader";
+import { HeaderSettings } from "../../models/HeaderSettings";
 import { IconContextMenu } from "../misc/Icons";
 
 interface Props {
+	settings: HeaderSettings
 }
 
 const Header: FC<Props> = (props) => {
-	const header = useHeader();
 	const [contextMenuOpen, setContextMenuOpen] = React.useState(false);
 	const context = React.useContext<AppState>(appStateContext);
 
@@ -18,14 +18,14 @@ const Header: FC<Props> = (props) => {
 		{ path: "/shared", title: "Shared" }
 	];
 
-	const headerEmpty = !header.visible && !header.headerActions && !header.headerContextMenu;
+	const headerEmpty = !props.settings.visible && !props.settings.headerActions && !props.settings.headerContextMenu;
 	if (headerEmpty) {
 		return null;
 	}
 	else {
 		return <header id="header">
 			{/* Navigation menu */}
-			{header.visible !== false && <nav>
+			{props.settings.visible !== false && <nav>
 				{menuItems.map((menuItem) =>
 					(<span key={menuItem.path}
 						onClick={() => context.history.push(menuItem.path)}
@@ -38,19 +38,19 @@ const Header: FC<Props> = (props) => {
 			<span className="buffer">&nbsp;</span>
 
 			{/* Actions: buttons on right-side of header */}
-			{!!header.headerActions && <div className="actions">
-				{header.headerActions}
+			{!!props.settings.headerActions && <div className="actions">
+				{props.settings.headerActions}
 			</div>}
 
 			{/* Additional action buttons behind a context menu button */}
-			{!!header.headerContextMenu && contextMenuOpen && <div className="contextMenu" onClick={() => setContextMenuOpen(false)}>
+			{!!props.settings.headerContextMenu && contextMenuOpen && <div className="contextMenu" onClick={() => setContextMenuOpen(false)}>
 				<div className="items">
-					{header.headerContextMenu}
+					{props.settings.headerContextMenu}
 				</div>
 			</div>}
 
 			{/* Context menu toggle button */}
-			{!!header.headerContextMenu && <button className="contextMenuToggle" onClick={() => setContextMenuOpen(!contextMenuOpen)}>
+			{!!props.settings.headerContextMenu && <button className="contextMenuToggle" onClick={() => setContextMenuOpen(!contextMenuOpen)}>
 				<IconContextMenu/>
 			</button>}
 		</header>;

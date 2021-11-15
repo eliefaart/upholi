@@ -13,16 +13,16 @@ import AddPhotosToAlbumButton from "../buttons/AddPhotosToAlbumButton";
 import uploadHelper from "../../helpers/UploadHelper";
 import upholiService from "../../services/UpholiService";
 import { useTitle } from "../../hooks/useTitle";
-import { setHeader } from "../../hooks/useHeader";
 import usePhotos from "../../hooks/usePhotos";
 import usePhotoThumbnailSources from "../../hooks/usePhotoThumbnailSources";
 import { PhotoMinimal } from "../../models/Photo";
 import { elementIsInViewport } from "../../utils/dom";
 import * as _ from "underscore";
+import { PageProps } from "../../models/PageProps";
 
 const queryStringParamNamePhotoId = "photoId";
 
-const LibraryPage: FC = () => {
+const LibraryPage: FC<PageProps> = (props: PageProps) => {
 	const context = React.useContext(appStateContext);
 	const [photosThatHaveBeenInView, setPhotosThatHaveBeenInView] = useState<string[]>([]);
 	const [photos, refreshPhotos] = usePhotos();
@@ -35,31 +35,34 @@ const LibraryPage: FC = () => {
 	photosRef.current = photos;
 
 	useTitle("Library");
-	setHeader({
-		visible: true,
-		headerActions: <React.Fragment>
-			{selectedPhotoIds.length === 0 && <button
-				className="iconOnly"
-				onClick={() => {
-					const element = document.getElementById("select-photos");
-					if (element) {
-						element.click();
-					}
-				}}
-				title="Upload photos">
-				<IconUpload/>
-			</button>}
-			<AddPhotosToAlbumButton
-				selectedPhotoIds={selectedPhotoIds}
-				onSelectionAddedToAlbum={() => setSelectedPhotoIds([])}/>
-			{selectedPhotoIds.length > 0 && <button
-				className="iconOnly"
-				onClick={() => setConfirmDeletePhotosOpen(true)}
-				title="Delete photos">
-				<IconDelete/>
-			</button>}
-		</React.Fragment>
-	});
+	React.useEffect(() => {
+		props.setHeader({
+			visible: true,
+			headerActions: <React.Fragment>
+				{selectedPhotoIds.length === 0 && <button
+					className="iconOnly"
+					onClick={() => {
+						const element = document.getElementById("select-photos");
+						if (element) {
+							element.click();
+						}
+					}}
+					title="Upload photos">
+					<IconUpload/>
+				</button>}
+				<AddPhotosToAlbumButton
+					selectedPhotoIds={selectedPhotoIds}
+					onSelectionAddedToAlbum={() => setSelectedPhotoIds([])}/>
+				{selectedPhotoIds.length > 0 && <button
+					className="iconOnly"
+					onClick={() => setConfirmDeletePhotosOpen(true)}
+					title="Delete photos">
+					<IconDelete/>
+				</button>}
+			</React.Fragment>
+		});
+	}, [selectedPhotoIds.length]);
+
 
 	// Open photo, if indicated as such by query string
 	const queryStringPhotoId = UrlHelper.getQueryStringParamValue(location.search, queryStringParamNamePhotoId);

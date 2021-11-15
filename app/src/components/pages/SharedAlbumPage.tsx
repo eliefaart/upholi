@@ -6,21 +6,23 @@ import InputPassword from "../misc/InputPassword";
 import upholiService from "../../services/UpholiService";
 import AlbumView from "../AlbumView";
 import { useTitle } from "../../hooks/useTitle";
-import { setHeader } from "../../hooks/useHeader";
+import { PageProps } from "../../models/PageProps";
 
-interface Props {
-	match: any;
+interface Props extends PageProps {
+	// Note; this field represents the object set by react router
+	match: {
+		params: {
+			token: string
+		}
+	};
 }
 
-const SharedAlbumPage: FC<Props> = (props) => {
+const SharedAlbumPage: FC<Props> = (props: Props) => {
 	const [authorized, setAuthorized] = useState(false);
 	const [lastPasswordIncorrect, setLastPasswordIncorrect] = useState(false);
 	const [album, setAlbum] = useState<Album | null>(null);
 
 	useTitle(album?.title ?? "");
-	setHeader({
-		visible: true
-	});
 
 	const token = props.match.params.token;
 

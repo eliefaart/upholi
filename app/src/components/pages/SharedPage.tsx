@@ -6,20 +6,21 @@ import upholiService from "../../services/UpholiService";
 import { Share } from "../../models/Share";
 import CopyUrl from "../misc/CopyUrl";
 import { useTitle } from "../../hooks/useTitle";
-import { setHeader } from "../../hooks/useHeader";
 import useAlbums from "../../hooks/useAlbums";
 import useShares from "../../hooks/useShares";
+import { PageProps } from "../../models/PageProps";
 
-const SharedPage: FC = () => {
+const SharedPage: FC<PageProps> = (props: PageProps) => {
 	const context = React.useContext(appStateContext);
 	const [albums, refreshAlbums] = useAlbums();
-	//const shares = useShares();
 	const [shares, refreshShares] = useShares();
 
 	useTitle("Shared");
-	setHeader({
-		visible: true
-	});
+	React.useEffect(() => {
+		props.setHeader({
+			visible: true
+		});
+	}, []);
 
 	const deleteShare = (share: Share): void => {
 		upholiService.deleteShare(share.id)

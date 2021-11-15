@@ -3,10 +3,16 @@ import { FC } from "react";
 import "react-toastify/dist/ReactToastify.css";
 import Header from "./Header";
 import UploadProgress from "../misc/UploadProgress";
+import { HeaderSettings } from "../../models/HeaderSettings";
 
-const Layout: FC = (props) => {
+interface Props {
+	header: HeaderSettings,
+	children: React.ReactNode
+}
+
+const Layout: FC<Props> = (props: Props) => {
 	return <>
-		<Header/>
+		<Header settings={props.header}/>
 		{props.children}
 		<UploadProgress/>
 	</>;

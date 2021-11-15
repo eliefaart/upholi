@@ -7,25 +7,28 @@ import Album from "../misc/Album";
 import { IconCreate, IconHashTag } from "../misc/Icons";
 import { AlbumNew } from "../../models/Album";
 import { useTitle } from "../../hooks/useTitle";
-import { setHeader } from "../../hooks/useHeader";
 import useAlbums from "../../hooks/useAlbums";
+import { PageProps } from "../../models/PageProps";
 
-const AlbumsPage: FC = () => {
+const AlbumsPage: FC<PageProps> = (props: PageProps) => {
 	const [ newAlbumDialogOpen, setNewAlbumDialogOpen ] = React.useState(false);
 	const [albums, refreshAlbums] = useAlbums();
 	const context = React.useContext(appStateContext);
+
+	React.useEffect(() => {
+		props.setHeader({
+			visible: true,
+			headerActions: <React.Fragment>
+				{<button
+					className="iconOnly"
+					onClick={() => onCreateAlbumClick()}
+					title="Create album">
+					<IconCreate/>
+				</button>}
+			</React.Fragment>
+		});
+	}, []);
 	useTitle("Albums");
-	setHeader({
-		visible: true,
-		headerActions: <React.Fragment>
-			{<button
-				className="iconOnly"
-				onClick={() => onCreateAlbumClick()}
-				title="Create album">
-				<IconCreate/>
-			</button>}
-		</React.Fragment>
-	});
 
 	const onCreateAlbumClick = (): void => {
 		setNewAlbumDialogOpen(true);
