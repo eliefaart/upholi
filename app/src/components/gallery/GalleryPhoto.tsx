@@ -42,6 +42,7 @@ const GalleryPhoto: FC<Props> = (props: Props) => {
 		return <div key={photoId} className={cssClass}>
 			{/* Render a div instead of an img element. This is solely to prevent the default (longpress) context menu to appear in mobile browsers */}
 			<div
+				id={photoId}
 				className="photoImg"
 				style={imgStyle}
 				onClick={props.onClick}

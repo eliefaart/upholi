@@ -1,7 +1,7 @@
 import * as React from "react";
 import { FC } from "react";
 import { toast } from "react-toastify";
-import { copyElementContentToClipboard } from "../../utils/elements";
+import { copyElementContentToClipboard } from "../../utils/dom";
 import { IconCopy } from "./Icons";
 
 interface Props {

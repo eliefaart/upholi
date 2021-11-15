@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { PhotoMinimal } from "../models/Photo";
 import upholiService from "../services/UpholiService";
 
