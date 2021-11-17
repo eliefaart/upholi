@@ -24,7 +24,7 @@ export default function useUser(): User | null | undefined {
 				setUser(null);
 			}
 		}).catch(console.error);
-	}, [user?.id]);
+	}, []);
 
 	return user;
 }
