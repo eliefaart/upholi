@@ -1,7 +1,7 @@
 import * as React from "react";
 import { FC } from "react";
+import usePhotoThumbnailSource from "../../hooks/usePhotoThumbnailSource";
 import { AlbumNew } from "../../models/Album";
-import upholiService from "../../services/UpholiService";
 
 interface Props {
 	onClick: (album: AlbumNew) => void,
@@ -9,13 +9,7 @@ interface Props {
 }
 
 const Album: FC<Props> = (props) => {
-	const [thumbnailSrc, setThumbnailSrc] = React.useState("");
-
-	if (props.album.thumbnailPhotoId) {
-		upholiService.getPhotoThumbnailImageSrc(props.album.thumbnailPhotoId)
-			.then(setThumbnailSrc);
-	}
-
+	const thumbnailSrc = usePhotoThumbnailSource(props.album.thumbnailPhotoId);
 	const thumbUrl = `url('${thumbnailSrc}')`;
 
 	return <div
