@@ -4,6 +4,7 @@ import Modal from "./Modal";
 import ModalPropsBase from "../../models/ModalPropsBase";
 import { AlbumNew } from "../../models/Album";
 import Albums from "../misc/Albums";
+import useAlbums from "../../hooks/useAlbums";
 
 interface Props extends ModalPropsBase {
 	onClickNewAlbum: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void
@@ -11,6 +12,8 @@ interface Props extends ModalPropsBase {
 }
 
 const ModalAddToAlbum: FC<Props> = (props) => {
+	const [albums] = useAlbums();
+
 	return <Modal
 		title="Add to album"
 		isOpen={props.isOpen}
@@ -19,7 +22,7 @@ const ModalAddToAlbum: FC<Props> = (props) => {
 		className={props.className + " modalAddToAlbum"}
 		>
 			<button onClick={props.onClickNewAlbum}>New album</button>
-			<Albums onClick={props.onClickExistingAlbum}/>
+			<Albums albums={albums} onClick={props.onClickExistingAlbum}/>
 	</Modal>;
 };
 

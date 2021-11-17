@@ -18,11 +18,16 @@ import useAlbum from "../../hooks/useAlbum";
 import useFoundAlbumShare from "../../hooks/useFoundAlbumShare";
 import { PageProps } from "../../models/PageProps";
 
-interface Props extends PageProps{
-	match: any
+interface Props extends PageProps {
+	// Note; this field represents the object set by react router
+	match: {
+		params: {
+			albumId: string
+		}
+	};
 }
 
-const AlbumPage: FC<Props> = (props) => {
+const AlbumPage: FC<Props> = (props: Props) => {
 	const albumId = props.match.params.albumId;
 	const [album, refreshAlbum] = useAlbum(albumId);
 	const [share, refreshShare] = useFoundAlbumShare(albumId);
@@ -55,10 +60,6 @@ const AlbumPage: FC<Props> = (props) => {
 				setSelectedPhotoIds([]);
 			})
 			.catch(console.error);
-	};
-
-	const onRemovePhotosClick = (): void => {
-		setConfirmRemovePhotosOpen(true);
 	};
 
 	const removeSelectedPhotosFromAlbum = (photoIds: string[]): void => {
@@ -135,7 +136,7 @@ const AlbumPage: FC<Props> = (props) => {
 				<AddPhotosToAlbumButton
 					selectedPhotoIds={selectedPhotoIds}
 					onSelectionAddedToAlbum={() => setSelectedPhotoIds([])}/>
-				{selectedPhotoIds.length > 0 && <button className="iconOnly" onClick={onRemovePhotosClick} title="Remove from album">
+				{selectedPhotoIds.length > 0 && <button className="iconOnly" onClick={() => setConfirmRemovePhotosOpen(true)} title="Remove from album">
 					<IconRemove/>
 				</button>}
 				{selectedPhotoIds.length === 0 && <button

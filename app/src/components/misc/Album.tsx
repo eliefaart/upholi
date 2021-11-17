@@ -5,7 +5,6 @@ import upholiService from "../../services/UpholiService";
 
 interface Props {
 	onClick: (album: AlbumNew) => void,
-	className?: string,
 	album: AlbumNew
 }
 
@@ -21,7 +20,7 @@ const Album: FC<Props> = (props) => {
 
 	return <div
 		onClick={() => props.onClick(props.album)}
-		className={"album " + (props.className || "")}>
+		className="album">
 		<div className="album-thumbnail"
 			style={{ backgroundImage: thumbUrl }}>
 		</div>
