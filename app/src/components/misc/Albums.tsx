@@ -1,11 +1,11 @@
 import * as React from "react";
 import { FC } from "react";
-import { AlbumNew } from "../../models/Album";
+import { AlbumPlain } from "../../models/Album";
 import Album from "./Album";
 
 interface Props {
-	albums: AlbumNew[],
-	onClick: (album: AlbumNew) => void,
+	albums: AlbumPlain[],
+	onClick: (album: AlbumPlain) => void,
 }
 
 const Albums: FC<Props> = (props) => {

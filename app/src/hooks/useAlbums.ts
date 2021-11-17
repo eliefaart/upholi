@@ -1,7 +1,7 @@
-import { AlbumNew } from "../models/Album";
+import { AlbumPlain } from "../models/Album";
 import upholiService from "../services/UpholiService";
 import { useApiResource } from "./useApiResource";
 
-export default function useAlbums(): [AlbumNew[], () => void] {
-	return useApiResource<AlbumNew[]>(() => upholiService.getAlbums(), []);
+export default function useAlbums(): [AlbumPlain[], () => void] {
+	return useApiResource<AlbumPlain[]>(() => upholiService.getAlbums(), []);
 }

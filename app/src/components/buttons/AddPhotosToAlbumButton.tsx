@@ -1,7 +1,7 @@
 import * as React from "react";
 import { FC } from "react";
 import { toast } from "react-toastify";
-import { AlbumNew } from "../../models/Album";
+import { AlbumPlain } from "../../models/Album";
 import upholiService from "../../services/UpholiService";
 import { IconAddToAlbum } from "../misc/Icons";
 import ModalAddToAlbum from "../modals/ModalAddToAlbum";
@@ -16,7 +16,7 @@ const AddPhotosToAlbumButton: FC<Props> = (props) => {
 	const [selectAlbumModelOpen, setSelectAlbumModelOpen] = React.useState(false);
 	const [createAlbumModelOpen, setCreateAlbumModelOpen] = React.useState(false);
 
-	const addSelectedPhotosToAlbum = (album: AlbumNew): void => {
+	const addSelectedPhotosToAlbum = (album: AlbumPlain): void => {
 		upholiService.addPhotosToAlbum(album.id, props.selectedPhotoIds)
 			.then(() => {
 				setSelectAlbumModelOpen(false);

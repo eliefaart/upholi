@@ -1,6 +1,6 @@
 import * as wasm from "wasm";
 import UpholiServiceLocalStorageHelper from "../helpers/UpholiServiceLocalStorageHelper";
-import { Album, AlbumNew } from "../models/Album";
+import { Album, AlbumPlain } from "../models/Album";
 import { Photo, PhotoMinimal } from "../models/Photo";
 import { Share } from "../models/Share";
 
@@ -94,8 +94,8 @@ class UpholiService {
 		return await this.client.deletePhotos(ids);
 	}
 
-	async getAlbums(): Promise<AlbumNew[]> {
-		const albums: AlbumNew[] = await this.client.getAlbums();
+	async getAlbums(): Promise<AlbumPlain[]> {
+		const albums: AlbumPlain[] = await this.client.getAlbums();
 		return albums;
 	}
 

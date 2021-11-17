@@ -1,11 +1,11 @@
 import * as React from "react";
 import { FC } from "react";
 import usePhotoThumbnailSource from "../../hooks/usePhotoThumbnailSource";
-import { AlbumNew } from "../../models/Album";
+import { AlbumPlain } from "../../models/Album";
 
 interface Props {
-	onClick: (album: AlbumNew) => void,
-	album: AlbumNew
+	onClick: (album: AlbumPlain) => void,
+	album: AlbumPlain
 }
 
 const Album: FC<Props> = (props) => {

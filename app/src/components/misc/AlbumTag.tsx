@@ -1,13 +1,13 @@
 import * as React from "react";
 import { FC } from "react";
-import { AlbumNew } from "../../models/Album";
+import { AlbumPlain } from "../../models/Album";
 import Albums from "./Albums";
 import { IconHashTag } from "./Icons";
 
 interface Props {
 	tag: string,
-	albums: AlbumNew[],
-	onAlbumClick: (album: AlbumNew) => void,
+	albums: AlbumPlain[],
+	onAlbumClick: (album: AlbumPlain) => void,
 }
 
 /**

@@ -2,13 +2,13 @@ import * as React from "react";
 import { FC } from "react";
 import Modal from "./Modal";
 import ModalPropsBase from "../../models/ModalPropsBase";
-import { AlbumNew } from "../../models/Album";
+import { AlbumPlain } from "../../models/Album";
 import Albums from "../misc/Albums";
 import useAlbums from "../../hooks/useAlbums";
 
 interface Props extends ModalPropsBase {
 	onClickNewAlbum: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void
-	onClickExistingAlbum: (album: AlbumNew) => void
+	onClickExistingAlbum: (album: AlbumPlain) => void
 }
 
 const ModalAddToAlbum: FC<Props> = (props) => {

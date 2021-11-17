@@ -4,6 +4,9 @@ export interface AlbumPhoto extends PhotoMinimal {
 	key: string | null
 }
 
+/**
+ * Album info, contains basic information of the photos it contains.
+ */
 export interface Album {
 	id: string,
 	title: string,
@@ -12,8 +15,11 @@ export interface Album {
 	tags: string[]
 }
 
-
-export interface AlbumNew {
+/**
+ * Album info, only contains IDs of photos it contains.
+ * TODO: Change name, probably
+ */
+export interface AlbumPlain {
 	id: string,
 	title: string,
 	tags: string[],
