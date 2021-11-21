@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { AlbumPhoto } from "../models/Album";
 import { PhotoMinimal } from "../models/Photo";
 import upholiService from "../services/UpholiService";
 
@@ -9,7 +10,7 @@ interface PhotoSource {
 
 const cache: PhotoSource[] = [];
 
-export default function usePhotoThumbnailSources(photos: PhotoMinimal[]): PhotoSource[] {
+export default function usePhotoThumbnailSources(photos: (PhotoMinimal | AlbumPhoto)[]): PhotoSource[] {
 	const [sources, setSources] = useState<PhotoSource[]>([]);
 
 	// Find photos that we still have to fetch.
@@ -23,7 +24,7 @@ export default function usePhotoThumbnailSources(photos: PhotoMinimal[]): PhotoS
 		};
 		cache.push(cacheItem);
 
-		upholiService.getPhotoThumbnailImageSrc(photo.id)
+		upholiService.getPhotoThumbnailImageSrc(photo.id, (<AlbumPhoto>photo).key ?? undefined)
 			.then(src => {
 				// Update the cache
 				cacheItem.src = src;
