@@ -517,9 +517,14 @@ impl UpholiClientHelper {
 		let response = request
 			.json(&body)
 			.send().await?;
-		let response_body: response::CreateShare = response.json().await?;
 
-		Ok(response_body.id)
+		if let Some(existing_share) = existing_share_for_album {
+			Ok(existing_share.get_id().into())
+		}
+		else {
+			let response_body: response::CreateShare = response.json().await?;
+			Ok(response_body.id)
+		}
 	}
 
 	/// Deletes a share.

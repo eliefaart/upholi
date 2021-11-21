@@ -38,8 +38,6 @@ const AlbumPage: FC<Props> = (props: Props) => {
 	const [confirmRemovePhotosOpen, setConfirmRemovePhotosOpen] = React.useState<boolean>(false);
 	const context = React.useContext(appStateContext);
 
-
-
 	const deleteAlbum = (): void => {
 		const albumTitle = album?.title;
 
@@ -112,18 +110,15 @@ const AlbumPage: FC<Props> = (props: Props) => {
 				upholiService.deleteShare(share.id)
 					.then(() => {
 						refreshShare();
+						setSharingOptionsOpen(false);
 					})
 					.catch(console.error);
 			}
+			else {
+				setSharingOptionsOpen(false);
+			}
 		}
 	};
-
-
-
-
-
-
-
 
 	useTitle("Album - " + album?.title);
 	React.useEffect(() => {

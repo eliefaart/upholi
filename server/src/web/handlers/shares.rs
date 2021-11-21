@@ -87,7 +87,6 @@ pub async fn route_update_share(session: Session, req: HttpRequest, updated_shar
 		},
 		None => create_unauthorized_response()
 	}
-
 }
 
 /// Delete an share
