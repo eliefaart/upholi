@@ -1,7 +1,7 @@
 import * as React from "react";
 import { FC } from "react";
 import { Router } from "react-router-dom";
-import { ToastContainer, Zoom } from "react-toastify";
+import { Slide, ToastContainer, Zoom } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Layout from "./layout/Layout";
 import appStateContext from "../contexts/AppStateContext";
@@ -52,15 +52,17 @@ const App: FC = () => {
 			</Layout>
 		</appStateContext.Provider>
 
-		<ToastContainer position="bottom-center"
-			autoClose={3000}
+		<ToastContainer
+			position="bottom-left"
+			autoClose={2500}
 			hideProgressBar
 			newestOnTop
 			closeOnClick
 			rtl={false}
 			draggable
 			pauseOnHover
-			transition={Zoom}/>
+			transition={Slide}
+			limit={2}/>
 	</Router>;
 };
 

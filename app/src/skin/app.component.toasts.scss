@@ -3,9 +3,9 @@
 	.Toastify__toast {
 		background: var(--colorBackgroundAlt);
 		color: var(--colorText);
-		border: 1px solid var(--colorAccent);
+		border-bottom: $borderRadius solid var(--colorAccent);
 		border-radius: $borderRadius;
-		min-height: $headerHeight;
+		min-height: $buttonHeight;
 		font-family: unset;
 
 		.Toastify__close-button {
