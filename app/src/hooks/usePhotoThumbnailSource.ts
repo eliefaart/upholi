@@ -5,8 +5,13 @@ export default function usePhotoThumbnailSource(photoId: string): string {
 	const [source, setSource] = useState<string>("");
 
 	useEffect(() => {
-		upholiService.getPhotoThumbnailImageSrc(photoId)
-			.then(setSource);
+		if (photoId) {
+			upholiService.getPhotoThumbnailImageSrc(photoId)
+				.then(setSource);
+		}
+		else {
+			setSource("");
+		}
 	}, [photoId]);
 
 
