@@ -8,7 +8,8 @@ interface Props extends ModalPropsBase {
 	title: string,
 	okButtonText?: string | null,
 	headerActions?: JSX.Element,
-	onOkButtonClick?: () => void
+	onOkButtonClick?: () => void,
+	okButtonDisabled?: boolean
 }
 
 const Modal: FC<Props> = (props) => {
@@ -34,7 +35,12 @@ const Modal: FC<Props> = (props) => {
 				{props.children}
 			</div>
 			<div className="modalFooter">
-				{props.okButtonText !== null && <button onClick={props.onOkButtonClick}>{props.okButtonText || "Ok"}</button>}
+				{props.okButtonText !== null && <button
+					onClick={props.onOkButtonClick}
+					disabled={props.okButtonDisabled}
+					>
+					{props.okButtonText || "Ok"}
+				</button>}
 			</div>
 		</ReactModal>;
 	}

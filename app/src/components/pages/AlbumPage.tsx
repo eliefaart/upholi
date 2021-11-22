@@ -97,25 +97,21 @@ const AlbumPage: FC<Props> = (props: Props) => {
 	};
 
 	const updateSharingOptions = (options: SharingOptions): void => {
+		const onShareUpdated = () => {
+			refreshShare();
+			toast.info("Sharing options updated");
+		};
+
 		if (options.shared) {
 			upholiService.upsertAlbumShare(albumId, options.password)
-				.then(() => {
-					refreshShare();
-					setSharingOptionsOpen(false);
-				})
+				.then(onShareUpdated)
 				.catch(console.error);
 		}
 		else {
 			if (share) {
 				upholiService.deleteShare(share.id)
-					.then(() => {
-						refreshShare();
-						setSharingOptionsOpen(false);
-					})
+					.then(onShareUpdated)
 					.catch(console.error);
-			}
-			else {
-				setSharingOptionsOpen(false);
 			}
 		}
 	};

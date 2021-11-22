@@ -161,8 +161,11 @@ button, .asButton {
 
 	&:hover,
 	&:active {
-		//background: var(--colorSecondaryAccent);
 		color: var(--colorSecondaryAccent);
+	}
+
+	&:disabled {
+		color: var(--colorDisabled)
 	}
 
 	svg {

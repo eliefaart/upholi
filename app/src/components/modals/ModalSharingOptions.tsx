@@ -16,25 +16,35 @@ interface Props {
 
 const ModalSharingOptions: FC<Props> = (props) => {
 	const [shared, setShared] = React.useState(!!props.share);
-	const passwordInput = React.createRef<HTMLInputElement>();
+	const [password, setPassword] = React.useState(props.share?.password ?? "");
+
 	const shareUrl = document.location.origin + "/s/" + props.share?.id;
+	const inputValid = !shared || !!password;
 
 	const updateSharingOptions = (): void => {
 		const options: SharingOptions = {
 			shared,
-			password: passwordInput.current ? passwordInput.current.value : ""
+			password
 		};
 
-		props.onSharingOptionsUpdated(options);
+		const optionsChanged = shared !== !!props.share || password !== props.share?.password;
+		if (inputValid && optionsChanged) {
+			props.onSharingOptionsUpdated(options);
+		}
 	};
 
 	return <Modal
 		title="Sharing options"
 		className="modalSharingOptions"
 		isOpen={props.isOpen}
-		onRequestClose={() => {!!props.onRequestClose && props.onRequestClose();}}
+		onRequestClose={() => {
+			setShared(!!props.share);
+			setPassword(props.share?.password ?? "");
+			!!props.onRequestClose && props.onRequestClose();
+		}}
 		okButtonText="Save"
 		onOkButtonClick={() => updateSharingOptions()}
+		okButtonDisabled={!inputValid}
 		>
 			<div>
 				<label className="switch">
@@ -52,15 +62,21 @@ const ModalSharingOptions: FC<Props> = (props) => {
 				</label>
 			</div>
 
-			{shared && <div className="url">
-				Sharing URL
-				<CopyUrl shareUrl={shareUrl}/>
-			</div>}
-
 			{shared && <label>
 				Password
-				<input type="text" defaultValue={props.share?.password} ref={passwordInput} placeholder=""/>
+				<input type="text"
+					defaultValue={props.share?.password}
+					onChange={(e) => setPassword(e.currentTarget.value)}
+					placeholder=""/>
 			</label>}
+
+			{shared && props.share && <>
+				<hr/>
+				<div className="url">
+					Sharing URL
+					<CopyUrl shareUrl={shareUrl}/>
+				</div>
+			</>}
 	</Modal>;
 };
 
