@@ -1,8 +1,7 @@
 @import "_cssreset";
 @import "_fonts";
 
-$fontSizeNormal: 0.9em;
-$fontSizeLarge: 1.1em;
+$fontSize: 0.9em;
 $spacing: 10px;
 $spacingLarge: 20px;
 $transitionSpeed: 0.2s;
@@ -31,7 +30,7 @@ html {
 
 	body {
 		font-family: FiraSans;
-		font-size: $fontSizeNormal;
+		font-size: $fontSize;
 		font-weight: 500;
 
 		background: var(--colorBackground);
@@ -178,6 +177,12 @@ svg {
 	max-width: 24px;
 }
 
+h1 {
+	font-size: $fontSize * 1.75;
+}
+h2 {
+	font-size: $fontSize * 1.45;
+}
 h1, h2 {
 	margin: 0;
 }
