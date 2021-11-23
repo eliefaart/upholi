@@ -428,7 +428,7 @@ impl UpholiClientHelper {
 		album_data.title = title.into();
 		album_data.tags = tags;
 
-		Self::update_album(base_url, id, &album).await
+		Self::update_album(base_url, private_key, id, &album).await
 	}
 
 	pub async fn update_album_cover(base_url: &str, private_key: &[u8], id: &str, thumbnail_photo_id: &str) -> Result<()> {
@@ -437,7 +437,7 @@ impl UpholiClientHelper {
 		let mut album_data = album.get_data_mut();
 		album_data.thumbnail_photo_id = Some(thumbnail_photo_id.into());
 
-		Self::update_album(base_url, id, &album).await
+		Self::update_album(base_url, private_key, id, &album).await
 	}
 
 	pub async fn add_photos_to_album(base_url: &str, private_key: &[u8], id: &str, photos: &[String]) -> Result<()> {
@@ -450,7 +450,7 @@ impl UpholiClientHelper {
 			}
 		}
 
-		Self::update_album(base_url, id, &album).await
+		Self::update_album(base_url, private_key, id, &album).await
 	}
 
 	/// Remove given photo IDs from album.
@@ -467,7 +467,7 @@ impl UpholiClientHelper {
 			}
 		}
 
-		Self::update_album(base_url, id, &album).await
+		Self::update_album(base_url, private_key, id, &album).await
 	}
 
 	/// Creates or updates a share.
@@ -482,17 +482,18 @@ impl UpholiClientHelper {
 		let share_key = crate::encryption::symmetric::derive_key_from_string(&password, salt)?;
 		let share_key_encrypt_result = crate::encryption::symmetric::encrypt_slice(private_key, &share_key)?;
 
+		// TODO: Don't get every single photo, only need the ones included in album
 		let photos = Self::get_photos(base_url).await?;
-		let mut album_photos: Vec<Photo> = vec!{};
+		let mut all_photos: Vec<Photo> = vec!{};
 		for photo in photos {
 			let photo = Self::get_photo(base_url, private_key, &photo.id, &None).await?;
-			album_photos.push(photo);
+			all_photos.push(photo);
 		}
 
 		let data: ShareData = match type_ {
 			ShareType::Album => {
 				let album = Self::get_album(base_url, private_key, id).await?;
-				album.create_share_data(&private_key, &album_photos)?
+				album.create_share_data(&private_key, &all_photos)?
 			}
 		};
 		let data_json = serde_json::to_string(&data)?;
@@ -643,7 +644,7 @@ impl UpholiClientHelper {
 		Ok(shares.into_iter().nth(0))
 	}
 
-	async fn update_album(base_url: &str, id: &str, album: &Album) -> Result<()> {
+	async fn update_album(base_url: &str, private_key: &[u8], id: &str, album: &Album) -> Result<()> {
 		let request_body = album.create_update_request_struct()?;
 
 		let url = format!("{}/api/album/{}", base_url, id).to_owned();
@@ -651,6 +652,12 @@ impl UpholiClientHelper {
 		client.put(&url)
 			.json(&request_body)
 			.send().await?;
+
+		// Refresh album share if there is one
+		let album_share = Self::find_share(base_url, private_key, &ShareType::Album, id).await?;
+		if let Some(album_share) = album_share {
+			Self::upsert_share(base_url, private_key, ShareType::Album, id, &album_share.as_js_value().password).await?;
+		}
 
 		Ok(())
 	}
