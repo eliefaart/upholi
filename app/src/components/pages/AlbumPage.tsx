@@ -122,13 +122,13 @@ const AlbumPage: FC<Props> = (props: Props) => {
 			visible: true,
 			headerActions: <>
 				{selectedPhotoIds.length === 1 && <button className="iconOnly" onClick={setSelectedPhotoAsAlbumCover} title="Set album cover">
-					<IconImage/>
+					<IconImage/>Set album cover
 				</button>}
 				<AddPhotosToAlbumButton
 					selectedPhotoIds={selectedPhotoIds}
 					onSelectionAddedToAlbum={() => setSelectedPhotoIds([])}/>
 				{selectedPhotoIds.length > 0 && <button className="iconOnly" onClick={() => setConfirmRemovePhotosOpen(true)} title="Remove from album">
-					<IconRemove/>
+					<IconRemove/>Remove from album
 				</button>}
 				{selectedPhotoIds.length === 0 && <button
 					className="iconOnly"
@@ -139,13 +139,13 @@ const AlbumPage: FC<Props> = (props: Props) => {
 						}
 					}}
 					title="Upload photos">
-						<IconUpload/>
+						<IconUpload/>Upload
 				</button>}
 				{selectedPhotoIds.length === 0 && <button
 					className="iconOnly"
 					onClick={() => setSharingOptionsOpen(true)}
 					title="Sharing options">
-						<IconShare/>
+						<IconShare/>Share
 				</button>}
 			</>,
 			headerContextMenu: <>

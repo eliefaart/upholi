@@ -48,7 +48,7 @@ const LibraryPage: FC<PageProps> = (props: PageProps) => {
 						}
 					}}
 					title="Upload photos">
-					<IconUpload/>
+					<IconUpload/>Upload
 				</button>}
 				<AddPhotosToAlbumButton
 					selectedPhotoIds={selectedPhotoIds}
@@ -57,7 +57,7 @@ const LibraryPage: FC<PageProps> = (props: PageProps) => {
 					className="iconOnly"
 					onClick={() => setConfirmDeletePhotosOpen(true)}
 					title="Delete photos">
-					<IconDelete/>
+					<IconDelete/>Delete
 				</button>}
 			</React.Fragment>
 		});

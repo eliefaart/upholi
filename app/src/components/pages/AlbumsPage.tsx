@@ -23,7 +23,7 @@ const AlbumsPage: FC<PageProps> = (props: PageProps) => {
 					className="iconOnly"
 					onClick={() => setNewAlbumDialogOpen(true)}
 					title="Create album">
-					<IconCreate/>
+					<IconCreate/>Create album
 				</button>}
 			</React.Fragment>
 		});

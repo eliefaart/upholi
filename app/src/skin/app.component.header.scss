@@ -21,7 +21,8 @@
 			padding-left: $spacingLarge;
 
 			&:hover {
-				color: var(--colorSecondaryAccent);
+				filter: brightness(1.2);
+				color: var(--colorAccent);
 			}
 
 			&.active {
@@ -104,7 +105,7 @@
 				&:hover {
 					&, * {
 						background-color: var(--colorAccent);
-						color: var(--colorText);
+						color: var(--colorTextContrast);
 					}
 				}
 			}

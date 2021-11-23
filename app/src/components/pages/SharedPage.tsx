@@ -9,6 +9,7 @@ import { useTitle } from "../../hooks/useTitle";
 import useAlbums from "../../hooks/useAlbums";
 import useShares from "../../hooks/useShares";
 import { PageProps } from "../../models/PageProps";
+import { IconDelete } from "../misc/Icons";
 
 const SharedPage: FC<PageProps> = (props: PageProps) => {
 	const context = React.useContext(appStateContext);
@@ -47,7 +48,7 @@ const SharedPage: FC<PageProps> = (props: PageProps) => {
 						<CopyUrl shareUrl={shareUrl}/>
 						<div className="actions">
 						<button onClick={() => deleteShare(share)}>
-							Delete share
+							Delete
 						</button>
 						</div>
 					</div>

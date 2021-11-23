@@ -1,14 +1,14 @@
 @import "_cssreset";
 @import "_fonts";
 
-$fontSizeNormal: 0.8em;
-$fontSizeLarge: 1.2em;
+$fontSizeNormal: 0.9em;
+$fontSizeLarge: 1.1em;
 $spacing: 10px;
 $spacingLarge: 20px;
 $transitionSpeed: 0.2s;
 $borderRadius: 3px;
-$headerHeight: 65px;
-$buttonHeight: 40px;
+$headerHeight: 50px;
+$buttonHeight: 32px;
 $breakpointMobile: 768px;
 
 @import "themes/theme-default-dark";
@@ -134,44 +134,40 @@ input, select {
 button, .asButton {
 	color: var(--colorAccent);
 	background-color: transparent;
-	text-transform: uppercase;
 	border: none;
 	cursor: pointer;
 	width: auto;
 	text-decoration: none;
 	padding: 0;
+	margin: 0;
 	display: inline-block;
 	text-align: center;
-	margin: 0px;
 	display: flex;
 	justify-content: center;
 	white-space: nowrap;
 
-	&.iconOnly {
-		display: flex;
-		min-width: $buttonHeight;
-		width: $buttonHeight;
-	}
-	&:not(.iconOnly) {
-		min-width: $buttonHeight * 2;
-		background-color: rgba(var(--colorBackground), 0.9);
-		margin: 0px $spacing;
-		padding: 0px $spacing;
-	}
-
 	&:hover,
 	&:active {
-		color: var(--colorSecondaryAccent);
+		filter: brightness(1.2);
 	}
 
 	&:disabled {
 		color: var(--colorDisabled)
 	}
 
+	&.iconOnly {
+		margin-left: $spacingLarge;
+	}
+	&:not(.iconOnly) {
+		min-width: $buttonHeight * 2;
+		margin: 0px $spacing;
+		padding: 0px $spacing;
+	}
+
 	svg {
 		display: block;
-		width: 80%;
-		height: 80%;
+		width: 55%;
+		height: 55%;
 		margin: auto;
 	}
 }
