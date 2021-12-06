@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/server.yml'
       - 'server/**'
+      - 'lib/**'
 
 env:
   IMAGE_NAME: upholi-server

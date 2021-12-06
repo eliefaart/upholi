@@ -1,0 +1,24 @@
+name: Library
+
+on:
+  push:
+    paths:
+      - '.github/workflows/library.yml'
+      - 'lib/**'
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Build
+      run: |
+        cd ./lib
+        cargo build --release --verbose
+
+    - name: Test
+      run: |
+        cd ./lib
+        cargo test --release --verbose
