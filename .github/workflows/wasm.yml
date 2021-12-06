@@ -1,0 +1,24 @@
+name: wasm
+
+on:
+  push:
+    paths:
+      - '.github/workflows/wasm.yml'
+      - 'wasm/**'
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Build
+      run: |
+        cd ./wasm
+        cargo build --release --verbose
+
+    - name: Test
+      run: |
+        cd ./wasm
+        cargo test --release --verbose
