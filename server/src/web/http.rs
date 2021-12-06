@@ -37,7 +37,6 @@ struct ErrorResult {
 impl FromRequest for User {
 	type Error = Error;
 	type Future = Ready<Result<Self, Error>>;
-	type Config = ();
 
 	#[inline]
 	fn from_request(request: &HttpRequest, _: &mut Payload) -> Self::Future {
@@ -62,7 +61,6 @@ impl FromRequest for User {
 impl FromRequest for Session {
 	type Error = Error;
 	type Future = Ready<Result<Session, Error>>;
-	type Config = ();
 
 	#[inline]
 	fn from_request(request: &HttpRequest, _: &mut Payload) -> Self::Future {
@@ -111,20 +109,16 @@ pub async fn get_form_data(mut payload: Multipart) -> Result<Vec<FormData>> {
 	let mut form_data = Vec::new();
 
 	while let Ok(Some(field)) = payload.try_next().await {
-		match field.content_disposition() {
-			Some(content_disposition) => {
-				match content_disposition.get_name() {
-					Some(key) => {
-						let field_bytes = get_form_field_bytes(field).await?;
-						form_data.push(FormData{
-							name: key.to_string(),
-							bytes: field_bytes
-						});
-					},
-					None => return Err(Box::from(UploadError::HeaderContentDispositionInvalid))
-				}
+		let content_disposition = field.content_disposition();
+
+		match content_disposition.get_name() {
+			Some(name) => {
+				form_data.push(FormData{
+					name: name.to_string(),
+					bytes: get_form_field_bytes(field).await?
+				});
 			},
-			None => return Err(Box::from(UploadError::HeaderContentDispositionMissing))
+			None => return Err(Box::from(UploadError::HeaderContentDispositionInvalid))
 		}
 	}
 

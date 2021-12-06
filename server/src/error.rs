@@ -15,7 +15,6 @@ pub enum EntityError {
 /// Errors related to uploading files
 #[derive(Debug)]
 pub enum UploadError {
-	HeaderContentDispositionMissing,
 	HeaderContentDispositionInvalid,
 	UnsupportedMultipartName
 }
@@ -48,7 +47,6 @@ impl Display for UploadError {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		let message = {
 			match self {
-				UploadError::HeaderContentDispositionMissing => "Missing header Content-Disposition",
 				UploadError::HeaderContentDispositionInvalid => "Invalid header Content-Disposition",
 				UploadError::UnsupportedMultipartName => "Multipart contains a part with an unsupported name"
 			}
