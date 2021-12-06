@@ -78,7 +78,7 @@ mod tests {
 
 	#[test]
 	fn generate_nonce_length() {
-		let nonce = generate_key();
+		let nonce = generate_nonce();
 		assert_eq!(nonce.len(), NONCE_LENGTH);
 	}
 
