@@ -1,7 +1,7 @@
 import * as React from "react";
 import { FC } from "react";
 import { Router } from "react-router-dom";
-import { Slide, ToastContainer, Zoom } from "react-toastify";
+import { Slide, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Layout from "./layout/Layout";
 import appStateContext from "../contexts/AppStateContext";
