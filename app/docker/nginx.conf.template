@@ -6,7 +6,7 @@ server {
 	# These paths are 'virtual' paths, routing is done client side.
 	# So for all these paths just return the index file.
 	# Can I do this in a way so that I don't need to type out all paths here?
-	location ~* ^/(login|albums|album|photo|shared|s).+ {
+	location ~* ^/(albums|album|photo|shared|s|login).+ {
 		try_files /index.html =404;
 	}
 
@@ -15,9 +15,6 @@ server {
 		proxy_pass ${API_URI};
 	}
 	location /api {
-		proxy_pass ${API_URI};
-	}
-	location /oauth {
 		proxy_pass ${API_URI};
 	}
 }
