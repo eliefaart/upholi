@@ -6,6 +6,7 @@ use upholi_lib::http::request::{FindSharesFilter, RequestedEntity};
 use upholi_lib::http::response::PhotoMinimal;
 use crate::database;
 use crate::database::{Database, DatabaseExt, SortField};
+use crate::entities::photo::Photo;
 use crate::entities::share::Share;
 use crate::error::*;
 use crate::entities::album::Album;
@@ -14,7 +15,9 @@ use crate::entities::user::User;
 lazy_static!{
 	/// A reference to the database that can be used to execute queries etc
 	static ref DATABASE: mongodb::sync::Database = {
-		let client_options = ClientOptions::parse(&crate::SETTINGS.database.connection_string)
+		//println!("{}", crate::SETTINGS.database.connection_string);
+
+		let client_options = ClientOptions::parse("mongodb://localhost:27017/hummingbird")
 			.expect("Failed to parse database connection string");
 
 		let client = Client::with_options(client_options)
@@ -64,7 +67,7 @@ impl Database for MongoDatabase {
 	fn find_many<T: serde::de::DeserializeOwned>(&self, collection: &str, user_id: Option<&str>, ids: Option<&[&str]>, sort_field: Option<&SortField>)
 		-> Result<Vec<T>>
 	{
-		let mongo_collection = DATABASE.collection(collection);
+		let mongo_collection = DATABASE.collection::<bson::Document>(collection);
 		let mut pipeline = vec!{
 			doc!{
 				"$match": create_filter_for_user_and_ids_options(&user_id, &ids)
@@ -147,7 +150,7 @@ impl Database for MongoDatabase {
 	}
 
 	fn delete_many(&self, collection: &str, ids: &[&str]) -> Result<()> {
-		let mongo_collection = DATABASE.collection(collection);
+		let mongo_collection = DATABASE.collection::<bson::Document>(collection);
 		let filter = create_in_filter_for_ids(ids);
 
 		mongo_collection.delete_many(filter, None)?;
@@ -157,7 +160,7 @@ impl Database for MongoDatabase {
 
 impl DatabaseExt for MongoDatabase {
 	fn get_photos_for_user(&self, user_id: &str) -> Result<Vec<PhotoMinimal>> {
-		let mongo_collection = DATABASE.collection(database::COLLECTION_PHOTOS);
+		let mongo_collection = DATABASE.collection::<Photo>(database::COLLECTION_PHOTOS);
 		let pipeline = vec!{
 			doc!{
 				"$match": {
@@ -178,7 +181,7 @@ impl DatabaseExt for MongoDatabase {
 	}
 
 	fn get_photos(&self, photos: Vec<RequestedEntity>) -> Result<Vec<PhotoMinimal>> {
-		let mongo_collection = DATABASE.collection(database::COLLECTION_PHOTOS);
+		let mongo_collection = DATABASE.collection::<Photo>(database::COLLECTION_PHOTOS);
 
 		let mut photo_filter_docs: Vec<bson::Document> = Vec::new();
 		for photo in photos {
@@ -225,7 +228,7 @@ impl DatabaseExt for MongoDatabase {
 	}
 
 	fn remove_photos_from_all_albums(&self, photo_ids: &[&str]) -> Result<()> {
-		let mongo_collection = DATABASE.collection(database::COLLECTION_ALBUMS);
+		let mongo_collection = DATABASE.collection::<Album>(database::COLLECTION_ALBUMS);
 
 		let query = doc!{
 			"photos": doc!{
@@ -245,7 +248,7 @@ impl DatabaseExt for MongoDatabase {
 	}
 
 	fn remove_thumbs_from_all_albums(&self, photo_ids: &[&str]) -> Result<()> {
-		let mongo_collection = DATABASE.collection(database::COLLECTION_ALBUMS);
+		let mongo_collection = DATABASE.collection::<Album>(database::COLLECTION_ALBUMS);
 
 		let query = doc!{
 			"thumbPhotoId": doc!{
@@ -263,7 +266,7 @@ impl DatabaseExt for MongoDatabase {
 	}
 
 	fn photo_exists_for_user(&self, user_id: &str, hash: &str) -> Result<bool> {
-		let mongo_collection = DATABASE.collection(database::COLLECTION_PHOTOS);
+		let mongo_collection = DATABASE.collection::<Photo>(database::COLLECTION_PHOTOS);
 		let filter = doc!{
 			"userId": user_id,
 			"hash": hash
@@ -315,7 +318,7 @@ impl DatabaseExt for MongoDatabase {
 }
 
 /// Take all items available in given cursor. This exhausts the cursor.
-fn get_items_from_cursor<T: serde::de::DeserializeOwned>(cursor: mongodb::sync::Cursor) -> Result<Vec<T>> {
+fn get_items_from_cursor<T: serde::de::DeserializeOwned>(cursor: mongodb::sync::Cursor<bson::Document>) -> Result<Vec<T>> {
 	let mut items = Vec::new();
 
 	for document_result in cursor {
