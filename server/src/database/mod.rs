@@ -20,6 +20,45 @@ pub struct SortField<'a> {
 	pub ascending: bool,
 }
 
+/// Add standard CRUD operations to a struct
+#[async_trait]
+pub trait DatabaseEntity {
+	/// Get an existing item
+	async fn get(id: &str) -> Result<Option<Self>>
+		where Self: std::marker::Sized;
+
+	/// Insert item as new record
+	async fn insert(&self) -> Result<()>;
+
+	/// Store this instance in its current state
+	async fn update(&self) -> Result<()>;
+
+	/// Delete this item from database
+	async fn delete(&self) -> Result<()>;
+}
+
+/// Adds CRUD operations to a struct that targets multiple items
+#[async_trait]
+pub trait DatabaseEntityBatch {
+	/// Get all items with an id contained within given array
+	/// TODO: Merge with DatabaseEntity?
+	async fn get_with_ids(ids: &[&str]) -> Result<Vec<Self>>
+		where Self: std::marker::Sized;
+}
+
+/// Add database operations to a struct, which are targetted only to entries owned by given user
+#[async_trait]
+pub trait DatabaseUserEntity : DatabaseEntity {
+	async fn get_as_user(id: &str, user_id: String) -> Result<Option<Self>>
+		where Self: std::marker::Sized;
+
+	async fn get_all_as_user(user_id: String) -> Result<Vec<Self>>
+		where Self: std::marker::Sized;
+
+	async fn get_all_with_ids_as_user(ids: &[&str], user_id: String) -> Result<Vec<Self>>
+		where Self: std::marker::Sized;
+}
+
 /// Get a single item from a collection
 async fn find_one<T: serde::de::DeserializeOwned>(collection: &str, id: &str) -> Result<Option<T>> {
 	mongodb::find_one(collection, id).await
@@ -79,92 +118,4 @@ pub async fn get_user_by_username(username: &str) -> Result<Option<User>> {
 /// Find shares based on certain filters
 pub async fn find_shares(user_id: &str, filters: FindSharesFilter) -> Result<Vec<Share>> {
 	mongodb::find_shares(user_id, filters).await
-}
-
-// /// General CRUD functions for a database implementation
-// #[async_trait]
-// pub trait Database {
-// 	/// Get a single item from a collection
-// 	async fn find_one<T: serde::de::DeserializeOwned>(&self, collection: &str, id: &str)
-// 		-> Result<Option<T>>;
-
-// 	/// Get multiple items from a collection
-// 	async fn find_many<T: serde::de::DeserializeOwned>(&self, collection: &str, user_id: Option<&str>, ids: Option<&[&str]>, sort_field: Option<&SortField>)
-// 		-> Result<Vec<T>>;
-
-// 	/// Insert a single item into a collection.
-// 	/// Returns the ID of created item if succesfull.
-// 	async fn insert_one<'de, T: serde::Serialize + serde::Deserialize<'de>>(&self, collection: &str, item: T)
-// 		-> Result<String>;
-
-// 	/// Replace a single existing item with a new version in its entirety
-// 	async fn replace_one<T: serde::Serialize>(&self, collection: &str, id: &str, replacement: &T)
-// 		-> Result<()>;
-
-// 	/// Delete an item from a collection
-// 	async fn delete_one(&self, collection: &str, id: &str)
-// 		-> Result<()>;
-
-// 	/// Delete multiple items from a collection
-// 	async fn delete_many(&self, collection: &str, ids: &[&str])
-// 		-> Result<()>;
-// }
-
-// /// Specific database actions that this application needs
-// /// TODO: Give this a better name
-// #[async_trait]
-// pub trait DatabaseExt : Database {
-// 	/// Get all photos of given user, returning only minimal info per user.
-// 	async fn get_photos_for_user(&self, user_id: &str) -> Result<Vec<PhotoMinimal>>;
-
-// 	/// Get multiple photos
-// 	async fn get_photos(&self, photos: Vec<RequestedEntity>) -> Result<Vec<PhotoMinimal>>;
-
-// 	/// Check if a photo already exists for user, by hash
-// 	async fn photo_exists_for_user(&self, user_id: &str, hash: &str) -> Result<bool>;
-
-// 	/// Get user for given ID provider name and user-ID, if it exists
-// 	async fn get_user_by_username(&self, username: &str) -> Result<Option<User>>;
-
-// 	/// Find shares based on certain filters
-// 	async fn find_shares(&self, user_id: &str, filters: FindSharesFilter) -> Result<Vec<Share>>;
-// }
-
-/// Add standard CRUD operations to a struct
-#[async_trait]
-pub trait DatabaseEntity {
-	/// Get an existing item
-	async fn get(id: &str) -> Result<Option<Self>>
-		where Self: std::marker::Sized;
-
-	/// Insert item as new record
-	async fn insert(&self) -> Result<()>;
-
-	/// Store this instance in its current state
-	async fn update(&self) -> Result<()>;
-
-	/// Delete this item from database
-	async fn delete(&self) -> Result<()>;
-}
-
-/// Adds CRUD operations to a struct that targets multiple items
-#[async_trait]
-pub trait DatabaseEntityBatch {
-	/// Get all items with an id contained within given array
-	/// TODO: Merge with DatabaseEntity?
-	async fn get_with_ids(ids: &[&str]) -> Result<Vec<Self>>
-		where Self: std::marker::Sized;
-}
-
-/// Add database operations to a struct, which are targetted only to entries owned by given user
-#[async_trait]
-pub trait DatabaseUserEntity : DatabaseEntity {
-	async fn get_as_user(id: &str, user_id: String) -> Result<Option<Self>>
-		where Self: std::marker::Sized;
-
-	async fn get_all_as_user(user_id: String) -> Result<Vec<Self>>
-		where Self: std::marker::Sized;
-
-	async fn get_all_with_ids_as_user(ids: &[&str], user_id: String) -> Result<Vec<Self>>
-		where Self: std::marker::Sized;
 }

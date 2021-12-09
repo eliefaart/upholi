@@ -41,14 +41,6 @@ async fn initialize(database: &mongodb::Database) -> Result<()> {
 	Ok(())
 }
 
-// pub struct MongoDatabase {}
-
-// impl MongoDatabase {
-// 	pub fn new() -> Self {
-// 		MongoDatabase{}
-// 	}
-// }
-
 pub async fn find_one<T: serde::de::DeserializeOwned>(collection: &str, id: &str) -> Result<Option<T>>
 {
 	let mut items: Vec<T> = find_many(collection, None, Some(&[id]), None).await?;
