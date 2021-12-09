@@ -1,6 +1,6 @@
 use upholi_lib::http::request::EntityAuthorizationProof;
 
-use crate::entities::session::Session;
+use session::Session;
 
 pub mod user;
 pub mod session;

@@ -1,22 +1,21 @@
-use crate::entities::photo::Photo;
-use crate::{entities::session::Session};
 use actix_web::{HttpRequest, HttpResponse, Responder, web};
 use actix_multipart::Multipart;
 use upholi_lib::http::request::{CheckPhotoExists, EntityAuthorizationProof, RequestedEntity};
 use upholi_lib::{PhotoVariant, http::*};
 
+use crate::database::entities::AccessControl;
+use crate::database::entities::photo::Photo;
+use crate::database::entities::session::Session;
+use crate::database::entities::user::User;
 use crate::error::*;
-use crate::database;
-use crate::database::{Database, DatabaseExt, DatabaseEntity};
+use crate::database::{self, DatabaseEntity};
 use crate::web::http::*;
 use crate::storage;
-use crate::entities::AccessControl;
-use crate::entities::user::User;
 
 
 /// Get all photos
 pub async fn route_get_photos(user: User) -> impl Responder {
-	match database::get_database().get_photos_for_user(&user.id) {
+	match database::get_photos_for_user(&user.id).await {
 		Ok(photos) => HttpResponse::Ok().json(photos),
 		Err(error) => create_internal_server_error_response(Some(error))
 	}
@@ -29,7 +28,7 @@ pub async fn route_find_photos(_user: Option<User>, requested_photos: web::Json<
 	// TODO: If no user, then proof for each photo must be present.. or something
 	// Either way function feels weird still.
 
-	match database::get_database().get_photos(requested_photos) {
+	match database::get_photos(requested_photos).await {
 		Ok(photos) => HttpResponse::Ok().json(photos),
 		Err(error) => create_internal_server_error_response(Some(error))
 	}
@@ -44,7 +43,7 @@ pub async fn route_get_photo(session: Option<Session>, req: HttpRequest, proof: 
 
 	match req.match_info().get("photo_id") {
 		Some(photo_id) => {
-			match Photo::get(&photo_id) {
+			match Photo::get(&photo_id).await {
 				Ok(photo) => {
 					match photo {
 						Some(photo) =>{
@@ -74,7 +73,7 @@ pub async fn route_delete_photo(user: User, req: HttpRequest) -> impl Responder 
 
 /// Check if a photo exists for user by hash
 pub async fn route_check_photo_exists(user: User, check: web::Query<CheckPhotoExists>) -> impl Responder {
-	match Photo::hash_exists_for_user(&user.id, &check.hash) {
+	match Photo::hash_exists_for_user(&user.id, &check.hash).await {
 		Ok(exists) => {
 			if exists {
 				HttpResponse::NoContent().finish()
@@ -115,7 +114,7 @@ pub async fn route_upload_photo(user: User, payload: Multipart) -> impl Responde
 					let file_id_original = format!("{}-original", &db_photo.id);
 
 					// Insert photo into DB
-					if let Err(error) = db_photo.insert() {
+					if let Err(error) = db_photo.insert().await {
 						return create_internal_server_error_response(Some(error));
 					}
 
@@ -164,7 +163,7 @@ async fn download_photo(session: Option<Session>, req: HttpRequest, photo_varian
 
 	match req.match_info().get("photo_id") {
 		Some(photo_id) => {
-			match Photo::get(&photo_id) {
+			match Photo::get(&photo_id).await {
 				Ok(photo) => {
 					match photo {
 						Some(photo) => {
@@ -200,7 +199,7 @@ pub async fn delete_photos(user_id: String, ids: &[&str]) -> impl Responder {
 
 	// Check if all ids to be deleted are owned by user_id
 	for id in ids {
-		match Photo::get(id) {
+		match Photo::get(id).await {
 			Ok(photo) => {
 				if let Some(photo) = photo {
 					if photo.user_id != user_id {
@@ -225,7 +224,7 @@ pub async fn delete_photos(user_id: String, ids: &[&str]) -> impl Responder {
 	}
 
 	// Delete all photos from database
-	match database::get_database().delete_many(database::COLLECTION_PHOTOS, ids) {
+	match database::delete_photos(ids).await {
 		Ok(_) => create_ok_response(),
 		Err(_) => create_not_found_response()
 	}

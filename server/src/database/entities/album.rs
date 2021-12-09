@@ -1,14 +1,13 @@
-use crate::entities::Session;
 use serde::{Serialize, Deserialize};
+use async_trait::async_trait;
 use upholi_lib::EncryptedData;
 use upholi_lib::http::request::CreateAlbum;
 use upholi_lib::http::request::EntityAuthorizationProof;
 use upholi_lib::ids::create_unique_id;
 
-use crate::database;
 use crate::database::*;
-use crate::error::*;
-use crate::entities::AccessControl;
+use super::AccessControl;
+use super::session::Session;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -32,43 +31,37 @@ impl From<CreateAlbum> for Album {
 	}
 }
 
+#[async_trait]
 impl DatabaseEntity for Album {
-	fn get(id: &str) -> Result<Option<Self>> {
-		database::get_database().find_one(database::COLLECTION_ALBUMS, id)
+	async fn get(id: &str) -> Result<Option<Self>> {
+		super::super::find_one(super::super::COLLECTION_ALBUMS, id).await
 	}
 
-	fn insert(&self) -> Result<()> {
-		if self.id.is_empty() {
-			return Err(Box::from(EntityError::IdMissing));
-		}
-
-		match Self::get(&self.id)? {
-			Some(_) => Err(Box::from(EntityError::AlreadyExists)),
-			None => {
-				database::get_database().insert_one(database::COLLECTION_ALBUMS, &self)?;
-				Ok(())
-			}
-		}
+	async fn insert(&self) -> Result<()> {
+		super::super::insert_one(super::super::COLLECTION_ALBUMS, self).await?;
+		Ok(())
 	}
 
-	fn update(&self) -> Result<()> {
-		database::get_database().replace_one(database::COLLECTION_ALBUMS, &self.id, self)
+	async fn update(&self) -> Result<()> {
+		super::super::replace_one(super::super::COLLECTION_ALBUMS, &self.id, self).await
 	}
 
-	fn delete(&self) -> Result<()> {
-		database::get_database().delete_one(database::COLLECTION_ALBUMS, &self.id)
+	async fn delete(&self) -> Result<()> {
+		super::super::delete_one(super::super::COLLECTION_ALBUMS, &self.id).await
 	}
 }
 
+#[async_trait]
 impl DatabaseEntityBatch for Album {
-	fn get_with_ids(ids: &[&str]) -> Result<Vec<Self>> {
-		database::get_database().find_many(database::COLLECTION_ALBUMS, None, Some(ids), None)
+	async fn get_with_ids(ids: &[&str]) -> Result<Vec<Self>> {
+		super::super::find_many(super::super::COLLECTION_ALBUMS, None, Some(ids), None).await
 	}
 }
 
+#[async_trait]
 impl DatabaseUserEntity for Album {
-	fn get_as_user(id: &str, user_id: String) -> Result<Option<Self>>{
-		match Self::get(id)? {
+	async fn get_as_user(id: &str, user_id: String) -> Result<Option<Self>>{
+		match Self::get(id).await? {
 			Some(album) => {
 				if album.user_id != user_id {
 					Err(Box::from(format!("User {} does not have access to album {}", user_id, album.id)))
@@ -80,12 +73,12 @@ impl DatabaseUserEntity for Album {
 		}
 	}
 
-	fn get_all_as_user(user_id: String) -> Result<Vec<Self>> {
-		database::get_database().find_many(database::COLLECTION_ALBUMS, Some(&user_id), None, None)
+	async fn get_all_as_user(user_id: String) -> Result<Vec<Self>> {
+		super::super::find_many(super::super::COLLECTION_ALBUMS, Some(&user_id), None, None).await
 	}
 
-	fn get_all_with_ids_as_user(ids: &[&str], user_id: String) -> Result<Vec<Self>> {
-		database::get_database().find_many(database::COLLECTION_ALBUMS, Some(&user_id), Some(ids), None)
+	async fn get_all_with_ids_as_user(ids: &[&str], user_id: String) -> Result<Vec<Self>> {
+		super::super::find_many(super::super::COLLECTION_ALBUMS, Some(&user_id), Some(ids), None).await
 	}
 }
 

@@ -2,14 +2,12 @@ use upholi_lib::http::request::{EntityAuthorizationProof, UploadPhoto};
 use upholi_lib::ids::create_unique_id;
 use upholi_lib::EncryptedData;
 use serde::{Deserialize, Serialize};
-
-use crate::database::{Database, DatabaseExt};
+use async_trait::async_trait;
 use crate::{error::*};
 use crate::{database::{self, DatabaseEntity, DatabaseEntityBatch, DatabaseUserEntity}, error::EntityError};
 
 use super::{AccessControl, session::Session};
 
-// Then I can re-use the other struct which is identical.
 #[derive(Deserialize, Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Photo {
@@ -48,48 +46,43 @@ impl From<UploadPhoto> for Photo {
 }
 
 impl Photo {
-	pub fn hash_exists_for_user(user_id: &str, hash: &str) -> Result<bool> {
-		database::get_database().photo_exists_for_user(user_id, hash)
+	pub async fn hash_exists_for_user(user_id: &str, hash: &str) -> Result<bool> {
+		super::super::photo_exists_for_user(user_id, hash).await
 	}
 }
 
+#[async_trait]
 impl DatabaseEntity for Photo {
-	fn get(id: &str) -> Result<Option<Self>> {
-		database::get_database().find_one(database::COLLECTION_PHOTOS, id)
+	async fn get(id: &str) -> Result<Option<Self>> {
+		super::super::find_one(super::super::COLLECTION_PHOTOS, id).await
 	}
 
-	fn insert(&self) -> Result<()> {
-		if self.id.is_empty() {
-			return Err(Box::from(EntityError::IdMissing));
-		}
-
-		match Self::get(&self.id)? {
-			Some(_) => Err(Box::from(EntityError::AlreadyExists)),
-			None => {
-				database::get_database().insert_one(database::COLLECTION_PHOTOS, &self)?;
-				Ok(())
-			}
-		}
+	async fn insert(&self) -> Result<()> {
+		super::super::insert_one(super::super::COLLECTION_PHOTOS, self).await?;
+		Ok(())
 	}
 
-	fn update(&self) -> Result<()> {
-		database::get_database().replace_one(database::COLLECTION_PHOTOS, &self.id, self)
+	async fn update(&self) -> Result<()> {
+		super::super::replace_one(super::super::COLLECTION_PHOTOS, &self.id, self).await
 	}
 
-	fn delete(&self) -> Result<()> {
-		database::get_database().delete_one(database::COLLECTION_PHOTOS, &self.id)
+	async fn delete(&self) -> Result<()> {
+		super::super::delete_one(super::super::COLLECTION_PHOTOS, &self.id).await
 	}
 }
 
+
+#[async_trait]
 impl DatabaseEntityBatch for Photo {
-	fn get_with_ids(ids: &[&str]) -> Result<Vec<Self>> {
-		database::get_database().find_many(database::COLLECTION_PHOTOS, None, Some(ids), None)
+	async fn get_with_ids(ids: &[&str]) -> Result<Vec<Self>> {
+		super::super::find_many(super::super::COLLECTION_PHOTOS, None, Some(ids), None).await
 	}
 }
 
+#[async_trait]
 impl DatabaseUserEntity for Photo {
-	fn get_as_user(id: &str, user_id: String) -> Result<Option<Self>>{
-		match Self::get(id)? {
+	async fn get_as_user(id: &str, user_id: String) -> Result<Option<Self>>{
+		match Self::get(id).await? {
 			Some(photo) => {
 				if photo.user_id != user_id {
 					Err(Box::from(EntityError::NoAccess))
@@ -101,20 +94,20 @@ impl DatabaseUserEntity for Photo {
 		}
 	}
 
-	fn get_all_as_user(user_id: String) -> Result<Vec<Self>> {
+	async fn get_all_as_user(user_id: String) -> Result<Vec<Self>> {
 		let sort = database::SortField{
 			field: "createdOn",
 			ascending: false
 		};
-		database::get_database().find_many(database::COLLECTION_PHOTOS, Some(&user_id), None, Some(&sort))
+		super::super::find_many(super::super::COLLECTION_PHOTOS, Some(&user_id), None, Some(&sort)).await
 	}
 
-	fn get_all_with_ids_as_user(ids: &[&str], user_id: String) -> Result<Vec<Self>> {
+	async fn get_all_with_ids_as_user(ids: &[&str], user_id: String) -> Result<Vec<Self>> {
 		let sort = database::SortField{
 			field: "createdOn",
 			ascending: false
 		};
-		database::get_database().find_many(database::COLLECTION_PHOTOS, Some(&user_id), Some(ids), Some(&sort))
+		super::super::find_many(super::super::COLLECTION_PHOTOS, Some(&user_id), Some(ids), Some(&sort)).await
 	}
 }
 

@@ -1,16 +1,17 @@
+use std::pin::Pin;
+
 use actix_web::{Error, HttpRequest, HttpResponse, FromRequest};
 use actix_web::error::{ErrorInternalServerError, ErrorNotFound, ErrorUnauthorized};
 use actix_web::dev::Payload;
 use actix_multipart::{Multipart, Field};
 use actix_http::cookie::Cookie;
 use serde::Serialize;
-use futures::{StreamExt, TryStreamExt};
-use futures::future::{ok, err, Ready};
+use futures::{StreamExt, TryStreamExt, Future};
 
-use crate::error::*;
-use crate::entities::session::Session;
 use crate::database::DatabaseEntity;
-use crate::entities::user::*;
+use crate::database::entities::session::Session;
+use crate::database::entities::user::User;
+use crate::error::*;
 
 pub const SESSION_COOKIE_NAME: &str = "session";
 
@@ -36,38 +37,44 @@ struct ErrorResult {
 /// Allow User to be used as function parameter for request handlers
 impl FromRequest for User {
 	type Error = Error;
-	type Future = Ready<Result<Self, Error>>;
+	type Future = Pin<Box<dyn Future<Output = Result<Self, Self::Error>>>>;
 
 	#[inline]
 	fn from_request(request: &HttpRequest, _: &mut Payload) -> Self::Future {
-		match get_user_id(request) {
-			Some(user_id) => {
-				match User::get(&user_id) {
-					Ok(user_opt) => {
-						match user_opt {
-							Some(user) => ok(user),
-							None => err(ErrorNotFound(""))
-						}
-					},
-					Err(_) => err(ErrorInternalServerError(""))
-				}
-			},
-			None => err(ErrorUnauthorized(""))
-		}
+		let headers = request.headers().clone();
+		Box::pin(async move {
+			match get_user_id(&headers).await {
+				Some(user_id) => {
+					match User::get(&user_id).await {
+						Ok(user_opt) => {
+							match user_opt {
+								Some(user) => Ok(user),
+								None => Err(ErrorNotFound(""))
+							}
+						},
+						Err(_) => Err(ErrorInternalServerError(""))
+					}
+				},
+				None => Err(ErrorUnauthorized(""))
+			}
+		})
 	}
 }
 
 /// Allow Session to be used as function parameter for request handlers
 impl FromRequest for Session {
 	type Error = Error;
-	type Future = Ready<Result<Session, Error>>;
+	type Future = Pin<Box<dyn Future<Output = Result<Self, Self::Error>>>>;
 
 	#[inline]
 	fn from_request(request: &HttpRequest, _: &mut Payload) -> Self::Future {
-		match get_session(request) {
-			Some(session) => ok(session),
-			None => err(ErrorUnauthorized(""))
-		}
+		let headers = request.headers().clone();
+		Box::pin(async move {
+			match get_session(&headers).await {
+				Some(session) => Ok(session),
+				None => Err(ErrorUnauthorized(""))
+			}
+		})
 	}
 }
 
@@ -87,18 +94,18 @@ pub fn get_session_cookie(headers: &actix_web::http::header::HeaderMap) -> Optio
 }
 
 /// Extract Session from the HTTP request
-fn get_session(req: &HttpRequest) -> Option<Session> {
-	let session_cookie = get_session_cookie(&req.headers())?;
+async fn get_session(headers: &actix_web::http::header::HeaderMap) -> Option<Session> {
+	let session_cookie = get_session_cookie(headers)?;
 	let session_id = session_cookie.value();
-	match Session::get(&session_id) {
+	match Session::get(&session_id).await {
 		Ok(session) => session,
 		Err(_) => None
 	}
 }
 
 /// Extract user_id from the HTTP request
-fn get_user_id(req: &HttpRequest) -> Option<String> {
-	match get_session(req) {
+async fn get_user_id(headers: &actix_web::http::header::HeaderMap) -> Option<String> {
+	match get_session(headers).await {
 		Some(session) => session.user_id,
 		None => None
 	}
@@ -143,7 +150,7 @@ async fn get_form_field_bytes(mut field: Field) -> Result<Vec<u8>> {
 	Ok(field_bytes)
 }
 
-pub fn get_session_or_create_new(session_opt: Option<Session>) -> Result<Session> {
+pub async fn get_session_or_create_new(session_opt: Option<Session>) -> Result<Session> {
 	let session: Session;
 
 	// Create a new session if request didn't have one
@@ -152,7 +159,7 @@ pub fn get_session_or_create_new(session_opt: Option<Session>) -> Result<Session
 	}
 	else {
 		session = Session::new();
-		session.insert()?;
+		session.insert().await?;
 	}
 
 	Ok(session)

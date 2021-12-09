@@ -6,7 +6,6 @@ mod database;
 mod storage;
 mod settings;
 mod web;
-mod entities;
 
 lazy_static! {
 	/// Global application settings

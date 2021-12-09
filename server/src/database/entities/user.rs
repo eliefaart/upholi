@@ -1,12 +1,11 @@
-use crate::database::DatabaseExt;
 use crate::storage::init_storage_for_user;
 use serde::{Serialize,Deserialize};
 use upholi_lib::EncryptedData;
 use upholi_lib::passwords::{hash_password, verify_password_hash};
 use crate::error::*;
-use crate::database;
-use crate::database::{Database, DatabaseEntity};
+use crate::database::{DatabaseEntity};
 use upholi_lib::ids::create_unique_id;
+use async_trait::async_trait;
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -31,13 +30,13 @@ impl User {
 			key
 		};
 
-		user.insert()?;
+		user.insert().await?;
 		init_storage_for_user(&user).await?;
 		Ok(user)
 	}
 
 	pub async fn get_by_username(username: &str) -> Result<Option<User>> {
-		database::get_database().get_user_by_username(username)
+		super::super::get_user_by_username(username).await
 	}
 
 	pub fn password_valid(&self, password: &str) -> bool {
@@ -45,21 +44,22 @@ impl User {
 	}
 }
 
+#[async_trait]
 impl DatabaseEntity for User {
-	fn get(id: &str) -> Result<Option<Self>> {
-		database::get_database().find_one(database::COLLECTION_USERS, id)
+	async fn get(id: &str) -> Result<Option<Self>> {
+		super::super::find_one(super::super::COLLECTION_USERS, id).await
 	}
 
-	fn insert(&self) -> Result<()> {
-		database::get_database().insert_one(database::COLLECTION_USERS, &self)?;
+	async fn insert(&self) -> Result<()> {
+		super::super::insert_one(super::super::COLLECTION_USERS, self).await?;
 		Ok(())
 	}
 
-	fn update(&self)  -> Result<()> {
-		database::get_database().replace_one(database::COLLECTION_USERS, &self.id, self)
+	async fn update(&self)  -> Result<()> {
+		super::super::replace_one(super::super::COLLECTION_USERS, &self.id, self).await
 	}
 
-	fn delete(&self)  -> Result<()> {
-		database::get_database().delete_one(database::COLLECTION_USERS, &self.id)
+	async fn delete(&self)  -> Result<()> {
+		super::super::delete_one(super::super::COLLECTION_USERS, &self.id).await
 	}
 }

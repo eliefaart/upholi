@@ -9,7 +9,7 @@ edition = "2018"
 upholi_lib = { path = "../lib" }
 tokio = { version = "1.0", features = ["macros"] }
 http = "0.2.1"
-serde = "1.0.106"
+serde = { version = "1.0.106", features = [ "derive" ] }
 serde_json = "1.0.64"
 base64 = "0.12.0"
 image = "0.23.4"
@@ -19,7 +19,7 @@ actix-service = "2.0.1"
 actix-multipart = "0.4.0-beta.9"
 actix-form-data = "0.6.0-beta.11"
 actix-http = "2.2.1"
-mongodb = { version = "2.0.2", default-features = false, features = [ "sync" ] }
+mongodb = { version = "2.0.2" }
 bson = "2.0.1"
 rand = "0.7.3"
 bytes = "0.5.4"
@@ -30,8 +30,9 @@ chrono = { version = "0.4.11", features = ["serde"] }
 reqwest = { version = "0.11", features = ["json"] }
 futures-util = "0.3.5"
 config = "0.10.1"
-async-trait = "0.1.36"
+async-trait = "0.1.51"
 once_cell = "1.7.2" # required by 'azure-sdk-for-rust'
 azure_core = { git = "https://github.com/Azure/azure-sdk-for-rust", rev = "eb52988af8257c58a009d2f014ddbfd6b49ff65b" }
 azure_storage = { git = "https://github.com/Azure/azure-sdk-for-rust", rev = "eb52988af8257c58a009d2f014ddbfd6b49ff65b" }
 aes-gcm-siv = "0.10.0"
+async_once = "0.2.1"

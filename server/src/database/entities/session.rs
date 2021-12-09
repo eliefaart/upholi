@@ -1,9 +1,9 @@
 use serde::{Serialize, Deserialize};
 use chrono::prelude::*;
-use crate::database;
-use crate::database::{Database, DatabaseEntity};
+use crate::database::{DatabaseEntity};
 use upholi_lib::ids::create_unique_id;
 use crate::error::*;
+use async_trait::async_trait;
 
 /// A client session
 #[derive(Debug, Serialize, Deserialize)]
@@ -31,22 +31,27 @@ impl Session {
 	}
 }
 
+#[async_trait]
 impl DatabaseEntity for Session {
-	fn get(id: &str) -> Result<Option<Self>> {
-		database::get_database().find_one(database::COLLECTION_SESSIONS, id)
+	/// Get an existing item
+	async fn get(id: &str) -> Result<Option<Self>> {
+		super::super::find_one(super::super::COLLECTION_SESSIONS, id).await
 	}
 
-	fn insert(&self) -> Result<()> {
-		database::get_database().insert_one(database::COLLECTION_SESSIONS, &self)?;
+	/// Insert item as new record
+	async fn insert(&self) -> Result<()> {
+		super::super::insert_one(super::super::COLLECTION_SESSIONS, self).await?;
 		Ok(())
 	}
 
-	fn update(&self)  -> Result<()> {
-		database::get_database().replace_one(database::COLLECTION_SESSIONS, &self.id, self)
+	/// Store this instance in its current state
+	async fn update(&self) -> Result<()> {
+		super::super::replace_one(super::super::COLLECTION_SESSIONS, &self.id, self).await
 	}
 
-	fn delete(&self)  -> Result<()> {
-		database::get_database().delete_one(database::COLLECTION_SESSIONS, &self.id)
+	/// Delete this item from database
+	async fn delete(&self) -> Result<()> {
+		super::super::delete_one(super::super::COLLECTION_SESSIONS, &self.id).await
 	}
 }
 

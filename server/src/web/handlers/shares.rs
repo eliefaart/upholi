@@ -1,17 +1,16 @@
-use crate::entities::session::Session;
 use actix_web::{web, HttpRequest, HttpResponse, Responder};
 use upholi_lib::http::request::{UpsertShare, FindSharesFilter};
-
+use crate::database::entities::AccessControl;
+use crate::database::entities::session::Session;
+use crate::database::entities::share::Share;
+use crate::database::entities::user::User;
 use crate::database::{DatabaseEntity, DatabaseUserEntity};
 use crate::web::http::*;
-use crate::entities::AccessControl;
-use crate::entities::user::User;
-use crate::entities::share::Share;
 
 /// Get all shares
 pub async fn route_get_shares(user: User, filters: web::Query<FindSharesFilter>) -> impl Responder {
 	let filters = filters.into_inner();
-	match Share::find_shares(&user.id, filters) {
+	match Share::find_shares(&user.id, filters).await {
 		Ok(shares) => HttpResponse::Ok().json(shares),
 		Err(error) => {
 			println!("{}", error);
@@ -24,7 +23,7 @@ pub async fn route_get_shares(user: User, filters: web::Query<FindSharesFilter>)
 pub async fn route_get_share(session: Option<Session>, req: HttpRequest) -> impl Responder {
 	let share_id = req.match_info().get("share_id").unwrap();
 
-	match Share::get(share_id) {
+	match Share::get(share_id).await {
 		Ok(share_opt) => {
 			match share_opt {
 				Some(share) => {
@@ -47,7 +46,7 @@ pub async fn route_create_share(user: User, share: web::Json<UpsertShare>) -> im
 	let mut share = Share::from(share.into_inner());
 	share.user_id = user.id;
 
-	match share.insert() {
+	match share.insert().await {
 		Ok(_) => create_created_response(&share.id),
 		Err(error) => create_internal_server_error_response(Some(error))
 	}
@@ -60,7 +59,7 @@ pub async fn route_update_share(session: Session, req: HttpRequest, updated_shar
 
 	match &session.user_id {
 		Some(user_id) => {
-			match Share::get_as_user(&share_id, user_id.to_string()) {
+			match Share::get_as_user(&share_id, user_id.to_string()).await {
 				Ok(share_opt) => {
 					match share_opt {
 						Some(mut share) => {
@@ -74,7 +73,7 @@ pub async fn route_update_share(session: Session, req: HttpRequest, updated_shar
 							share.password = updated_share.password;
 							share.identifier_hash = updated_share.identifier_hash;
 
-							match share.update() {
+							match share.update().await {
 								Ok(_) => create_ok_response(),
 								Err(error) => create_internal_server_error_response(Some(error))
 							}
@@ -95,7 +94,7 @@ pub async fn route_delete_share(session: Session, req: HttpRequest) -> impl Resp
 
 	match &session.user_id {
 		Some(user_id) => {
-			match Share::get_as_user(&share_id, user_id.to_string()) {
+			match Share::get_as_user(&share_id, user_id.to_string()).await {
 				Ok(share_opt) => {
 					match share_opt {
 						Some(share) => {
@@ -103,7 +102,7 @@ pub async fn route_delete_share(session: Session, req: HttpRequest) -> impl Resp
 								return create_unauthorized_response();
 							}
 
-							match share.delete() {
+							match share.delete().await {
 								Ok(_) => create_ok_response(),
 								Err(error) => create_internal_server_error_response(Some(error))
 							}

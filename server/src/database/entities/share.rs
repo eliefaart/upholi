@@ -1,4 +1,3 @@
-use crate::entities::Session;
 use serde::{Serialize, Deserialize};
 use upholi_lib::EncryptedData;
 use upholi_lib::ShareType;
@@ -6,11 +5,11 @@ use upholi_lib::http::request::UpsertShare;
 use upholi_lib::http::request::EntityAuthorizationProof;
 use upholi_lib::http::request::FindSharesFilter;
 use upholi_lib::ids::create_unique_id;
-
-use crate::database;
+use async_trait::async_trait;
 use crate::database::*;
-use crate::error::*;
-use crate::entities::AccessControl;
+
+use super::AccessControl;
+use super::session::Session;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -25,8 +24,8 @@ pub struct Share {
 }
 
 impl Share {
-	pub fn find_shares(user_id: &str, filters: FindSharesFilter) -> Result<Vec<Self>> {
-		database::get_database().find_shares(user_id, filters)
+	pub async fn find_shares(user_id: &str, filters: FindSharesFilter) -> Result<Vec<Self>> {
+		super::super::find_shares(user_id, filters).await
 	}
 }
 
@@ -44,43 +43,37 @@ impl From<UpsertShare> for Share {
 	}
 }
 
+#[async_trait]
 impl DatabaseEntity for Share {
-	fn get(id: &str) -> Result<Option<Self>> {
-		database::get_database().find_one(database::COLLECTION_SHARES, id)
+	async fn get(id: &str) -> Result<Option<Self>> {
+		super::super::find_one(super::super::COLLECTION_SHARES, id).await
 	}
 
-	fn insert(&self) -> Result<()> {
-		if self.id.is_empty() {
-			return Err(Box::from(EntityError::IdMissing));
-		}
-
-		match Self::get(&self.id)? {
-			Some(_) => Err(Box::from(EntityError::AlreadyExists)),
-			None => {
-				database::get_database().insert_one(database::COLLECTION_SHARES, &self)?;
-				Ok(())
-			}
-		}
+	async fn insert(&self) -> Result<()> {
+		super::super::insert_one(super::super::COLLECTION_SHARES, self).await?;
+		Ok(())
 	}
 
-	fn update(&self) -> Result<()> {
-		database::get_database().replace_one(database::COLLECTION_SHARES, &self.id, self)
+	async fn update(&self) -> Result<()> {
+		super::super::replace_one(super::super::COLLECTION_SHARES, &self.id, self).await
 	}
 
-	fn delete(&self) -> Result<()> {
-		database::get_database().delete_one(database::COLLECTION_SHARES, &self.id)
+	async fn delete(&self) -> Result<()> {
+		super::super::delete_one(super::super::COLLECTION_SHARES, &self.id).await
 	}
 }
 
+#[async_trait]
 impl DatabaseEntityBatch for Share {
-	fn get_with_ids(ids: &[&str]) -> Result<Vec<Self>> {
-		database::get_database().find_many(database::COLLECTION_SHARES, None, Some(ids), None)
+	async fn get_with_ids(ids: &[&str]) -> Result<Vec<Self>> {
+		super::super::find_many(super::super::COLLECTION_SHARES, None, Some(ids), None).await
 	}
 }
 
+#[async_trait]
 impl DatabaseUserEntity for Share {
-	fn get_as_user(id: &str, user_id: String) -> Result<Option<Self>>{
-		match Self::get(id)? {
+	async fn get_as_user(id: &str, user_id: String) -> Result<Option<Self>>{
+		match Self::get(id).await? {
 			Some(share) => {
 				if share.user_id != user_id {
 					Err(Box::from(format!("User {} does not have access to share {}", user_id, share.id)))
@@ -92,12 +85,12 @@ impl DatabaseUserEntity for Share {
 		}
 	}
 
-	fn get_all_as_user(user_id: String) -> Result<Vec<Self>> {
-		database::get_database().find_many(database::COLLECTION_SHARES, Some(&user_id), None, None)
+	async fn get_all_as_user(user_id: String) -> Result<Vec<Self>> {
+		super::super::find_many(super::super::COLLECTION_SHARES, Some(&user_id), None, None).await
 	}
 
-	fn get_all_with_ids_as_user(ids: &[&str], user_id: String) -> Result<Vec<Self>> {
-		database::get_database().find_many(database::COLLECTION_SHARES, Some(&user_id), Some(ids), None)
+	async fn get_all_with_ids_as_user(ids: &[&str], user_id: String) -> Result<Vec<Self>> {
+		super::super::find_many(super::super::COLLECTION_SHARES, Some(&user_id), Some(ids), None).await
 	}
 }
 

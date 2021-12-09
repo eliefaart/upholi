@@ -1,6 +1,5 @@
-use crate::entities::user::User;
 use lazy_static::lazy_static;
-use crate::error::Result;
+use crate::{error::Result, database::entities::user::User};
 
 mod local_disk;
 mod azure_storage;
