@@ -1,8 +1,8 @@
-use serde::{Deserialize,Serialize};
-use upholi_lib::http::response;
-use upholi_lib::result::Result;
 use crate::encryption::symmetric::decrypt_data_base64;
 use crate::exif::Exif;
+use serde::{Deserialize, Serialize};
+use upholi_lib::http::response;
+use upholi_lib::result::Result;
 
 use super::Entity;
 
@@ -14,7 +14,7 @@ pub struct PhotoData {
 	pub width: u32,
 	pub height: u32,
 	pub content_type: String,
-	pub exif: Exif
+	pub exif: Exif,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -25,14 +25,14 @@ pub struct JsPhoto {
 	pub width: u32,
 	pub height: u32,
 	pub content_type: String,
-	pub exif: Exif
+	pub exif: Exif,
 }
 
 pub struct Photo {
 	key: Vec<u8>,
 	encrypted: response::Photo,
 	data: PhotoData,
-	js_value: JsPhoto
+	js_value: JsPhoto,
 }
 
 impl Entity for Photo {
@@ -50,14 +50,14 @@ impl Entity for Photo {
 			width: source.width as u32,
 			height: source.height as u32,
 			content_type: photo_data.content_type.clone(),
-			exif: photo_data.exif.clone()
+			exif: photo_data.exif.clone(),
 		};
 
 		Ok(Self {
 			key: key.clone().to_vec(),
 			encrypted: source,
 			data: photo_data,
-			js_value
+			js_value,
 		})
 	}
 

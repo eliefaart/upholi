@@ -1,16 +1,17 @@
 use upholi_lib::http::request::FindSharesFilter;
-use upholi_lib::result::Result;
 use upholi_lib::http::*;
+use upholi_lib::result::Result;
 
 use crate::entities::EntityWithProof;
 
-pub async fn get_photos_using_key_access_proof(base_url: &str, entities: &Vec<EntityWithProof>) -> Result<Vec<response::PhotoMinimal>> {
+pub async fn get_photos_using_key_access_proof(
+	base_url: &str,
+	entities: &Vec<EntityWithProof>,
+) -> Result<Vec<response::PhotoMinimal>> {
 	let url = format!("{}/api/photos/find", &base_url);
 	let client = reqwest::Client::new();
 
-	let response = client.post(&url)
-		.json(&entities)
-		.send().await?;
+	let response = client.post(&url).json(&entities).send().await?;
 
 	let photos = response.json().await?;
 	Ok(photos)

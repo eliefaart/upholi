@@ -1,12 +1,12 @@
 use wasm_bindgen::prelude::*;
 
 mod client;
-mod entities;
-mod images;
-mod exif;
 mod encryption;
-mod multipart;
+mod entities;
+mod exif;
 mod hashing;
+mod images;
+mod multipart;
 
 #[wasm_bindgen]
 extern "C" {

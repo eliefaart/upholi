@@ -4,14 +4,14 @@ mod aes128;
 
 pub struct EncryptionResult {
 	pub nonce: String,
-	pub bytes: Vec<u8>
+	pub bytes: Vec<u8>,
 }
 
 impl From<EncryptedData> for EncryptionResult {
 	fn from(source: EncryptedData) -> Self {
 		Self {
 			nonce: source.nonce.clone(),
-			bytes: base64::decode_config(&source.base64, base64::STANDARD).unwrap_or_default()
+			bytes: base64::decode_config(&source.base64, base64::STANDARD).unwrap_or_default(),
 		}
 	}
 }
@@ -21,19 +21,19 @@ impl From<EncryptionResult> for EncryptedData {
 		Self {
 			nonce: source.nonce.clone(),
 			base64: base64::encode_config(&source.bytes, base64::STANDARD),
-			format_version: 1
+			format_version: 1,
 		}
 	}
 }
 
 fn generate_string(bytes: usize) -> Vec<u8> {
 	// TODO: proper random bytes generation
-	 uuid::Uuid::new_v4().to_simple().to_string()[0..bytes].as_bytes().to_vec()
+	uuid::Uuid::new_v4().to_simple().to_string()[0..bytes].as_bytes().to_vec()
 }
 
 pub mod symmetric {
+	use super::{aes128, EncryptionResult};
 	use upholi_lib::{result::Result, EncryptedData};
-	use super::{EncryptionResult, aes128};
 
 	pub fn generate_key() -> Vec<u8> {
 		aes128::generate_key()
@@ -59,7 +59,7 @@ pub mod symmetric {
 
 		Ok(EncryptionResult {
 			nonce: String::from_utf8(nonce.into())?,
-			bytes: encrypted
+			bytes: encrypted,
 		})
 	}
 

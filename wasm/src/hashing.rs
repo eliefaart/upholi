@@ -1,6 +1,6 @@
-use upholi_lib::result::Result;
 use core::fmt::Write;
-use sha2::{Sha256, Digest};
+use sha2::{Digest, Sha256};
+use upholi_lib::result::Result;
 
 pub fn compute_sha256_hash(bytes: &[u8]) -> Result<String> {
 	let mut hasher = Sha256::new();

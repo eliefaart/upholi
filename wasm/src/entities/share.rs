@@ -1,8 +1,8 @@
-use serde::{Deserialize,Serialize};
-use upholi_lib::ShareType;
+use crate::{encryption::symmetric::decrypt_data_base64, hashing};
+use serde::{Deserialize, Serialize};
 use upholi_lib::http::response;
 use upholi_lib::result::Result;
-use crate::{encryption::symmetric::decrypt_data_base64, hashing};
+use upholi_lib::ShareType;
 
 use super::{Entity, EntityKey};
 
@@ -10,13 +10,13 @@ pub struct Share {
 	key: Vec<u8>,
 	encrypted: response::Share,
 	data: ShareData,
-	js_value: JsShare
+	js_value: JsShare,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub enum ShareData {
-	Album(AlbumShareData)
+	Album(AlbumShareData),
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -24,7 +24,7 @@ pub enum ShareData {
 pub struct AlbumShareData {
 	pub album_id: String,
 	pub album_key: Vec<u8>,
-	pub photos: Vec<EntityKey>
+	pub photos: Vec<EntityKey>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -35,27 +35,27 @@ pub struct JsShare {
 	pub type_: ShareType,
 	pub password: String,
 	/// Fine, while all shares represent albums.
-	pub data: JsShareData
+	pub data: JsShareData,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub enum JsShareData {
-	Album(JsAlbumShareData)
+	Album(JsAlbumShareData),
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct JsAlbumShareData {
-	pub album_id: String
+	pub album_id: String,
 }
 
 impl From<&ShareData> for JsShareData {
 	fn from(data: &ShareData) -> Self {
 		match data {
 			ShareData::Album(album_data) => JsShareData::Album(JsAlbumShareData {
-				album_id: album_data.album_id.clone()
-			})
+				album_id: album_data.album_id.clone(),
+			}),
 		}
 	}
 }
@@ -88,14 +88,14 @@ impl Entity for Share {
 			type_: source.type_.clone(),
 			identifier_hash: source.identifier_hash.clone(),
 			password: String::from_utf8(password)?,
-			data: (&data).into()
+			data: (&data).into(),
 		};
 
 		Ok(Self {
 			key: key.to_vec(),
 			encrypted: source,
 			data,
-			js_value
+			js_value,
 		})
 	}
 

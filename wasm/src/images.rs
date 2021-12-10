@@ -1,7 +1,6 @@
-use image::{GenericImageView, DynamicImage, ImageFormat};
-use upholi_lib::result::Result;
 use crate::hashing;
-
+use image::{DynamicImage, GenericImageView, ImageFormat};
+use upholi_lib::result::Result;
 
 const DIMENSIONS_THUMB: u32 = 350;
 const DIMENSIONS_PREVIEW: u32 = 1600;
@@ -12,11 +11,10 @@ pub struct Image {
 	pub height: u32,
 	pub bytes_original: Vec<u8>,
 	pub bytes_thumbnail: Vec<u8>,
-	pub bytes_preview: Vec<u8>
+	pub bytes_preview: Vec<u8>,
 }
 
 impl Image {
-
 	/// Process image from buffer
 	pub fn from_buffer(bytes: &[u8], exif_orientation: u8) -> Result<Self> {
 		let image = image::load_from_memory(&bytes[0..])?;
@@ -26,13 +24,13 @@ impl Image {
 		let mut image_preview = {
 			match Self::resize_image(&image, DIMENSIONS_PREVIEW) {
 				Some(image) => image,
-				None => Self::clone_image(&image)?
+				None => Self::clone_image(&image)?,
 			}
 		};
 		let mut image_thumbnail = {
 			match Self::resize_image(&image_preview, DIMENSIONS_THUMB) {
 				Some(image) => image,
-				None => Self::clone_image(&image_preview)?
+				None => Self::clone_image(&image_preview)?,
 			}
 		};
 
@@ -55,7 +53,7 @@ impl Image {
 			height,
 			bytes_original: bytes.to_vec(),
 			bytes_thumbnail: Self::get_image_bytes(&image_thumbnail),
-			bytes_preview: Self::get_image_bytes(&image_preview)
+			bytes_preview: Self::get_image_bytes(&image_preview),
 		})
 	}
 
@@ -98,7 +96,7 @@ impl Image {
 		} else if cur_exif_orientation == 8 {
 			Some(image.rotate270())
 		} else {
-			None	// Orientation is 1 (the desired orientation), or an invalid value
+			None // Orientation is 1 (the desired orientation), or an invalid value
 		}
 	}
 
@@ -109,9 +107,9 @@ impl Image {
 
 	/// Convert image bytes to image object
 	fn get_image_from_bytes(image_bytes: &[u8]) -> Result<DynamicImage> {
-		match image::load_from_memory(&image_bytes[0..]){
+		match image::load_from_memory(&image_bytes[0..]) {
 			Ok(image) => Ok(image),
-			Err(error) => Err(Box::from(error))
+			Err(error) => Err(Box::from(error)),
 		}
 	}
 
@@ -121,7 +119,7 @@ impl Image {
 		let write_result = image.write_to(&mut buffer, ImageFormat::Jpeg);
 		match write_result {
 			Ok(_x) => (),
-			Err(e) => println!("{}", e)
+			Err(e) => println!("{}", e),
 		}
 		buffer
 	}
@@ -130,7 +128,7 @@ impl Image {
 /*
 	A PNG file in bytes, to use for test cases later.
 	let minipng = [137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1,
-               0, 0, 0, 1, 8, 0, 0, 0, 0, 58, 126, 155, 85, 0, 0, 0, 10, 73, 68, 65, 84,
-               8, 215, 99, 248, 15, 0, 1, 1, 1, 0, 27, 182, 238, 86, 0, 0, 0, 0, 73, 69,
-               78, 68, 174, 66, 96, 130];
+			   0, 0, 0, 1, 8, 0, 0, 0, 0, 58, 126, 155, 85, 0, 0, 0, 10, 73, 68, 65, 84,
+			   8, 215, 99, 248, 15, 0, 1, 1, 1, 0, 27, 182, 238, 86, 0, 0, 0, 0, 73, 69,
+			   78, 68, 174, 66, 96, 130];
 */

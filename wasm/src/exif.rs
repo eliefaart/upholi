@@ -1,6 +1,6 @@
-use serde::{Serialize, Deserialize};
 use chrono::prelude::*;
-use rexif::{TagValue, ExifTag};
+use rexif::{ExifTag, TagValue};
+use serde::{Deserialize, Serialize};
 use upholi_lib::result::Result;
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
@@ -16,7 +16,7 @@ pub struct Exif {
 	pub orientation: Option<i32>,
 	pub date_taken: Option<chrono::DateTime<Utc>>,
 	pub gps_latitude: Option<f32>,
-	pub gps_longitude: Option<f32>
+	pub gps_longitude: Option<f32>,
 }
 
 impl Exif {
@@ -25,21 +25,18 @@ impl Exif {
 		let result = rexif::parse_buffer(photo_bytes);
 		match result {
 			Ok(exif) => {
-				let closure_get_exif_data_as_string = |tag: ExifTag| -> Option<String> {
-					Self::get_exif_data(&exif, tag, Self::convert_exif_to_string)
-				};
+				let closure_get_exif_data_as_string =
+					|tag: ExifTag| -> Option<String> { Self::get_exif_data(&exif, tag, Self::convert_exif_to_string) };
 
-				let closure_get_exif_data_as_i32 = |tag: ExifTag| -> Option<i32> {
-					Self::get_exif_data(&exif, tag, Self::convert_exif_to_i32)
-				};
+				let closure_get_exif_data_as_i32 =
+					|tag: ExifTag| -> Option<i32> { Self::get_exif_data(&exif, tag, Self::convert_exif_to_i32) };
 
 				let closure_get_exif_data_as_datetime = |tag: ExifTag| -> Option<chrono::DateTime<Utc>> {
 					Self::get_exif_data(&exif, tag, Self::convert_exif_to_datetime)
 				};
 
-				let closure_get_exif_data_as_coord = |tag: ExifTag| -> Option<f32> {
-					Self::get_exif_data(&exif, tag, Self::convert_exif_to_gps_coord)
-				};
+				let closure_get_exif_data_as_coord =
+					|tag: ExifTag| -> Option<f32> { Self::get_exif_data(&exif, tag, Self::convert_exif_to_gps_coord) };
 
 				// Date taken can be in various EXIF fields.
 				let date_taken = closure_get_exif_data_as_datetime(ExifTag::DateTimeOriginal)
@@ -57,9 +54,9 @@ impl Exif {
 					orientation: closure_get_exif_data_as_i32(ExifTag::Orientation),
 					date_taken,
 					gps_latitude: closure_get_exif_data_as_coord(ExifTag::GPSLatitude),
-					gps_longitude: closure_get_exif_data_as_coord(ExifTag::GPSLongitude)
+					gps_longitude: closure_get_exif_data_as_coord(ExifTag::GPSLongitude),
 				})
-			},
+			}
 			Err(error) => {
 				match error {
 					// Some errors are fine, we just return default Exif for these cases,
@@ -67,7 +64,7 @@ impl Exif {
 					rexif::ExifError::JpegWithoutExif(_) => Ok(Self::default()),
 					rexif::ExifError::FileTypeUnknown => Ok(Self::default()),
 					rexif::ExifError::UnsupportedNamespace => Ok(Self::default()),
-					_ => Err(Box::from(format!("{:?}", error)))
+					_ => Err(Box::from(format!("{:?}", error))),
 				}
 			}
 		}
@@ -117,8 +114,8 @@ impl Exif {
 				} else {
 					None
 				}
-			},
-			_ => None
+			}
+			_ => None,
 		}
 	}
 
@@ -137,8 +134,8 @@ impl Exif {
 					let coord = degrees + (minutes / 60f32) + (seconds / 3600f32);
 					Some(coord)
 				}
-			},
-			_ => None
+			}
+			_ => None,
 		}
 	}
 

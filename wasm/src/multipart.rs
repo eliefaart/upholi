@@ -1,29 +1,27 @@
 struct MultipartPart {
 	name: String,
-	bytes: Vec<u8>
+	bytes: Vec<u8>,
 }
 
 pub struct Multipart {
 	pub body: Vec<u8>,
 	pub content_length: usize,
-	pub content_type: String
+	pub content_type: String,
 }
 
 pub struct MultipartBuilder {
-	parts: Vec<MultipartPart>
+	parts: Vec<MultipartPart>,
 }
 
 impl MultipartBuilder {
 	pub fn new() -> Self {
-		Self {
-			parts: vec!{}
-		}
+		Self { parts: vec![] }
 	}
 
 	pub fn add_bytes(mut self, name: &str, bytes: &[u8]) -> Self {
 		let part = MultipartPart {
 			name: name.into(),
-			bytes: bytes.into()
+			bytes: bytes.into(),
 		};
 		self.parts.push(part);
 		self
@@ -36,7 +34,7 @@ impl MultipartBuilder {
 		let mut body = Vec::new();
 		let newline = b"\r\n";
 		let body_boundary = br"--MULTIPARTBINARY";
-		let end_boundary =  br"--MULTIPARTBINARY--";
+		let end_boundary = br"--MULTIPARTBINARY--";
 
 		for part in self.parts {
 			let disp = format!("Content-Disposition: form-data; name=\"{}\"", part.name);
@@ -61,7 +59,7 @@ impl MultipartBuilder {
 		Multipart {
 			body,
 			content_length,
-			content_type: "multipart/form-data; boundary=MULTIPARTBINARY".to_string()
+			content_type: "multipart/form-data; boundary=MULTIPARTBINARY".to_string(),
 		}
 	}
 }

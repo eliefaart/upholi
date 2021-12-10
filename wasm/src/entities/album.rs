@@ -1,10 +1,10 @@
-use serde::{Deserialize,Serialize};
-use upholi_lib::http::request::CreateAlbum;
-use upholi_lib::http::response;
-use upholi_lib::result::Result;
 use crate::encryption::symmetric::decrypt_data_base64;
 use crate::entities::EntityKey;
 use crate::hashing::compute_sha256_hash;
+use serde::{Deserialize, Serialize};
+use upholi_lib::http::request::CreateAlbum;
+use upholi_lib::http::response;
+use upholi_lib::result::Result;
 
 use super::photo::Photo;
 use super::share::{AlbumShareData, ShareData};
@@ -46,14 +46,14 @@ pub struct JsAlbumPhoto {
 	pub id: String,
 	pub width: u32,
 	pub height: u32,
-	pub key: Option<String>
+	pub key: Option<String>,
 }
 
 pub struct Album {
 	key: Vec<u8>,
 	encrypted: response::Album,
 	data: AlbumData,
-	js_value: JsAlbum
+	js_value: JsAlbum,
 }
 
 impl Album {
@@ -65,7 +65,7 @@ impl Album {
 		Ok(CreateAlbum {
 			data: data_encrypt_result.into(),
 			key: self.encrypted.key.clone(),
-			key_hash: compute_sha256_hash(&self.key)?
+			key_hash: compute_sha256_hash(&self.key)?,
 		})
 	}
 }
@@ -91,7 +91,7 @@ impl Entity for Album {
 			key: key.to_vec(),
 			encrypted: source,
 			data: album_data,
-			js_value
+			js_value,
 		})
 	}
 
@@ -127,13 +127,13 @@ impl Shareable for Album {
 
 		// How is this function going to figure out the photo's keys?
 		// It has the photo IDs
-		let mut photos_info = vec!{};
+		let mut photos_info = vec![];
 		for photo_id in &self.data.photos {
 			let photo = photos.iter().find(|p| p.get_id() == photo_id);
 			if let Some(photo) = photo {
 				let entity = EntityKey {
 					id: photo_id.clone(),
-					key: base64::encode_config(photo.get_key(), base64::STANDARD)
+					key: base64::encode_config(photo.get_key(), base64::STANDARD),
 				};
 				photos_info.push(entity);
 			}
@@ -142,7 +142,7 @@ impl Shareable for Album {
 		Ok(ShareData::Album(AlbumShareData {
 			album_id: self.get_id().into(),
 			album_key: album_key,
-			photos: photos_info
+			photos: photos_info,
 		}))
 	}
 }

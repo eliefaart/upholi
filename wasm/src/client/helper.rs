@@ -1,24 +1,24 @@
 use std::collections::HashMap;
 
-use reqwest::StatusCode;
-use upholi_lib::http::request::{FindSharesFilter, Login, Register};
-use upholi_lib::http::response::{CreateAlbum, UploadPhoto, UserInfo};
-use upholi_lib::{PhotoVariant, ShareType, http::*};
-use upholi_lib::result::Result;
 use crate::client::http;
 use crate::encryption;
-use crate::entities::{Entity, EntityWithProof, Shareable};
 use crate::entities::album::{self, Album, JsAlbumFull, JsAlbumPhoto};
 use crate::entities::photo::{Photo, PhotoData};
 use crate::entities::share::{Share, ShareData};
+use crate::entities::{Entity, EntityWithProof, Shareable};
+use crate::exif::Exif;
 use crate::hashing::compute_sha256_hash;
 use crate::images::Image;
-use crate::exif::Exif;
+use reqwest::StatusCode;
+use upholi_lib::http::request::{FindSharesFilter, Login, Register};
+use upholi_lib::http::response::{CreateAlbum, UploadPhoto, UserInfo};
+use upholi_lib::result::Result;
+use upholi_lib::{http::*, PhotoVariant, ShareType};
 
 /// Wrapper struct containing info about bytes to upload.
 pub struct PhotoUploadInfo {
 	image: Image,
-	exif: Exif
+	exif: Exif,
 }
 
 impl PhotoUploadInfo {
@@ -28,10 +28,7 @@ impl PhotoUploadInfo {
 		let exif_orientation = exif.orientation.unwrap_or(1);
 
 		let image = Image::from_buffer(&bytes, exif_orientation as u8)?;
-		Ok(Self {
-			image,
-			exif
-		})
+		Ok(Self { image, exif })
 	}
 
 	pub fn bytes_original(&self) -> &[u8] {
@@ -49,12 +46,10 @@ impl PhotoUploadInfo {
 
 /// Helper functions for UpholiClient.
 /// This object is not exposed outside the wasm.
-pub struct UpholiClientHelper { }
+pub struct UpholiClientHelper {}
 
 impl UpholiClientHelper {
-
 	pub async fn register(base_url: &str, username: &str, password: &str) -> Result<()> {
-
 		// This will be the master encryption key of the user.
 		// We encrypt it using a key derived from the user's password,
 		// and the encrypted master key is stored server-side.
@@ -65,14 +60,12 @@ impl UpholiClientHelper {
 		let body = Register {
 			username: username.into(),
 			password: password.into(),
-			key: key_encrypted.into()
+			key: key_encrypted.into(),
 		};
 
 		let url = format!("{}/api/user/register", &base_url).to_owned();
 		let client = reqwest::Client::new();
-		client.post(&url)
-			.json(&body)
-			.send().await?;
+		client.post(&url).json(&body).send().await?;
 
 		Ok(())
 	}
@@ -86,14 +79,12 @@ impl UpholiClientHelper {
 
 		let body = Login {
 			username: username.into(),
-			password: password.into()
+			password: password.into(),
 		};
 
 		let url = format!("{}/api/user/login", &base_url).to_owned();
 		let client = reqwest::Client::new();
-		let response = client.post(&url)
-			.json(&body)
-			.send().await?;
+		let response = client.post(&url).json(&body).send().await?;
 		let user: UserInfo = response.json().await?;
 
 		let password_derived_key = encryption::symmetric::derive_key_from_string(&password, &username)?;
@@ -105,11 +96,8 @@ impl UpholiClientHelper {
 	pub async fn get_user_info(base_url: &str) -> Result<UserInfo> {
 		let url = format!("{}/api/user/info", &base_url).to_owned();
 		let client = reqwest::Client::new();
-		let response = client
-			.get(&url)
-			.send().await?;
-		let user_info: UserInfo = response
-			.json().await?;
+		let response = client.get(&url).send().await?;
+		let user_info: UserInfo = response.json().await?;
 
 		Ok(user_info)
 	}
@@ -121,8 +109,7 @@ impl UpholiClientHelper {
 		if exists {
 			// No error, just skipping upload.
 			Ok(String::new())
-		}
-		else {
+		} else {
 			// Decrypt photo key
 			let photo_key = crate::encryption::symmetric::decrypt_data_base64(private_key, &request_data.key)?;
 
@@ -147,10 +134,13 @@ impl UpholiClientHelper {
 			// Send request
 			let url = format!("{}/api/photo", &base_url).to_owned();
 			let client = reqwest::Client::new();
-			let response = client.post(&url).body(multipart.body)
+			let response = client
+				.post(&url)
+				.body(multipart.body)
 				.header("Content-Type", multipart.content_type)
 				.header("Content-Length", multipart.content_length)
-				.send().await?;
+				.send()
+				.await?;
 			let respone: UploadPhoto = response.json().await?;
 
 			Ok(respone.id)
@@ -167,7 +157,7 @@ impl UpholiClientHelper {
 		match response.status() {
 			StatusCode::NO_CONTENT => Ok(true),
 			StatusCode::NOT_FOUND => Ok(false),
-			status_code => Err(Box::from(format!("Unexpected response code: {}", status_code)))
+			status_code => Err(Box::from(format!("Unexpected response code: {}", status_code))),
 		}
 	}
 
@@ -183,7 +173,7 @@ impl UpholiClientHelper {
 		let photo = UpholiClientHelper::get_photo_encrypted(base_url, id, &key).await?;
 		let photo = match key {
 			Some(photo_key) => Photo::from_encrypted(photo, &base64::decode_config(photo_key, base64::STANDARD)?)?,
-			None => Photo::from_encrypted_with_owner_key(photo, private_key)?
+			None => Photo::from_encrypted_with_owner_key(photo, private_key)?,
 		};
 		Ok(photo)
 	}
@@ -223,7 +213,13 @@ impl UpholiClientHelper {
 		Ok(())
 	}
 
-	pub async fn get_photo_base64(base_url: &str, private_key: &[u8], id: &str, photo_variant: PhotoVariant, key: &Option<String>) -> Result<String> {
+	pub async fn get_photo_base64(
+		base_url: &str,
+		private_key: &[u8],
+		id: &str,
+		photo_variant: PhotoVariant,
+		key: &Option<String>,
+	) -> Result<String> {
 		let mut url = format!("{}/api/photo/{}/{}", base_url, id, photo_variant.to_string());
 
 		if let Some(key) = key {
@@ -239,23 +235,28 @@ impl UpholiClientHelper {
 		let photo = Self::get_photo_encrypted(base_url, id, key).await?;
 		let photo_key = match key {
 			Some(photo_key) => base64::decode_config(&photo_key, base64::STANDARD)?,
-			None => crate::encryption::symmetric::decrypt_data_base64(private_key, &photo.key)?
+			None => crate::encryption::symmetric::decrypt_data_base64(private_key, &photo.key)?,
 		};
 		let nonce = match photo_variant {
 			PhotoVariant::Thumbnail => photo.thumbnail_nonce.as_bytes(),
 			PhotoVariant::Preview => photo.preview_nonce.as_bytes(),
-			PhotoVariant::Original => photo.original_nonce.as_bytes()
+			PhotoVariant::Original => photo.original_nonce.as_bytes(),
 		};
 		let bytes = crate::encryption::symmetric::decrypt_slice(&photo_key, nonce, &encrypted_bytes)?;
 
 		Ok(base64::encode_config(&bytes, base64::STANDARD))
 	}
 
-	pub async fn get_photo_image_src(base_url: &str, private_key: &[u8], id: &str, photo_variant: PhotoVariant, key: &Option<String>) -> Result<String> {
+	pub async fn get_photo_image_src(
+		base_url: &str,
+		private_key: &[u8],
+		id: &str,
+		photo_variant: PhotoVariant,
+		key: &Option<String>,
+	) -> Result<String> {
 		if id == "" {
 			Ok(String::new())
-		}
-		else {
+		} else {
 			let photo = Self::get_photo(base_url, private_key, id, key).await?;
 			let photo_data = photo.get_data();
 			let base64 = Self::get_photo_base64(base_url, private_key, id, photo_variant, &key).await?;
@@ -290,7 +291,7 @@ impl UpholiClientHelper {
 				date_taken: photo.exif.date_taken,
 				gps_latitude: photo.exif.gps_latitude,
 				gps_longitude: photo.exif.gps_longitude,
-			}
+			},
 		};
 		let data_json = serde_json::to_string(&data)?;
 		let data_bytes = data_json.as_bytes();
@@ -305,15 +306,13 @@ impl UpholiClientHelper {
 			key_hash: photo_key_hash,
 			thumbnail_nonce: String::new(),
 			preview_nonce: String::new(),
-			original_nonce: String::new()
+			original_nonce: String::new(),
 		})
 	}
 
 	async fn get_album(base_url: &str, private_key: &[u8], id: &str) -> Result<album::Album> {
 		let albums = Self::get_albums(base_url, private_key).await?;
-		let album = albums.into_iter()
-			.find(|album| album.get_id() == id)
-			.ok_or("Album not found")?;
+		let album = albums.into_iter().find(|album| album.get_id() == id).ok_or("Album not found")?;
 
 		Ok(album)
 	}
@@ -334,14 +333,14 @@ impl UpholiClientHelper {
 		let album = album.as_js_value();
 		let photos = Self::get_photos(base_url).await?;
 
-		let mut photos_in_album: Vec<JsAlbumPhoto> = vec!{};
+		let mut photos_in_album: Vec<JsAlbumPhoto> = vec![];
 		for photo in &photos {
 			if album.photos.contains(&photo.id) {
 				photos_in_album.push(JsAlbumPhoto {
 					id: photo.id.clone(),
 					width: photo.width,
 					height: photo.height,
-					key: None
+					key: None,
 				});
 			}
 		}
@@ -353,17 +352,19 @@ impl UpholiClientHelper {
 			photos: photos_in_album,
 			thumbnail_photo: match album.thumbnail_photo_id.clone() {
 				Some(thumbnail_photo_id) => {
-					let photo = photos.into_iter().find(|photo| photo.id == thumbnail_photo_id)
+					let photo = photos
+						.into_iter()
+						.find(|photo| photo.id == thumbnail_photo_id)
 						.ok_or(format!("Photo not found for thumbnail of album {}", &album.id))?;
 					Some(JsAlbumPhoto {
 						id: photo.id,
 						width: photo.width,
 						height: photo.height,
-						key: None
+						key: None,
 					})
-				},
-				None => None
-			}
+				}
+				None => None,
+			},
 		};
 
 		Ok(album)
@@ -371,7 +372,7 @@ impl UpholiClientHelper {
 
 	pub async fn get_albums(base_url: &str, private_key: &[u8]) -> Result<Vec<album::Album>> {
 		let encrypted_albums = http::get_albums(base_url).await?;
-		let mut albums: Vec<album::Album> = vec!{};
+		let mut albums: Vec<album::Album> = vec![];
 
 		for album in encrypted_albums {
 			let album = album::Album::from_encrypted_with_owner_key(album, private_key)?;
@@ -390,9 +391,9 @@ impl UpholiClientHelper {
 
 		let data = album::AlbumData {
 			title: title.into(),
-			tags: vec!{},
+			tags: vec![],
 			photos: initial_photo_ids,
-			thumbnail_photo_id: None
+			thumbnail_photo_id: None,
 		};
 		let data_json = serde_json::to_string(&data)?;
 		let data_bytes = data_json.as_bytes();
@@ -401,13 +402,11 @@ impl UpholiClientHelper {
 		let body = request::CreateAlbum {
 			data: data_encrypt_result.into(),
 			key: album_key_encrypt_result.into(),
-			key_hash: album_key_hash
+			key_hash: album_key_hash,
 		};
 
 		let client = reqwest::Client::new();
-		let response = client.post(&url)
-			.json(&body)
-			.send().await?;
+		let response = client.post(&url).json(&body).send().await?;
 		let response_body: CreateAlbum = response.json().await?;
 
 		Ok(response_body.id)
@@ -475,7 +474,7 @@ impl UpholiClientHelper {
 		let existing_share_for_album = Self::find_share(base_url, private_key, &type_, id).await?;
 		let url = match &existing_share_for_album {
 			Some(share) => format!("{}/api/share/{}", &base_url, share.get_id()).to_owned(),
-			None => format!("{}/api/share", &base_url).to_owned()
+			None => format!("{}/api/share", &base_url).to_owned(),
 		};
 
 		let salt = "todo";
@@ -484,7 +483,7 @@ impl UpholiClientHelper {
 
 		// TODO: Don't get every single photo, only need the ones included in album
 		let photos = Self::get_photos(base_url).await?;
-		let mut all_photos: Vec<Photo> = vec!{};
+		let mut all_photos: Vec<Photo> = vec![];
 		for photo in photos {
 			let photo = Self::get_photo(base_url, private_key, &photo.id, &None).await?;
 			all_photos.push(photo);
@@ -507,22 +506,19 @@ impl UpholiClientHelper {
 			type_,
 			password: password_encrypt_result.into(),
 			data: data_encrypt_result.into(),
-			key: share_key_encrypt_result.into()
+			key: share_key_encrypt_result.into(),
 		};
 
 		let client = reqwest::Client::new();
 		let request = match existing_share_for_album.is_some() {
 			true => client.put(&url),
-			false => client.post(&url)
+			false => client.post(&url),
 		};
-		let response = request
-			.json(&body)
-			.send().await?;
+		let response = request.json(&body).send().await?;
 
 		if let Some(existing_share) = existing_share_for_album {
 			Ok(existing_share.get_id().into())
-		}
-		else {
+		} else {
 			let response_body: response::CreateShare = response.json().await?;
 			Ok(response_body.id)
 		}
@@ -579,14 +575,14 @@ impl UpholiClientHelper {
 				let album = Self::get_album_using_key_access_proof(base_url, &share_data.album_id, &share_data.album_key).await?;
 				let album_data = album.get_data();
 
-				let mut photos_proof = vec!{};
+				let mut photos_proof = vec![];
 				let mut photo_keys = HashMap::new();
 
 				for photo in &share_data.photos {
 					let photo_key = base64::decode_config(&photo.key, base64::STANDARD)?;
 					photos_proof.push(EntityWithProof {
 						id: photo.id.clone(),
-						proof: compute_sha256_hash(&photo_key)?
+						proof: compute_sha256_hash(&photo_key)?,
 					});
 					photo_keys.insert(&photo.id, photo_key);
 				}
@@ -600,14 +596,17 @@ impl UpholiClientHelper {
 						height: photo.height,
 						key: match photo_keys.get(&photo.id) {
 							Some(bytes) => Some(base64::encode_config(bytes, base64::STANDARD)),
-							None => None
-						}
+							None => None,
+						},
 					});
 				}
 
 				let thumbnail_photo = match album_data.thumbnail_photo_id.clone() {
 					Some(thumbnail_photo_id) => {
-						let photo = photos.iter().cloned().find(|photo| photo.id == thumbnail_photo_id)
+						let photo = photos
+							.iter()
+							.cloned()
+							.find(|photo| photo.id == thumbnail_photo_id)
 							.ok_or(format!("Photo not found for thumbnail of album {}", album.get_id()))?;
 						Some(JsAlbumPhoto {
 							id: photo.id.clone(),
@@ -615,11 +614,11 @@ impl UpholiClientHelper {
 							height: photo.height,
 							key: match photo_keys.get(&photo.id) {
 								Some(bytes) => Some(base64::encode_config(bytes, base64::STANDARD)),
-								None => None
-							}
+								None => None,
+							},
 						})
-					},
-					None => None
+					}
+					None => None,
 				};
 
 				let album = JsAlbumFull {
@@ -627,7 +626,7 @@ impl UpholiClientHelper {
 					title: album_data.title.clone(),
 					tags: album_data.tags.clone(),
 					photos: js_photos,
-					thumbnail_photo
+					thumbnail_photo,
 				};
 
 				Ok(album)
@@ -638,9 +637,14 @@ impl UpholiClientHelper {
 	/// Find a share based on its identifier string
 	pub async fn find_share(base_url: &str, private_key: &[u8], share_type: &ShareType, id: &str) -> Result<Option<Share>> {
 		let identifier_hash = Share::get_identifier_hash(&share_type, id)?;
-		let shares = Self::get_shares(base_url, private_key, Some(FindSharesFilter {
-			identifier_hash: Some(identifier_hash)
-		})).await?;
+		let shares = Self::get_shares(
+			base_url,
+			private_key,
+			Some(FindSharesFilter {
+				identifier_hash: Some(identifier_hash),
+			}),
+		)
+		.await?;
 		Ok(shares.into_iter().nth(0))
 	}
 
@@ -649,9 +653,7 @@ impl UpholiClientHelper {
 
 		let url = format!("{}/api/album/{}", base_url, id).to_owned();
 		let client = reqwest::Client::new();
-		client.put(&url)
-			.json(&request_body)
-			.send().await?;
+		client.put(&url).json(&request_body).send().await?;
 
 		// Refresh album share if there is one
 		let album_share = Self::find_share(base_url, private_key, &ShareType::Album, id).await?;
