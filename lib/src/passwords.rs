@@ -1,5 +1,8 @@
 use crate::result::Result;
-use pbkdf2::{Params, Pbkdf2, password_hash::{Ident, PasswordHash, PasswordHasher, PasswordVerifier, Salt}};
+use pbkdf2::{
+	password_hash::{Ident, PasswordHash, PasswordHasher, PasswordVerifier, Salt},
+	Params, Pbkdf2,
+};
 
 pub const PASSWORD_HASH_ITERATIONS: u32 = 4096;
 pub const PASSWORD_HASH_LENGTH: usize = 64;
@@ -18,16 +21,16 @@ pub fn hash_password_with_length(password: &str, salt: &str, length: usize) -> R
 		Ok(salt) => {
 			let params = Params {
 				rounds: PASSWORD_HASH_ITERATIONS,
-				output_length: length
+				output_length: length,
 			};
 			let algorithm = Ident::new("pbkdf2-sha512");
 
 			match Pbkdf2.hash_password_customized(&password.as_bytes(), Some(algorithm), None, params, salt) {
 				Ok(phc) => Ok(phc.to_string()),
-				Err(error) => Err(Box::from(error.to_string()))
+				Err(error) => Err(Box::from(error.to_string())),
 			}
-		},
-		Err(error) => Err(Box::from(error.to_string()))
+		}
+		Err(error) => Err(Box::from(error.to_string())),
 	}
 }
 
@@ -35,7 +38,7 @@ pub fn hash_password_with_length(password: &str, salt: &str, length: usize) -> R
 pub fn verify_password_hash(password: &str, phc_string: &str) -> bool {
 	match PasswordHash::new(phc_string) {
 		Ok(phc) => Pbkdf2.verify_password(password.as_bytes(), &phc).is_ok(),
-		Err(_) => false // Invalid PHC hash string
+		Err(_) => false, // Invalid PHC hash string
 	}
 }
 
@@ -46,8 +49,8 @@ pub fn get_hash_from_phc(phc_string: &str) -> Result<Vec<u8>> {
 			let hash = phc.hash.ok_or("PHC string missing hash")?;
 			let hash = hash.as_bytes().to_vec();
 			Ok(hash)
-		},
-		Err(error) => Err(Box::from(error.to_string()))
+		}
+		Err(error) => Err(Box::from(error.to_string())),
 	}
 }
 

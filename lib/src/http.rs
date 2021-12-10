@@ -5,7 +5,7 @@ pub mod request {
 	#[serde(rename_all = "camelCase")]
 	pub struct RequestedEntity {
 		pub id: String,
-		pub key_hash: Option<String>
+		pub key_hash: Option<String>,
 	}
 
 	#[derive(Deserialize, Serialize, Debug)]
@@ -20,13 +20,13 @@ pub mod request {
 		pub key_hash: String,
 		pub thumbnail_nonce: String,
 		pub preview_nonce: String,
-		pub original_nonce: String
+		pub original_nonce: String,
 	}
 
 	#[derive(Deserialize, Serialize, Debug)]
 	#[serde(rename_all = "camelCase")]
 	pub struct CheckPhotoExists {
-		pub hash: String
+		pub hash: String,
 	}
 
 	#[derive(Deserialize, Serialize, Debug)]
@@ -34,7 +34,7 @@ pub mod request {
 	pub struct CreateAlbum {
 		pub data: crate::EncryptedData,
 		pub key: crate::EncryptedData,
-		pub key_hash: String
+		pub key_hash: String,
 	}
 
 	#[derive(Deserialize, Serialize, Debug)]
@@ -70,7 +70,7 @@ pub mod request {
 
 	#[derive(Deserialize, Serialize, Debug)]
 	pub struct FindSharesFilter {
-		pub identifier_hash: Option<String>
+		pub identifier_hash: Option<String>,
 	}
 }
 
@@ -82,19 +82,19 @@ pub mod response {
 	pub struct UserInfo {
 		pub id: String,
 		pub username: String,
-		pub key: crate::EncryptedData
+		pub key: crate::EncryptedData,
 	}
 
 	#[derive(Deserialize, Serialize, Debug)]
 	#[serde(rename_all = "camelCase")]
 	pub struct UploadPhoto {
-		pub id: String
+		pub id: String,
 	}
 
 	#[derive(Deserialize, Serialize, Debug)]
 	#[serde(rename_all = "camelCase")]
 	pub struct CreateAlbum {
-		pub id: String
+		pub id: String,
 	}
 
 	#[derive(Deserialize, Serialize, Debug)]
@@ -109,7 +109,7 @@ pub mod response {
 		pub key: crate::EncryptedData,
 		pub thumbnail_nonce: String,
 		pub preview_nonce: String,
-		pub original_nonce: String
+		pub original_nonce: String,
 	}
 
 	#[derive(Deserialize, Serialize, Debug)]
@@ -117,7 +117,7 @@ pub mod response {
 	pub struct PhotoMinimal {
 		pub id: String,
 		pub width: u32,
-		pub height: u32
+		pub height: u32,
 	}
 
 	#[derive(Deserialize, Serialize, Debug)]
@@ -134,7 +134,7 @@ pub mod response {
 			Self {
 				id: self.id.clone(),
 				height: self.height,
-				width: self.width
+				width: self.width,
 			}
 		}
 	}
@@ -142,7 +142,7 @@ pub mod response {
 	#[derive(Deserialize, Serialize, Debug)]
 	#[serde(rename_all = "camelCase")]
 	pub struct CreateShare {
-		pub id: String
+		pub id: String,
 	}
 
 	#[derive(Deserialize, Serialize, Debug)]

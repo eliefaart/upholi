@@ -1,14 +1,14 @@
 use serde::{Deserialize, Serialize};
 
-pub mod result;
 pub mod http;
 pub mod ids;
 pub mod passwords;
+pub mod result;
 
 pub enum PhotoVariant {
 	Original,
 	Preview,
-	Thumbnail
+	Thumbnail,
 }
 
 impl PhotoVariant {
@@ -16,7 +16,7 @@ impl PhotoVariant {
 		match self {
 			PhotoVariant::Thumbnail => "thumbnail".into(),
 			PhotoVariant::Preview => "preview".into(),
-			PhotoVariant::Original => "original".into()
+			PhotoVariant::Original => "original".into(),
 		}
 	}
 }
@@ -40,7 +40,7 @@ pub struct EncryptedData {
 	pub base64: String,
 	/// Version of format of data that was encrypted.
 	/// For future use.
-	pub format_version: i32
+	pub format_version: i32,
 }
 
 impl Clone for EncryptedData {
@@ -48,7 +48,7 @@ impl Clone for EncryptedData {
 		Self {
 			base64: self.base64.clone(),
 			nonce: self.nonce.clone(),
-			format_version: self.format_version
+			format_version: self.format_version,
 		}
 	}
 }
@@ -56,13 +56,13 @@ impl Clone for EncryptedData {
 #[derive(Deserialize, Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub enum ShareType {
-	Album
+	Album,
 }
 
 impl Clone for ShareType {
 	fn clone(&self) -> Self {
 		match self {
-			&Self::Album => Self::Album
+			&Self::Album => Self::Album,
 		}
 	}
 }
