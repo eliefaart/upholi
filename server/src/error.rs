@@ -7,20 +7,20 @@ pub type Result<T, E = Box<dyn Error>> = std::result::Result<T, E>;
 /// Errors related to entity operations, such as CRUD operations on photos/albums/etc.
 #[derive(Debug)]
 pub enum EntityError {
-	NoAccess
+	NoAccess,
 }
 
 /// Errors related to uploading files
 #[derive(Debug)]
 pub enum UploadError {
 	HeaderContentDispositionInvalid,
-	UnsupportedMultipartName
+	UnsupportedMultipartName,
 }
 
 /// Errors related to uploading files
 #[derive(Debug)]
 pub enum DatabaseError {
-	InvalidId
+	InvalidId,
 }
 
 impl Error for EntityError {}
@@ -31,7 +31,7 @@ impl Display for EntityError {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		let message = {
 			match self {
-				EntityError::NoAccess => "Access to entity not allowed for current user"	// Note: 'current user' could be anonymous
+				EntityError::NoAccess => "Access to entity not allowed for current user", // Note: 'current user' could be anonymous
 			}
 		};
 		write!(f, "{}", message)
@@ -43,7 +43,7 @@ impl Display for UploadError {
 		let message = {
 			match self {
 				UploadError::HeaderContentDispositionInvalid => "Invalid header Content-Disposition",
-				UploadError::UnsupportedMultipartName => "Multipart contains a part with an unsupported name"
+				UploadError::UnsupportedMultipartName => "Multipart contains a part with an unsupported name",
 			}
 		};
 		write!(f, "{}", message)
@@ -54,7 +54,7 @@ impl Display for DatabaseError {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		let message = {
 			match self {
-				DatabaseError::InvalidId => "Invalid id"
+				DatabaseError::InvalidId => "Invalid id",
 			}
 		};
 		write!(f, "{}", message)

@@ -1,11 +1,11 @@
-use crate::storage::init_storage_for_user;
-use serde::{Serialize,Deserialize};
-use upholi_lib::EncryptedData;
-use upholi_lib::passwords::{hash_password, verify_password_hash};
+use crate::database::DatabaseEntity;
 use crate::error::*;
-use crate::database::{DatabaseEntity};
-use upholi_lib::ids::create_unique_id;
+use crate::storage::init_storage_for_user;
 use async_trait::async_trait;
+use serde::{Deserialize, Serialize};
+use upholi_lib::ids::create_unique_id;
+use upholi_lib::passwords::{hash_password, verify_password_hash};
+use upholi_lib::EncryptedData;
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -27,7 +27,7 @@ impl User {
 			id: user_id,
 			username,
 			password_phc,
-			key
+			key,
 		};
 
 		user.insert().await?;
@@ -55,11 +55,11 @@ impl DatabaseEntity for User {
 		Ok(())
 	}
 
-	async fn update(&self)  -> Result<()> {
+	async fn update(&self) -> Result<()> {
 		super::super::replace_one(super::super::COLLECTION_USERS, &self.id, self).await
 	}
 
-	async fn delete(&self)  -> Result<()> {
+	async fn delete(&self) -> Result<()> {
 		super::super::delete_one(super::super::COLLECTION_USERS, &self.id).await
 	}
 }

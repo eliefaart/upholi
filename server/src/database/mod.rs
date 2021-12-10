@@ -1,10 +1,10 @@
+use async_trait::async_trait;
 use upholi_lib::http::request::{FindSharesFilter, RequestedEntity};
 use upholi_lib::http::response::PhotoMinimal;
-use async_trait::async_trait;
 
-use crate::error::*;
 use self::entities::share::Share;
 use self::entities::user::User;
+use crate::error::*;
 
 pub mod entities;
 mod mongodb;
@@ -25,7 +25,8 @@ pub struct SortField<'a> {
 pub trait DatabaseEntity {
 	/// Get an existing item
 	async fn get(id: &str) -> Result<Option<Self>>
-		where Self: std::marker::Sized;
+	where
+		Self: std::marker::Sized;
 
 	/// Insert item as new record
 	async fn insert(&self) -> Result<()>;
@@ -43,20 +44,24 @@ pub trait DatabaseEntityBatch {
 	/// Get all items with an id contained within given array
 	/// TODO: Merge with DatabaseEntity?
 	async fn get_with_ids(ids: &[&str]) -> Result<Vec<Self>>
-		where Self: std::marker::Sized;
+	where
+		Self: std::marker::Sized;
 }
 
 /// Add database operations to a struct, which are targetted only to entries owned by given user
 #[async_trait]
-pub trait DatabaseUserEntity : DatabaseEntity {
+pub trait DatabaseUserEntity: DatabaseEntity {
 	async fn get_as_user(id: &str, user_id: String) -> Result<Option<Self>>
-		where Self: std::marker::Sized;
+	where
+		Self: std::marker::Sized;
 
 	async fn get_all_as_user(user_id: String) -> Result<Vec<Self>>
-		where Self: std::marker::Sized;
+	where
+		Self: std::marker::Sized;
 
 	async fn get_all_with_ids_as_user(ids: &[&str], user_id: String) -> Result<Vec<Self>>
-		where Self: std::marker::Sized;
+	where
+		Self: std::marker::Sized;
 }
 
 /// Get a single item from a collection
@@ -65,7 +70,12 @@ async fn find_one<T: serde::de::DeserializeOwned>(collection: &str, id: &str) ->
 }
 
 /// Get multiple items from a collection
-async fn find_many<'a, T: serde::de::DeserializeOwned>(collection: &str, user_id: Option<&str>, ids: Option<&[&str]>, sort_field: Option<&SortField<'a>>) -> Result<Vec<T>> {
+async fn find_many<'a, T: serde::de::DeserializeOwned>(
+	collection: &str,
+	user_id: Option<&str>,
+	ids: Option<&[&str]>,
+	sort_field: Option<&SortField<'a>>,
+) -> Result<Vec<T>> {
 	mongodb::find_many(collection, user_id, ids, sort_field).await
 }
 

@@ -1,8 +1,8 @@
-use std::env::var;
+use crate::error::*;
 use config::{Config, File};
 use serde::Deserialize;
 use std::collections::HashMap;
-use crate::error::*;
+use std::env::var;
 
 const ENV_VAR_SERVER_ADDRESS: &str = "HB_SERVER_ADDRESS";
 const ENV_VAR_DATABASE_CONNECTIONSTRING: &str = "HB_DATABASE_CONNECTIONSTRING";
@@ -15,7 +15,7 @@ const ENV_VAR_STORAGE_AZURESTORAGEACCOUNTKEY: &str = "HB_STORAGE_AZURESTORAGEACC
 #[derive(Debug, Deserialize)]
 pub enum StorageProvider {
 	Disk,
-	Azure
+	Azure,
 }
 /// Application settings
 #[derive(Debug, Deserialize)]
@@ -35,7 +35,7 @@ pub struct Server {
 #[derive(Debug, Deserialize)]
 pub struct Database {
 	pub connection_string: String,
-	pub name: String
+	pub name: String,
 }
 
 /// Photos settings
@@ -44,7 +44,7 @@ pub struct Storage {
 	pub provider: StorageProvider,
 	pub directory_photos: String,
 	pub azure_storage_account_name: String,
-	pub azure_storage_account_key: String
+	pub azure_storage_account_key: String,
 }
 
 impl Default for Settings {
@@ -60,11 +60,12 @@ impl Settings {
 	///
 	/// Panics if anything went wrong
 	pub fn new() -> Self {
-
 		let mut config = Config::new();
 
 		// Set defaults from file
-		config.merge(File::with_name("config/default")).expect("Default config file not found");
+		config
+			.merge(File::with_name("config/default"))
+			.expect("Default config file not found");
 
 		// TODO: How does this work with field names containing underscores?
 		// I would prefer to use this method instead of the solution below,
@@ -82,7 +83,10 @@ impl Settings {
 			("storage.directory_photos", ENV_VAR_STORAGE_DIRECTORYPHOTOS),
 			("storage.azure_storage_account_name", ENV_VAR_STORAGE_AZURESTORAGEACCOUNTNAME),
 			("storage.azure_storage_account_key", ENV_VAR_STORAGE_AZURESTORAGEACCOUNTKEY),
-		].iter().cloned().collect();
+		]
+		.iter()
+		.cloned()
+		.collect();
 
 		for setting in overwritable_settings {
 			Self::set_from_env_var(&mut config, setting.0, setting.1)

@@ -1,10 +1,10 @@
 use lazy_static::lazy_static;
 use settings::Settings;
 
-mod error;
 mod database;
-mod storage;
+mod error;
 mod settings;
+mod storage;
 mod web;
 
 lazy_static! {

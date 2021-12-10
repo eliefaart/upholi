@@ -1,12 +1,11 @@
-use std::{fs::File, io::prelude::*};
+use crate::error::Result;
 use std::path::Path;
-use crate::{error::Result};
+use std::{fs::File, io::prelude::*};
 use upholi_lib::ids::create_unique_id;
 
 pub struct LocalDiskStorageProvider {}
 
 impl LocalDiskStorageProvider {
-
 	pub fn new() -> LocalDiskStorageProvider {
 		LocalDiskStorageProvider {}
 	}
@@ -45,9 +44,7 @@ impl LocalDiskStorageProvider {
 		let path_base = Path::new(&absolute_path);
 		let path_photo = path_base.join(photo_relative_path);
 
-		Ok(path_photo.to_str()
-			.ok_or("Empty directory path")?
-			.to_string())
+		Ok(path_photo.to_str().ok_or("Empty directory path")?.to_string())
 	}
 
 	/// Returns the absolute path to photo storage base directory
@@ -55,7 +52,10 @@ impl LocalDiskStorageProvider {
 	fn get_photos_base_path() -> Result<String> {
 		let path_info = Path::new(&crate::SETTINGS.storage.directory_photos);
 		if !path_info.exists() {
-			return Err(Box::from(format!("Path {} does not exist", &crate::SETTINGS.storage.directory_photos)));
+			return Err(Box::from(format!(
+				"Path {} does not exist",
+				&crate::SETTINGS.storage.directory_photos
+			)));
 		}
 
 		let photos_path_str = path_info.to_str().ok_or("Empty directory path")?;

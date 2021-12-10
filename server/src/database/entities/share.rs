@@ -1,15 +1,15 @@
-use serde::{Serialize, Deserialize};
-use upholi_lib::EncryptedData;
-use upholi_lib::ShareType;
-use upholi_lib::http::request::UpsertShare;
+use crate::database::*;
+use async_trait::async_trait;
+use serde::{Deserialize, Serialize};
 use upholi_lib::http::request::EntityAuthorizationProof;
 use upholi_lib::http::request::FindSharesFilter;
+use upholi_lib::http::request::UpsertShare;
 use upholi_lib::ids::create_unique_id;
-use async_trait::async_trait;
-use crate::database::*;
+use upholi_lib::EncryptedData;
+use upholi_lib::ShareType;
 
-use super::AccessControl;
 use super::session::Session;
+use super::AccessControl;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -20,7 +20,7 @@ pub struct Share {
 	pub type_: ShareType,
 	pub password: EncryptedData,
 	pub data: EncryptedData,
-	pub key: EncryptedData
+	pub key: EncryptedData,
 }
 
 impl Share {
@@ -38,7 +38,7 @@ impl From<UpsertShare> for Share {
 			type_: source.type_,
 			password: source.password,
 			data: source.data,
-			key: source.key
+			key: source.key,
 		}
 	}
 }
@@ -72,7 +72,7 @@ impl DatabaseEntityBatch for Share {
 
 #[async_trait]
 impl DatabaseUserEntity for Share {
-	async fn get_as_user(id: &str, user_id: String) -> Result<Option<Self>>{
+	async fn get_as_user(id: &str, user_id: String) -> Result<Option<Self>> {
 		match Self::get(id).await? {
 			Some(share) => {
 				if share.user_id != user_id {
@@ -81,7 +81,7 @@ impl DatabaseUserEntity for Share {
 					Ok(Some(share))
 				}
 			}
-			None => Ok(None)
+			None => Ok(None),
 		}
 	}
 

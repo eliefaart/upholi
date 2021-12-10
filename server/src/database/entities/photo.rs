@@ -1,12 +1,15 @@
+use crate::error::*;
+use crate::{
+	database::{self, DatabaseEntity, DatabaseEntityBatch, DatabaseUserEntity},
+	error::EntityError,
+};
+use async_trait::async_trait;
+use serde::{Deserialize, Serialize};
 use upholi_lib::http::request::{EntityAuthorizationProof, UploadPhoto};
 use upholi_lib::ids::create_unique_id;
 use upholi_lib::EncryptedData;
-use serde::{Deserialize, Serialize};
-use async_trait::async_trait;
-use crate::{error::*};
-use crate::{database::{self, DatabaseEntity, DatabaseEntityBatch, DatabaseUserEntity}, error::EntityError};
 
-use super::{AccessControl, session::Session};
+use super::{session::Session, AccessControl};
 
 #[derive(Deserialize, Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -24,7 +27,7 @@ pub struct Photo {
 	pub key_hash: String,
 	pub thumbnail_nonce: String,
 	pub preview_nonce: String,
-	pub original_nonce: String
+	pub original_nonce: String,
 }
 
 impl From<UploadPhoto> for Photo {
@@ -71,7 +74,6 @@ impl DatabaseEntity for Photo {
 	}
 }
 
-
 #[async_trait]
 impl DatabaseEntityBatch for Photo {
 	async fn get_with_ids(ids: &[&str]) -> Result<Vec<Self>> {
@@ -81,7 +83,7 @@ impl DatabaseEntityBatch for Photo {
 
 #[async_trait]
 impl DatabaseUserEntity for Photo {
-	async fn get_as_user(id: &str, user_id: String) -> Result<Option<Self>>{
+	async fn get_as_user(id: &str, user_id: String) -> Result<Option<Self>> {
 		match Self::get(id).await? {
 			Some(photo) => {
 				if photo.user_id != user_id {
@@ -89,23 +91,23 @@ impl DatabaseUserEntity for Photo {
 				} else {
 					Ok(Some(photo))
 				}
-			},
-			None => Ok(None)
+			}
+			None => Ok(None),
 		}
 	}
 
 	async fn get_all_as_user(user_id: String) -> Result<Vec<Self>> {
-		let sort = database::SortField{
+		let sort = database::SortField {
 			field: "createdOn",
-			ascending: false
+			ascending: false,
 		};
 		super::super::find_many(super::super::COLLECTION_PHOTOS, Some(&user_id), None, Some(&sort)).await
 	}
 
 	async fn get_all_with_ids_as_user(ids: &[&str], user_id: String) -> Result<Vec<Self>> {
-		let sort = database::SortField{
+		let sort = database::SortField {
 			field: "createdOn",
-			ascending: false
+			ascending: false,
 		};
 		super::super::find_many(super::super::COLLECTION_PHOTOS, Some(&user_id), Some(ids), Some(&sort)).await
 	}
@@ -116,18 +118,16 @@ impl AccessControl for Photo {
 		// Check if user is owner of album
 		if session_owns_photo(self, session) {
 			true
-		}
-		else {
+		} else {
 			if let Some(proof) = proof {
 				proof.key_hash == self.key_hash
-			}
-			else {
+			} else {
 				false
 			}
 		}
 	}
 
-    fn can_update(&self, session: &Option<Session>) -> bool {
+	fn can_update(&self, session: &Option<Session>) -> bool {
 		session_owns_photo(self, session)
 	}
 }

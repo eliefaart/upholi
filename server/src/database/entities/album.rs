@@ -1,13 +1,13 @@
-use serde::{Serialize, Deserialize};
 use async_trait::async_trait;
-use upholi_lib::EncryptedData;
+use serde::{Deserialize, Serialize};
 use upholi_lib::http::request::CreateAlbum;
 use upholi_lib::http::request::EntityAuthorizationProof;
 use upholi_lib::ids::create_unique_id;
+use upholi_lib::EncryptedData;
 
-use crate::database::*;
-use super::AccessControl;
 use super::session::Session;
+use super::AccessControl;
+use crate::database::*;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -16,7 +16,7 @@ pub struct Album {
 	pub user_id: String,
 	pub data: EncryptedData,
 	pub key: EncryptedData,
-	pub key_hash: String
+	pub key_hash: String,
 }
 
 impl From<CreateAlbum> for Album {
@@ -26,7 +26,7 @@ impl From<CreateAlbum> for Album {
 			user_id: String::new(),
 			data: source.data,
 			key: source.key,
-			key_hash: source.key_hash
+			key_hash: source.key_hash,
 		}
 	}
 }
@@ -60,7 +60,7 @@ impl DatabaseEntityBatch for Album {
 
 #[async_trait]
 impl DatabaseUserEntity for Album {
-	async fn get_as_user(id: &str, user_id: String) -> Result<Option<Self>>{
+	async fn get_as_user(id: &str, user_id: String) -> Result<Option<Self>> {
 		match Self::get(id).await? {
 			Some(album) => {
 				if album.user_id != user_id {
@@ -69,7 +69,7 @@ impl DatabaseUserEntity for Album {
 					Ok(Some(album))
 				}
 			}
-			None => Ok(None)
+			None => Ok(None),
 		}
 	}
 
@@ -87,12 +87,10 @@ impl AccessControl for Album {
 		// Check if user is owner of album
 		if session_owns_album(self, session) {
 			true
-		}
-		else {
+		} else {
 			if let Some(proof) = proof {
 				proof.key_hash == self.key_hash
-			}
-			else {
+			} else {
 				false
 			}
 		}

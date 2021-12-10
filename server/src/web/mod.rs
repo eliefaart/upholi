@@ -1,14 +1,15 @@
+use actix_service::Service;
+use actix_web::web::{delete, get, head, post, put};
+use actix_web::{App, HttpServer};
+use handlers::{albums::*, photos::*, shares::*, users::*};
 use std::time::Instant;
 
-use actix_service::Service;
-use actix_web::{App, HttpServer};
-
+mod cookies;
 mod handlers;
 mod http;
-mod cookies;
 
 /// Start and run the web server
-pub async fn run_server() -> std::io::Result<()>{
+pub async fn run_server() -> std::io::Result<()> {
 	let address = &crate::SETTINGS.server.address;
 	println!("Hello server, address: {}", address);
 
@@ -23,10 +24,12 @@ pub async fn run_server() -> std::io::Result<()>{
 			.wrap_fn(|req, srv| {
 				// Middleware that prints all requests and responses to std-out
 				let now = Instant::now();
-				let query_id = format!("{method} {path}?{query_string}",
+				let query_id = format!(
+					"{method} {path}?{query_string}",
 					method = req.method(),
 					path = req.path(),
-					query_string = req.query_string());
+					query_string = req.query_string()
+				);
 
 				println!(">> {}", query_id);
 
@@ -41,35 +44,30 @@ pub async fn run_server() -> std::io::Result<()>{
 			.service(
 				// API routes
 				actix_web::web::scope("/api")
-
-					.route("/user/register", actix_web::web::post().to(handlers::users::route_register_user))
-					.route("/user/login", actix_web::web::post().to(handlers::users::route_login_user))
-					//.route("/user/logout", actix_web::web::post().to(handlers::users::route_logout_user))
-					.route("/user/info", actix_web::web::get().to(handlers::users::route_user_info))
-
-					.route("/photos", actix_web::web::get().to(handlers::photos::route_get_photos))
-					.route("/photo", actix_web::web::head().to(handlers::photos::route_check_photo_exists))
-					.route("/photo", actix_web::web::post().to(handlers::photos::route_upload_photo))
-					.route("/photo/{photo_id}", actix_web::web::get().to(handlers::photos::route_get_photo))
-					.route("/photo/{photo_id}", actix_web::web::delete().to(handlers::photos::route_delete_photo))
-					.route("/photo/{photo_id}/original", actix_web::web::get().to(handlers::photos::route_download_photo_original))
-					.route("/photo/{photo_id}/thumbnail", actix_web::web::get().to(handlers::photos::route_download_photo_thumbnail))
-					.route("/photo/{photo_id}/preview", actix_web::web::get().to(handlers::photos::route_download_photo_preview))
-
+					.route("/user/register", post().to(route_register_user))
+					.route("/user/login", post().to(route_login_user))
+					//.route("/user/logout", post().to(route_logout_user))
+					.route("/user/info", get().to(route_user_info))
+					.route("/photos", get().to(route_get_photos))
+					.route("/photo", head().to(route_check_photo_exists))
+					.route("/photo", post().to(route_upload_photo))
+					.route("/photo/{photo_id}", get().to(route_get_photo))
+					.route("/photo/{photo_id}", delete().to(route_delete_photo))
+					.route("/photo/{photo_id}/original", get().to(route_download_photo_original))
+					.route("/photo/{photo_id}/thumbnail", get().to(route_download_photo_thumbnail))
+					.route("/photo/{photo_id}/preview", get().to(route_download_photo_preview))
 					// ?
-					.route("/photos/find", actix_web::web::post().to(handlers::photos::route_find_photos))
-
-					.route("/albums", actix_web::web::get().to(handlers::albums::route_get_albums))
-					.route("/album", actix_web::web::post().to(handlers::albums::route_create_album))
-					.route("/album/{album_id}", actix_web::web::get().to(handlers::albums::route_get_album))
-					.route("/album/{album_id}", actix_web::web::put().to(handlers::albums::route_update_album))
-					.route("/album/{album_id}", actix_web::web::delete().to(handlers::albums::route_delete_album))
-
-					.route("/shares", actix_web::web::get().to(handlers::shares::route_get_shares))
-					.route("/share", actix_web::web::post().to(handlers::shares::route_create_share))
-					.route("/share/{share_id}", actix_web::web::get().to(handlers::shares::route_get_share))
-					.route("/share/{share_id}", actix_web::web::put().to(handlers::shares::route_update_share))
-					.route("/share/{share_id}", actix_web::web::delete().to(handlers::shares::route_delete_share))
+					.route("/photos/find", post().to(route_find_photos))
+					.route("/albums", get().to(route_get_albums))
+					.route("/album", post().to(route_create_album))
+					.route("/album/{album_id}", get().to(route_get_album))
+					.route("/album/{album_id}", put().to(route_update_album))
+					.route("/album/{album_id}", delete().to(route_delete_album))
+					.route("/shares", get().to(route_get_shares))
+					.route("/share", post().to(route_create_share))
+					.route("/share/{share_id}", get().to(route_get_share))
+					.route("/share/{share_id}", put().to(route_update_share))
+					.route("/share/{share_id}", delete().to(route_delete_share)),
 			)
 	})
 	.bind(address)

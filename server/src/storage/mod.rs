@@ -1,18 +1,19 @@
+use crate::{database::entities::user::User, error::Result};
 use lazy_static::lazy_static;
-use crate::{error::Result, database::entities::user::User};
 
-mod local_disk;
 mod azure_storage;
+mod local_disk;
 
 lazy_static! {
 	static ref STORAGE_PROVIDER: StorageProvider = match crate::SETTINGS.storage.provider {
-		crate::settings::StorageProvider::Disk => StorageProvider::Disk(local_disk::LocalDiskStorageProvider::new()),crate::settings::StorageProvider::Azure => StorageProvider::Azure(azure_storage::AzureStorageProvider::new())
+		crate::settings::StorageProvider::Disk => StorageProvider::Disk(local_disk::LocalDiskStorageProvider::new()),
+		crate::settings::StorageProvider::Azure => StorageProvider::Azure(azure_storage::AzureStorageProvider::new()),
 	};
 }
 
 enum StorageProvider {
 	Disk(local_disk::LocalDiskStorageProvider),
-	Azure(azure_storage::AzureStorageProvider)
+	Azure(azure_storage::AzureStorageProvider),
 }
 
 /// Get storage provider
@@ -24,7 +25,7 @@ fn get_provider<'a>() -> &'a StorageProvider {
 pub async fn init_storage_for_user(user: &User) -> Result<()> {
 	match get_provider() {
 		StorageProvider::Azure(azure) => azure.create_container(&user.id).await,
-		_ => Ok(())
+		_ => Ok(()),
 	}
 }
 
@@ -33,9 +34,7 @@ pub async fn init_storage_for_user(user: &User) -> Result<()> {
 pub async fn store_file(file_id: &str, owner_user_id: &str, file_bytes: &[u8]) -> Result<String> {
 	// Store bytes
 	match get_provider() {
-		StorageProvider::Disk(disk) => {
-			disk.store_file(file_bytes)
-		},
+		StorageProvider::Disk(disk) => disk.store_file(file_bytes),
 		StorageProvider::Azure(azure) => {
 			azure.store_file(owner_user_id, file_id, file_bytes).await?;
 			Ok(file_id.to_string())
@@ -47,12 +46,12 @@ pub async fn store_file(file_id: &str, owner_user_id: &str, file_bytes: &[u8]) -
 pub async fn get_file(file_id: &str, owner_user_id: &str) -> Result<Option<Vec<u8>>> {
 	let bytes = match get_provider() {
 		StorageProvider::Disk(disk) => disk.get_file(file_id),
-		StorageProvider::Azure(azure) => azure.get_file(owner_user_id, file_id).await
+		StorageProvider::Azure(azure) => azure.get_file(owner_user_id, file_id).await,
 	}?;
 
 	match bytes {
 		Some(bytes) => Ok(Some(bytes)),
-		None => Ok(None)
+		None => Ok(None),
 	}
 }
 
@@ -60,6 +59,6 @@ pub async fn get_file(file_id: &str, owner_user_id: &str) -> Result<Option<Vec<u
 pub async fn delete_file(file_id: &str, owner_user_id: &str) -> Result<()> {
 	match get_provider() {
 		StorageProvider::Disk(disk) => disk.delete_file(file_id),
-		StorageProvider::Azure(azure) => azure.delete_file(owner_user_id, file_id).await
+		StorageProvider::Azure(azure) => azure.delete_file(owner_user_id, file_id).await,
 	}
 }

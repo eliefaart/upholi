@@ -1,9 +1,9 @@
-use serde::{Serialize, Deserialize};
-use chrono::prelude::*;
-use crate::database::{DatabaseEntity};
-use upholi_lib::ids::create_unique_id;
+use crate::database::DatabaseEntity;
 use crate::error::*;
 use async_trait::async_trait;
+use chrono::prelude::*;
+use serde::{Deserialize, Serialize};
+use upholi_lib::ids::create_unique_id;
 
 /// A client session
 #[derive(Debug, Serialize, Deserialize)]
@@ -22,7 +22,7 @@ impl Session {
 			id: create_unique_id(),
 			user_id: None,
 			created_on: Utc::now(),
-			authenticated_for_collection_tokens: vec!{}
+			authenticated_for_collection_tokens: vec![],
 		}
 	}
 

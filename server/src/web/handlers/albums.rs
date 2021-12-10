@@ -1,11 +1,11 @@
-use actix_web::{web, HttpRequest, HttpResponse, Responder};
-use upholi_lib::http::request::{CreateAlbum, EntityAuthorizationProof};
-use crate::database::entities::AccessControl;
 use crate::database::entities::album::Album;
 use crate::database::entities::session::Session;
 use crate::database::entities::user::User;
+use crate::database::entities::AccessControl;
 use crate::database::{DatabaseEntity, DatabaseUserEntity};
 use crate::web::http::*;
+use actix_web::{web, HttpRequest, HttpResponse, Responder};
+use upholi_lib::http::request::{CreateAlbum, EntityAuthorizationProof};
 
 /// Get all albums
 pub async fn route_get_albums(user: User) -> impl Responder {
@@ -19,29 +19,30 @@ pub async fn route_get_albums(user: User) -> impl Responder {
 }
 
 /// Get extended information of an album
-pub async fn route_get_album(session: Option<Session>, req: HttpRequest, proof: Option<web::Query<EntityAuthorizationProof>>) -> impl Responder {
+pub async fn route_get_album(
+	session: Option<Session>,
+	req: HttpRequest,
+	proof: Option<web::Query<EntityAuthorizationProof>>,
+) -> impl Responder {
 	let album_id = req.match_info().get("album_id").unwrap();
 
 	let proof = match proof {
 		Some(proof) => Some(proof.into_inner()),
-		None => None
+		None => None,
 	};
 
 	match Album::get(album_id).await {
-		Ok(album_opt) => {
-			match album_opt {
-				Some(album) => {
-					if album.can_view(&session, proof) {
-						HttpResponse::Ok().json(album)
-					}
-					else {
-						create_unauthorized_response()
-					}
-				},
-				None => create_not_found_response()
+		Ok(album_opt) => match album_opt {
+			Some(album) => {
+				if album.can_view(&session, proof) {
+					HttpResponse::Ok().json(album)
+				} else {
+					create_unauthorized_response()
+				}
 			}
+			None => create_not_found_response(),
 		},
-		Err(_) => create_unauthorized_response()
+		Err(_) => create_unauthorized_response(),
 	}
 }
 
@@ -52,7 +53,7 @@ pub async fn route_create_album(user: User, album: web::Json<CreateAlbum>) -> im
 
 	match album.insert().await {
 		Ok(_) => create_created_response(&album.id),
-		Err(error) => create_internal_server_error_response(Some(error))
+		Err(error) => create_internal_server_error_response(Some(error)),
 	}
 }
 
@@ -62,31 +63,27 @@ pub async fn route_update_album(session: Session, req: HttpRequest, updated_albu
 	let updated_album = updated_album.into_inner();
 
 	match &session.user_id {
-		Some(user_id) => {
-			match Album::get_as_user(&album_id, user_id.to_string()).await {
-				Ok(album_opt) => {
-					match album_opt {
-						Some(mut album) => {
-							if !album.can_update(&Some(session)) {
-								return create_unauthorized_response();
-							}
-
-							album.data = updated_album.data;
-							album.key = updated_album.key;
-							album.key_hash = updated_album.key_hash;
-
-							match album.update().await {
-								Ok(_) => create_ok_response(),
-								Err(error) => create_internal_server_error_response(Some(error))
-							}
-						},
-						None => create_not_found_response()
+		Some(user_id) => match Album::get_as_user(&album_id, user_id.to_string()).await {
+			Ok(album_opt) => match album_opt {
+				Some(mut album) => {
+					if !album.can_update(&Some(session)) {
+						return create_unauthorized_response();
 					}
-				},
-				Err(_) => create_unauthorized_response()
-			}
+
+					album.data = updated_album.data;
+					album.key = updated_album.key;
+					album.key_hash = updated_album.key_hash;
+
+					match album.update().await {
+						Ok(_) => create_ok_response(),
+						Err(error) => create_internal_server_error_response(Some(error)),
+					}
+				}
+				None => create_not_found_response(),
+			},
+			Err(_) => create_unauthorized_response(),
 		},
-		None => create_unauthorized_response()
+		None => create_unauthorized_response(),
 	}
 }
 
@@ -95,26 +92,22 @@ pub async fn route_delete_album(session: Session, req: HttpRequest) -> impl Resp
 	let album_id = req.match_info().get("album_id").unwrap();
 
 	match &session.user_id {
-		Some(user_id) => {
-			match Album::get_as_user(&album_id, user_id.to_string()).await {
-				Ok(album_opt) => {
-					match album_opt {
-						Some(album) => {
-							if !album.can_delete(&Some(session)) {
-								return create_unauthorized_response();
-							}
-
-							match album.delete().await {
-								Ok(_) => create_ok_response(),
-								Err(error) => create_internal_server_error_response(Some(error))
-							}
-						},
-						None => create_not_found_response()
+		Some(user_id) => match Album::get_as_user(&album_id, user_id.to_string()).await {
+			Ok(album_opt) => match album_opt {
+				Some(album) => {
+					if !album.can_delete(&Some(session)) {
+						return create_unauthorized_response();
 					}
-				},
-				Err(_) => create_unauthorized_response()
-			}
+
+					match album.delete().await {
+						Ok(_) => create_ok_response(),
+						Err(error) => create_internal_server_error_response(Some(error)),
+					}
+				}
+				None => create_not_found_response(),
+			},
+			Err(_) => create_unauthorized_response(),
 		},
-		None => create_unauthorized_response()
+		None => create_unauthorized_response(),
 	}
 }

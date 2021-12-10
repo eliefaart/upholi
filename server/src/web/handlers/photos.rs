@@ -1,23 +1,22 @@
-use actix_web::{HttpRequest, HttpResponse, Responder, web};
 use actix_multipart::Multipart;
+use actix_web::{web, HttpRequest, HttpResponse, Responder};
 use upholi_lib::http::request::{CheckPhotoExists, EntityAuthorizationProof, RequestedEntity};
-use upholi_lib::{PhotoVariant, http::*};
+use upholi_lib::{http::*, PhotoVariant};
 
-use crate::database::entities::AccessControl;
 use crate::database::entities::photo::Photo;
 use crate::database::entities::session::Session;
 use crate::database::entities::user::User;
-use crate::error::*;
+use crate::database::entities::AccessControl;
 use crate::database::{self, DatabaseEntity};
-use crate::web::http::*;
+use crate::error::*;
 use crate::storage;
-
+use crate::web::http::*;
 
 /// Get all photos
 pub async fn route_get_photos(user: User) -> impl Responder {
 	match database::get_photos_for_user(&user.id).await {
 		Ok(photos) => HttpResponse::Ok().json(photos),
-		Err(error) => create_internal_server_error_response(Some(error))
+		Err(error) => create_internal_server_error_response(Some(error)),
 	}
 }
 
@@ -30,37 +29,36 @@ pub async fn route_find_photos(_user: Option<User>, requested_photos: web::Json<
 
 	match database::get_photos(requested_photos).await {
 		Ok(photos) => HttpResponse::Ok().json(photos),
-		Err(error) => create_internal_server_error_response(Some(error))
+		Err(error) => create_internal_server_error_response(Some(error)),
 	}
 }
 
 /// Get photo
-pub async fn route_get_photo(session: Option<Session>, req: HttpRequest, proof: Option<web::Query<EntityAuthorizationProof>>) -> impl Responder {
+pub async fn route_get_photo(
+	session: Option<Session>,
+	req: HttpRequest,
+	proof: Option<web::Query<EntityAuthorizationProof>>,
+) -> impl Responder {
 	let proof = match proof {
 		Some(proof) => Some(proof.into_inner()),
-		None => None
+		None => None,
 	};
 
 	match req.match_info().get("photo_id") {
-		Some(photo_id) => {
-			match Photo::get(&photo_id).await {
-				Ok(photo) => {
-					match photo {
-						Some(photo) =>{
-							if photo.can_view(&session, proof) {
-								HttpResponse::Ok().json(photo)
-							}
-							else {
-								create_unauthorized_response()
-							}
-						},
-						None => create_not_found_response()
+		Some(photo_id) => match Photo::get(&photo_id).await {
+			Ok(photo) => match photo {
+				Some(photo) => {
+					if photo.can_view(&session, proof) {
+						HttpResponse::Ok().json(photo)
+					} else {
+						create_unauthorized_response()
 					}
 				}
-				Err(error) => create_internal_server_error_response(Some(error))
-			}
+				None => create_not_found_response(),
+			},
+			Err(error) => create_internal_server_error_response(Some(error)),
 		},
-		None => create_not_found_response()
+		None => create_not_found_response(),
 	}
 }
 
@@ -77,12 +75,11 @@ pub async fn route_check_photo_exists(user: User, check: web::Query<CheckPhotoEx
 		Ok(exists) => {
 			if exists {
 				HttpResponse::NoContent().finish()
-			}
-			else {
+			} else {
 				HttpResponse::NotFound().finish()
 			}
-		},
-		Err(error) => create_internal_server_error_response(Some(error))
+		}
+		Err(error) => create_internal_server_error_response(Some(error)),
 	}
 }
 
@@ -90,22 +87,22 @@ pub async fn route_check_photo_exists(user: User, check: web::Query<CheckPhotoEx
 pub async fn route_upload_photo(user: User, payload: Multipart) -> impl Responder {
 	match get_form_data(payload).await {
 		Ok(form_data) => {
-			let mut bytes_data: Vec<u8> = vec!{};
-			let mut bytes_thumbnail: Vec<u8> = vec!{};
-			let mut bytes_preview: Vec<u8> = vec!{};
-			let mut data_original: Vec<u8> = vec!{};
+			let mut bytes_data: Vec<u8> = vec![];
+			let mut bytes_thumbnail: Vec<u8> = vec![];
+			let mut bytes_preview: Vec<u8> = vec![];
+			let mut data_original: Vec<u8> = vec![];
 			for part in form_data {
 				match part.name.as_str() {
 					"data" => bytes_data = part.bytes,
 					"thumbnail" => bytes_thumbnail = part.bytes,
 					"preview" => bytes_preview = part.bytes,
 					"original" => data_original = part.bytes,
-					_ => return create_bad_request_response(Box::from(UploadError::UnsupportedMultipartName))
+					_ => return create_bad_request_response(Box::from(UploadError::UnsupportedMultipartName)),
 				}
 			}
 
-			 match serde_json::from_slice::<request::UploadPhoto>(&bytes_data) {
-				 Ok(photo) => {
+			match serde_json::from_slice::<request::UploadPhoto>(&bytes_data) {
+				Ok(photo) => {
 					let mut db_photo: Photo = photo.into();
 					db_photo.user_id = user.id.clone();
 
@@ -129,67 +126,75 @@ pub async fn route_upload_photo(user: User, payload: Multipart) -> impl Responde
 						return create_internal_server_error_response(Some(error));
 					}
 
-					HttpResponse::Created().json(response::UploadPhoto {
-						id: db_photo.id
-					})
-				 },
-				 Err(error) => create_bad_request_response(Box::from(format!("{:?}", error)))
-			 }
-		},
-		Err(error) => create_bad_request_response(error)
+					HttpResponse::Created().json(response::UploadPhoto { id: db_photo.id })
+				}
+				Err(error) => create_bad_request_response(Box::from(format!("{:?}", error))),
+			}
+		}
+		Err(error) => create_bad_request_response(error),
 	}
 }
 
 /// Get the thumbnail of a photo as file
-pub async fn route_download_photo_thumbnail(session: Option<Session>, req: HttpRequest, proof: Option<web::Query<EntityAuthorizationProof>>) -> impl Responder {
+pub async fn route_download_photo_thumbnail(
+	session: Option<Session>,
+	req: HttpRequest,
+	proof: Option<web::Query<EntityAuthorizationProof>>,
+) -> impl Responder {
 	download_photo(session, req, &PhotoVariant::Thumbnail, proof).await
 }
 
 /// Get the preview (large thumbnail) of a photo as file
-pub async fn route_download_photo_preview(session: Option<Session>, req: HttpRequest, proof: Option<web::Query<EntityAuthorizationProof>>) -> impl Responder {
+pub async fn route_download_photo_preview(
+	session: Option<Session>,
+	req: HttpRequest,
+	proof: Option<web::Query<EntityAuthorizationProof>>,
+) -> impl Responder {
 	download_photo(session, req, &PhotoVariant::Preview, proof).await
 }
 
 /// Get the original of a photo as file
-pub async fn route_download_photo_original(session: Option<Session>, req: HttpRequest, proof: Option<web::Query<EntityAuthorizationProof>>) -> impl Responder {
+pub async fn route_download_photo_original(
+	session: Option<Session>,
+	req: HttpRequest,
+	proof: Option<web::Query<EntityAuthorizationProof>>,
+) -> impl Responder {
 	download_photo(session, req, &PhotoVariant::Original, proof).await
 }
 
-async fn download_photo(session: Option<Session>, req: HttpRequest, photo_variant: &PhotoVariant, proof: Option<web::Query<EntityAuthorizationProof>>) -> impl Responder {
+async fn download_photo(
+	session: Option<Session>,
+	req: HttpRequest,
+	photo_variant: &PhotoVariant,
+	proof: Option<web::Query<EntityAuthorizationProof>>,
+) -> impl Responder {
 	let proof = match proof {
 		Some(proof) => Some(proof.into_inner()),
-		None => None
+		None => None,
 	};
 
 	match req.match_info().get("photo_id") {
-		Some(photo_id) => {
-			match Photo::get(&photo_id).await {
-				Ok(photo) => {
-					match photo {
-						Some(photo) => {
-							if !photo.can_view(&session, proof) {
-								create_unauthorized_response()
-							}
-							else {
-								let file_id = &format!("{}-{}", photo_id, &photo_variant.to_string());
-								match storage::get_file(file_id, &photo.user_id).await {
-									Ok(bytes) => {
-										match bytes {
-											Some(bytes) => HttpResponse::Ok().body(bytes),
-											None => create_not_found_response()
-										}
-									},
-									Err(error) => create_internal_server_error_response(Some(error))
-								}
-							}
-						},
-						None => create_not_found_response()
+		Some(photo_id) => match Photo::get(&photo_id).await {
+			Ok(photo) => match photo {
+				Some(photo) => {
+					if !photo.can_view(&session, proof) {
+						create_unauthorized_response()
+					} else {
+						let file_id = &format!("{}-{}", photo_id, &photo_variant.to_string());
+						match storage::get_file(file_id, &photo.user_id).await {
+							Ok(bytes) => match bytes {
+								Some(bytes) => HttpResponse::Ok().body(bytes),
+								None => create_not_found_response(),
+							},
+							Err(error) => create_internal_server_error_response(Some(error)),
+						}
 					}
-				},
-				Err(error) => create_internal_server_error_response(Some(error))
-			}
+				}
+				None => create_not_found_response(),
+			},
+			Err(error) => create_internal_server_error_response(Some(error)),
 		},
-		None => create_bad_request_response(Box::from("Photo ID invalid or missing"))
+		None => create_bad_request_response(Box::from("Photo ID invalid or missing")),
 	}
 }
 
@@ -204,13 +209,12 @@ pub async fn delete_photos(user_id: String, ids: &[&str]) -> impl Responder {
 				if let Some(photo) = photo {
 					if photo.user_id != user_id {
 						return create_unauthorized_response();
-					}
-					else {
+					} else {
 						photos.push(photo);
 					}
 				}
-			},
-			Err(error) => return create_internal_server_error_response(Some(error))
+			}
+			Err(error) => return create_internal_server_error_response(Some(error)),
 		}
 	}
 
@@ -218,15 +222,15 @@ pub async fn delete_photos(user_id: String, ids: &[&str]) -> impl Responder {
 	for photo in photos {
 		let result = delete_photo_files(&photo).await;
 		match result {
-			Ok(_) => {},
-			Err(error) => return create_internal_server_error_response(Some(error))
+			Ok(_) => {}
+			Err(error) => return create_internal_server_error_response(Some(error)),
 		}
 	}
 
 	// Delete all photos from database
 	match database::delete_photos(ids).await {
 		Ok(_) => create_ok_response(),
-		Err(_) => create_not_found_response()
+		Err(_) => create_not_found_response(),
 	}
 }
 
