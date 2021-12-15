@@ -7,6 +7,7 @@ use upholi_lib::ids::create_unique_id;
 
 /// A client session
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Session {
 	pub id: String,
 	pub user_id: Option<String>,
