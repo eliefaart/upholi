@@ -413,6 +413,21 @@ impl UpholiClientHelper {
 	}
 
 	pub async fn delete_album(base_url: &str, id: &str) -> Result<()> {
+		// Delete share for this album (if exists)
+		let identifier_hash = Share::get_identifier_hash(&ShareType::Album, id)?;
+		let shares = http::get_shares(
+			base_url,
+			Some(FindSharesFilter {
+				identifier_hash: Some(identifier_hash),
+			}),
+		)
+		.await?;
+
+		for share in shares {
+			Self::delete_share(base_url, &share.id).await?;
+		}
+
+		// Delete album itself
 		let url = format!("{}/api/album/{}", &base_url, &id).to_owned();
 		let client = reqwest::Client::new();
 		client.delete(&url).send().await?;
@@ -533,7 +548,7 @@ impl UpholiClientHelper {
 		Ok(())
 	}
 
-	/// Get a share by decrypting it using owner's key.
+	/// Get shares by decrypting them using owner's key.
 	pub async fn get_shares(base_url: &str, private_key: &[u8], filters: Option<FindSharesFilter>) -> Result<Vec<Share>> {
 		let encrypted_shares = http::get_shares(base_url, filters).await?;
 		let mut shares = Vec::new();
