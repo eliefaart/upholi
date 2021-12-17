@@ -1,7 +1,7 @@
 @import "_cssreset";
 @import "_fonts";
 
-$fontSize: 0.9em;
+$fontSize: 0.85em;
 $spacing: 10px;
 $spacingLarge: 20px;
 $transitionSpeed: 0.2s;
@@ -26,7 +26,7 @@ html {
 	}
 
 	body {
-		font-family: Lato;
+		font-family: OpenSans;
 		font-size: $fontSize;
 		font-weight: normal;
 
@@ -95,8 +95,6 @@ button,
 
 	&[type=checkbox] {
 		visibility: hidden;
-
-		&:checked {}
 	}
 
 	&::-moz-focus-inner {
