@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use crate::client::http;
-use crate::encryption;
 use crate::entities::album::{self, Album, JsAlbumFull, JsAlbumPhoto};
 use crate::entities::photo::{Photo, PhotoData};
 use crate::entities::share::{Share, ShareData};
@@ -9,6 +8,7 @@ use crate::entities::{Entity, EntityWithProof, Shareable};
 use crate::exif::Exif;
 use crate::hashing::compute_sha256_hash;
 use crate::images::Image;
+use crate::{encryption, hashing};
 use reqwest::StatusCode;
 use upholi_lib::http::request::{FindSharesFilter, Login, Register};
 use upholi_lib::http::response::{CreateAlbum, UploadPhoto, UserInfo};
@@ -50,11 +50,12 @@ pub struct UpholiClientHelper {}
 
 impl UpholiClientHelper {
 	pub async fn register(base_url: &str, username: &str, password: &str) -> Result<()> {
+		let password_derived_key = Self::get_key_from_user_credentials(username, password)?;
+
 		// This will be the master encryption key of the user.
-		// We encrypt it using a key derived from the user's password,
+		// We encrypt it using the key derived from the user's password,
 		// and the encrypted master key is stored server-side.
 		let master_key = encryption::symmetric::generate_key();
-		let password_derived_key = encryption::symmetric::derive_key_from_string(password, username)?;
 		let key_encrypted = encryption::symmetric::encrypt_slice(&password_derived_key, &master_key)?;
 
 		let body = Register {
@@ -87,10 +88,24 @@ impl UpholiClientHelper {
 		let response = client.post(&url).json(&body).send().await?;
 		let user: UserInfo = response.json().await?;
 
-		let password_derived_key = encryption::symmetric::derive_key_from_string(&password, &username)?;
+		let password_derived_key = Self::get_key_from_user_credentials(username, password)?;
 		let key = encryption::symmetric::decrypt_data_base64(&password_derived_key, &user.key)?;
 
 		Ok(key)
+	}
+
+	/// Derive a symmetric encryption key from a user's credentials
+	fn get_key_from_user_credentials(username: &str, password: &str) -> Result<Vec<u8>> {
+		if username.len() == 0 {
+			Err(Box::from("Username is empty"))
+		} else if password.len() == 0 {
+			Err(Box::from("Password is empty"))
+		} else {
+			// The salt is based on username; hash username to ensure minimum length.
+			let salt = hashing::compute_sha256_hash(username.as_bytes())?;
+			let password_derived_key = encryption::symmetric::derive_key_from_string(password, &salt)?;
+			Ok(password_derived_key)
+		}
 	}
 
 	pub async fn get_user_info(base_url: &str) -> Result<UserInfo> {
@@ -677,5 +692,35 @@ impl UpholiClientHelper {
 		}
 
 		Ok(())
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn get_key_from_user_credentials_consistency() {
+		let username = "username";
+		let password = "password";
+
+		let key_base = UpholiClientHelper::get_key_from_user_credentials(username, password).unwrap();
+
+		// Identical credentials should give same key
+		let key = UpholiClientHelper::get_key_from_user_credentials(username, password).unwrap();
+		assert_eq!(key_base, key);
+
+		// Any change in credentials should give a different key
+		let key = UpholiClientHelper::get_key_from_user_credentials(username, "other_password").unwrap();
+		assert_ne!(key_base, key);
+		let key = UpholiClientHelper::get_key_from_user_credentials("other_username", password).unwrap();
+		assert_ne!(key_base, key);
+	}
+
+	#[test]
+	fn get_key_from_user_credentials_bad_input() {
+		assert!(UpholiClientHelper::get_key_from_user_credentials("username", "").is_err());
+		assert!(UpholiClientHelper::get_key_from_user_credentials("", "password").is_err());
+		assert!(UpholiClientHelper::get_key_from_user_credentials("", "").is_err());
 	}
 }
