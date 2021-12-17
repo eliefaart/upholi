@@ -15,6 +15,7 @@ import SharedAlbumPage from "./pages/SharedAlbumPage";
 import LoginPage from "./pages/LoginPage";
 import Authentication from "./layout/Authentication";
 import { HeaderSettings } from "../models/HeaderSettings";
+import RegisterPage from "./pages/RegisterPage";
 
 /**
  * Highest component in hierarchy, initializes history/router, context, modals and toast messages.
@@ -36,7 +37,7 @@ const App: FC = () => {
 			return <Authentication requiresAuthentication={requiresAuthentication}>
 				{React.createElement(component, props)}
 			</Authentication>;
-		}}/>;
+		}} />;
 	};
 
 	return <Router history={context.history}>
@@ -44,7 +45,7 @@ const App: FC = () => {
 			<Layout header={header}>
 				{fnRenderRoute("/", LibraryPage, true)}
 				{fnRenderRoute("/login", LoginPage, false)}
-				{fnRenderRoute("/register", LoginPage, false)}
+				{fnRenderRoute("/register", RegisterPage, false)}
 				{fnRenderRoute("/albums", AlbumsPage, true)}
 				{fnRenderRoute("/shared", SharedPage, true)}
 				{fnRenderRoute("/album/:albumId", AlbumPage, true)}
@@ -62,7 +63,7 @@ const App: FC = () => {
 			draggable
 			pauseOnHover
 			transition={Slide}
-			limit={2}/>
+			limit={2} />
 	</Router>;
 };
 

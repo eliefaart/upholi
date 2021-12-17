@@ -66,6 +66,8 @@ html {
 @import "app.component.switch";
 @import "app.component.inputPassword";
 @import "app.component.menu";
+@import "app.component.errors";
+@import "app.page.login";
 
 label {
 	width: 100%;
@@ -154,6 +156,11 @@ button,
 	justify-content: center;
 	white-space: nowrap;
 
+	&.primary {
+		color: var(--colorBackgroundAlt);
+		background-color: var(--colorAccent);
+	}
+
 	&:hover,
 	&:active {
 		filter: brightness(1.2);
@@ -181,8 +188,8 @@ button,
 	}
 }
 
-// Icons
 svg {
+	// = Icons
 	min-width: 24px;
 	max-width: 24px;
 }

@@ -1,4 +1,4 @@
-.centerText{
+.centerText {
 	display: inline-block;
 	width: 100%;
 	text-align: center;
@@ -37,7 +37,7 @@
 	padding: $spacingLarge;
 	min-height: $buttonHeight;
 
-	> *:not(:last-child) {
+	>*:not(:last-child) {
 		margin-right: $spacing;
 	}
 }
@@ -49,11 +49,29 @@
 .copyUrl {
 	display: flex;
 
-	> * {
+	>* {
 		margin: $spacing 0;
 
 		&:not(:last-child) {
 			margin-right: $spacing;
 		}
+	}
+}
+
+.form-small {
+	width: 500px;
+	margin: $spacing * 5 auto;
+}
+
+.button-bar {
+	display: flex;
+	flex-direction: row;
+
+	.left {
+		flex: 1 1 auto;
+	}
+
+	.right {
+		flex: 0 0 auto;
 	}
 }

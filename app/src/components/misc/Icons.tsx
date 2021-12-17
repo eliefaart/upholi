@@ -111,6 +111,18 @@ export const IconChevronDown: FC<IconProps> = (props) => {
 	</Icon>;
 };
 
+export const IconChevronLeft: FC<IconProps> = (props) => {
+	return <Icon {...props}>
+		<path fill="currentColor" d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z" />
+	</Icon>;
+};
+
+export const IconChevronRight: FC<IconProps> = (props) => {
+	return <Icon {...props}>
+		<path fill="currentColor" d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" />
+	</Icon>;
+};
+
 export const IconMenu: FC<IconProps> = (props) => {
 	return <Icon {...props}>
 		<path fill="currentColor" d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" />
