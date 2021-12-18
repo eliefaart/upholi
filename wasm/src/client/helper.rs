@@ -11,7 +11,7 @@ use crate::images::Image;
 use crate::{encryption, hashing};
 use reqwest::StatusCode;
 use upholi_lib::http::request::{FindSharesFilter, Login, Register};
-use upholi_lib::http::response::{CreateAlbum, UploadPhoto, UserInfo};
+use upholi_lib::http::response::{CreateAlbum, ErrorResult, UploadPhoto, UserInfo};
 use upholi_lib::result::Result;
 use upholi_lib::{http::*, PhotoVariant, ShareType};
 
@@ -66,9 +66,14 @@ impl UpholiClientHelper {
 
 		let url = format!("{}/api/user/register", &base_url).to_owned();
 		let client = reqwest::Client::new();
-		client.post(&url).json(&body).send().await?;
+		let response = client.post(&url).json(&body).send().await?;
 
-		Ok(())
+		if response.status() == StatusCode::OK {
+			Ok(())
+		} else {
+			let error: ErrorResult = response.json().await?;
+			Err(Box::from(error.message))
+		}
 	}
 
 	/// Returns the user's master encryption key when login was succesful
@@ -86,12 +91,18 @@ impl UpholiClientHelper {
 		let url = format!("{}/api/user/login", &base_url).to_owned();
 		let client = reqwest::Client::new();
 		let response = client.post(&url).json(&body).send().await?;
-		let user: UserInfo = response.json().await?;
 
-		let password_derived_key = Self::get_key_from_user_credentials(username, password)?;
-		let key = encryption::symmetric::decrypt_data_base64(&password_derived_key, &user.key)?;
+		if response.status() == StatusCode::OK {
+			let user: UserInfo = response.json().await?;
 
-		Ok(key)
+			let password_derived_key = Self::get_key_from_user_credentials(username, password)?;
+			let key = encryption::symmetric::decrypt_data_base64(&password_derived_key, &user.key)?;
+
+			Ok(key)
+		} else {
+			let error: ErrorResult = response.json().await?;
+			Err(Box::from(error.message))
+		}
 	}
 
 	/// Derive a symmetric encryption key from a user's credentials

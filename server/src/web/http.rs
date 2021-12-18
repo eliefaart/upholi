@@ -6,7 +6,7 @@ use actix_web::dev::Payload;
 use actix_web::error::{ErrorInternalServerError, ErrorNotFound, ErrorUnauthorized};
 use actix_web::{Error, FromRequest, HttpRequest, HttpResponse};
 use futures::{Future, StreamExt, TryStreamExt};
-use serde::Serialize;
+use upholi_lib::http::response::{CreatedResult, ErrorResult};
 
 use crate::database::entities::session::Session;
 use crate::database::entities::user::User;
@@ -18,20 +18,6 @@ pub const SESSION_COOKIE_NAME: &str = "session";
 pub struct FormData {
 	pub name: String,
 	pub bytes: Vec<u8>,
-}
-
-/// Response data for HTTP 201 results
-#[derive(Serialize)]
-#[serde(rename_all = "camelCase")]
-struct CreatedResult {
-	id: String,
-}
-
-/// Response data for HTTP 4xx & 5xx results
-#[derive(Serialize)]
-#[serde(rename_all = "camelCase")]
-struct ErrorResult {
-	message: String,
 }
 
 /// Allow User to be used as function parameter for request handlers
@@ -176,7 +162,7 @@ pub fn create_not_found_response() -> HttpResponse {
 /// Create a HTTP 400 Bad Request response
 pub fn create_bad_request_response(error: Box<dyn std::error::Error>) -> HttpResponse {
 	HttpResponse::BadRequest().json(ErrorResult {
-		message: format!("{:?}", error),
+		message: format!("{}", error),
 	})
 }
 
@@ -186,7 +172,7 @@ pub fn create_internal_server_error_response(error: Option<Box<dyn std::error::E
 
 	match error {
 		Some(error) => response.json(ErrorResult {
-			message: format!("{:?}", error),
+			message: format!("{}", error),
 		}),
 		None => response.finish(),
 	}

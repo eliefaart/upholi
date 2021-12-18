@@ -23,6 +23,7 @@ pub struct Settings {
 	pub server: Server,
 	pub database: Database,
 	pub storage: Storage,
+	pub users: Users,
 }
 
 /// Web server settings
@@ -38,13 +39,19 @@ pub struct Database {
 	pub name: String,
 }
 
-/// Photos settings
+/// Storage settings
 #[derive(Debug, Deserialize)]
 pub struct Storage {
 	pub provider: StorageProvider,
 	pub directory_photos: String,
 	pub azure_storage_account_name: String,
 	pub azure_storage_account_key: String,
+}
+
+/// User settings
+#[derive(Debug, Deserialize)]
+pub struct Users {
+	pub password_min_length: usize,
 }
 
 impl Default for Settings {

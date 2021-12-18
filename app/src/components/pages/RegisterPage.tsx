@@ -42,10 +42,7 @@ const RegisterPage: FC = () => {
 						toLoginPage();
 					})
 					.catch((error) => {
-						console.log(error);
-						setErrors([
-							"Error creating user"
-						]);
+						setErrors([error ?? "Error creating user"]);
 					});
 			}
 		}

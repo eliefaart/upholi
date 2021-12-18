@@ -26,3 +26,7 @@ azure_storage_account_name = "upholi"
 # Master key of Azure Storage Account
 # Can also by set using env var HB_STORAGE_AZURESTORAGEACCOUNTKEY
 azure_storage_account_key = ""
+
+[users]
+# Minimum required character length of passwords
+password_min_length = 7

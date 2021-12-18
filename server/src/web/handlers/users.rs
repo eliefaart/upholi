@@ -1,25 +1,29 @@
-use actix_web::{web, HttpResponse, Responder};
-use upholi_lib::http::request::{Login, Register};
-
 use crate::{
 	database::{
 		entities::{session::Session, user::User},
 		DatabaseEntity,
 	},
+	error::{LoginError, RegisterError},
 	web::{
 		cookies::create_session_cookie,
-		http::{
-			create_internal_server_error_response, create_not_found_response, create_ok_response, create_unauthorized_response,
-			get_session_or_create_new,
-		},
+		http::{create_bad_request_response, create_internal_server_error_response, create_ok_response, get_session_or_create_new},
 	},
 };
+use actix_web::{web, HttpResponse, Responder};
+use upholi_lib::http::request::{Login, Register};
 
 pub async fn route_register_user(info: web::Json<Register>) -> impl Responder {
 	let info = info.into_inner();
-	match User::create(info.username, info.password, info.key).await {
-		Ok(_) => create_ok_response(),
-		Err(error) => create_internal_server_error_response(Some(error)),
+
+	if info.username.len() == 0 {
+		create_bad_request_response(Box::from(RegisterError::UsernameEmpty))
+	} else if info.password.len() < crate::SETTINGS.users.password_min_length {
+		create_bad_request_response(Box::from(RegisterError::PasswordTooShort))
+	} else {
+		match User::create(info.username, info.password, info.key).await {
+			Ok(_) => create_ok_response(),
+			Err(error) => create_internal_server_error_response(Some(error)),
+		}
 	}
 }
 
@@ -49,10 +53,10 @@ pub async fn route_login_user(session: Option<Session>, info: web::Json<Login>) 
 						Err(error) => create_internal_server_error_response(Some(error)),
 					}
 				} else {
-					create_unauthorized_response()
+					create_bad_request_response(Box::from(LoginError::InvalidCredentials))
 				}
 			}
-			None => create_not_found_response(),
+			None => create_bad_request_response(Box::from(LoginError::InvalidCredentials)),
 		},
 		Err(error) => create_internal_server_error_response(Some(error)),
 	}

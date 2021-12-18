@@ -77,6 +77,20 @@ pub mod request {
 pub mod response {
 	use serde::{Deserialize, Serialize};
 
+	/// Response data for HTTP 201 results
+	#[derive(Deserialize, Serialize, Debug)]
+	#[serde(rename_all = "camelCase")]
+	pub struct CreatedResult {
+		pub id: String,
+	}
+
+	/// Response data for HTTP 4xx & 5xx results
+	#[derive(Deserialize, Serialize, Debug)]
+	#[serde(rename_all = "camelCase")]
+	pub struct ErrorResult {
+		pub message: String,
+	}
+
 	#[derive(Deserialize, Serialize, Debug)]
 	#[serde(rename_all = "camelCase")]
 	pub struct UserInfo {

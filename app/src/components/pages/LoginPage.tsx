@@ -29,11 +29,10 @@ const LoginPage: FC = () => {
 			if (username && password) {
 				upholiService.login(username, password)
 					.then(() => {
-						setErrors([]);
 						context.history.push("/");
 					})
-					.catch(() => {
-						setErrors(["Invalid credentials"]);
+					.catch(error => {
+						setErrors([error ?? "Invalid credentials"]);
 					});
 			}
 			else {
