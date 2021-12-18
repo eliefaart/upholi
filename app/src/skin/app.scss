@@ -176,8 +176,6 @@ button,
 
 	&:not(.iconOnly) {
 		min-width: $buttonHeight * 2;
-		margin: 0px $spacing;
-		padding: 0px $spacing;
 	}
 
 	svg {
