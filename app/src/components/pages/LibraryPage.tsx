@@ -40,7 +40,7 @@ const LibraryPage: FC<PageProps> = (props: PageProps) => {
 			visible: true,
 			headerActions: <React.Fragment>
 				{selectedPhotoIds.length === 0 && <button
-					className="iconOnly"
+					className="icon-only"
 					onClick={() => {
 						const element = document.getElementById("select-photos");
 						if (element) {
@@ -48,16 +48,16 @@ const LibraryPage: FC<PageProps> = (props: PageProps) => {
 						}
 					}}
 					title="Upload photos">
-					<IconUpload/>Upload
+					<IconUpload />Upload
 				</button>}
 				<AddPhotosToAlbumButton
 					selectedPhotoIds={selectedPhotoIds}
-					onSelectionAddedToAlbum={() => setSelectedPhotoIds([])}/>
+					onSelectionAddedToAlbum={() => setSelectedPhotoIds([])} />
 				{selectedPhotoIds.length > 0 && <button
-					className="iconOnly"
+					className="icon-only"
 					onClick={() => setConfirmDeletePhotosOpen(true)}
 					title="Delete photos">
-					<IconDelete/>Delete
+					<IconDelete />Delete
 				</button>}
 			</React.Fragment>
 		});
@@ -158,7 +158,7 @@ const LibraryPage: FC<PageProps> = (props: PageProps) => {
 			onClick={onPhotoClicked}
 			selectedItems={selectedPhotoIds}
 			onPhotoSelectionChanged={setSelectedPhotoIds}
-			/>
+		/>
 
 		{openedPhotoId && <ModalPhotoDetail
 			isOpen={!!openedPhotoId}
@@ -173,10 +173,10 @@ const LibraryPage: FC<PageProps> = (props: PageProps) => {
 			onOkButtonClick={() => deleteSelectedPhotos()}
 			okButtonText="Delete"
 			confirmationText={selectedPhotoIds.length + " photos will be deleted."}
-			/>
+		/>
 
 		{/* Hidden upload button triggered by the button in action bar. This allows me to write simpler CSS to style the action buttons. */}
-		<UploadButton className="hidden" onSubmit={uploadFilesList}/>
+		<UploadButton className="hidden" onSubmit={uploadFilesList} />
 	</Content>;
 };
 

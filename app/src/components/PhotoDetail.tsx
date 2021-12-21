@@ -29,7 +29,7 @@ class PhotoDetail extends React.Component<PhotoDetailProps, PhotoDetailState> {
 	}
 
 	componentDidMount(): void {
-		const containerElement = document.getElementsByClassName("photoDetail")[0] as HTMLElement;
+		const containerElement = document.getElementsByClassName("photo-detail")[0] as HTMLElement;
 		const imgElement = document.getElementsByClassName("photoDetailImg")[0] as HTMLElement;
 
 		// Zoom on mousewheel
@@ -189,7 +189,7 @@ class PhotoDetail extends React.Component<PhotoDetailProps, PhotoDetailState> {
 	}
 
 	// reset the photo to its default position and zoom level
-	resetView (imgElement: HTMLElement): void {
+	resetView(imgElement: HTMLElement): void {
 		imgElement.style.transform = "scale(1)";
 		imgElement.style.left = "0px";
 		imgElement.style.top = "0px";
@@ -301,18 +301,18 @@ class PhotoDetail extends React.Component<PhotoDetailProps, PhotoDetailState> {
 	}
 
 	render(): React.ReactNode {
-		return <div className="photoDetail">
-			{this.props.exif != null && <ExifData exif={this.props.exif}/>}
+		return <div className="photo-detail">
+			{this.props.exif != null && <ExifData exif={this.props.exif} />}
 			{this.props.isVideo
 				? <video src={this.props.src}
 					className="photoDetailVideo"
 					draggable={false}
-					style={{top: "0px", left: "0px", maxWidth: "90vw", maxHeight: "90vw"}}
+					style={{ top: "0px", left: "0px", maxWidth: "90vw", maxHeight: "90vw" }}
 					controls />
 				: <img src={this.props.src}
 					className="photoDetailImg"
 					draggable={false}
-					style={{top: "0px", left: "0px"}}/>
+					style={{ top: "0px", left: "0px" }} />
 			}
 
 		</div>;

@@ -1,6 +1,8 @@
-.modalSharingOptions {
+.modal-sharing-options {
 	min-width: 600px;
-	.modalBody {
+	max-width: 90vw;
+
+	.modal-body {
 		>*:not(button) {
 			width: 100%;
 		}

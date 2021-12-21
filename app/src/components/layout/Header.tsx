@@ -27,10 +27,10 @@ const Header: FC<Props> = (props) => {
 			{/* Navigation menu */}
 			{props.settings.visible !== false && <nav>
 				{menuItems.map((menuItem) =>
-					(<span key={menuItem.path}
-						onClick={() => context.history.push(menuItem.path)}
-						className={location.pathname === menuItem.path ? "active" : ""}
-						>{menuItem.title}</span>)
+				(<span key={menuItem.path}
+					onClick={() => context.history.push(menuItem.path)}
+					className={location.pathname === menuItem.path ? "active" : ""}
+				>{menuItem.title}</span>)
 				)}
 			</nav>}
 
@@ -43,15 +43,15 @@ const Header: FC<Props> = (props) => {
 			</div>}
 
 			{/* Additional action buttons behind a context menu button */}
-			{!!props.settings.headerContextMenu && contextMenuOpen && <div className="contextMenu" onClick={() => setContextMenuOpen(false)}>
+			{!!props.settings.headerContextMenu && contextMenuOpen && <div className="context-menu" onClick={() => setContextMenuOpen(false)}>
 				<div className="items">
 					{props.settings.headerContextMenu}
 				</div>
 			</div>}
 
 			{/* Context menu toggle button */}
-			{!!props.settings.headerContextMenu && <button className="contextMenuToggle" onClick={() => setContextMenuOpen(!contextMenuOpen)}>
-				<IconContextMenu/>
+			{!!props.settings.headerContextMenu && <button className="context-menu-toggle" onClick={() => setContextMenuOpen(!contextMenuOpen)}>
+				<IconContextMenu />
 			</button>}
 		</header>;
 	}

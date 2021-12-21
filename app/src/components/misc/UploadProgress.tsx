@@ -22,17 +22,17 @@ const UploadProgress: FC = () => {
 		return null;
 	}
 	else {
-		return <div className="uploadProgress">
+		return <div className="upload-progress">
 			<div className="header">
 				{queueFinished && <button
 					onClick={() => uploadHelper.clearQueue()}
-					className="iconOnly">
-					<IconClose/>
+					className="icon-only">
+					<IconClose />
 				</button>}
 			</div>
 			{uploadProgress.map(file => (
 				<div key={file.file.name} className="file">
-					<img src={file.objectUrl} className="thumb"/>
+					<img src={file.objectUrl} className="thumb" />
 					<span className="title">{file.file.name}</span>
 					<span className="status">{file.status}</span>
 					{/* {file.status === "Failed" && <button>retry</button>} */}

@@ -35,7 +35,7 @@ const ModalSharingOptions: FC<Props> = (props) => {
 
 	return <Modal
 		title="Sharing options"
-		className="modalSharingOptions"
+		className="modal-sharing-options"
 		isOpen={props.isOpen}
 		onRequestClose={() => {
 			setShared(!!props.share);
@@ -45,38 +45,38 @@ const ModalSharingOptions: FC<Props> = (props) => {
 		okButtonText="Save"
 		onOkButtonClick={() => updateSharingOptions()}
 		okButtonDisabled={!inputValid}
-		>
-			<div>
-				<label className="switch">
-					<Switch checked={shared}
-						width={40}
-						height={15}
-						handleDiameter={25}
-						onColor="#20aced"
-						offColor="#1c1c1c"
-						checkedIcon={<span className="checkedIcon"/>}
-						uncheckedIcon={<span className="uncheckedIcon"/>}
-						onChange={setShared}
-						/>
-					<span>Share via URL</span>
-				</label>
+	>
+		<div>
+			<label className="switch">
+				<Switch checked={shared}
+					width={40}
+					height={15}
+					handleDiameter={25}
+					onColor="#20aced"
+					offColor="#1c1c1c"
+					checkedIcon={<span className="icon-checked" />}
+					uncheckedIcon={<span className="icon-unchecked" />}
+					onChange={setShared}
+				/>
+				<span>Share via URL</span>
+			</label>
+		</div>
+
+		{shared && <label>
+			Password
+			<input type="text"
+				defaultValue={props.share?.password}
+				onChange={(e) => setPassword(e.currentTarget.value)}
+				placeholder="" />
+		</label>}
+
+		{shared && props.share && <>
+			<hr />
+			<div className="url">
+				Sharing URL
+				<CopyUrl shareUrl={shareUrl} />
 			</div>
-
-			{shared && <label>
-				Password
-				<input type="text"
-					defaultValue={props.share?.password}
-					onChange={(e) => setPassword(e.currentTarget.value)}
-					placeholder=""/>
-			</label>}
-
-			{shared && props.share && <>
-				<hr/>
-				<div className="url">
-					Sharing URL
-					<CopyUrl shareUrl={shareUrl}/>
-				</div>
-			</>}
+		</>}
 	</Modal>;
 };
 

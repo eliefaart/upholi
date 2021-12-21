@@ -1,4 +1,4 @@
-.centerText {
+.center-text {
 	display: inline-block;
 	width: 100%;
 	text-align: center;
@@ -31,7 +31,7 @@
 	padding-top: 50px;
 }
 
-.topBar {
+.top-bar {
 	display: flex;
 	flex-shrink: 0;
 	padding: $spacingLarge;
@@ -42,11 +42,7 @@
 	}
 }
 
-.shareUrl {
-	align-self: center;
-}
-
-.copyUrl {
+.copy-url {
 	display: flex;
 
 	>* {

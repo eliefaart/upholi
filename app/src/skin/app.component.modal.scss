@@ -1,6 +1,6 @@
 $modalHeaderHeight: $buttonHeight;
 
-.modalOverlay {
+.modal-overlay {
 	position: fixed;
 	top: 0;
 	left: 0;
@@ -23,7 +23,7 @@ $modalHeaderHeight: $buttonHeight;
 	display: flex;
 	flex-direction: column;
 
-	.modalHeader {
+	.modal-header {
 		display: flex;
 		padding: $spacing;
 		z-index: 1;
@@ -38,7 +38,7 @@ $modalHeaderHeight: $buttonHeight;
 		}
 	}
 
-	.modalBody {
+	.modal-body {
 		display: flex;
 		flex: 0 1 100%;
 		align-items: center;
@@ -49,7 +49,7 @@ $modalHeaderHeight: $buttonHeight;
 		padding: $spacing;
 	}
 
-	.modalFooter {
+	.modal-footer {
 		flex: 0 0 auto;
 		display: flex;
 		justify-content: right;
@@ -76,7 +76,7 @@ $modalHeaderHeight: $buttonHeight;
 		margin: unset;
 		border: none;
 
-		.modalHeader {
+		.modal-header {
 			height: $headerHeight;
 			padding: 0 $spacing;
 			display: flex;
@@ -85,7 +85,7 @@ $modalHeaderHeight: $buttonHeight;
 		}
 	}
 
-	&:not(.fullscreen) .modalBody {
+	&:not(.fullscreen) .modal-body {
 		max-height: 80vh;
 		//margin: $spacingLarge 0px;
 	}

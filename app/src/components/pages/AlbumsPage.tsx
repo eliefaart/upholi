@@ -10,7 +10,7 @@ import { PageProps } from "../../models/PageProps";
 import TagGroupedAlbums from "../misc/TagGroupedAlbums";
 
 const AlbumsPage: FC<PageProps> = (props: PageProps) => {
-	const [ newAlbumDialogOpen, setNewAlbumDialogOpen ] = React.useState(false);
+	const [newAlbumDialogOpen, setNewAlbumDialogOpen] = React.useState(false);
 	const [albums] = useAlbums();
 	const context = React.useContext(appStateContext);
 
@@ -20,10 +20,10 @@ const AlbumsPage: FC<PageProps> = (props: PageProps) => {
 			visible: true,
 			headerActions: <React.Fragment>
 				{<button
-					className="iconOnly"
+					className="icon-only"
 					onClick={() => setNewAlbumDialogOpen(true)}
 					title="Create album">
-					<IconCreate/>Create album
+					<IconCreate />Create album
 				</button>}
 			</React.Fragment>
 		});
@@ -33,11 +33,11 @@ const AlbumsPage: FC<PageProps> = (props: PageProps) => {
 		<Content paddingTop={false}>
 			<TagGroupedAlbums
 				albums={albums}
-				onAlbumClick={album => context.history.push("/album/" + album.id)}/>
+				onAlbumClick={album => context.history.push("/album/" + album.id)} />
 
 			<ModalCreateAlbum
 				isOpen={newAlbumDialogOpen}
-				onRequestClose={() => setNewAlbumDialogOpen(false)}/>
+				onRequestClose={() => setNewAlbumDialogOpen(false)} />
 		</Content>
 	);
 };

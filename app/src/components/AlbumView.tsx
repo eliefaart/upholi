@@ -45,19 +45,19 @@ const AlbumView: FC<Props> = (props: Props) => {
 	});
 
 	return <div className="album-view">
-		<div className="topBar">
+		<div className="top-bar">
 			<h1>{props.album.title}</h1>
 		</div>
 
 		{!!props.album.title && galleryPhotos.length === 0 &&
-			<span className="centerText">This album has no photos.</span>
+			<span className="center-text">This album has no photos.</span>
 		}
 
 		{galleryPhotos.length > 0 && <PhotoGallery
 			onClick={onPhotoClicked}
 			photos={galleryPhotos}
 			selectedItems={props.selectedPhotos ?? []}
-			onPhotoSelectionChanged={props.onSelectionChanged}/>
+			onPhotoSelectionChanged={props.onSelectionChanged} />
 		}
 
 		{openedPhotoId && <ModalPhotoDetail

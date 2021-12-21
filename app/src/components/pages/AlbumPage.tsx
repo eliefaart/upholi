@@ -121,17 +121,17 @@ const AlbumPage: FC<Props> = (props: Props) => {
 		props.setHeader({
 			visible: true,
 			headerActions: <>
-				{selectedPhotoIds.length === 1 && <button className="iconOnly" onClick={setSelectedPhotoAsAlbumCover} title="Set album cover">
-					<IconImage/>Set album cover
+				{selectedPhotoIds.length === 1 && <button className="icon-only" onClick={setSelectedPhotoAsAlbumCover} title="Set album cover">
+					<IconImage />Set album cover
 				</button>}
 				<AddPhotosToAlbumButton
 					selectedPhotoIds={selectedPhotoIds}
-					onSelectionAddedToAlbum={() => setSelectedPhotoIds([])}/>
-				{selectedPhotoIds.length > 0 && <button className="iconOnly" onClick={() => setConfirmRemovePhotosOpen(true)} title="Remove from album">
-					<IconRemove/>Remove from album
+					onSelectionAddedToAlbum={() => setSelectedPhotoIds([])} />
+				{selectedPhotoIds.length > 0 && <button className="icon-only" onClick={() => setConfirmRemovePhotosOpen(true)} title="Remove from album">
+					<IconRemove />Remove from album
 				</button>}
 				{selectedPhotoIds.length === 0 && <button
-					className="iconOnly"
+					className="icon-only"
 					onClick={() => {
 						const selectPhotosElement = document.getElementById("select-photos");
 						if (selectPhotosElement) {
@@ -139,13 +139,13 @@ const AlbumPage: FC<Props> = (props: Props) => {
 						}
 					}}
 					title="Upload photos">
-						<IconUpload/>Upload
+					<IconUpload />Upload
 				</button>}
 				{selectedPhotoIds.length === 0 && <button
-					className="iconOnly"
+					className="icon-only"
 					onClick={() => setSharingOptionsOpen(true)}
 					title="Sharing options">
-						<IconShare/>Share
+					<IconShare />Share
 				</button>}
 			</>,
 			headerContextMenu: <>
@@ -165,7 +165,7 @@ const AlbumPage: FC<Props> = (props: Props) => {
 					album={album}
 					selectedPhotos={selectedPhotoIds}
 					onSelectionChanged={setSelectedPhotoIds}
-					/>
+				/>
 
 				<ModalSharingOptions
 					share={share}
@@ -173,12 +173,12 @@ const AlbumPage: FC<Props> = (props: Props) => {
 					onOkButtonClick={() => null}
 					onRequestClose={() => setSharingOptionsOpen(false)}
 					onSharingOptionsUpdated={updateSharingOptions}
-					/>
+				/>
 
 				<ModalEditAlbum
 					isOpen={editAlbumOpen}
 					onRequestClose={() => setEditAlbumOpen(false)}
-					album={album}/>
+					album={album} />
 
 				<ModalConfirmation
 					title="Delete album"
@@ -187,7 +187,7 @@ const AlbumPage: FC<Props> = (props: Props) => {
 					onOkButtonClick={() => deleteAlbum()}
 					okButtonText="Delete"
 					confirmationText={"Album '" + album.title + "' will be deleted."}
-					/>
+				/>
 
 				<ModalConfirmation
 					title="Remove photos"
@@ -196,10 +196,10 @@ const AlbumPage: FC<Props> = (props: Props) => {
 					onOkButtonClick={() => removeSelectedPhotosFromAlbum(selectedPhotoIds)}
 					okButtonText="Remove"
 					confirmationText={selectedPhotoIds.length + " photos will be removed from album '" + album.title + "'."}
-					/>
+				/>
 
 				{/* Hidden upload button triggered by the button in action bar. This allos me to write simpler CSS to style the action buttons. */}
-				<UploadButton className="hidden" onSubmit={uploadFilesList}/>
+				<UploadButton className="hidden" onSubmit={uploadFilesList} />
 			</Content>
 		);
 	}

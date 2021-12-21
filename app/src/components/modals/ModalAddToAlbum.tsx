@@ -19,10 +19,10 @@ const ModalAddToAlbum: FC<Props> = (props) => {
 		isOpen={props.isOpen}
 		onRequestClose={props.onRequestClose}
 		okButtonText={null}
-		className={props.className + " modalAddToAlbum"}
-		>
-			<button onClick={props.onClickNewAlbum}>New album</button>
-			<Albums albums={albums} onClick={props.onClickExistingAlbum}/>
+		className={props.className + " modal-add-to-album"}
+	>
+		<button onClick={props.onClickNewAlbum}>New album</button>
+		<Albums albums={albums} onClick={props.onClickExistingAlbum} />
 	</Modal>;
 };
 

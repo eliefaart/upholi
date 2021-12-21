@@ -76,7 +76,7 @@ label {
 input,
 select,
 button,
-.asButton {
+.as-button {
 	margin: 10px 0 10px 0;
 	height: $buttonHeight;
 	line-height: $buttonHeight;
@@ -104,7 +104,7 @@ button,
 	}
 }
 
-a[href]:not(.asButton) {
+a[href]:not(.as-button) {
 
 	&:link,
 	&:visited,
@@ -141,7 +141,7 @@ select {
 }
 
 button,
-.asButton {
+.as-button {
 	color: var(--colorAccent);
 	background-color: transparent;
 	border: none;
@@ -170,11 +170,11 @@ button,
 		color: var(--colorDisabled)
 	}
 
-	&.iconOnly {
+	&.icon-only {
 		margin-left: $spacingLarge;
 	}
 
-	&:not(.iconOnly) {
+	&:not(.icon-only) {
 		min-width: $buttonHeight * 2;
 	}
 

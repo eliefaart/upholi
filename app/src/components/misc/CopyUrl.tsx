@@ -15,13 +15,13 @@ const CopyUrl: FC<Props> = (props) => {
 		toast.info("URL copied to clipboard.");
 	};
 
-	return <div className="copyUrl">
+	return <div className="copy-url">
 		<input className="urlToCopy" type="text" value={props.shareUrl}
 			// Prevent changes to the value of this input by resetting value in onchange event.
 			// I cannot make it 'disabled', because then I cannot copy the text using JS
-			onChange={(event) => event.target.value = props.shareUrl}/>
-		<button className="iconOnly" onClick={copyUrlToClipboard} title="Copy URL">
-			<IconCopy/>
+			onChange={(event) => event.target.value = props.shareUrl} />
+		<button className="icon-only" onClick={copyUrlToClipboard} title="Copy URL">
+			<IconCopy />
 		</button>
 	</div>;
 };

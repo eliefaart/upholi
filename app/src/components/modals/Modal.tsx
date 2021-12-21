@@ -21,24 +21,24 @@ const Modal: FC<Props> = (props) => {
 			isOpen={props.isOpen}
 			onRequestClose={props.onRequestClose}
 			className={props.className + " modal"}
-			overlayClassName="modalOverlay"
+			overlayClassName="modal-overlay"
 			shouldCloseOnOverlayClick={false}
 		>
-			<div className="modalHeader">
+			<div className="modal-header">
 				<span className="title">{props.title}</span>
 				{props.headerActions}
-				<button className="iconOnly" onClick={() => props.onRequestClose()}>
-					<IconClose/>
+				<button className="icon-only" onClick={() => props.onRequestClose()}>
+					<IconClose />
 				</button>
 			</div>
-			<div className="modalBody">
+			<div className="modal-body">
 				{props.children}
 			</div>
-			<div className="modalFooter">
+			<div className="modal-footer">
 				{props.okButtonText !== null && <button
 					onClick={props.onOkButtonClick}
 					disabled={props.okButtonDisabled}
-					>
+				>
 					{props.okButtonText || "Ok"}
 				</button>}
 			</div>

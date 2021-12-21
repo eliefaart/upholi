@@ -43,8 +43,8 @@ const AddPhotosToAlbumButton: FC<Props> = (props) => {
 	}
 	else {
 		return <>
-			<button className="iconOnly" onClick={openSelectAlbumModal} title="Add to album">
-				<IconAddToAlbum/>Add to album
+			<button className="icon-only" onClick={openSelectAlbumModal} title="Add to album">
+				<IconAddToAlbum />Add to album
 			</button>
 
 			<ModalAddToAlbum
@@ -52,13 +52,13 @@ const AddPhotosToAlbumButton: FC<Props> = (props) => {
 				onRequestClose={() => setSelectAlbumModelOpen(false)}
 				onClickNewAlbum={openCreateAlbumModal}
 				onClickExistingAlbum={addSelectedPhotosToAlbum}
-				/>
+			/>
 
 			<ModalCreateAlbum
 				isOpen={createAlbumModelOpen}
 				onRequestClose={() => setCreateAlbumModelOpen(false)}
 				createWithPhotoIds={props.selectedPhotoIds}
-				/>
+			/>
 		</>;
 	}
 };

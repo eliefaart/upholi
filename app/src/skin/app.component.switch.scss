@@ -13,18 +13,18 @@
 		border-radius: 30px;
 	}
 
-	.checkedIcon, .uncheckedIcon {
+	.icon-checked, .icon-unchecked {
 		display: flex;
 		justify-content: center;
 		align-items: center;
 		height: 100%;
 	}
 
-	.checkedIcon {
+	.icon-checked {
 		padding-left: $spacingLarge;
 		color: var(--colorText)Contrast;
 	}
-	.uncheckedIcon {
+	.icon-unchecked {
 		padding-right: $spacing;
 		color: var(--colorText);
 	}

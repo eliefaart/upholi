@@ -1,6 +1,6 @@
 import * as React from "react";
 import { FC } from "react";
-import { default as Gallery, PhotoProps} from "react-photo-gallery";
+import { default as Gallery, PhotoProps } from "react-photo-gallery";
 import { default as GalleryPhotoModel } from "../../models/GalleryPhoto";
 import GalleryPhoto from "./GalleryPhoto";
 
@@ -30,7 +30,7 @@ const PhotoGallery: FC<Props> = (props) => {
 	const galleryViewModel = getGalleryViewModel(props.photos);
 
 	return (
-		<div className="photoGallery">
+		<div className="photo-gallery">
 			<Gallery photos={galleryViewModel}
 				margin={PHOTO_MARGIN}
 				targetRowHeight={PHOTO_HEIGHT}
@@ -56,7 +56,7 @@ const PhotoGallery: FC<Props> = (props) => {
 					};
 					return GalleryPhoto(gpiProps);
 				}}
-				/>
+			/>
 		</div>
 	);
 };

@@ -15,8 +15,8 @@ const UploadButton: FC<Props> = (props) => {
 	};
 
 	return <form id="form-select-photos" className={props.className}>
-		<label htmlFor="select-photos" className="asButton"><IconUpload/></label>
-		<input id="select-photos" type="file" name="photos" accept=".jpg,.jpeg" onChange={onSubmitButtonClick} multiple/>
+		<label htmlFor="select-photos" className="as-button"><IconUpload /></label>
+		<input id="select-photos" type="file" name="photos" accept=".jpg,.jpeg" onChange={onSubmitButtonClick} multiple />
 	</form>;
 };
 
