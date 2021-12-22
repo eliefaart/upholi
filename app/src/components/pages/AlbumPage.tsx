@@ -121,17 +121,23 @@ const AlbumPage: FC<Props> = (props: Props) => {
 		props.setHeader({
 			visible: true,
 			headerActions: <>
-				{selectedPhotoIds.length === 1 && <button className="icon-only" onClick={setSelectedPhotoAsAlbumCover} title="Set album cover">
+				{selectedPhotoIds.length === 1 && <button className="with-icon" onClick={setSelectedPhotoAsAlbumCover} title="Set album cover">
 					<IconImage />Set album cover
 				</button>}
 				<AddPhotosToAlbumButton
 					selectedPhotoIds={selectedPhotoIds}
 					onSelectionAddedToAlbum={() => setSelectedPhotoIds([])} />
-				{selectedPhotoIds.length > 0 && <button className="icon-only" onClick={() => setConfirmRemovePhotosOpen(true)} title="Remove from album">
+				{selectedPhotoIds.length > 0 && <button className="with-icon" onClick={() => setConfirmRemovePhotosOpen(true)} title="Remove from album">
 					<IconRemove />Remove from album
 				</button>}
 				{selectedPhotoIds.length === 0 && <button
-					className="icon-only"
+					className="with-icon"
+					onClick={() => setSharingOptionsOpen(true)}
+					title="Sharing options">
+					<IconShare />Share
+				</button>}
+				{selectedPhotoIds.length === 0 && <button
+					className="with-icon"
 					onClick={() => {
 						const selectPhotosElement = document.getElementById("select-photos");
 						if (selectPhotosElement) {
@@ -140,12 +146,6 @@ const AlbumPage: FC<Props> = (props: Props) => {
 					}}
 					title="Upload photos">
 					<IconUpload />Upload
-				</button>}
-				{selectedPhotoIds.length === 0 && <button
-					className="icon-only"
-					onClick={() => setSharingOptionsOpen(true)}
-					title="Sharing options">
-					<IconShare />Share
 				</button>}
 			</>,
 			headerContextMenu: <>

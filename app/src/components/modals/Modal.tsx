@@ -27,7 +27,7 @@ const Modal: FC<Props> = (props) => {
 			<div className="modal-header">
 				<span className="title">{props.title}</span>
 				{props.headerActions}
-				<button className="icon-only" onClick={() => props.onRequestClose()}>
+				<button className="with-icon" onClick={() => props.onRequestClose()}>
 					<IconClose />
 				</button>
 			</div>

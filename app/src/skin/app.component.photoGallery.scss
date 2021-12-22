@@ -14,7 +14,7 @@
 			background-position: center center;
 			background-repeat: no-repeat;
 			background-color: var(--colorBackgroundAlt);
-			border: 0px solid white;//var(--colorSecondaryAccent);
+			border: 0px solid white; //var(--colorSecondaryAccent);
 			transition-property: border-width;
 
 			.selected-overlay {
@@ -33,7 +33,7 @@
 			}
 		}
 
-		&.selected .photoImg{
+		&.selected .photoImg {
 			box-sizing: border-box;
 			border-width: 5px;
 		}

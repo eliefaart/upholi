@@ -40,7 +40,7 @@ const LibraryPage: FC<PageProps> = (props: PageProps) => {
 			visible: true,
 			headerActions: <React.Fragment>
 				{selectedPhotoIds.length === 0 && <button
-					className="icon-only"
+					className="with-icon"
 					onClick={() => {
 						const element = document.getElementById("select-photos");
 						if (element) {
@@ -54,7 +54,7 @@ const LibraryPage: FC<PageProps> = (props: PageProps) => {
 					selectedPhotoIds={selectedPhotoIds}
 					onSelectionAddedToAlbum={() => setSelectedPhotoIds([])} />
 				{selectedPhotoIds.length > 0 && <button
-					className="icon-only"
+					className="with-icon"
 					onClick={() => setConfirmDeletePhotosOpen(true)}
 					title="Delete photos">
 					<IconDelete />Delete

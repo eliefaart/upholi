@@ -20,7 +20,7 @@ const AlbumsPage: FC<PageProps> = (props: PageProps) => {
 			visible: true,
 			headerActions: <React.Fragment>
 				{<button
-					className="icon-only"
+					className="with-icon"
 					onClick={() => setNewAlbumDialogOpen(true)}
 					title="Create album">
 					<IconCreate />Create album

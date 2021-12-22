@@ -43,7 +43,7 @@ const AddPhotosToAlbumButton: FC<Props> = (props) => {
 	}
 	else {
 		return <>
-			<button className="icon-only" onClick={openSelectAlbumModal} title="Add to album">
+			<button className="with-icon" onClick={openSelectAlbumModal} title="Add to album">
 				<IconAddToAlbum />Add to album
 			</button>
 

@@ -26,7 +26,7 @@ const UploadProgress: FC = () => {
 			<div className="header">
 				{queueFinished && <button
 					onClick={() => uploadHelper.clearQueue()}
-					className="icon-only">
+					className="with-icon">
 					<IconClose />
 				</button>}
 			</div>

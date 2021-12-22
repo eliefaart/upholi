@@ -20,7 +20,7 @@ const CopyUrl: FC<Props> = (props) => {
 			// Prevent changes to the value of this input by resetting value in onchange event.
 			// I cannot make it 'disabled', because then I cannot copy the text using JS
 			onChange={(event) => event.target.value = props.shareUrl} />
-		<button className="icon-only" onClick={copyUrlToClipboard} title="Copy URL">
+		<button className="with-icon" onClick={copyUrlToClipboard} title="Copy URL">
 			<IconCopy />
 		</button>
 	</div>;

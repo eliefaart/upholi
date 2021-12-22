@@ -8,7 +8,7 @@ $transitionSpeed: 0.2s;
 $borderRadius: 3px;
 $headerHeight: 50px;
 $buttonHeight: 32px;
-$breakpointMobile: 768px;
+$breakpointMobile: 890px;
 
 @import "themes/theme-default-dark";
 
@@ -170,12 +170,12 @@ button,
 		color: var(--colorDisabled)
 	}
 
-	&.icon-only {
+	&.with-icon {
 		margin-left: $spacingLarge;
 	}
 
-	&:not(.icon-only) {
-		min-width: $buttonHeight * 2;
+	&:not(.with-icon) {
+		min-width: $buttonHeight * 1.5;
 	}
 
 	svg {
@@ -208,4 +208,10 @@ h2 {
 
 hr {
 	color: var(--colorBackgroundShadow);
+}
+
+@media only screen and (max-width: $breakpointMobile) {
+	.with-icon {
+		font-size: 0;
+	}
 }

@@ -27,7 +27,7 @@ const ModalPhotoDetail: FC<Props> = (props) => {
 			.catch(console.error);
 	}, [props.photoId]);
 
-	const headerActions = <a className="icon-only as-button" title="Download" onClick={() => downloadPhoto(props.photoId, props.photoKey)}>
+	const headerActions = <a className="with-icon as-button" title="Download" onClick={() => downloadPhoto(props.photoId, props.photoKey)}>
 		<IconDownload />Download
 	</a>;
 
