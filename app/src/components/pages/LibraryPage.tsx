@@ -6,7 +6,7 @@ import appStateContext from "../../contexts/AppStateContext";
 import ModalPhotoDetail from "../modals/ModalPhotoDetail";
 import ModalConfirmation from "../modals/ModalConfirmation";
 import UploadButton from "../misc/UploadButton";
-import { IconDelete, IconUpload } from "../misc/Icons";
+import { IconClose, IconDelete, IconUpload } from "../misc/Icons";
 import { toast } from "react-toastify";
 import UrlHelper from "../../helpers/UrlHelper";
 import AddPhotosToAlbumButton from "../buttons/AddPhotosToAlbumButton";
@@ -19,6 +19,8 @@ import { PhotoMinimal } from "../../models/Photo";
 import { elementIsInViewport } from "../../utils/dom";
 import * as _ from "underscore";
 import { PageProps } from "../../models/PageProps";
+import ItemsSelectedHeaderContent from "../headers/ItemsSelectedHeaderContent";
+import DefaultHeaderContent from "../headers/DefaultHeaderContent";
 
 const queryStringParamNamePhotoId = "photoId";
 
@@ -37,29 +39,42 @@ const LibraryPage: FC<PageProps> = (props: PageProps) => {
 	useTitle("Library");
 	React.useEffect(() => {
 		props.setHeader({
-			visible: true,
-			headerActions: <React.Fragment>
-				{selectedPhotoIds.length === 0 && <button
-					className="with-icon"
-					onClick={() => {
-						const element = document.getElementById("select-photos");
-						if (element) {
-							element.click();
-						}
-					}}
-					title="Upload photos">
-					<IconUpload />Upload
-				</button>}
-				<AddPhotosToAlbumButton
-					selectedPhotoIds={selectedPhotoIds}
-					onSelectionAddedToAlbum={() => setSelectedPhotoIds([])} />
-				{selectedPhotoIds.length > 0 && <button
-					className="with-icon"
-					onClick={() => setConfirmDeletePhotosOpen(true)}
-					title="Delete photos">
-					<IconDelete />Delete
-				</button>}
-			</React.Fragment>
+			headerContentElement: <DefaultHeaderContent
+				headerActions={<>
+					{selectedPhotoIds.length === 0 && <button
+						className="with-icon"
+						onClick={() => {
+							const element = document.getElementById("select-photos");
+							if (element) {
+								element.click();
+							}
+						}}
+						title="Upload photos">
+						<IconUpload />Upload
+					</button>}
+					<AddPhotosToAlbumButton
+						selectedPhotoIds={selectedPhotoIds}
+						onSelectionAddedToAlbum={() => setSelectedPhotoIds([])} />
+					{selectedPhotoIds.length > 0 && <button
+						className="with-icon"
+						onClick={() => setConfirmDeletePhotosOpen(true)}
+						title="Delete photos">
+						<IconDelete />Delete
+					</button>}
+					{selectedPhotoIds.length > 0 && <button
+						className="with-icon"
+						onClick={() => setSelectedPhotoIds([])}
+						title={selectedPhotoIds.length + "selected"}>
+						{selectedPhotoIds.length} selected<IconClose />
+					</button>}
+				</>}
+				headerContextMenu={null} />
+
+			// selectedPhotoIds.length === 0
+			// 	?
+			// 	: <ItemsSelectedHeaderContent
+			// 		selectedItems={selectedPhotoIds}
+			// 		onSelectionCleared={() => setSelectedPhotoIds([])} />,
 		});
 	}, [selectedPhotoIds.length]);
 

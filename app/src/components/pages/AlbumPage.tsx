@@ -17,6 +17,7 @@ import { useTitle } from "../../hooks/useTitle";
 import useAlbum from "../../hooks/useAlbum";
 import useFoundAlbumShare from "../../hooks/useFoundAlbumShare";
 import { PageProps } from "../../models/PageProps";
+import DefaultHeaderContent from "../headers/DefaultHeaderContent";
 
 interface Props extends PageProps {
 	// Note; this field represents the object set by react router
@@ -119,39 +120,39 @@ const AlbumPage: FC<Props> = (props: Props) => {
 	useTitle("Album - " + album?.title);
 	React.useEffect(() => {
 		props.setHeader({
-			visible: true,
-			headerActions: <>
-				{selectedPhotoIds.length === 1 && <button className="with-icon" onClick={setSelectedPhotoAsAlbumCover} title="Set album cover">
-					<IconImage />Set album cover
-				</button>}
-				<AddPhotosToAlbumButton
-					selectedPhotoIds={selectedPhotoIds}
-					onSelectionAddedToAlbum={() => setSelectedPhotoIds([])} />
-				{selectedPhotoIds.length > 0 && <button className="with-icon" onClick={() => setConfirmRemovePhotosOpen(true)} title="Remove from album">
-					<IconRemove />Remove from album
-				</button>}
-				{selectedPhotoIds.length === 0 && <button
-					className="with-icon"
-					onClick={() => setSharingOptionsOpen(true)}
-					title="Sharing options">
-					<IconShare />Share
-				</button>}
-				{selectedPhotoIds.length === 0 && <button
-					className="with-icon"
-					onClick={() => {
-						const selectPhotosElement = document.getElementById("select-photos");
-						if (selectPhotosElement) {
-							selectPhotosElement.click();
-						}
-					}}
-					title="Upload photos">
-					<IconUpload />Upload
-				</button>}
-			</>,
-			headerContextMenu: <>
-				{<button onClick={() => setEditAlbumOpen(true)}>Edit album</button>}
-				{<button onClick={() => setConfirmDeleteAlbumOpen(true)}>Delete album</button>}
-			</>
+			headerContentElement: <DefaultHeaderContent
+				headerActions={<>
+					{selectedPhotoIds.length === 1 && <button className="with-icon" onClick={setSelectedPhotoAsAlbumCover} title="Set album cover">
+						<IconImage />Set album cover
+					</button>}
+					<AddPhotosToAlbumButton
+						selectedPhotoIds={selectedPhotoIds}
+						onSelectionAddedToAlbum={() => setSelectedPhotoIds([])} />
+					{selectedPhotoIds.length > 0 && <button className="with-icon" onClick={() => setConfirmRemovePhotosOpen(true)} title="Remove from album">
+						<IconRemove />Remove from album
+					</button>}
+					{selectedPhotoIds.length === 0 && <button
+						className="with-icon"
+						onClick={() => setSharingOptionsOpen(true)}
+						title="Sharing options">
+						<IconShare />Share
+					</button>}
+					{selectedPhotoIds.length === 0 && <button
+						className="with-icon"
+						onClick={() => {
+							const selectPhotosElement = document.getElementById("select-photos");
+							if (selectPhotosElement) {
+								selectPhotosElement.click();
+							}
+						}}
+						title="Upload photos">
+						<IconUpload />Upload
+					</button>}
+				</>}
+				headerContextMenu={<>
+					{<button onClick={() => setEditAlbumOpen(true)}>Edit album</button>}
+					{<button onClick={() => setConfirmDeleteAlbumOpen(true)}>Delete album</button>}
+				</>} />,
 		});
 	}, [selectedPhotoIds.length]);
 

@@ -1,5 +1,5 @@
 import * as React from "react";
-import {FC} from "react";
+import { FC } from "react";
 import Content from "../layout/Content";
 import appStateContext from "../../contexts/AppStateContext";
 import upholiService from "../../services/UpholiService";
@@ -9,6 +9,7 @@ import { useTitle } from "../../hooks/useTitle";
 import useAlbums from "../../hooks/useAlbums";
 import useShares from "../../hooks/useShares";
 import { PageProps } from "../../models/PageProps";
+import DefaultHeaderContent from "../headers/DefaultHeaderContent";
 
 const SharedPage: FC<PageProps> = (props: PageProps) => {
 	const context = React.useContext(appStateContext);
@@ -18,7 +19,7 @@ const SharedPage: FC<PageProps> = (props: PageProps) => {
 	useTitle("Shared");
 	React.useEffect(() => {
 		props.setHeader({
-			visible: true
+			headerContentElement: <DefaultHeaderContent />
 		});
 	}, []);
 
@@ -44,11 +45,11 @@ const SharedPage: FC<PageProps> = (props: PageProps) => {
 						</h2>
 					</div>
 					<div className="body">
-						<CopyUrl shareUrl={shareUrl}/>
+						<CopyUrl shareUrl={shareUrl} />
 						<div className="actions">
-						<button onClick={() => deleteShare(share)}>
-							Delete
-						</button>
+							<button onClick={() => deleteShare(share)}>
+								Delete
+							</button>
 						</div>
 					</div>
 				</div>;

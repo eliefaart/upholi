@@ -25,7 +25,7 @@ const App: FC = () => {
 	// Store this in a context, so any component can access it and navigate
 	const context = React.useContext(appStateContext);
 	const [header, setHeader] = React.useState<HeaderSettings>({
-		visible: false
+		headerContentElement: null
 	});
 
 	// eslint-disable-next-line  @typescript-eslint/no-explicit-any

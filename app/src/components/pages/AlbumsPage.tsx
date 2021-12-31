@@ -8,6 +8,7 @@ import { useTitle } from "../../hooks/useTitle";
 import useAlbums from "../../hooks/useAlbums";
 import { PageProps } from "../../models/PageProps";
 import TagGroupedAlbums from "../misc/TagGroupedAlbums";
+import DefaultHeaderContent from "../headers/DefaultHeaderContent";
 
 const AlbumsPage: FC<PageProps> = (props: PageProps) => {
 	const [newAlbumDialogOpen, setNewAlbumDialogOpen] = React.useState(false);
@@ -17,15 +18,15 @@ const AlbumsPage: FC<PageProps> = (props: PageProps) => {
 	useTitle("Albums");
 	React.useEffect(() => {
 		props.setHeader({
-			visible: true,
-			headerActions: <React.Fragment>
-				{<button
-					className="with-icon"
-					onClick={() => setNewAlbumDialogOpen(true)}
-					title="Create album">
-					<IconCreate />Create album
-				</button>}
-			</React.Fragment>
+			headerContentElement: <DefaultHeaderContent
+				headerActions={<>
+					{<button
+						className="with-icon"
+						onClick={() => setNewAlbumDialogOpen(true)}
+						title="Create album">
+						<IconCreate />Create album
+					</button>}
+				</>} />
 		});
 	}, []);
 
