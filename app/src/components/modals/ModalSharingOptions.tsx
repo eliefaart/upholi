@@ -1,10 +1,10 @@
 import * as React from "react";
 import { FC } from "react";
 import Modal from "./Modal";
-import Switch from "react-switch";
 import { SharingOptions } from "../../models/SharingOptions";
 import { Share } from "../../models/Share";
 import CopyUrl from "../misc/CopyUrl";
+import Switch from "../misc/Switch";
 
 interface Props {
 	share?: Share,
@@ -55,33 +55,14 @@ const ModalSharingOptions: FC<Props> = (props) => {
 		onOkButtonClick={() => updateSharingOptions()}
 		okButtonDisabled={!inputValid}
 	>
-		<label className="switch">
-			<Switch checked={shared}
-				width={40}
-				height={15}
-				handleDiameter={25}
-				onColor="#20aced"
-				offColor="#1c1c1c"
-				checkedIcon={<span className="icon-checked" />}
-				uncheckedIcon={<span className="icon-unchecked" />}
-				onChange={setShared}
-			/>
-			<span>Share via URL</span>
-		</label>
 
-		{shared && <label className="switch">
-			<Switch checked={passwordProtected}
-				width={40}
-				height={15}
-				handleDiameter={25}
-				onColor="#20aced"
-				offColor="#1c1c1c"
-				checkedIcon={<span className="icon-checked" />}
-				uncheckedIcon={<span className="icon-unchecked" />}
-				onChange={setPasswordProtected}
-			/>
-			<span>Require password</span>
-		</label>}
+		<Switch checked={shared}
+			label="Share via URL"
+			onChange={setShared} />
+
+		{shared && <Switch checked={passwordProtected}
+			label="Require password"
+			onChange={setPasswordProtected} />}
 
 		{shared && passwordProtected && <label>
 			Password
