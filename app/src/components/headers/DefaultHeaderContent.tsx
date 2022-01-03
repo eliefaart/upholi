@@ -4,8 +4,8 @@ import appStateContext, { AppState } from "../../contexts/AppStateContext";
 import { IconContextMenu } from "../misc/Icons";
 
 interface Props {
-	headerActions?: JSX.Element | null,
-	headerContextMenu?: JSX.Element | null,
+	actions?: JSX.Element | null,
+	contextMenu?: JSX.Element | null,
 }
 
 const DefaultHeaderContent: FC<Props> = (props) => {
@@ -33,19 +33,19 @@ const DefaultHeaderContent: FC<Props> = (props) => {
 		<span className="buffer">&nbsp;</span>
 
 		{/* Actions: buttons on right-side of header */}
-		{!!props.headerActions && <div className="actions">
-			{props.headerActions}
+		{!!props.actions && <div className="actions">
+			{props.actions}
 		</div>}
 
 		{/* Additional action buttons behind a context menu button */}
-		{!!props.headerContextMenu && contextMenuOpen && <div className="context-menu" onClick={() => setContextMenuOpen(false)}>
+		{!!props.contextMenu && contextMenuOpen && <div className="context-menu" onClick={() => setContextMenuOpen(false)}>
 			<div className="items">
-				{props.headerContextMenu}
+				{props.contextMenu}
 			</div>
 		</div>}
 
 		{/* Context menu toggle button */}
-		{!!props.headerContextMenu && <button className="context-menu-toggle" onClick={() => setContextMenuOpen(!contextMenuOpen)}>
+		{!!props.contextMenu && <button className="context-menu-toggle" onClick={() => setContextMenuOpen(!contextMenuOpen)}>
 			<IconContextMenu />
 		</button>}
 	</>;

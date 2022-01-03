@@ -19,7 +19,7 @@ const AlbumsPage: FC<PageProps> = (props: PageProps) => {
 	React.useEffect(() => {
 		props.setHeader({
 			headerContentElement: <DefaultHeaderContent
-				headerActions={<>
+				actions={<>
 					{<button
 						className="with-icon"
 						onClick={() => setNewAlbumDialogOpen(true)}

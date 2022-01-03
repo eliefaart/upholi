@@ -7,6 +7,18 @@
 	width: 100%;
 	z-index: 1;
 
+	.left {
+		display: flex;
+		flex: 1 1 auto;
+	}
+
+	.right {
+		display: flex;
+		padding-right: $spacing;
+		justify-content: right;
+		align-items: center;
+	}
+
 	nav {
 		display: flex;
 		user-select: none;
@@ -31,7 +43,20 @@
 		}
 	}
 
-	.buffer{
+	button,
+	.as-button {
+		line-height: $headerHeight;
+		height: $headerHeight;
+		margin: 0 0 0 $spacing;
+		padding: 0px $spacing;
+
+		span {
+			margin-right: $spacing;
+			color: var(--colorText);
+		}
+	}
+
+	.buffer {
 		flex: 1 1 auto;
 		padding-left: $spacingLarge;
 	}
@@ -51,20 +76,11 @@
 			white-space: nowrap;
 		}
 
-		&, &>div{
+		&,
+		&>div {
 			display: flex;
 			justify-content: right;
 			align-items: center;
-
-			button, .as-button {
-				margin: 0 0 0 $spacing;
-				padding: 0px $spacing;
-
-				span {
-					margin-right: $spacing;
-					color: var(--colorText);
-				}
-			}
 		}
 	}
 
@@ -103,7 +119,9 @@
 				text-transform: unset;
 
 				&:hover {
-					&, * {
+
+					&,
+					* {
 						background-color: var(--colorAccent);
 						color: var(--colorTextContrast);
 					}

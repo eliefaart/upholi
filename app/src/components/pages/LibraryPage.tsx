@@ -39,42 +39,36 @@ const LibraryPage: FC<PageProps> = (props: PageProps) => {
 	useTitle("Library");
 	React.useEffect(() => {
 		props.setHeader({
-			headerContentElement: <DefaultHeaderContent
-				headerActions={<>
-					{selectedPhotoIds.length === 0 && <button
-						className="with-icon"
-						onClick={() => {
-							const element = document.getElementById("select-photos");
-							if (element) {
-								element.click();
-							}
-						}}
-						title="Upload photos">
-						<IconUpload />Upload
-					</button>}
-					<AddPhotosToAlbumButton
-						selectedPhotoIds={selectedPhotoIds}
-						onSelectionAddedToAlbum={() => setSelectedPhotoIds([])} />
-					{selectedPhotoIds.length > 0 && <button
-						className="with-icon"
-						onClick={() => setConfirmDeletePhotosOpen(true)}
-						title="Delete photos">
-						<IconDelete />Delete
-					</button>}
-					{selectedPhotoIds.length > 0 && <button
-						className="with-icon"
-						onClick={() => setSelectedPhotoIds([])}
-						title={selectedPhotoIds.length + "selected"}>
-						{selectedPhotoIds.length} selected<IconClose />
-					</button>}
-				</>}
-				headerContextMenu={null} />
-
-			// selectedPhotoIds.length === 0
-			// 	?
-			// 	: <ItemsSelectedHeaderContent
-			// 		selectedItems={selectedPhotoIds}
-			// 		onSelectionCleared={() => setSelectedPhotoIds([])} />,
+			headerContentElement: selectedPhotoIds.length === 0
+				? <DefaultHeaderContent
+					actions={<>
+						{selectedPhotoIds.length === 0 && <button
+							className="with-icon"
+							onClick={() => {
+								const element = document.getElementById("select-photos");
+								if (element) {
+									element.click();
+								}
+							}}
+							title="Upload photos">
+							<IconUpload />Upload
+						</button>}
+					</>}
+					contextMenu={null} />
+				: <ItemsSelectedHeaderContent
+					selectedItems={selectedPhotoIds}
+					onSelectionCleared={() => setSelectedPhotoIds([])}
+					actions={<>
+						<AddPhotosToAlbumButton
+							selectedPhotoIds={selectedPhotoIds}
+							onSelectionAddedToAlbum={() => setSelectedPhotoIds([])} />
+						<button
+							className="with-icon"
+							onClick={() => setConfirmDeletePhotosOpen(true)}
+							title="Delete photos">
+							<IconDelete />Delete
+						</button>
+					</>} />,
 		});
 	}, [selectedPhotoIds.length]);
 
