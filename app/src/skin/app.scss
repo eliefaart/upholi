@@ -82,10 +82,6 @@ button,
 	line-height: $buttonHeight;
 	border-radius: $borderRadius;
 
-	&:disabled {
-		background-color: var(--colorDisabled);
-	}
-
 	&[type=text],
 	&[type=password] {
 		width: 100%;
