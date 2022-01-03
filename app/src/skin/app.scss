@@ -209,3 +209,9 @@ h2 {
 hr {
 	color: var(--colorBackgroundShadow);
 }
+
+@media only screen and (max-width: $breakpointMobile) {
+	.with-icon {
+		font-size: 0;
+	}
+}
