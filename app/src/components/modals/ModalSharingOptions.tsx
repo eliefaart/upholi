@@ -23,11 +23,18 @@ const ModalSharingOptions: FC<Props> = (props) => {
 	const inputValid = !shared || (!passwordProtected || !!password);
 
 	React.useEffect(() => {
-		// Ensure password is empty if share is not password protected.
+		// Reset some options if certain settings change,
+		// for example; reset password if password protection is disabled.
+
+		if (!shared && passwordProtected) {
+			setPasswordProtected(false);
+			setPassword("");
+		}
+
 		if (!passwordProtected && password !== "") {
 			setPassword("");
 		}
-	}, [passwordProtected]);
+	}, [passwordProtected, shared]);
 
 	const updateSharingOptions = (): void => {
 		const options: SharingOptions = {
