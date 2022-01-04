@@ -6,7 +6,7 @@ import appStateContext from "../../contexts/AppStateContext";
 import ModalPhotoDetail from "../modals/ModalPhotoDetail";
 import ModalConfirmation from "../modals/ModalConfirmation";
 import UploadButton from "../misc/UploadButton";
-import { IconClose, IconDelete, IconUpload } from "../misc/Icons";
+import { IconDelete, IconUpload } from "../misc/Icons";
 import { toast } from "react-toastify";
 import UrlHelper from "../../helpers/UrlHelper";
 import AddPhotosToAlbumButton from "../buttons/AddPhotosToAlbumButton";
