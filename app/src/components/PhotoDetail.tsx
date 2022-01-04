@@ -1,6 +1,7 @@
 import * as React from "react";
 import ExifData from "./misc/ExifData";
 import Exif from "../models/Exif";
+import _ = require("underscore");
 
 interface PhotoDetailProps {
 	src: string;
@@ -57,6 +58,7 @@ class PhotoDetail extends React.Component<PhotoDetailProps, PhotoDetailState> {
 			fnHandlePanning(event);
 			fnHandlePinching(event);
 		};
+		const fnOnTouchMoveThrottled = _.throttle(fnOnTouchMove, 16);	// Target: 60fps
 
 		// Handle panning, moving image along x and y axis
 		const fnHandlePanning = (event: MouseEvent | TouchEvent) => {
@@ -74,6 +76,7 @@ class PhotoDetail extends React.Component<PhotoDetailProps, PhotoDetailState> {
 				panLastY = currentY;
 			}
 		};
+		const fnHandlePanningThrottled = _.throttle(fnHandlePanning, 11);	// Target: 90fps
 
 		// Handle touch pinching: zooming
 		let fingerDistanceLast: number;
@@ -115,8 +118,8 @@ class PhotoDetail extends React.Component<PhotoDetailProps, PhotoDetailState> {
 		containerElement.onmouseleave = fnStopPanning;
 		containerElement.ontouchend = fnStopPanning;
 
-		containerElement.onmousemove = fnHandlePanning;
-		containerElement.ontouchmove = fnOnTouchMove;
+		containerElement.onmousemove = fnHandlePanningThrottled;
+		containerElement.ontouchmove = fnOnTouchMoveThrottled;
 
 		containerElement.ondblclick = fnOnDoubleClick;
 	}
