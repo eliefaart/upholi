@@ -190,9 +190,16 @@ class PhotoDetail extends React.Component<PhotoDetailProps, PhotoDetailState> {
 
 	// reset the photo to its default position and zoom level
 	resetView(imgElement: HTMLElement): void {
-		imgElement.style.transform = "scale(1)";
-		imgElement.style.left = "0px";
-		imgElement.style.top = "0px";
+		const defaultScale = "scale(1)";
+
+		if (!imgElement.style.transform || imgElement.style.transform === defaultScale) {
+			imgElement.style.transform = "scale(2)";
+		}
+		else {
+			imgElement.style.transform = defaultScale;
+			imgElement.style.left = "0px";
+			imgElement.style.top = "0px";
+		}
 	}
 
 	// Move/pan the image by given number of units.
