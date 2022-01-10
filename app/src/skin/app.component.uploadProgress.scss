@@ -12,6 +12,7 @@
 	display: flex;
 	flex-direction: column;
 	gap: $spacing;
+	z-index: 2;
 
 	.header {
 		display: flex;
