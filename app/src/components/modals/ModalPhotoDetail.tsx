@@ -2,7 +2,7 @@ import * as React from "react";
 import { FC } from "react";
 import Modal from "./Modal";
 import PhotoDetail from "../PhotoDetail";
-import { IconDownload } from "../misc/Icons";
+import { IconDownload, IconInfo } from "../misc/Icons";
 import ModalPropsBase from "../../models/ModalPropsBase";
 import upholiService from "../../services/UpholiService";
 import { Photo } from "../../models/Photo";
@@ -16,6 +16,7 @@ interface Props extends ModalPropsBase {
 const ModalPhotoDetail: FC<Props> = (props) => {
 	const [photo, setPhoto] = React.useState<Photo | null>(null);
 	const [photoSrc, setPhotoSrc] = React.useState<string>("");
+	const [showExif, setShowExif] = React.useState(false);
 
 	React.useEffect(() => {
 		upholiService.getPhoto(props.photoId, props.photoKey)
@@ -27,9 +28,14 @@ const ModalPhotoDetail: FC<Props> = (props) => {
 			.catch(console.error);
 	}, [props.photoId]);
 
-	const headerActions = <a className="with-icon as-button" title="Download" onClick={() => downloadPhoto(props.photoId, props.photoKey)}>
-		<IconDownload />Download
-	</a>;
+	const headerActions = <>
+		<a className="with-icon as-button" title="Download" onClick={() => downloadPhoto(props.photoId, props.photoKey)}>
+			<IconDownload />Download
+		</a>
+		<a className="with-icon as-button" title="Info" onClick={() => setShowExif(!showExif)}>
+			<IconInfo />Info
+		</a>
+	</>;
 
 	return (
 		<Modal
@@ -43,7 +49,7 @@ const ModalPhotoDetail: FC<Props> = (props) => {
 			<PhotoDetail
 				src={photoSrc}
 				isVideo={!!photo && photo.contentType.startsWith("video/")}
-				exif={photo ? photo.exif : null} />
+				exif={photo && showExif ? photo.exif : null} />
 		</Modal>
 	);
 };
