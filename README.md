@@ -10,6 +10,9 @@ End-to-end encrypted personal photo library. Upload and view photos, sort them i
 | lib       | A rust crate that contains some types and functionality that 'server' and 'wasm' share.                                                                                                                              |                         |
 | wasm      | Web assembly that exposes a JS client that a frontend can use. The web assembly contains most of the business logic and takes care of all server interaction, encryption/decryption of data, processing photos, etc. | ```server```, ```lib``` |
 
+## Development status
+This project is a work in progress. It's basically feature-complete for the initial release and relatively usable, but I may still make breaking changes to the interface and data models until the application is released as v1.
+
 ## Encryption
 All files and data is end-to-end encrypted, with a few small exceptions. All encryption is done with AES using a 128-bit key.
 
@@ -17,8 +20,7 @@ All files and data is end-to-end encrypted, with a few small exceptions. All enc
 The following information is not encrypted, and/or can be determined by someone with full access to the database and storage.
 - Dimensions of each photo (width and height)
 - File size in bytes of each photo
-- Number of albums of a user
-- Number of shares of a user
+- Number of photos, albums and shares of a user
 - Usernames
 - Password hashes
 - How often and when a user has logged in
