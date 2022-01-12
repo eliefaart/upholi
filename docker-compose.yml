@@ -1,13 +1,7 @@
 version: '3'
 
-# Must set:
-# - HB_DATABASE_CONNECTIONSTRING
-# - HB_OAUTH_GITHUB_CLIENTID
-# - HB_OAUTH_GITHUB_CLIENTSECRET
-
 volumes:
-  photos:
-
+  photos: null
 services:
   app:
     image: docker.pkg.github.com/eliefaart/upholi/upholi-app:latest
@@ -22,9 +16,7 @@ services:
     environment:
       HB_DATABASE_CONNECTIONSTRING: "XXX"
       HB_DATABASE_NAME: "upholi"
-      HB_OAUTH_GITHUB_CLIENTID: "XXX"
-      HB_OAUTH_GITHUB_CLIENTSECRET: "XXX"
-      HB_STORAGE_ENCRYPTIONKEY: "XXX"
+      HB_STORAGE_PROVIDER: "Azure"
       HB_STORAGE_AZURESTORAGEACCOUNTNAME: "XXX"
       HB_STORAGE_AZURESTORAGEACCOUNTKEY: "XXX"
     ports:
