@@ -14,10 +14,10 @@ services:
     image: docker.pkg.github.com/eliefaart/upholi/upholi-server:latest
     restart: always
     environment:
-      HB_DATABASE_CONNECTIONSTRING: "XXX"
-      HB_DATABASE_NAME: "upholi"
-      HB_STORAGE_PROVIDER: "Azure"
-      HB_STORAGE_AZURESTORAGEACCOUNTNAME: "XXX"
-      HB_STORAGE_AZURESTORAGEACCOUNTKEY: "XXX"
+      UPHOLI_DATABASE_CONNECTIONSTRING: "XXX"
+      UPHOLI_DATABASE_NAME: "upholi"
+      UPHOLI_STORAGE_PROVIDER: "Azure"
+      UPHOLI_STORAGE_AZURESTORAGEACCOUNTNAME: "XXX"
+      UPHOLI_STORAGE_AZURESTORAGEACCOUNTKEY: "XXX"
     ports:
       - "29702:8000"
