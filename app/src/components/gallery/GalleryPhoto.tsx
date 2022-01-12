@@ -1,14 +1,10 @@
 import * as React from "react";
 import { FC } from "react";
 import { IconCheck } from "../misc/Icons";
+import { default as GalleryPhotoModel } from "../../models/GalleryPhoto";
 
 interface Props {
-	photo: {
-		key?: string,
-		src: string,
-		width: number,
-		height: number
-	},
+	photo: GalleryPhotoModel,
 	margin?: string,
 
 	selected: boolean,
@@ -19,17 +15,15 @@ interface Props {
 }
 
 const GalleryPhoto: FC<Props> = (props: Props) => {
-	const photoId = props.photo.key ?? "";
-
-	//const thumbnailSrc = usePhotoThumbnailSource(photoId);
+	const photoId = props.photo.id ?? "";
 
 	if (!photoId) {
 		return <></>;
 	}
 	else {
 		const cssClass = "photo"
-			+ " " + (props.selected ? "selected" : "")
-			+ " " + (props.anySiblingPhotoSelected ? "any-other-selected" : "")
+			+ (props.selected ? " selected" : "")
+			+ (props.anySiblingPhotoSelected ? " any-other-selected" : "")
 			;
 
 		const imgStyle: React.CSSProperties = {
@@ -52,7 +46,7 @@ const GalleryPhoto: FC<Props> = (props: Props) => {
 				}}
 			>
 				{props.selected && <div className="selected-overlay">
-					<IconCheck/>
+					<IconCheck />
 				</div>}
 			</div>
 

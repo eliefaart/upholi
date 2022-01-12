@@ -21,7 +21,6 @@ import * as _ from "underscore";
 import { PageProps } from "../../models/PageProps";
 import ItemsSelectedHeaderContent from "../headers/ItemsSelectedHeaderContent";
 import DefaultHeaderContent from "../headers/DefaultHeaderContent";
-import UploadProgress from "../misc/UploadProgress";
 
 const queryStringParamNamePhotoId = "photoId";
 
