@@ -50,11 +50,11 @@ pub async fn find_one<T: serde::de::DeserializeOwned>(collection: &str, id: &str
 	}
 }
 
-pub async fn find_many<'a, T: serde::de::DeserializeOwned>(
+pub async fn find_many<T: serde::de::DeserializeOwned>(
 	collection: &str,
 	user_id: Option<&str>,
 	ids: Option<&[&str]>,
-	sort_field: Option<&SortField<'a>>,
+	sort_field: Option<&SortField<'_>>,
 ) -> Result<Vec<T>> {
 	let mongo_collection = DATABASE.get().await.collection::<bson::Document>(collection);
 	let mut pipeline = vec![doc! {
@@ -108,7 +108,7 @@ pub async fn replace_one<T: serde::Serialize>(collection: &str, id: &str, replac
 
 pub async fn delete_one(collection: &str, id: &str) -> Result<()> {
 	let ids = vec![id];
-	delete_many(&collection, &ids).await
+	delete_many(collection, &ids).await
 }
 
 pub async fn delete_many(collection: &str, ids: &[&str]) -> Result<()> {
@@ -162,7 +162,7 @@ pub async fn get_photos(photos: Vec<RequestedEntity>) -> Result<Vec<PhotoMinimal
 		photo_filter_docs.push(filter_doc);
 	}
 
-	if photo_filter_docs.len() > 0 {
+	if !photo_filter_docs.is_empty() {
 		let pipeline = vec![
 			doc! {
 				"$match": {

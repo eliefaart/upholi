@@ -15,7 +15,7 @@ use upholi_lib::http::request::{Login, Register};
 pub async fn route_register_user(info: web::Json<Register>) -> impl Responder {
 	let info = info.into_inner();
 
-	if info.username.len() == 0 {
+	if info.username.is_empty() {
 		create_bad_request_response(Box::from(RegisterError::UsernameEmpty))
 	} else if info.password.len() < crate::SETTINGS.users.password_min_length {
 		create_bad_request_response(Box::from(RegisterError::PasswordTooShort))

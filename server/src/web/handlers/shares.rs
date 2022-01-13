@@ -55,7 +55,7 @@ pub async fn route_update_share(session: Session, req: HttpRequest, updated_shar
 	let updated_share = updated_share.into_inner();
 
 	match &session.user_id {
-		Some(user_id) => match Share::get_as_user(&share_id, user_id.to_string()).await {
+		Some(user_id) => match Share::get_as_user(share_id, user_id.to_string()).await {
 			Ok(share_opt) => match share_opt {
 				Some(mut share) => {
 					if !share.can_update(&Some(session)) {
@@ -86,7 +86,7 @@ pub async fn route_delete_share(session: Session, req: HttpRequest) -> impl Resp
 	let share_id = req.match_info().get("share_id").unwrap();
 
 	match &session.user_id {
-		Some(user_id) => match Share::get_as_user(&share_id, user_id.to_string()).await {
+		Some(user_id) => match Share::get_as_user(share_id, user_id.to_string()).await {
 			Ok(share_opt) => match share_opt {
 				Some(share) => {
 					if !share.can_delete(&Some(session)) {

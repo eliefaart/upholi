@@ -87,12 +87,10 @@ impl AccessControl for Album {
 		// Check if user is owner of album
 		if session_owns_album(self, session) {
 			true
+		} else if let Some(proof) = proof {
+			proof.key_hash == self.key_hash
 		} else {
-			if let Some(proof) = proof {
-				proof.key_hash == self.key_hash
-			} else {
-				false
-			}
+			false
 		}
 	}
 

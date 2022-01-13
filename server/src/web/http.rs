@@ -77,7 +77,7 @@ pub fn get_session_cookie(headers: &actix_web::http::header::HeaderMap) -> Optio
 async fn get_session(headers: &actix_web::http::header::HeaderMap) -> Option<Session> {
 	let session_cookie = get_session_cookie(headers)?;
 	let session_id = session_cookie.value();
-	match Session::get(&session_id).await {
+	match Session::get(session_id).await {
 		Ok(session) => session,
 		Err(_) => None,
 	}

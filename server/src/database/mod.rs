@@ -70,11 +70,11 @@ async fn find_one<T: serde::de::DeserializeOwned>(collection: &str, id: &str) ->
 }
 
 /// Get multiple items from a collection
-async fn find_many<'a, T: serde::de::DeserializeOwned>(
+async fn find_many<T: serde::de::DeserializeOwned>(
 	collection: &str,
 	user_id: Option<&str>,
 	ids: Option<&[&str]>,
-	sort_field: Option<&SortField<'a>>,
+	sort_field: Option<&SortField<'_>>,
 ) -> Result<Vec<T>> {
 	mongodb::find_many(collection, user_id, ids, sort_field).await
 }

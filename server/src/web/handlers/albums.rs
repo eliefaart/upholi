@@ -25,11 +25,7 @@ pub async fn route_get_album(
 	proof: Option<web::Query<EntityAuthorizationProof>>,
 ) -> impl Responder {
 	let album_id = req.match_info().get("album_id").unwrap();
-
-	let proof = match proof {
-		Some(proof) => Some(proof.into_inner()),
-		None => None,
-	};
+	let proof = proof.map(|proof| proof.into_inner());
 
 	match Album::get(album_id).await {
 		Ok(album_opt) => match album_opt {
@@ -63,7 +59,7 @@ pub async fn route_update_album(session: Session, req: HttpRequest, updated_albu
 	let updated_album = updated_album.into_inner();
 
 	match &session.user_id {
-		Some(user_id) => match Album::get_as_user(&album_id, user_id.to_string()).await {
+		Some(user_id) => match Album::get_as_user(album_id, user_id.to_string()).await {
 			Ok(album_opt) => match album_opt {
 				Some(mut album) => {
 					if !album.can_update(&Some(session)) {
@@ -92,7 +88,7 @@ pub async fn route_delete_album(session: Session, req: HttpRequest) -> impl Resp
 	let album_id = req.match_info().get("album_id").unwrap();
 
 	match &session.user_id {
-		Some(user_id) => match Album::get_as_user(&album_id, user_id.to_string()).await {
+		Some(user_id) => match Album::get_as_user(album_id, user_id.to_string()).await {
 			Ok(album_opt) => match album_opt {
 				Some(album) => {
 					if !album.can_delete(&Some(session)) {

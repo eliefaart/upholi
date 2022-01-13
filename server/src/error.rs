@@ -46,7 +46,7 @@ impl Display for RegisterError {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		let message = {
 			match self {
-				RegisterError::UsernameEmpty => format!("Username cannot be empty"),
+				RegisterError::UsernameEmpty => "Username cannot be empty".to_string(),
 				RegisterError::PasswordTooShort => {
 					format!("Password must be at least {} characters", crate::SETTINGS.users.password_min_length)
 				}
@@ -60,7 +60,7 @@ impl Display for LoginError {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		let message = {
 			match self {
-				LoginError::InvalidCredentials => format!("Invalid credentials"),
+				LoginError::InvalidCredentials => "Invalid credentials",
 			}
 		};
 		write!(f, "{}", message)

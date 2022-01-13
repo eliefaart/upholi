@@ -39,13 +39,10 @@ pub async fn route_get_photo(
 	req: HttpRequest,
 	proof: Option<web::Query<EntityAuthorizationProof>>,
 ) -> impl Responder {
-	let proof = match proof {
-		Some(proof) => Some(proof.into_inner()),
-		None => None,
-	};
+	let proof = proof.map(|proof| proof.into_inner());
 
 	match req.match_info().get("photo_id") {
-		Some(photo_id) => match Photo::get(&photo_id).await {
+		Some(photo_id) => match Photo::get(photo_id).await {
 			Ok(photo) => match photo {
 				Some(photo) => {
 					if photo.can_view(&session, proof) {
@@ -168,13 +165,10 @@ async fn download_photo(
 	photo_variant: &PhotoVariant,
 	proof: Option<web::Query<EntityAuthorizationProof>>,
 ) -> impl Responder {
-	let proof = match proof {
-		Some(proof) => Some(proof.into_inner()),
-		None => None,
-	};
+	let proof = proof.map(|proof| proof.into_inner());
 
 	match req.match_info().get("photo_id") {
-		Some(photo_id) => match Photo::get(&photo_id).await {
+		Some(photo_id) => match Photo::get(photo_id).await {
 			Ok(photo) => match photo {
 				Some(photo) => {
 					if !photo.can_view(&session, proof) {
