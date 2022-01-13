@@ -25,7 +25,7 @@ pub fn hash_password_with_length(password: &str, salt: &str, length: usize) -> R
 			};
 			let algorithm = Ident::new("pbkdf2-sha512");
 
-			match Pbkdf2.hash_password_customized(&password.as_bytes(), Some(algorithm), None, params, salt) {
+			match Pbkdf2.hash_password_customized(password.as_bytes(), Some(algorithm), None, params, salt) {
 				Ok(phc) => Ok(phc.to_string()),
 				Err(error) => Err(Box::from(error.to_string())),
 			}

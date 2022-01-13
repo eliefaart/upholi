@@ -1,3 +1,5 @@
+use std::fmt;
+
 use serde::{Deserialize, Serialize};
 
 pub mod http;
@@ -12,24 +14,34 @@ pub enum PhotoVariant {
 }
 
 impl PhotoVariant {
-	pub fn to_string(&self) -> String {
+	// pub fn to_string(&self) -> String {
+	// 	match self {
+	// 		PhotoVariant::Thumbnail => "thumbnail".into(),
+	// 		PhotoVariant::Preview => "preview".into(),
+	// 		PhotoVariant::Original => "original".into(),
+	// 	}
+	// }
+}
+
+impl fmt::Display for PhotoVariant {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self {
-			PhotoVariant::Thumbnail => "thumbnail".into(),
-			PhotoVariant::Preview => "preview".into(),
-			PhotoVariant::Original => "original".into(),
+			PhotoVariant::Thumbnail => write!(f, "thumbnail"),
+			PhotoVariant::Preview => write!(f, "preview"),
+			PhotoVariant::Original => write!(f, "original")
 		}
 	}
 }
 
-impl Into<String> for PhotoVariant {
-	fn into(self) -> String {
-		self.to_string()
+impl From<PhotoVariant> for String {
+	fn from(photo_variant: PhotoVariant) -> String {
+		photo_variant.to_string()
 	}
 }
 
-impl Into<String> for &PhotoVariant {
-	fn into(self) -> String {
-		self.to_string()
+impl From<&PhotoVariant> for String {
+	fn from(photo_variant: &PhotoVariant) -> String {
+		photo_variant.to_string()
 	}
 }
 
@@ -61,8 +73,8 @@ pub enum ShareType {
 
 impl Clone for ShareType {
 	fn clone(&self) -> Self {
-		match self {
-			&Self::Album => Self::Album,
+		match *self {
+			Self::Album => Self::Album,
 		}
 	}
 }
