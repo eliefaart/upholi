@@ -41,7 +41,7 @@ impl Entity for Photo {
 	type TJavaScript = JsPhoto;
 
 	fn from_encrypted(source: Self::TEncrypted, key: &[u8]) -> Result<Self> {
-		let photo_data_json = decrypt_data_base64(&key, &source.data)?;
+		let photo_data_json = decrypt_data_base64(key, &source.data)?;
 		let photo_data: PhotoData = serde_json::from_slice(&photo_data_json)?;
 
 		let js_value = Self::TJavaScript {
@@ -54,7 +54,7 @@ impl Entity for Photo {
 		};
 
 		Ok(Self {
-			key: key.clone().to_vec(),
+			key: key.to_vec(),
 			encrypted: source,
 			data: photo_data,
 			js_value,

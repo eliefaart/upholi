@@ -24,10 +24,10 @@ pub struct PhotoUploadInfo {
 impl PhotoUploadInfo {
 	/// Try to construct an object from image file bytes
 	pub fn try_from_slice(bytes: &[u8]) -> Result<Self> {
-		let exif = Exif::parse_from_photo_bytes(&bytes)?;
+		let exif = Exif::parse_from_photo_bytes(bytes)?;
 		let exif_orientation = exif.orientation.unwrap_or(1);
 
-		let image = Image::from_buffer(&bytes, exif_orientation as u8)?;
+		let image = Image::from_buffer(bytes, exif_orientation as u8)?;
 		Ok(Self { image, exif })
 	}
 
@@ -107,9 +107,9 @@ impl UpholiClientHelper {
 
 	/// Derive a symmetric encryption key from a user's credentials
 	fn get_key_from_user_credentials(username: &str, password: &str) -> Result<Vec<u8>> {
-		if username.len() == 0 {
+		if username.is_empty() {
 			Err(Box::from("Username is empty"))
-		} else if password.len() == 0 {
+		} else if password.is_empty() {
 			Err(Box::from("Password is empty"))
 		} else {
 			// The salt is based on username; hash username to ensure minimum length.
@@ -129,7 +129,7 @@ impl UpholiClientHelper {
 	}
 
 	pub async fn upload_photo(base_url: &str, private_key: &[u8], upload_info: &PhotoUploadInfo) -> Result<String> {
-		let mut request_data = Self::get_upload_photo_request_data(&upload_info, &private_key)?;
+		let mut request_data = Self::get_upload_photo_request_data(upload_info, private_key)?;
 
 		let exists = Self::photo_exists(base_url, &request_data.hash).await?;
 		if exists {
@@ -140,9 +140,9 @@ impl UpholiClientHelper {
 			let photo_key = crate::encryption::symmetric::decrypt_data_base64(private_key, &request_data.key)?;
 
 			// Encrypt photo bytes
-			let thumbnail_encrypted = crate::encryption::symmetric::encrypt_slice(&photo_key, &upload_info.bytes_thumbnail())?;
-			let preview_encrypted = crate::encryption::symmetric::encrypt_slice(&photo_key, &upload_info.bytes_preview())?;
-			let original_encrypted = crate::encryption::symmetric::encrypt_slice(&photo_key, &upload_info.bytes_original())?;
+			let thumbnail_encrypted = crate::encryption::symmetric::encrypt_slice(&photo_key, upload_info.bytes_thumbnail())?;
+			let preview_encrypted = crate::encryption::symmetric::encrypt_slice(&photo_key, upload_info.bytes_preview())?;
+			let original_encrypted = crate::encryption::symmetric::encrypt_slice(&photo_key, upload_info.bytes_original())?;
 
 			// Store nonces in request data
 			request_data.thumbnail_nonce = thumbnail_encrypted.nonce;
@@ -196,7 +196,7 @@ impl UpholiClientHelper {
 	}
 
 	pub async fn get_photo(base_url: &str, private_key: &[u8], id: &str, key: &Option<String>) -> Result<Photo> {
-		let photo = UpholiClientHelper::get_photo_encrypted(base_url, id, &key).await?;
+		let photo = UpholiClientHelper::get_photo_encrypted(base_url, id, key).await?;
 		let photo = match key {
 			Some(photo_key) => Photo::from_encrypted(photo, &base64::decode_config(photo_key, base64::STANDARD)?)?,
 			None => Photo::from_encrypted_with_owner_key(photo, private_key)?,
@@ -219,7 +219,7 @@ impl UpholiClientHelper {
 		Ok(encrypted_photo)
 	}
 
-	pub async fn delete_photos(base_url: &str, private_key: &[u8], ids: &Vec<String>) -> Result<()> {
+	pub async fn delete_photos(base_url: &str, private_key: &[u8], ids: &[String]) -> Result<()> {
 		// Remove photos from all albums they are part of
 		let albums = Self::get_albums(base_url, private_key).await?;
 		for album in albums {
@@ -280,12 +280,12 @@ impl UpholiClientHelper {
 		photo_variant: PhotoVariant,
 		key: &Option<String>,
 	) -> Result<String> {
-		if id == "" {
+		if id.is_empty() {
 			Ok(String::new())
 		} else {
 			let photo = Self::get_photo(base_url, private_key, id, key).await?;
 			let photo_data = photo.get_data();
-			let base64 = Self::get_photo_base64(base_url, private_key, id, photo_variant, &key).await?;
+			let base64 = Self::get_photo_base64(base_url, private_key, id, photo_variant, key).await?;
 
 			let src = format!("data:{};base64,{}", photo_data.content_type, base64);
 			Ok(src)
@@ -485,7 +485,7 @@ impl UpholiClientHelper {
 
 		let album_data = album.get_data_mut();
 		for id in photos {
-			if !album_data.photos.contains(&id) {
+			if !album_data.photos.contains(id) {
 				album_data.photos.push(id.to_owned());
 			}
 		}
@@ -502,7 +502,7 @@ impl UpholiClientHelper {
 		album_data.photos.retain(|id| !photos.contains(id));
 
 		if let Some(thumb_photo_id) = &album_data.thumbnail_photo_id {
-			if photos.contains(&thumb_photo_id) {
+			if photos.contains(thumb_photo_id) {
 				album_data.thumbnail_photo_id = None;
 			}
 		}
@@ -519,7 +519,7 @@ impl UpholiClientHelper {
 		};
 
 		let salt = "todo";
-		let share_key = crate::encryption::symmetric::derive_key_from_string(&password, salt)?;
+		let share_key = crate::encryption::symmetric::derive_key_from_string(password, salt)?;
 		let share_key_encrypt_result = crate::encryption::symmetric::encrypt_slice(private_key, &share_key)?;
 
 		// TODO: Don't get every single photo, only need the ones included in album
@@ -533,7 +533,7 @@ impl UpholiClientHelper {
 		let data: ShareData = match type_ {
 			ShareType::Album => {
 				let album = Self::get_album(base_url, private_key, id).await?;
-				album.create_share_data(&private_key, &all_photos)?
+				album.create_share_data(private_key, &all_photos)?
 			}
 		};
 		let data_json = serde_json::to_string(&data)?;
@@ -580,7 +580,7 @@ impl UpholiClientHelper {
 		let mut shares = Vec::new();
 
 		for share in encrypted_shares {
-			let share = Share::from_encrypted_with_owner_key(share, &private_key)?;
+			let share = Share::from_encrypted_with_owner_key(share, private_key)?;
 			shares.push(share);
 		}
 
@@ -590,7 +590,7 @@ impl UpholiClientHelper {
 	/// Get a share by decrypting it using owner's key.
 	pub async fn get_share(base_url: &str, id: &str, private_key: &[u8]) -> Result<Share> {
 		let share = http::get_share(base_url, id).await?;
-		let share = Share::from_encrypted_with_owner_key(share, &private_key)?;
+		let share = Share::from_encrypted_with_owner_key(share, private_key)?;
 
 		Ok(share)
 	}
@@ -600,7 +600,7 @@ impl UpholiClientHelper {
 		let share = http::get_share(base_url, id).await?;
 
 		let salt = "todo";
-		let key = encryption::symmetric::derive_key_from_string(&password, salt)?;
+		let key = encryption::symmetric::derive_key_from_string(password, salt)?;
 		let share = Share::from_encrypted(share, &key)?;
 
 		Ok(share)
@@ -635,10 +635,9 @@ impl UpholiClientHelper {
 						id: photo.id.clone(),
 						width: photo.width,
 						height: photo.height,
-						key: match photo_keys.get(&photo.id) {
-							Some(bytes) => Some(base64::encode_config(bytes, base64::STANDARD)),
-							None => None,
-						},
+						key: photo_keys
+							.get(&photo.id)
+							.map(|bytes| base64::encode_config(bytes, base64::STANDARD)),
 					});
 				}
 
@@ -653,10 +652,9 @@ impl UpholiClientHelper {
 							id: photo.id.clone(),
 							width: photo.width,
 							height: photo.height,
-							key: match photo_keys.get(&photo.id) {
-								Some(bytes) => Some(base64::encode_config(bytes, base64::STANDARD)),
-								None => None,
-							},
+							key: photo_keys
+								.get(&photo.id)
+								.map(|bytes| base64::encode_config(bytes, base64::STANDARD)),
 						})
 					}
 					None => None,
@@ -677,7 +675,7 @@ impl UpholiClientHelper {
 
 	/// Find a share based on its identifier string
 	pub async fn find_share(base_url: &str, private_key: &[u8], share_type: &ShareType, id: &str) -> Result<Option<Share>> {
-		let identifier_hash = Share::get_identifier_hash(&share_type, id)?;
+		let identifier_hash = Share::get_identifier_hash(share_type, id)?;
 		let shares = Self::get_shares(
 			base_url,
 			private_key,
@@ -686,7 +684,7 @@ impl UpholiClientHelper {
 			}),
 		)
 		.await?;
-		Ok(shares.into_iter().nth(0))
+		Ok(shares.into_iter().next())
 	}
 
 	async fn update_album(base_url: &str, private_key: &[u8], id: &str, album: &Album) -> Result<()> {

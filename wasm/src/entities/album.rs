@@ -122,7 +122,7 @@ impl Entity for Album {
 }
 
 impl Shareable for Album {
-	fn create_share_data(&self, key: &[u8], photos: &Vec<Photo>) -> Result<ShareData> {
+	fn create_share_data(&self, key: &[u8], photos: &[Photo]) -> Result<ShareData> {
 		let album_key = decrypt_data_base64(key, &self.encrypted.key)?;
 
 		// How is this function going to figure out the photo's keys?
@@ -141,7 +141,7 @@ impl Shareable for Album {
 
 		Ok(ShareData::Album(AlbumShareData {
 			album_id: self.get_id().into(),
-			album_key: album_key,
+			album_key,
 			photos: photos_info,
 		}))
 	}

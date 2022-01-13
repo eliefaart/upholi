@@ -143,37 +143,37 @@ impl UpholiClient {
 	/// Get a base64 string of a photo's thumbnail image
 	#[wasm_bindgen(js_name = getPhotoThumbnailImageSrc)]
 	pub fn get_photo_thumbnail_image_src(&self, id: String) -> js_sys::Promise {
-		Self::get_photo_image_src(&self, id, PhotoVariant::Thumbnail, None)
+		Self::get_photo_image_src(self, id, PhotoVariant::Thumbnail, None)
 	}
 
 	/// Get a base64 string of a photo's preview image
 	#[wasm_bindgen(js_name = getPhotoPreviewImageSrc)]
 	pub fn get_photo_preview_image_src(&self, id: String) -> js_sys::Promise {
-		Self::get_photo_image_src(&self, id, PhotoVariant::Preview, None)
+		Self::get_photo_image_src(self, id, PhotoVariant::Preview, None)
 	}
 
 	/// Get a base64 string of photo's original file
 	#[wasm_bindgen(js_name = getPhotoOriginalImageSrc)]
 	pub fn get_photo_original_image_src(&self, id: String) -> js_sys::Promise {
-		Self::get_photo_image_src(&self, id, PhotoVariant::Original, None)
+		Self::get_photo_image_src(self, id, PhotoVariant::Original, None)
 	}
 
 	/// Get a base64 string of a photo's thumbnail image
 	#[wasm_bindgen(js_name = getPhotoThumbnailImageSrcWithProof)]
 	pub fn get_photo_thumbnail_image_src_with_proof(&self, id: String, key: String) -> js_sys::Promise {
-		Self::get_photo_image_src(&self, id, PhotoVariant::Thumbnail, Some(key))
+		Self::get_photo_image_src(self, id, PhotoVariant::Thumbnail, Some(key))
 	}
 
 	/// Get a base64 string of a photo's preview image
 	#[wasm_bindgen(js_name = getPhotoPreviewImageSrcWithProof)]
 	pub fn get_photo_preview_image_src_with_proof(&self, id: String, key: String) -> js_sys::Promise {
-		Self::get_photo_image_src(&self, id, PhotoVariant::Preview, Some(key))
+		Self::get_photo_image_src(self, id, PhotoVariant::Preview, Some(key))
 	}
 
 	/// Get a base64 string of photo's original file
 	#[wasm_bindgen(js_name = getPhotoOriginalImageSrcWithProof)]
 	pub fn get_photo_original_image_src_with_proof(&self, id: String, key: String) -> js_sys::Promise {
-		Self::get_photo_image_src(&self, id, PhotoVariant::Original, Some(key))
+		Self::get_photo_image_src(self, id, PhotoVariant::Original, Some(key))
 	}
 
 	/// Get a string of a photo variant that can be used within an HTML image element's src attribute
@@ -196,7 +196,7 @@ impl UpholiClient {
 		let base_url = self.base_url.to_owned();
 
 		future_to_promise(async move {
-			let photo_ids = photo_ids.iter().map(|id| id.into()).collect();
+			let photo_ids: Vec<String> = photo_ids.iter().map(|id| id.into()).collect();
 			match UpholiClientHelper::delete_photos(&base_url, &private_key, &photo_ids).await {
 				Ok(_) => Ok(JsValue::UNDEFINED),
 				Err(error) => Err(format!("{}", error).into()),
@@ -371,7 +371,7 @@ impl UpholiClient {
 	/// Find an album share
 	#[wasm_bindgen(js_name = findAlbumShare)]
 	pub fn find_album_share(&self, id: String) -> js_sys::Promise {
-		Self::find_share(&self, ShareType::Album, id)
+		Self::find_share(self, ShareType::Album, id)
 	}
 
 	/// Find a share of given type

@@ -4,10 +4,7 @@ use upholi_lib::result::Result;
 
 use crate::entities::EntityWithProof;
 
-pub async fn get_photos_using_key_access_proof(
-	base_url: &str,
-	entities: &Vec<EntityWithProof>,
-) -> Result<Vec<response::PhotoMinimal>> {
+pub async fn get_photos_using_key_access_proof(base_url: &str, entities: &[EntityWithProof]) -> Result<Vec<response::PhotoMinimal>> {
 	let url = format!("{}/api/photos/find", &base_url);
 	let client = reqwest::Client::new();
 

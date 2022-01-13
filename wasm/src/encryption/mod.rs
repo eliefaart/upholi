@@ -55,7 +55,7 @@ pub mod symmetric {
 
 	/// Encrypt bytes
 	pub fn encrypt_slice_with_nonce(key: &[u8], nonce: &[u8], data: &[u8]) -> Result<EncryptionResult> {
-		let encrypted = aes128::encrypt(&key, &nonce, data)?;
+		let encrypted = aes128::encrypt(key, nonce, data)?;
 
 		Ok(EncryptionResult {
 			nonce: String::from_utf8(nonce.into())?,

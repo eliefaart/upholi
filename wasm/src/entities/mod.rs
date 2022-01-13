@@ -28,7 +28,7 @@ pub trait Entity {
 }
 
 pub trait Shareable {
-	fn create_share_data(&self, key: &[u8], photos: &Vec<Photo>) -> Result<ShareData>;
+	fn create_share_data(&self, key: &[u8], photos: &[Photo]) -> Result<ShareData>;
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]

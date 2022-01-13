@@ -48,7 +48,7 @@ impl Image {
 		}
 
 		Ok(Self {
-			hash: hashing::compute_sha256_hash(&bytes)?,
+			hash: hashing::compute_sha256_hash(bytes)?,
 			width,
 			height,
 			bytes_original: bytes.to_vec(),
@@ -68,7 +68,7 @@ impl Image {
 	/// Scale this image down to fit within a specific size. The image's aspect ratio is preserved. The image is scaled to the maximum size possible while neither height nor width exceeding specified 'to_size'.
 	fn resize_image(image: &DynamicImage, to_size: u32) -> Option<DynamicImage> {
 		// Get current dimensions
-		let (width, height) = Self::get_image_dimensions(&image);
+		let (width, height) = Self::get_image_dimensions(image);
 
 		// Check if resizing image would make sense based on current dimensions
 		// Only resize if target dimensions are smaller than current ones.
