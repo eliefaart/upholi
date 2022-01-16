@@ -38,7 +38,7 @@ class UpholiService {
 	}
 
 	async login(username: string, password: string): Promise<void> {
-		const key = await wasm.UpholiClient.login(this.baseUrl, username, password);
+		const key = await await this.client.login(username, password);
 
 		// Write key to localStorage
 		UpholiServiceLocalStorageHelper.storeKey(key);

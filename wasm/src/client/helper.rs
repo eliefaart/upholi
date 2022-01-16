@@ -1,6 +1,4 @@
-use std::collections::HashMap;
-
-use crate::client::http;
+use super::http::HttpClient;
 use crate::entities::album::{self, Album, JsAlbumFull, JsAlbumPhoto};
 use crate::entities::photo::{Photo, PhotoData};
 use crate::entities::share::{Share, ShareData};
@@ -9,11 +7,17 @@ use crate::exif::Exif;
 use crate::hashing::compute_sha256_hash;
 use crate::images::Image;
 use crate::{encryption, hashing};
-use reqwest::StatusCode;
+use lazy_static::lazy_static;
+use std::collections::HashMap;
+use std::sync::RwLock;
 use upholi_lib::http::request::{FindSharesFilter, Login, Register};
-use upholi_lib::http::response::{CreateAlbum, ErrorResult, UploadPhoto, UserInfo};
+use upholi_lib::http::response::UserInfo;
 use upholi_lib::result::Result;
 use upholi_lib::{http::*, PhotoVariant, ShareType};
+
+lazy_static! {
+	pub static ref CLIENT: RwLock<UpholiClientHelper> = RwLock::new(UpholiClientHelper::new());
+}
 
 /// Wrapper struct containing info about bytes to upload.
 pub struct PhotoUploadInfo {
@@ -46,10 +50,22 @@ impl PhotoUploadInfo {
 
 /// Helper functions for UpholiClient.
 /// This object is not exposed outside the wasm.
-pub struct UpholiClientHelper {}
+pub struct UpholiClientHelper {
+	http_client: HttpClient,
+}
 
 impl UpholiClientHelper {
-	pub async fn register(base_url: &str, username: &str, password: &str) -> Result<()> {
+	pub fn new() -> Self {
+		Self {
+			http_client: HttpClient::new(""),
+		}
+	}
+
+	pub fn set_base_url(&mut self, base_url: &str) {
+		self.http_client = HttpClient::new(base_url);
+	}
+
+	pub async fn register(&self, username: &str, password: &str) -> Result<()> {
 		let password_derived_key = Self::get_key_from_user_credentials(username, password)?;
 
 		// This will be the master encryption key of the user.
@@ -64,20 +80,11 @@ impl UpholiClientHelper {
 			key: key_encrypted.into(),
 		};
 
-		let url = format!("{}/api/user/register", &base_url).to_owned();
-		let client = reqwest::Client::new();
-		let response = client.post(&url).json(&body).send().await?;
-
-		if response.status() == StatusCode::OK {
-			Ok(())
-		} else {
-			let error: ErrorResult = response.json().await?;
-			Err(Box::from(error.message))
-		}
+		self.http_client.register_user(&body).await
 	}
 
 	/// Returns the user's master encryption key when login was succesful
-	pub async fn login(base_url: &str, username: &str, password: &str) -> Result<Vec<u8>> {
+	pub async fn login(&self, username: &str, password: &str) -> Result<Vec<u8>> {
 		// derive public/private key pair from password
 		// encrypt username with private key
 		// send encrypted username to server
@@ -88,21 +95,12 @@ impl UpholiClientHelper {
 			password: password.into(),
 		};
 
-		let url = format!("{}/api/user/login", &base_url).to_owned();
-		let client = reqwest::Client::new();
-		let response = client.post(&url).json(&body).send().await?;
+		let user = self.http_client.login(&body).await?;
 
-		if response.status() == StatusCode::OK {
-			let user: UserInfo = response.json().await?;
+		let password_derived_key = Self::get_key_from_user_credentials(username, password)?;
+		let key = encryption::symmetric::decrypt_data_base64(&password_derived_key, &user.key)?;
 
-			let password_derived_key = Self::get_key_from_user_credentials(username, password)?;
-			let key = encryption::symmetric::decrypt_data_base64(&password_derived_key, &user.key)?;
-
-			Ok(key)
-		} else {
-			let error: ErrorResult = response.json().await?;
-			Err(Box::from(error.message))
-		}
+		Ok(key)
 	}
 
 	/// Derive a symmetric encryption key from a user's credentials
@@ -119,19 +117,18 @@ impl UpholiClientHelper {
 		}
 	}
 
-	pub async fn get_user_info(base_url: &str) -> Result<UserInfo> {
-		let url = format!("{}/api/user/info", &base_url).to_owned();
-		let client = reqwest::Client::new();
-		let response = client.get(&url).send().await?;
-		let user_info: UserInfo = response.json().await?;
-
-		Ok(user_info)
+	pub async fn get_user_info(&self) -> Result<UserInfo> {
+		self.http_client.get_user_info().await
 	}
 
-	pub async fn upload_photo(base_url: &str, private_key: &[u8], upload_info: &PhotoUploadInfo) -> Result<String> {
+	pub async fn get_photos(&self) -> Result<Vec<response::PhotoMinimal>> {
+		self.http_client.get_photos().await
+	}
+
+	pub async fn upload_photo(&self, private_key: &[u8], upload_info: &PhotoUploadInfo) -> Result<String> {
 		let mut request_data = Self::get_upload_photo_request_data(upload_info, private_key)?;
 
-		let exists = Self::photo_exists(base_url, &request_data.hash).await?;
+		let exists = self.http_client.photo_exists(&request_data.hash).await?;
 		if exists {
 			// No error, just skipping upload.
 			Ok(String::new())
@@ -149,54 +146,20 @@ impl UpholiClientHelper {
 			request_data.preview_nonce = preview_encrypted.nonce;
 			request_data.original_nonce = original_encrypted.nonce;
 
-			// Prepare request body
-			let multipart = crate::multipart::MultipartBuilder::new()
-				.add_bytes("data", &serde_json::to_vec(&request_data)?)
-				.add_bytes("thumbnail", &thumbnail_encrypted.bytes)
-				.add_bytes("preview", &preview_encrypted.bytes)
-				.add_bytes("original", &original_encrypted.bytes)
-				.build();
-
-			// Send request
-			let url = format!("{}/api/photo", &base_url).to_owned();
-			let client = reqwest::Client::new();
-			let response = client
-				.post(&url)
-				.body(multipart.body)
-				.header("Content-Type", multipart.content_type)
-				.header("Content-Length", multipart.content_length)
-				.send()
-				.await?;
-			let respone: UploadPhoto = response.json().await?;
-
-			Ok(respone.id)
+			self.http_client
+				.create_photo(
+					&request_data,
+					&thumbnail_encrypted.bytes,
+					&preview_encrypted.bytes,
+					&original_encrypted.bytes,
+				)
+				.await
 		}
 	}
 
-	/// Check if photo with hash already exists for current user
-	pub async fn photo_exists(base_url: &str, hash: &str) -> Result<bool> {
-		let url = format!("{}/api/photo?hash={}", &base_url, hash).to_owned();
+	pub async fn get_photo(&self, private_key: &[u8], id: &str, key: &Option<String>) -> Result<Photo> {
+		let photo = self.http_client.get_photo(id, key).await?;
 
-		let client = reqwest::Client::new();
-		let response = client.head(&url).send().await?;
-
-		match response.status() {
-			StatusCode::NO_CONTENT => Ok(true),
-			StatusCode::NOT_FOUND => Ok(false),
-			status_code => Err(Box::from(format!("Unexpected response code: {}", status_code))),
-		}
-	}
-
-	pub async fn get_photos(base_url: &str) -> Result<Vec<response::PhotoMinimal>> {
-		let url = format!("{}/api/photos", &base_url);
-		let response = reqwest::get(url).await?;
-		let photos = response.json::<Vec<response::PhotoMinimal>>().await?;
-
-		Ok(photos)
-	}
-
-	pub async fn get_photo(base_url: &str, private_key: &[u8], id: &str, key: &Option<String>) -> Result<Photo> {
-		let photo = UpholiClientHelper::get_photo_encrypted(base_url, id, key).await?;
 		let photo = match key {
 			Some(photo_key) => Photo::from_encrypted(photo, &base64::decode_config(photo_key, base64::STANDARD)?)?,
 			None => Photo::from_encrypted_with_owner_key(photo, private_key)?,
@@ -204,61 +167,36 @@ impl UpholiClientHelper {
 		Ok(photo)
 	}
 
-	/// Get photo as returned by server.
-	pub async fn get_photo_encrypted(base_url: &str, id: &str, key: &Option<String>) -> Result<response::Photo> {
-		let mut url = format!("{}/api/photo/{}", base_url, id);
-
-		if let Some(key) = key {
-			let key_hash = compute_sha256_hash(&base64::decode_config(key, base64::STANDARD)?)?;
-			url = format!("{}?key_hash={}", url, key_hash);
-		}
-
-		let response = reqwest::get(url).await?;
-		let encrypted_photo = response.json::<response::Photo>().await?;
-
-		Ok(encrypted_photo)
-	}
-
-	pub async fn delete_photos(base_url: &str, private_key: &[u8], ids: &[String]) -> Result<()> {
+	pub async fn delete_photos(&self, private_key: &[u8], ids: &[String]) -> Result<()> {
 		// Remove photos from all albums they are part of
-		let albums = Self::get_albums(base_url, private_key).await?;
+		let albums = self.get_albums(private_key).await?;
 		for album in albums {
 			let album_data = album.get_data();
 			if album_data.photos.iter().any(|photo| ids.contains(photo)) {
-				Self::remove_photos_from_album(base_url, private_key, album.get_id(), ids).await?;
+				self.remove_photos_from_album(private_key, album.get_id(), ids).await?;
 			}
 		}
 
 		// Delete photos
 		for id in ids {
-			let url = format!("{}/api/photo/{}", base_url, id);
-			let client = reqwest::Client::new();
-			client.delete(url).send().await?;
+			self.http_client.delete_photo(id).await?;
 		}
 
 		Ok(())
 	}
 
 	pub async fn get_photo_base64(
-		base_url: &str,
+		&self,
 		private_key: &[u8],
 		id: &str,
 		photo_variant: PhotoVariant,
 		key: &Option<String>,
 	) -> Result<String> {
-		let mut url = format!("{}/api/photo/{}/{}", base_url, id, photo_variant.to_string());
-
-		if let Some(key) = key {
-			let key_hash = compute_sha256_hash(&base64::decode_config(key, base64::STANDARD)?)?;
-			url = format!("{}?key_hash={}", url, key_hash);
-		}
-
 		// Get photo bytes
-		let response = reqwest::get(url).await?;
-		let encrypted_bytes = response.bytes().await?;
+		let encrypted_bytes = self.http_client.get_photo_base64(id, &photo_variant, key).await?;
 
 		// Decrypt photo bytes
-		let photo = Self::get_photo_encrypted(base_url, id, key).await?;
+		let photo = self.http_client.get_photo(id, key).await?;
 		let photo_key = match key {
 			Some(photo_key) => base64::decode_config(&photo_key, base64::STANDARD)?,
 			None => crate::encryption::symmetric::decrypt_data_base64(private_key, &photo.key)?,
@@ -274,7 +212,7 @@ impl UpholiClientHelper {
 	}
 
 	pub async fn get_photo_image_src(
-		base_url: &str,
+		&self,
 		private_key: &[u8],
 		id: &str,
 		photo_variant: PhotoVariant,
@@ -283,9 +221,9 @@ impl UpholiClientHelper {
 		if id.is_empty() {
 			Ok(String::new())
 		} else {
-			let photo = Self::get_photo(base_url, private_key, id, key).await?;
+			let photo = self.get_photo(private_key, id, key).await?;
 			let photo_data = photo.get_data();
-			let base64 = Self::get_photo_base64(base_url, private_key, id, photo_variant, key).await?;
+			let base64 = self.get_photo_base64(private_key, id, photo_variant, key).await?;
 
 			let src = format!("data:{};base64,{}", photo_data.content_type, base64);
 			Ok(src)
@@ -336,28 +274,24 @@ impl UpholiClientHelper {
 		})
 	}
 
-	async fn get_album(base_url: &str, private_key: &[u8], id: &str) -> Result<album::Album> {
-		let albums = Self::get_albums(base_url, private_key).await?;
+	async fn get_album(&self, private_key: &[u8], id: &str) -> Result<album::Album> {
+		let albums = self.get_albums(private_key).await?;
 		let album = albums.into_iter().find(|album| album.get_id() == id).ok_or("Album not found")?;
 
 		Ok(album)
 	}
 
-	async fn get_album_using_key_access_proof(base_url: &str, id: &str, album_key: &[u8]) -> Result<album::Album> {
-		let album_key_hash = compute_sha256_hash(album_key)?;
-		let url = format!("{}/api/album/{}?key_hash={}", &base_url, id, &album_key_hash);
-		let response = reqwest::get(url).await?;
-		let album_encrypted = response.json::<response::Album>().await?;
-
+	async fn get_album_using_key_access_proof(&self, id: &str, album_key: &[u8]) -> Result<album::Album> {
+		let album_encrypted = self.http_client.get_album_using_key_access_proof(id, album_key).await?;
 		let album = Album::from_encrypted(album_encrypted, album_key)?;
 
 		Ok(album)
 	}
 
-	pub async fn get_album_full(base_url: &str, private_key: &[u8], id: &str) -> Result<JsAlbumFull> {
-		let album = Self::get_album(base_url, private_key, id).await?;
+	pub async fn get_album_full(&self, private_key: &[u8], id: &str) -> Result<JsAlbumFull> {
+		let album = self.get_album(private_key, id).await?;
 		let album = album.as_js_value();
-		let photos = Self::get_photos(base_url).await?;
+		let photos = self.http_client.get_photos().await?;
 
 		let mut photos_in_album: Vec<JsAlbumPhoto> = vec![];
 		for photo in &photos {
@@ -396,8 +330,8 @@ impl UpholiClientHelper {
 		Ok(album)
 	}
 
-	pub async fn get_albums(base_url: &str, private_key: &[u8]) -> Result<Vec<album::Album>> {
-		let encrypted_albums = http::get_albums(base_url).await?;
+	pub async fn get_albums(&self, private_key: &[u8]) -> Result<Vec<album::Album>> {
+		let encrypted_albums = self.http_client.get_albums().await?;
 		let mut albums: Vec<album::Album> = vec![];
 
 		for album in encrypted_albums {
@@ -408,9 +342,7 @@ impl UpholiClientHelper {
 		Ok(albums)
 	}
 
-	pub async fn create_album(base_url: &str, private_key: &[u8], title: &str, initial_photo_ids: Vec<String>) -> Result<String> {
-		let url = format!("{}/api/album", &base_url).to_owned();
-
+	pub async fn create_album(&self, private_key: &[u8], title: &str, initial_photo_ids: Vec<String>) -> Result<String> {
 		let album_key = crate::encryption::symmetric::generate_key();
 		let album_key_encrypt_result = crate::encryption::symmetric::encrypt_slice(private_key, &album_key)?;
 		let album_key_hash = compute_sha256_hash(&album_key)?;
@@ -431,57 +363,49 @@ impl UpholiClientHelper {
 			key_hash: album_key_hash,
 		};
 
-		let client = reqwest::Client::new();
-		let response = client.post(&url).json(&body).send().await?;
-		let response_body: CreateAlbum = response.json().await?;
-
-		Ok(response_body.id)
+		let result = self.http_client.create_album(&body).await?;
+		Ok(result.id)
 	}
 
-	pub async fn delete_album(base_url: &str, id: &str) -> Result<()> {
+	pub async fn delete_album(&self, id: &str) -> Result<()> {
 		// Delete share for this album (if exists)
 		let identifier_hash = Share::get_identifier_hash(&ShareType::Album, id)?;
-		let shares = http::get_shares(
-			base_url,
-			Some(FindSharesFilter {
+		let shares = self
+			.http_client
+			.get_shares(Some(FindSharesFilter {
 				identifier_hash: Some(identifier_hash),
-			}),
-		)
-		.await?;
+			}))
+			.await?;
 
 		for share in shares {
-			Self::delete_share(base_url, &share.id).await?;
+			self.http_client.delete_share(&share.id).await?;
 		}
 
 		// Delete album itself
-		let url = format!("{}/api/album/{}", &base_url, &id).to_owned();
-		let client = reqwest::Client::new();
-		client.delete(&url).send().await?;
-
-		Ok(())
+		self.http_client.delete_album(id).await
 	}
 
-	pub async fn update_album_title_tags(base_url: &str, private_key: &[u8], id: &str, title: &str, tags: Vec<String>) -> Result<()> {
-		let mut album = Self::get_album(base_url, private_key, id).await?;
+	pub async fn update_album_title_tags(&self, private_key: &[u8], id: &str, title: &str, tags: Vec<String>) -> Result<()> {
+		let mut album = self.get_album(private_key, id).await?;
 
 		let mut album_data = album.get_data_mut();
 		album_data.title = title.into();
 		album_data.tags = tags;
 
-		Self::update_album(base_url, private_key, id, &album).await
+		self.update_album(private_key, id, &album).await
 	}
 
-	pub async fn update_album_cover(base_url: &str, private_key: &[u8], id: &str, thumbnail_photo_id: &str) -> Result<()> {
-		let mut album = Self::get_album(base_url, private_key, id).await?;
+	pub async fn update_album_cover(&self, private_key: &[u8], id: &str, thumbnail_photo_id: &str) -> Result<()> {
+		let mut album = self.get_album(private_key, id).await?;
 
 		let mut album_data = album.get_data_mut();
 		album_data.thumbnail_photo_id = Some(thumbnail_photo_id.into());
 
-		Self::update_album(base_url, private_key, id, &album).await
+		self.update_album(private_key, id, &album).await
 	}
 
-	pub async fn add_photos_to_album(base_url: &str, private_key: &[u8], id: &str, photos: &[String]) -> Result<()> {
-		let mut album = Self::get_album(base_url, private_key, id).await?;
+	pub async fn add_photos_to_album(&self, private_key: &[u8], id: &str, photos: &[String]) -> Result<()> {
+		let mut album = self.get_album(private_key, id).await?;
 
 		let album_data = album.get_data_mut();
 		for id in photos {
@@ -490,13 +414,13 @@ impl UpholiClientHelper {
 			}
 		}
 
-		Self::update_album(base_url, private_key, id, &album).await
+		self.update_album(private_key, id, &album).await
 	}
 
 	/// Remove given photo IDs from album.
 	/// Unsets the album's thumbnail if the current thumbnail is one of the photos to remove from album.
-	pub async fn remove_photos_from_album(base_url: &str, private_key: &[u8], id: &str, photos: &[String]) -> Result<()> {
-		let mut album = Self::get_album(base_url, private_key, id).await?;
+	pub async fn remove_photos_from_album(&self, private_key: &[u8], id: &str, photos: &[String]) -> Result<()> {
+		let mut album = self.get_album(private_key, id).await?;
 
 		let mut album_data = album.get_data_mut();
 		album_data.photos.retain(|id| !photos.contains(id));
@@ -507,32 +431,27 @@ impl UpholiClientHelper {
 			}
 		}
 
-		Self::update_album(base_url, private_key, id, &album).await
+		self.update_album(private_key, id, &album).await
 	}
 
 	/// Creates or updates a share.
-	pub async fn upsert_share(base_url: &str, private_key: &[u8], type_: ShareType, id: &str, password: &str) -> Result<String> {
-		let existing_share_for_album = Self::find_share(base_url, private_key, &type_, id).await?;
-		let url = match &existing_share_for_album {
-			Some(share) => format!("{}/api/share/{}", &base_url, share.get_id()).to_owned(),
-			None => format!("{}/api/share", &base_url).to_owned(),
-		};
-
+	pub async fn upsert_share(&self, private_key: &[u8], type_: ShareType, id: &str, password: &str) -> Result<String> {
+		let existing_share_for_album = self.find_share(private_key, &type_, id).await?;
 		let salt = "todo";
 		let share_key = crate::encryption::symmetric::derive_key_from_string(password, salt)?;
 		let share_key_encrypt_result = crate::encryption::symmetric::encrypt_slice(private_key, &share_key)?;
 
 		// TODO: Don't get every single photo, only need the ones included in album
-		let photos = Self::get_photos(base_url).await?;
+		let photos = self.http_client.get_photos().await?;
 		let mut all_photos: Vec<Photo> = vec![];
 		for photo in photos {
-			let photo = Self::get_photo(base_url, private_key, &photo.id, &None).await?;
+			let photo = self.get_photo(private_key, &photo.id, &None).await?;
 			all_photos.push(photo);
 		}
 
 		let data: ShareData = match type_ {
 			ShareType::Album => {
-				let album = Self::get_album(base_url, private_key, id).await?;
+				let album = self.get_album(private_key, id).await?;
 				album.create_share_data(private_key, &all_photos)?
 			}
 		};
@@ -550,33 +469,18 @@ impl UpholiClientHelper {
 			key: share_key_encrypt_result.into(),
 		};
 
-		let client = reqwest::Client::new();
-		let request = match existing_share_for_album.is_some() {
-			true => client.put(&url),
-			false => client.post(&url),
-		};
-		let response = request.json(&body).send().await?;
-
 		if let Some(existing_share) = existing_share_for_album {
-			Ok(existing_share.get_id().into())
+			let id = existing_share.get_id();
+			self.http_client.update_share(id, &body).await?;
+			Ok(id.into())
 		} else {
-			let response_body: response::CreateShare = response.json().await?;
-			Ok(response_body.id)
+			self.http_client.create_share(&body).await
 		}
 	}
 
-	/// Deletes a share.
-	pub async fn delete_share(base_url: &str, id: &str) -> Result<()> {
-		let url = format!("{}/api/share/{}", &base_url, &id).to_owned();
-		let client = reqwest::Client::new();
-		client.delete(&url).send().await?;
-
-		Ok(())
-	}
-
 	/// Get shares by decrypting them using owner's key.
-	pub async fn get_shares(base_url: &str, private_key: &[u8], filters: Option<FindSharesFilter>) -> Result<Vec<Share>> {
-		let encrypted_shares = http::get_shares(base_url, filters).await?;
+	pub async fn get_shares(&self, private_key: &[u8], filters: Option<FindSharesFilter>) -> Result<Vec<Share>> {
+		let encrypted_shares = self.http_client.get_shares(filters).await?;
 		let mut shares = Vec::new();
 
 		for share in encrypted_shares {
@@ -588,16 +492,16 @@ impl UpholiClientHelper {
 	}
 
 	/// Get a share by decrypting it using owner's key.
-	pub async fn get_share(base_url: &str, id: &str, private_key: &[u8]) -> Result<Share> {
-		let share = http::get_share(base_url, id).await?;
+	pub async fn get_share(&self, id: &str, private_key: &[u8]) -> Result<Share> {
+		let share = self.http_client.get_share(id).await?;
 		let share = Share::from_encrypted_with_owner_key(share, private_key)?;
 
 		Ok(share)
 	}
 
 	/// Get a share by decrypting it with key derived from given password.
-	pub async fn get_share_using_password(base_url: &str, id: &str, password: &str) -> Result<Share> {
-		let share = http::get_share(base_url, id).await?;
+	pub async fn get_share_using_password(&self, id: &str, password: &str) -> Result<Share> {
+		let share = self.http_client.get_share(id).await?;
 
 		let salt = "todo";
 		let key = encryption::symmetric::derive_key_from_string(password, salt)?;
@@ -607,13 +511,15 @@ impl UpholiClientHelper {
 	}
 
 	/// Get a share by decrypting it using owner's key.
-	pub async fn get_album_from_share(base_url: &str, share_id: &str, password: &str) -> Result<JsAlbumFull> {
-		let share = Self::get_share_using_password(base_url, share_id, password).await?;
+	pub async fn get_album_from_share(&self, share_id: &str, password: &str) -> Result<JsAlbumFull> {
+		let share = self.get_share_using_password(share_id, password).await?;
 		let data = share.get_data();
 
 		match data {
 			ShareData::Album(share_data) => {
-				let album = Self::get_album_using_key_access_proof(base_url, &share_data.album_id, &share_data.album_key).await?;
+				let album = self
+					.get_album_using_key_access_proof(&share_data.album_id, &share_data.album_key)
+					.await?;
 				let album_data = album.get_data();
 
 				let mut photos_proof = vec![];
@@ -628,7 +534,7 @@ impl UpholiClientHelper {
 					photo_keys.insert(&photo.id, photo_key);
 				}
 
-				let photos = http::get_photos_using_key_access_proof(base_url, &photos_proof).await?;
+				let photos = self.http_client.get_photos_using_key_access_proof(&photos_proof).await?;
 				let mut js_photos: Vec<JsAlbumPhoto> = Vec::new();
 				for photo in &photos {
 					js_photos.push(JsAlbumPhoto {
@@ -674,30 +580,32 @@ impl UpholiClientHelper {
 	}
 
 	/// Find a share based on its identifier string
-	pub async fn find_share(base_url: &str, private_key: &[u8], share_type: &ShareType, id: &str) -> Result<Option<Share>> {
+	pub async fn find_share(&self, private_key: &[u8], share_type: &ShareType, id: &str) -> Result<Option<Share>> {
 		let identifier_hash = Share::get_identifier_hash(share_type, id)?;
-		let shares = Self::get_shares(
-			base_url,
-			private_key,
-			Some(FindSharesFilter {
-				identifier_hash: Some(identifier_hash),
-			}),
-		)
-		.await?;
+		let shares = self
+			.get_shares(
+				private_key,
+				Some(FindSharesFilter {
+					identifier_hash: Some(identifier_hash),
+				}),
+			)
+			.await?;
 		Ok(shares.into_iter().next())
 	}
 
-	async fn update_album(base_url: &str, private_key: &[u8], id: &str, album: &Album) -> Result<()> {
-		let request_body = album.create_update_request_struct()?;
+	pub async fn delete_share(&self, id: &str) -> Result<()> {
+		self.http_client.delete_share(id).await
+	}
 
-		let url = format!("{}/api/album/{}", base_url, id).to_owned();
-		let client = reqwest::Client::new();
-		client.put(&url).json(&request_body).send().await?;
+	async fn update_album(&self, private_key: &[u8], id: &str, album: &Album) -> Result<()> {
+		let request_body = album.create_update_request_struct()?;
+		self.http_client.update_album(id, &request_body).await?;
 
 		// Refresh album share if there is one
-		let album_share = Self::find_share(base_url, private_key, &ShareType::Album, id).await?;
+		let album_share = self.find_share(private_key, &ShareType::Album, id).await?;
 		if let Some(album_share) = album_share {
-			Self::upsert_share(base_url, private_key, ShareType::Album, id, &album_share.as_js_value().password).await?;
+			self.upsert_share(private_key, ShareType::Album, id, &album_share.as_js_value().password)
+				.await?;
 		}
 
 		Ok(())
