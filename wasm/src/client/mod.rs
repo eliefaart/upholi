@@ -1,10 +1,10 @@
 use crate::client::helper::PhotoUploadInfo;
+use crate::entities::Entity;
 use js_sys::{Array, JsString};
+use upholi_lib::result::Result;
 use upholi_lib::{PhotoVariant, ShareType};
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::future_to_promise;
-
-use crate::entities::Entity;
 
 mod helper;
 mod http;
@@ -39,6 +39,30 @@ impl UpholiClient {
 	pub fn new(private_key: String) -> UpholiClient {
 		UpholiClient { private_key }
 	}
+
+	// /**
+	//  * I may be able to simplify a lot of code once this can compile.
+	//  * Async closures are a nightly feature, but I don't want to switch to nightly.
+	//  * Need to wait for stablization:
+	//  * https://github.com/rust-lang/rust/issues/62290
+	//  */
+	// fn promise<F>(&self, func: &'static dyn Fn(RwLockReadGuard<UpholiClientHelper>) -> F) -> js_sys::Promise
+	// where
+	// 	F: Future<Output = Result<JsValue>>,
+	// {
+	// 	future_to_promise(async move {
+	// 		let client = helper::CLIENT.read().unwrap();
+	// 		match func(client).await {
+	// 			Ok(js_value) => Ok(js_value),
+	// 			Err(error) => Err(format!("{}", error).into()),
+	// 		}
+	// 	})
+	// }
+	//
+	// #[wasm_bindgen(js_name = promise_example)]
+	// pub fn promise_example(&self, username: String, password: String) -> js_sys::Promise {
+	// 	self.promise(&async |client: RwLockReadGuard<UpholiClientHelper>| Ok(JsValue::from_str("")))
+	// }
 
 	#[wasm_bindgen(js_name = register)]
 	pub fn register(&self, username: String, password: String) -> js_sys::Promise {
