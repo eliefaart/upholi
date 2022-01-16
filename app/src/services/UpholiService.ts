@@ -8,20 +8,19 @@ import { Share } from "../models/Share";
  * This class exists mainly to assign types to the return values of functions within 'wasm.UpholiClient'
  */
 class UpholiService {
-	private baseUrl: string;
 	private _client: wasm.UpholiClient | null;
 	private get client(): wasm.UpholiClient {
 		if (!this._client) {
 			// Init from stored key
 			const key = UpholiServiceLocalStorageHelper.getKey();
 			if (key) {
-				this._client = new wasm.UpholiClient(this.baseUrl, key);
+				this._client = new wasm.UpholiClient(key);
 			}
 			else {
 				//throw Error("WASM client not initialized. Is user logged in?");
 				// For anonymous calls where user's private key is not needed.
 				// TODO: I am not happy with this constructor now, need to rethink it in future.
-				this._client = new wasm.UpholiClient(this.baseUrl, "");
+				this._client = new wasm.UpholiClient("");
 			}
 		}
 
@@ -29,7 +28,6 @@ class UpholiService {
 	}
 
 	constructor() {
-		this.baseUrl = document.location.origin;
 		this._client = null;
 	}
 
@@ -43,8 +41,8 @@ class UpholiService {
 		// Write key to localStorage
 		UpholiServiceLocalStorageHelper.storeKey(key);
 
-		// Init innter client
-		this._client = new wasm.UpholiClient(this.baseUrl, key);
+		// Init inner client
+		this._client = new wasm.UpholiClient(key);
 	}
 
 	async logout(): Promise<void> {

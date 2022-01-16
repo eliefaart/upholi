@@ -19,7 +19,11 @@ mod http;
  * npm install --save ..\wasm\pkg\
  */
 
-// https://rustwasm.github.io/wasm-bindgen/reference/attributes/on-rust-exports/start.html
+#[wasm_bindgen(start)]
+#[allow(dead_code)]
+pub fn start() -> Result<(), JsValue> {
+	Ok(())
+}
 
 /// Client for Upholi server.
 /// For requests that require a user to be authenticated.
@@ -32,8 +36,7 @@ pub struct UpholiClient {
 #[wasm_bindgen]
 impl UpholiClient {
 	#[wasm_bindgen(constructor)]
-	pub fn new(base_url: String, private_key: String) -> UpholiClient {
-		helper::CLIENT.write().unwrap().set_base_url(&base_url);
+	pub fn new(private_key: String) -> UpholiClient {
 		UpholiClient { private_key }
 	}
 

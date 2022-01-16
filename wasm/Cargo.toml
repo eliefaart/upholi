@@ -10,9 +10,10 @@ crate-type = ["cdylib"]
 [dependencies]
 upholi_lib = { path = "../lib" }
 lazy_static = "1.4.0"
-wasm-bindgen = "0.2.76"
-wasm-bindgen-futures = "0.4.24"
-js-sys = "0.3.51"
+wasm-bindgen = "0.2.78"
+wasm-bindgen-futures = "0.4.28"
+js-sys = "0.3.55"
+web-sys = { version = "0.3.55", features = ["Window", "Location"] }
 aes-gcm-siv = "0.10.3"
 uuid = { version = "0.8.1", features = ["v4", "wasm-bindgen"] }
 image = { version = "0.23.12", default-features = false, features = ["gif", "jpeg", "ico", "png", "pnm", "tga", "tiff", "webp", "bmp", "hdr", "dxt", "dds", "farbfeld"] }

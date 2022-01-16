@@ -16,7 +16,14 @@ use upholi_lib::result::Result;
 use upholi_lib::{http::*, PhotoVariant, ShareType};
 
 lazy_static! {
-	pub static ref CLIENT: RwLock<UpholiClientHelper> = RwLock::new(UpholiClientHelper::new());
+	pub static ref CLIENT: RwLock<UpholiClientHelper> = {
+		let window = web_sys::window().expect("Could not find global 'window'.");
+		let location = window.location();
+		let origin = location.origin().expect("could not determine 'origin'.");
+
+		let client = UpholiClientHelper::new(&origin);
+		RwLock::new(client)
+	};
 }
 
 /// Wrapper struct containing info about bytes to upload.
@@ -55,14 +62,10 @@ pub struct UpholiClientHelper {
 }
 
 impl UpholiClientHelper {
-	pub fn new() -> Self {
+	pub fn new(base_url: &str) -> Self {
 		Self {
-			http_client: HttpClient::new(""),
+			http_client: HttpClient::new(base_url),
 		}
-	}
-
-	pub fn set_base_url(&mut self, base_url: &str) {
-		self.http_client = HttpClient::new(base_url);
 	}
 
 	pub async fn register(&self, username: &str, password: &str) -> Result<()> {
