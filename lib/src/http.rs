@@ -1,3 +1,4 @@
+/// API HTTP request models
 pub mod request {
 	use serde::{Deserialize, Serialize};
 
@@ -74,6 +75,7 @@ pub mod request {
 	}
 }
 
+/// API HTTP response models
 pub mod response {
 	use serde::{Deserialize, Serialize};
 

@@ -13,8 +13,11 @@ pub fn hash_password(password: &str, salt: &str) -> Result<String> {
 	hash_password_with_length(password, salt, PASSWORD_HASH_LENGTH)
 }
 
-/// Hashes using  algorithm pbkdf2-sha512
+/// Hashes using algorithm pbkdf2-sha512
 /// Returns the full PHC hash string.
+///
+/// # Arguments
+///
 /// * `length` - max length of hash.
 pub fn hash_password_with_length(password: &str, salt: &str, length: usize) -> Result<String> {
 	match Salt::new(salt) {
