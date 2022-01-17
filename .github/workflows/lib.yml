@@ -1,9 +1,9 @@
-name: Library
+name: lib
 
 on:
   push:
     paths:
-      - '.github/workflows/library.yml'
+      - '.github/workflows/lib.yml'
       - 'lib/**'
 
 jobs:
