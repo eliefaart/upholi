@@ -40,16 +40,16 @@ impl LocalDiskStorageProvider {
 
 	/// Returns the absolute path for given relative photo path
 	fn get_absolute_photo_path(photo_relative_path: &str) -> Result<String> {
-		let absolute_path = Self::get_photos_base_path()?;
-		let path_base = Path::new(&absolute_path);
-		let path_photo = path_base.join(photo_relative_path);
+		let base_path = Self::get_photos_base_path()?;
+		let path = Path::new(base_path);
+		let path = path.join(photo_relative_path);
 
-		Ok(path_photo.to_str().ok_or("Empty directory path")?.to_string())
+		Ok(path.to_str().ok_or("Empty directory path")?.to_string())
 	}
 
 	/// Returns the absolute path to photo storage base directory
 	/// TODO: Can probably make this lazy_static.. path is constant and only need to check+create once
-	fn get_photos_base_path() -> Result<String> {
+	fn get_photos_base_path<'a>() -> Result<&'a str> {
 		let path_info = Path::new(&crate::SETTINGS.storage.directory_photos);
 		if !path_info.exists() {
 			return Err(Box::from(format!(
@@ -58,8 +58,7 @@ impl LocalDiskStorageProvider {
 			)));
 		}
 
-		let photos_path_str = path_info.to_str().ok_or("Empty directory path")?;
-		let photos_path = photos_path_str.to_string();
+		let photos_path = path_info.to_str().ok_or("Empty directory path")?;
 
 		if !path_info.exists() {
 			let result = std::fs::create_dir(&path_info);
@@ -73,5 +72,15 @@ impl LocalDiskStorageProvider {
 
 	fn generate_file_name() -> String {
 		create_unique_id()
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn generate_file_name_not_empty() {
+		assert!(LocalDiskStorageProvider::generate_file_name().len() > 1);
 	}
 }
