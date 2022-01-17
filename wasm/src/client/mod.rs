@@ -460,7 +460,6 @@ impl UpholiClient {
 	#[wasm_bindgen(js_name = deleteShare)]
 	pub fn delete_share(&self, id: String) -> js_sys::Promise {
 		future_to_promise(async move {
-			// TODO: id -> album_id
 			match helper::CLIENT.read().unwrap().delete_share(&id).await {
 				Ok(_) => Ok(JsValue::NULL),
 				Err(error) => Err(format!("{}", error).into()),

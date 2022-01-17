@@ -42,7 +42,6 @@ pub trait DatabaseEntity {
 #[async_trait]
 pub trait DatabaseEntityBatch {
 	/// Get all items with an id contained within given array
-	/// TODO: Merge with DatabaseEntity?
 	async fn get_with_ids(ids: &[&str]) -> Result<Vec<Self>>
 	where
 		Self: std::marker::Sized;
