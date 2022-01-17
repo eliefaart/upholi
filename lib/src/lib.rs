@@ -13,16 +13,6 @@ pub enum PhotoVariant {
 	Thumbnail,
 }
 
-impl PhotoVariant {
-	// pub fn to_string(&self) -> String {
-	// 	match self {
-	// 		PhotoVariant::Thumbnail => "thumbnail".into(),
-	// 		PhotoVariant::Preview => "preview".into(),
-	// 		PhotoVariant::Original => "original".into(),
-	// 	}
-	// }
-}
-
 impl fmt::Display for PhotoVariant {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self {
