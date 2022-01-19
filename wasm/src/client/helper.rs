@@ -29,14 +29,17 @@ lazy_static! {
 /// Wrapper struct containing info about bytes to upload.
 pub struct PhotoUploadInfo {
 	image: Image,
-	exif: Exif,
+	exif: Option<Exif>,
 }
 
 impl PhotoUploadInfo {
 	/// Try to construct an object from image file bytes
 	pub fn try_from_slice(bytes: &[u8]) -> Result<Self> {
 		let exif = Exif::parse_from_photo_bytes(bytes)?;
-		let exif_orientation = exif.orientation.unwrap_or(1);
+		let exif_orientation = match &exif {
+			Some(exif) => exif.orientation.unwrap_or(1),
+			None => 1,
+		};
 
 		let image = Image::from_buffer(bytes, exif_orientation as u8)?;
 		Ok(Self { image, exif })
@@ -246,19 +249,7 @@ impl UpholiClientHelper {
 			width: photo.image.width,
 			height: photo.image.height,
 			content_type: "image/jpeg".to_string(), // TODO
-			exif: crate::exif::Exif {
-				manufactorer: photo.exif.manufactorer.to_owned(),
-				model: photo.exif.model.to_owned(),
-				aperture: photo.exif.aperture.to_owned(),
-				exposure_time: photo.exif.exposure_time.to_owned(),
-				iso: photo.exif.iso,
-				focal_length: photo.exif.focal_length,
-				focal_length_35mm_equiv: photo.exif.focal_length_35mm_equiv,
-				orientation: photo.exif.orientation,
-				date_taken: photo.exif.date_taken,
-				gps_latitude: photo.exif.gps_latitude,
-				gps_longitude: photo.exif.gps_longitude,
-			},
+			exif: photo.exif.clone(),
 		};
 		let data_json = serde_json::to_string(&data)?;
 		let data_bytes = data_json.as_bytes();

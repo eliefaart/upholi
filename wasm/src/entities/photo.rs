@@ -14,7 +14,7 @@ pub struct PhotoData {
 	pub width: u32,
 	pub height: u32,
 	pub content_type: String,
-	pub exif: Exif,
+	pub exif: Option<Exif>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -25,7 +25,7 @@ pub struct JsPhoto {
 	pub width: u32,
 	pub height: u32,
 	pub content_type: String,
-	pub exif: Exif,
+	pub exif: Option<Exif>,
 }
 
 pub struct Photo {

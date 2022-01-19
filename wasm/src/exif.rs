@@ -21,7 +21,7 @@ pub struct Exif {
 
 impl Exif {
 	/// Parse EXIF data from photo bytes. Bytes can represent a .jpg or .tiff file.
-	pub fn parse_from_photo_bytes(photo_bytes: &[u8]) -> Result<Exif> {
+	pub fn parse_from_photo_bytes(photo_bytes: &[u8]) -> Result<Option<Exif>> {
 		let result = rexif::parse_buffer(photo_bytes);
 		match result {
 			Ok(exif) => {
@@ -43,7 +43,7 @@ impl Exif {
 					.or_else(|| closure_get_exif_data_as_datetime(ExifTag::DateTime))
 					.or_else(|| closure_get_exif_data_as_datetime(ExifTag::DateTimeDigitized));
 
-				Ok(Self {
+				Ok(Some(Self {
 					manufactorer: closure_get_exif_data_as_string(ExifTag::Make),
 					model: closure_get_exif_data_as_string(ExifTag::Model),
 					aperture: closure_get_exif_data_as_string(ExifTag::FNumber),
@@ -55,15 +55,15 @@ impl Exif {
 					date_taken,
 					gps_latitude: closure_get_exif_data_as_coord(ExifTag::GPSLatitude),
 					gps_longitude: closure_get_exif_data_as_coord(ExifTag::GPSLongitude),
-				})
+				}))
 			}
 			Err(error) => {
 				match error {
-					// Some errors are fine, we just return default Exif for these cases,
+					// Some errors are fine, we just return None for these cases,
 					// For others we still return error
-					rexif::ExifError::JpegWithoutExif(_) => Ok(Self::default()),
-					rexif::ExifError::FileTypeUnknown => Ok(Self::default()),
-					rexif::ExifError::UnsupportedNamespace => Ok(Self::default()),
+					rexif::ExifError::JpegWithoutExif(_) => Ok(None),
+					rexif::ExifError::FileTypeUnknown => Ok(None),
+					rexif::ExifError::UnsupportedNamespace => Ok(None),
 					_ => Err(Box::from(format!("{:?}", error))),
 				}
 			}

@@ -32,9 +32,9 @@ const ModalPhotoDetail: FC<Props> = (props) => {
 		<a className="with-icon as-button" title="Download" onClick={() => downloadPhoto(props.photoId, props.photoKey)}>
 			<IconDownload />Download
 		</a>
-		<a className="with-icon as-button" title="Info" onClick={() => setShowExif(!showExif)}>
+		{photo?.exif && <a className="with-icon as-button" title="Info" onClick={() => setShowExif(!showExif)}>
 			<IconInfo />Info
-		</a>
+		</a>}
 	</>;
 
 	return (
