@@ -440,7 +440,7 @@ impl UpholiClientHelper {
 	/// Creates or updates a share.
 	pub async fn upsert_share(&self, private_key: &[u8], type_: ShareType, id: &str, password: &str) -> Result<String> {
 		let existing_share_for_album = self.find_share(private_key, &type_, id).await?;
-		let salt = "todo";
+		let salt = id;
 		let share_key = crate::encryption::symmetric::derive_key_from_string(password, salt)?;
 		let share_key_encrypt_result = crate::encryption::symmetric::encrypt_slice(private_key, &share_key)?;
 
@@ -506,7 +506,7 @@ impl UpholiClientHelper {
 	pub async fn get_share_using_password(&self, id: &str, password: &str) -> Result<Share> {
 		let share = self.http_client.get_share(id).await?;
 
-		let salt = "todo";
+		let salt = id;
 		let key = encryption::symmetric::derive_key_from_string(password, salt)?;
 		let share = Share::from_encrypted(share, &key)?;
 
