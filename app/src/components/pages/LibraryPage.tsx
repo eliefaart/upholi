@@ -72,7 +72,6 @@ const LibraryPage: FC<PageProps> = (props: PageProps) => {
 		});
 	}, [selectedPhotoIds.length]);
 
-
 	// Open photo, if indicated as such by query string
 	const queryStringPhotoId = UrlHelper.getQueryStringParamValue(location.search, queryStringParamNamePhotoId);
 	if (openedPhotoId !== queryStringPhotoId) {
@@ -141,7 +140,8 @@ const LibraryPage: FC<PageProps> = (props: PageProps) => {
 		}
 	}, []);
 
-	// Load the initial batch of image thumbnails as soon as the first photos are available
+	// Load the initial batch of image thumbnails as soon as the first photos are available,
+	// and when new photos have been uploaded.
 	React.useEffect(() => {
 		if (photosRef.current.length > 0) {
 			loadVisiblePhotos();
@@ -151,7 +151,7 @@ const LibraryPage: FC<PageProps> = (props: PageProps) => {
 			// and I don't see any event for when it has fully finished rendering.
 			setTimeout(loadVisiblePhotos, 500);
 		}
-	}, [photos.length === 0]);
+	}, [photos]);
 
 	const galleryPhotos = photos.map(photo => {
 		return {
