@@ -22,9 +22,5 @@ serde_json = "1.0.64"
 chrono = { version = "0.4.11", features = ["serde"] }
 rexif = "0.7.3"
 base64 = "0.13.0"
-# For reqwest I to target the git repo for now, until this commit made it into a release:
-# (likely 11.5+)
-# https://github.com/seanmonstar/reqwest/commit/e6a1a09f0904e06de4ff1317278798c4ed28af66
-reqwest = { git = "https://github.com/seanmonstar/reqwest", rev = "e6a1a09f0904e06de4ff1317278798c4ed28af66", features = ["json", "multipart"] }
-#reqwest = { version = "0.11.4", features = ["json", "multipart"] }
+reqwest = { version = "0.11.9", features = ["json", "multipart"] }
 sha2 = "0.9.8"
