@@ -9,6 +9,8 @@ pub mod share;
 pub mod user;
 
 pub trait AccessControl {
+	// TODO: A borrowed Option<T> is weird I guess. Refactor to Option<&T>
+
 	fn can_view(&self, session: &Option<Session>, proof: Option<EntityAuthorizationProof>) -> bool;
 	fn can_update(&self, session: &Option<Session>) -> bool;
 	fn can_delete(&self, session: &Option<Session>) -> bool {
