@@ -3,9 +3,10 @@ use crate::database::entities::session::Session;
 use crate::database::entities::user::User;
 use crate::database::entities::AccessControl;
 use crate::database::{DatabaseEntity, DatabaseUserEntity};
-use crate::error::*;
+use crate::error::HttpError;
 use crate::web::http::*;
-use actix_web::{web, HttpRequest, HttpResponse};
+use actix_web::error::{ErrorInternalServerError, ErrorNotFound, ErrorUnauthorized};
+use actix_web::{web, HttpRequest, HttpResponse, Result};
 use upholi_lib::http::request::{CreateAlbum, EntityAuthorizationProof};
 
 /// Get all albums
@@ -25,8 +26,8 @@ pub async fn route_get_album(
 
 	let album = Album::get(album_id)
 		.await
-		.map_err(|_| HttpError::Unauthorized)?
-		.ok_or(HttpError::NotFound)?;
+		.map_err(|_| ErrorUnauthorized(HttpError::Unauthorized))?
+		.ok_or(ErrorNotFound(HttpError::NotFound))?;
 
 	if album.can_view(&session, proof) {
 		Ok(HttpResponse::Ok().json(album))
@@ -49,11 +50,11 @@ pub async fn route_update_album(session: Session, req: HttpRequest, updated_albu
 	let album_id = req.match_info().get("album_id").unwrap();
 	let updated_album = updated_album.into_inner();
 
-	let user_id = session.user_id.clone().ok_or(HttpError::Unauthorized)?;
+	let user_id = session.user_id.clone().ok_or(ErrorUnauthorized(HttpError::Unauthorized))?;
 	let mut album = Album::get_as_user(album_id, user_id.to_string())
 		.await
-		.map_err(|_| HttpError::Unauthorized)?
-		.ok_or(HttpError::NotFound)?;
+		.map_err(|_| ErrorUnauthorized(HttpError::Unauthorized))?
+		.ok_or(ErrorNotFound(HttpError::NotFound))?;
 
 	if !album.can_update(&Some(session)) {
 		Ok(create_unauthorized_response())
@@ -62,7 +63,7 @@ pub async fn route_update_album(session: Session, req: HttpRequest, updated_albu
 		album.key = updated_album.key;
 		album.key_hash = updated_album.key_hash;
 
-		album.update().await.map_err(|error| HttpError::InternalServerError(error))?;
+		album.update().await.map_err(|error| ErrorInternalServerError(error))?;
 		Ok(create_ok_response())
 	}
 }
@@ -71,16 +72,16 @@ pub async fn route_update_album(session: Session, req: HttpRequest, updated_albu
 pub async fn route_delete_album(session: Session, req: HttpRequest) -> Result<HttpResponse> {
 	let album_id = req.match_info().get("album_id").unwrap();
 
-	let user_id = session.user_id.clone().ok_or(HttpError::Unauthorized)?;
+	let user_id = session.user_id.clone().ok_or(ErrorUnauthorized(HttpError::Unauthorized))?;
 	let album = Album::get_as_user(album_id, user_id.to_string())
 		.await
-		.map_err(|_| HttpError::Unauthorized)?
-		.ok_or(HttpError::NotFound)?;
+		.map_err(|_| ErrorUnauthorized(HttpError::Unauthorized))?
+		.ok_or(ErrorNotFound(HttpError::NotFound))?;
 
 	if !album.can_delete(&Some(session)) {
 		Ok(create_unauthorized_response())
 	} else {
-		album.delete().await.map_err(|error| HttpError::InternalServerError(error))?;
+		album.delete().await.map_err(|error| ErrorInternalServerError(error))?;
 		Ok(create_ok_response())
 	}
 }
