@@ -171,38 +171,6 @@ async fn download_photo(
 			.ok_or(ErrorNotFound(HttpError::NotFound))?;
 		Ok(HttpResponse::Ok().body(bytes))
 	}
-
-	// 		Ok(bytes) => match bytes {
-	// 			Some(bytes) => HttpResponse::Ok().body(bytes),
-	// 			None => create_not_found_response(),
-	// 		},
-	// 		Err(error) => create_internal_server_error_response(Some(error)),
-	// 	}
-	// }
-
-	// match req.match_info().get("photo_id") {
-	// 	Some(photo_id) => match Photo::get(photo_id).await {
-	// 		Ok(photo) => match photo {
-	// 			Some(photo) => {
-	// 				if !photo.can_view(&session, proof) {
-	// 					create_unauthorized_response()
-	// 				} else {
-	// 					let file_id = &format!("{}-{}", photo_id, &photo_variant.to_string());
-	// 					match storage::get_file(file_id, &photo.user_id).await {
-	// 						Ok(bytes) => match bytes {
-	// 							Some(bytes) => HttpResponse::Ok().body(bytes),
-	// 							None => create_not_found_response(),
-	// 						},
-	// 						Err(error) => create_internal_server_error_response(Some(error)),
-	// 					}
-	// 				}
-	// 			}
-	// 			None => create_not_found_response(),
-	// 		},
-	// 		Err(error) => create_internal_server_error_response(Some(error)),
-	// 	},
-	// 	None => create_bad_request_response(Box::from("Photo ID invalid or missing")),
-	// }
 }
 
 /// Delete multiple photos from database and disk
@@ -224,7 +192,7 @@ pub async fn delete_photos(user_id: String, ids: &[&str]) -> Result<HttpResponse
 
 	// Delete physical files for photo
 	for photo in photos {
-		let result = delete_photo_files(&photo).await.map_err(|error| ErrorInternalServerError(error))?;
+		delete_photo_files(&photo).await.map_err(|error| ErrorInternalServerError(error))?;
 	}
 
 	// Delete all photos from database

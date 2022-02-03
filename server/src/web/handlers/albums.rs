@@ -32,7 +32,7 @@ pub async fn route_get_album(
 	if album.can_view(&session, proof) {
 		Ok(HttpResponse::Ok().json(album))
 	} else {
-		Ok(create_unauthorized_response())
+		Err(ErrorUnauthorized(HttpError::Unauthorized))
 	}
 }
 
@@ -57,7 +57,7 @@ pub async fn route_update_album(session: Session, req: HttpRequest, updated_albu
 		.ok_or(ErrorNotFound(HttpError::NotFound))?;
 
 	if !album.can_update(&Some(session)) {
-		Ok(create_unauthorized_response())
+		Err(ErrorUnauthorized(HttpError::Unauthorized))
 	} else {
 		album.data = updated_album.data;
 		album.key = updated_album.key;
@@ -79,7 +79,7 @@ pub async fn route_delete_album(session: Session, req: HttpRequest) -> Result<Ht
 		.ok_or(ErrorNotFound(HttpError::NotFound))?;
 
 	if !album.can_delete(&Some(session)) {
-		Ok(create_unauthorized_response())
+		Err(ErrorUnauthorized(HttpError::Unauthorized))
 	} else {
 		album.delete().await.map_err(|error| ErrorInternalServerError(error))?;
 		Ok(create_ok_response())

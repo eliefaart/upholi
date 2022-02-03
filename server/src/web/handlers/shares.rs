@@ -80,7 +80,7 @@ pub async fn route_delete_share(session: Session, req: HttpRequest) -> Result<Ht
 		.ok_or(ErrorUnauthorized(HttpError::Unauthorized))?;
 
 	if !share.can_delete(&Some(session)) {
-		Ok(create_unauthorized_response())
+		Err(ErrorUnauthorized(HttpError::Unauthorized))
 	} else {
 		share.delete().await.map_err(|error| ErrorInternalServerError(error))?;
 		Ok(create_ok_response())
