@@ -39,18 +39,11 @@ pub enum DatabaseError {
 	InvalidId,
 }
 
+/// Errors linked to specific HTTP status codes
 #[derive(Debug)]
 pub enum HttpError {
-	/// HTTP 400
-	BadRequest,
-	/// HTTP 401
 	Unauthorized,
-	/// HTTP 404
 	NotFound,
-	/// HTTP 500, from a simple message
-	InternalServerErrorSimple(String),
-	/// HTTP 500, from any Error type
-	InternalServerError(Box<dyn Error>),
 }
 
 impl Error for RegisterError {}
@@ -123,27 +116,11 @@ impl Display for HttpError {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		let message = {
 			match self {
-				HttpError::InternalServerErrorSimple(message) => message.to_string(),
-				HttpError::InternalServerError(error) => format!("{:?}", error),
-				_ => String::from("not found"),
+				HttpError::NotFound => String::from("Not found"),
+				HttpError::Unauthorized => String::from("Unauthorized"),
 			}
 		};
-		write!(f, "{}", message)
-	}
-}
 
-impl ResponseError for HttpError {
-	fn error_response(&self) -> HttpResponse {
-		match self {
-			HttpError::BadRequest => HttpResponse::BadRequest().finish(),
-			HttpError::InternalServerErrorSimple(message) => HttpResponse::InternalServerError().json(ErrorResult {
-				message: message.to_string(),
-			}),
-			HttpError::InternalServerError(error) => HttpResponse::InternalServerError().json(ErrorResult {
-				message: format!("{:?}", error),
-			}),
-			HttpError::NotFound => HttpResponse::NotFound().finish(),
-			HttpError::Unauthorized => HttpResponse::Unauthorized().finish(),
-		}
+		write!(f, "{}", message)
 	}
 }
