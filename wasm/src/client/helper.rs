@@ -429,9 +429,11 @@ impl UpholiClientHelper {
 	}
 
 	/// Creates or updates a share.
-	pub async fn upsert_share(&self, private_key: &[u8], type_: ShareType, id: &str, password: &str) -> Result<String> {
-		let existing_share_for_album = self.find_share(private_key, &type_, id).await?;
-		let salt = id;
+	pub async fn upsert_share(&self, private_key: &[u8], share_type: ShareType, id: &str, password: &str) -> Result<String> {
+		let existing_share_for_album = self.find_share(private_key, &share_type, id).await?;
+
+		let identifier_hash = Share::get_identifier_hash(&share_type, id)?;
+		let salt = &identifier_hash;
 		let share_key = crate::encryption::symmetric::derive_key_from_string(password, salt)?;
 		let share_key_encrypt_result = crate::encryption::symmetric::encrypt_slice(private_key, &share_key)?;
 
@@ -443,7 +445,7 @@ impl UpholiClientHelper {
 			all_photos.push(photo);
 		}
 
-		let data: ShareData = match type_ {
+		let data: ShareData = match share_type {
 			ShareType::Album => {
 				let album = self.get_album(private_key, id).await?;
 				album.create_share_data(private_key, &all_photos)?
@@ -456,8 +458,8 @@ impl UpholiClientHelper {
 		let password_encrypt_result = crate::encryption::symmetric::encrypt_slice(&share_key, password.as_bytes())?;
 
 		let body = request::UpsertShare {
-			identifier_hash: Share::get_identifier_hash(&type_, id)?,
-			type_,
+			identifier_hash: Share::get_identifier_hash(&share_type, id)?,
+			type_: share_type,
 			password: password_encrypt_result.into(),
 			data: data_encrypt_result.into(),
 			key: share_key_encrypt_result.into(),
@@ -497,7 +499,7 @@ impl UpholiClientHelper {
 	pub async fn get_share_using_password(&self, id: &str, password: &str) -> Result<Share> {
 		let share = self.http_client.get_share(id).await?;
 
-		let salt = id;
+		let salt = &share.identifier_hash;
 		let key = encryption::symmetric::derive_key_from_string(password, salt)?;
 		let share = Share::from_encrypted(share, &key)?;
 
