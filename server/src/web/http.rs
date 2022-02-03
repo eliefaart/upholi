@@ -1,11 +1,11 @@
-use std::pin::Pin;
-
 use actix_http::cookie::Cookie;
 use actix_multipart::{Field, Multipart};
 use actix_web::dev::Payload;
 use actix_web::error::{ErrorInternalServerError, ErrorNotFound, ErrorUnauthorized};
 use actix_web::{Error, FromRequest, HttpRequest, HttpResponse};
 use futures::{Future, StreamExt, TryStreamExt};
+use lazy_static::lazy_static;
+use std::pin::Pin;
 use upholi_lib::http::response::{CreatedResult, ErrorResult};
 
 use crate::database::entities::session::Session;
@@ -152,33 +152,4 @@ pub fn create_ok_response() -> HttpResponse {
 /// Create a HTTP 201 Created response
 pub fn create_created_response(id: &str) -> HttpResponse {
 	HttpResponse::Created().json(CreatedResult { id: id.to_string() })
-}
-
-/// Create a HTTP 404 Not Found response
-pub fn create_not_found_response() -> HttpResponse {
-	HttpResponse::NotFound().finish()
-}
-
-/// Create a HTTP 400 Bad Request response
-pub fn create_bad_request_response(error: Box<dyn std::error::Error>) -> HttpResponse {
-	HttpResponse::BadRequest().json(ErrorResult {
-		message: format!("{}", error),
-	})
-}
-
-/// Create a HTTP 500 Internal Server Error response
-pub fn create_internal_server_error_response(error: Option<Box<dyn std::error::Error>>) -> HttpResponse {
-	let mut response = HttpResponse::InternalServerError();
-
-	match error {
-		Some(error) => response.json(ErrorResult {
-			message: format!("{}", error),
-		}),
-		None => response.finish(),
-	}
-}
-
-/// Create a HTTP 501 Unauthorized response
-pub fn create_unauthorized_response() -> HttpResponse {
-	HttpResponse::Unauthorized().finish()
 }
