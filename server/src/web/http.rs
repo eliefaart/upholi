@@ -1,12 +1,11 @@
-use actix_http::cookie::Cookie;
 use actix_multipart::{Field, Multipart};
+use actix_web::cookie::Cookie;
 use actix_web::dev::Payload;
 use actix_web::error::{ErrorInternalServerError, ErrorNotFound, ErrorUnauthorized};
 use actix_web::{Error, FromRequest, HttpRequest, HttpResponse};
 use futures::{Future, StreamExt, TryStreamExt};
-use lazy_static::lazy_static;
 use std::pin::Pin;
-use upholi_lib::http::response::{CreatedResult, ErrorResult};
+use upholi_lib::http::response::CreatedResult;
 
 use crate::database::entities::session::Session;
 use crate::database::entities::user::User;

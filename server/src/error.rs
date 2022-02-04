@@ -1,9 +1,6 @@
 use std::error::Error;
 use std::fmt::{self, Display};
 
-use actix_web::{HttpResponse, ResponseError};
-use upholi_lib::http::response::ErrorResult;
-
 /// A short alias for Result<T, Box<dyn std::error::Error>>, allows writing Result<T> instead
 pub type Result<T, E = Box<dyn Error>> = std::result::Result<T, E>;
 

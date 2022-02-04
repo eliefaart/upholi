@@ -17,7 +17,6 @@ futures = "0.3.4"
 actix-web = "4.0.0-beta.13"
 actix-service = "2.0.1"
 actix-multipart = "0.4.0-beta.9"
-actix-http = "2.2.1"
 mongodb = { version = "2.0.2" }
 bson = "2.0.1"
 rand = "0.7.3"
