@@ -429,13 +429,10 @@ impl UpholiClientHelper {
 	}
 
 	/// Creates or updates a share.
-	pub async fn upsert_share(&self, private_key: &[u8], share_type: ShareType, id: &str, password: &str) -> Result<String> {
-		let existing_share_for_album = self.find_share(private_key, &share_type, id).await?;
-
-		let identifier_hash = Share::get_identifier_hash(&share_type, id)?;
-		let salt = &identifier_hash;
-		let share_key = crate::encryption::symmetric::derive_key_from_string(password, salt)?;
-		let share_key_encrypt_result = crate::encryption::symmetric::encrypt_slice(private_key, &share_key)?;
+	///
+	/// * `item_id` - ID of the item (e.g. an album) to create a share for.
+	pub async fn upsert_share(&self, private_key: &[u8], share_type: ShareType, item_id: &str, password: &str) -> Result<String> {
+		let existing_share_for_album = self.find_share(private_key, &share_type, item_id).await?;
 
 		// TODO: Don't get every single photo, only need the ones included in album
 		let photos = self.http_client.get_photos().await?;
@@ -447,31 +444,50 @@ impl UpholiClientHelper {
 
 		let data: ShareData = match share_type {
 			ShareType::Album => {
-				let album = self.get_album(private_key, id).await?;
+				let album = self.get_album(private_key, item_id).await?;
 				album.create_share_data(private_key, &all_photos)?
 			}
 		};
-		let data_json = serde_json::to_string(&data)?;
+
+		let share = Self::create_share(private_key, share_type, item_id, password, &data)?;
+
+		if let Some(existing_share) = existing_share_for_album {
+			let id = existing_share.get_id();
+			self.http_client.update_share(id, &share).await?;
+			Ok(id.into())
+		} else {
+			self.http_client.create_share(&share).await
+		}
+	}
+
+	/// Create a share for an item
+	///
+	/// * `item_id` - ID of the item (e.g. an album) to create a share for.
+	fn create_share(
+		private_key: &[u8],
+		share_type: ShareType,
+		item_id: &str,
+		password: &str,
+		share_data: &ShareData,
+	) -> Result<request::UpsertShare> {
+		let identifier_hash = Share::get_identifier_hash(&share_type, item_id)?;
+		let salt = &identifier_hash;
+		let share_key = crate::encryption::symmetric::derive_key_from_string(password, salt)?;
+		let share_key_encrypt_result = crate::encryption::symmetric::encrypt_slice(private_key, &share_key)?;
+
+		let data_json = serde_json::to_string(&share_data)?;
 		let data_bytes = data_json.as_bytes();
 		let data_encrypt_result = crate::encryption::symmetric::encrypt_slice(&share_key, data_bytes)?;
 
 		let password_encrypt_result = crate::encryption::symmetric::encrypt_slice(&share_key, password.as_bytes())?;
 
-		let body = request::UpsertShare {
-			identifier_hash: Share::get_identifier_hash(&share_type, id)?,
+		Ok(request::UpsertShare {
+			identifier_hash: Share::get_identifier_hash(&share_type, item_id)?,
 			type_: share_type,
 			password: password_encrypt_result.into(),
 			data: data_encrypt_result.into(),
 			key: share_key_encrypt_result.into(),
-		};
-
-		if let Some(existing_share) = existing_share_for_album {
-			let id = existing_share.get_id();
-			self.http_client.update_share(id, &body).await?;
-			Ok(id.into())
-		} else {
-			self.http_client.create_share(&body).await
-		}
+		})
 	}
 
 	/// Get shares by decrypting them using owner's key.
@@ -498,7 +514,12 @@ impl UpholiClientHelper {
 	/// Get a share by decrypting it with key derived from given password.
 	pub async fn get_share_using_password(&self, id: &str, password: &str) -> Result<Share> {
 		let share = self.http_client.get_share(id).await?;
+		let share = Self::decrypt_share_using_password(share, password)?;
 
+		Ok(share)
+	}
+
+	fn decrypt_share_using_password(share: response::Share, password: &str) -> Result<Share> {
 		let salt = &share.identifier_hash;
 		let key = encryption::symmetric::derive_key_from_string(password, salt)?;
 		let share = Share::from_encrypted(share, &key)?;
@@ -611,6 +632,7 @@ impl UpholiClientHelper {
 #[cfg(test)]
 mod tests {
 	use super::*;
+	use crate::entities::EntityKey;
 
 	#[test]
 	fn get_key_from_user_credentials_consistency() {
@@ -635,5 +657,55 @@ mod tests {
 		assert!(UpholiClientHelper::get_key_from_user_credentials("username", "").is_err());
 		assert!(UpholiClientHelper::get_key_from_user_credentials("", "password").is_err());
 		assert!(UpholiClientHelper::get_key_from_user_credentials("", "").is_err());
+	}
+
+	#[test]
+	fn create_and_decrypt_album_share() {
+		let user_private_key = UpholiClientHelper::get_key_from_user_credentials("username", "password").unwrap();
+		let album_key = UpholiClientHelper::get_key_from_user_credentials("album", "key").unwrap();
+		let share_password = "password";
+		let album_id = "abc123";
+		let album_photos: Vec<EntityKey> = vec![EntityKey {
+			id: String::from("_id"),
+			key: String::from("_key"),
+		}];
+
+		let share_data: ShareData = ShareData::Album(crate::entities::share::AlbumShareData {
+			album_id: album_id.to_string(),
+			album_key: album_key.clone(),
+			photos: album_photos.clone(),
+		});
+		let encrypted_share =
+			UpholiClientHelper::create_share(&user_private_key, ShareType::Album, album_id, share_password, &share_data).unwrap();
+
+		// Convert the encryped share to the type the server will send in response.
+		let http_response_share = response::Share {
+			id: String::from("id"),
+			user_id: String::from("user_id"),
+			identifier_hash: encrypted_share.identifier_hash,
+			data: encrypted_share.data,
+			type_: ShareType::Album,
+			key: encrypted_share.key,
+			password: encrypted_share.password,
+		};
+
+		let decrypted_share = UpholiClientHelper::decrypt_share_using_password(http_response_share, share_password).unwrap();
+
+		// Share data type should still be an album
+		match decrypted_share.get_data() {
+			ShareData::Album(album) => {
+				assert_eq!(album.album_id, album_id);
+				assert_eq!(album.album_key, album_key);
+				assert_eq!(album.photos.len(), album_photos.len());
+
+				let matching_elements_count = album
+					.photos
+					.iter()
+					.zip(album_photos.iter())
+					.filter(|&(pre, post)| pre.id == post.id && pre.key == post.key)
+					.count();
+				assert_eq!(album.photos.len(), matching_elements_count);
+			}
+		}
 	}
 }
