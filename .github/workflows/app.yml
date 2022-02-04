@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/app.yml'
       - 'app/**'
+      - 'wasm/**'
 
 env:
   IMAGE_NAME: upholi-app
