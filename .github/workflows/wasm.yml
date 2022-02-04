@@ -16,9 +16,9 @@ jobs:
     - name: Build
       run: |
         cd ./wasm
-        cargo build --release --verbose
+        cargo build --verbose
 
     - name: Test
       run: |
         cd ./wasm
-        cargo test --release --verbose
+        cargo test --verbose
