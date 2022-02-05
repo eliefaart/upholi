@@ -1,11 +1,14 @@
 use crate::error::Result;
-use azure_core::prelude::*;
-use azure_storage::blob::prelude::*;
-use azure_storage::core::prelude::*;
+use azure_core::HttpClient;
+use azure_storage::clients::{AsStorageClient, StorageAccountClient, StorageClient};
+use azure_storage_blobs::prelude::{
+	AsBlobClient, AsBlobServiceClient, AsContainerClient, BlobClient, BlobServiceClient, ContainerClient,
+};
 use std::sync::Arc;
 
 pub struct AzureStorageProvider {
 	storage_client: Arc<StorageClient>,
+	blob_client: Arc<BlobServiceClient>,
 }
 
 impl AzureStorageProvider {
@@ -13,18 +16,14 @@ impl AzureStorageProvider {
 		let account_name = &crate::SETTINGS.storage.azure_storage_account_name;
 		let account_key = &crate::SETTINGS.storage.azure_storage_account_key;
 
-		let reqwest_client = Box::new(reqwest::Client::new());
-		let http_client: Arc<Box<dyn HttpClient>> = Arc::new(reqwest_client);
-		let storage_account_client =
-			StorageAccountClient::new_access_key(http_client.clone(), account_name, account_key).as_storage_client();
+		let reqwest_client = reqwest::Client::new();
+		let http_client: Arc<dyn HttpClient> = Arc::new(reqwest_client);
+		let storage_client = StorageAccountClient::new_access_key(http_client, account_name, account_key).as_storage_client();
 
 		AzureStorageProvider {
-			storage_client: storage_account_client,
+			storage_client: storage_client.clone(),
+			blob_client: storage_client.as_blob_service_client(),
 		}
-	}
-
-	pub async fn create_container(&self, container: &str) -> Result<()> {
-		AzureStorageProvider::create_container_if_not_exists(&self.storage_client, container).await
 	}
 
 	pub async fn store_file(&self, container: &str, name: &str, bytes: &[u8]) -> Result<()> {
@@ -53,22 +52,25 @@ impl AzureStorageProvider {
 		}
 	}
 
-	fn get_blob_client(&self, container: &str, blob_name: &str) -> Arc<BlobClient> {
-		let container = self.storage_client.as_container_client(container);
-		container.as_blob_client(blob_name)
+	fn get_blob_client(&self, container_name: &str, blob_name: &str) -> Arc<BlobClient> {
+		self.get_container_client(container_name).as_blob_client(String::from(blob_name))
+	}
+
+	fn get_container_client(&self, container_name: &str) -> Arc<ContainerClient> {
+		self.storage_client.as_container_client(String::from(container_name))
 	}
 
 	/// Create container with given name, if it doesn't already exist.
-	async fn create_container_if_not_exists(storage_client: &Arc<StorageClient>, container_name: &str) -> Result<()> {
-		match storage_client.list_containers().prefix(container_name).execute().await {
+	pub async fn create_container_if_not_exists(&self, container_name: &str) -> Result<()> {
+		match self.blob_client.list_containers().prefix(container_name).execute().await {
 			Ok(containers) => {
 				let container_exists = containers
 					.incomplete_vector
 					.iter()
 					.any(|container| container.name == container_name);
 				if !container_exists {
-					let container = storage_client.as_container_client(container_name);
-					match container.create().execute().await {
+					let container_client = self.get_container_client(container_name);
+					match container_client.create().execute().await {
 						Ok(_) => Ok(()),
 						Err(err) => Err(err),
 					}

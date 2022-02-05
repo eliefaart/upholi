@@ -24,7 +24,7 @@ fn get_provider<'a>() -> &'a StorageProvider {
 /// Initialize storage for user, e.g. preparing directories.
 pub async fn init_storage_for_user(user: &User) -> Result<()> {
 	match get_provider() {
-		StorageProvider::Azure(azure) => azure.create_container(&user.id).await,
+		StorageProvider::Azure(azure) => azure.create_container_if_not_exists(&user.id).await,
 		_ => Ok(()),
 	}
 }
