@@ -1,8 +1,8 @@
 [package]
 name = "upholi"
 version = "0.1.0"
-authors = ["Eric Liefaart <eric@e10t.nl>"]
-license = ""
+authors = ["Eric Liefaart"]
+license = "AGPL-3.0-only"
 edition = "2018"
 
 [dependencies]

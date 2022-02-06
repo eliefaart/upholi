@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "keywords": [],
-  "author": "Eric Liefaart <eric@e10t.nl>",
-  "license": "",
+  "author": "Eric Liefaart",
+  "license": "AGPL-3.0-only",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "webpack-dev-server --open --mode development",
