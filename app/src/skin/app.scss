@@ -14,7 +14,6 @@ $breakpointMobile: 890px;
 
 html {
 	touch-action: manipulation;
-	overscroll-behavior: none;
 
 	* {
 		box-sizing: border-box;
@@ -26,6 +25,7 @@ html {
 	}
 
 	body {
+		overscroll-behavior: contain;
 		font-family: OpenSans;
 		font-size: $fontSize;
 		font-weight: normal;
