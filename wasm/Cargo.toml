@@ -1,7 +1,8 @@
 [package]
 name = "wasm"
 version = "0.1.0"
-authors = ["Eric Liefaart <eric@e10t.nl>"]
+authors = ["Eric Liefaart"]
+license = "AGPL-3.0-only"
 edition = "2018"
 
 [lib]
