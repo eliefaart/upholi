@@ -47,8 +47,8 @@ const App: FC = () => {
 				{fnRenderRoute("/login", LoginPage, false)}
 				{fnRenderRoute("/register", RegisterPage, false)}
 				{fnRenderRoute("/albums", AlbumsPage, true)}
-				{fnRenderRoute("/shared", SharedPage, true)}
 				{fnRenderRoute("/album/:albumId", AlbumPage, true)}
+				{fnRenderRoute("/shared", SharedPage, true)}
 				{fnRenderRoute("/s/:token", SharedAlbumPage, false)}
 			</Layout>
 		</appStateContext.Provider>
