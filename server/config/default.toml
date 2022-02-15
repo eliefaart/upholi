@@ -6,9 +6,6 @@ address = "0.0.0.0:8000"
 # Connection string to database
 # Can also by set using env var UPHOLI_DATABASE_CONNECTIONSTRING
 connection_string = ""
-# Name of database to use
-# Can also by set using env var UPHOLI_DATABASE_NAME
-name = "upholi"
 
 [storage]
 # Possible values: Disk | Azure

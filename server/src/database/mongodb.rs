@@ -21,10 +21,11 @@ lazy_static! {
 		let client = Client::with_options(client_options)
 			.expect("Failed to initialize database client");
 
-		let database = client.database(&crate::SETTINGS.database.name);
+		let database = client.default_database()
+			.expect("No default database found in connection string");
 
 		if let Err(error) = initialize(&database).await {
-			println!("Error preparing up database: {:?}", error);
+			println!("Error preparing database: {:?}", error);
 		}
 
 		database

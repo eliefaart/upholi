@@ -6,7 +6,6 @@ use std::env::var;
 
 const ENV_VAR_SERVER_ADDRESS: &str = "UPHOLI_SERVER_ADDRESS";
 const ENV_VAR_DATABASE_CONNECTIONSTRING: &str = "UPHOLI_DATABASE_CONNECTIONSTRING";
-const ENV_VAR_DATABASE_NAME: &str = "UPHOLI_DATABASE_NAME";
 const ENV_VAR_STORAGE_PROVIDER: &str = "UPHOLI_STORAGE_PROVIDER";
 const ENV_VAR_STORAGE_DIRECTORYPHOTOS: &str = "UPHOLI_STORAGE_DIRECTORYPHOTOS";
 const ENV_VAR_STORAGE_AZURESTORAGEACCOUNTNAME: &str = "UPHOLI_STORAGE_AZURESTORAGEACCOUNTNAME";
@@ -36,7 +35,6 @@ pub struct Server {
 #[derive(Debug, Deserialize)]
 pub struct Database {
 	pub connection_string: String,
-	pub name: String,
 }
 
 /// Storage settings
@@ -85,7 +83,6 @@ impl Settings {
 		let overwritable_settings: HashMap<&str, &str> = [
 			("server.address", ENV_VAR_SERVER_ADDRESS),
 			("database.connection_string", ENV_VAR_DATABASE_CONNECTIONSTRING),
-			("database.name", ENV_VAR_DATABASE_NAME),
 			("storage.provider", ENV_VAR_STORAGE_PROVIDER),
 			("storage.directory_photos", ENV_VAR_STORAGE_DIRECTORYPHOTOS),
 			("storage.azure_storage_account_name", ENV_VAR_STORAGE_AZURESTORAGEACCOUNTNAME),
@@ -134,7 +131,6 @@ mod tests {
 		// Set some env vars
 		std::env::set_var(ENV_VAR_SERVER_ADDRESS, "SERVER_ADDRESS");
 		std::env::set_var(ENV_VAR_DATABASE_CONNECTIONSTRING, "DATABASE_CONNECTIONSTRING");
-		std::env::set_var(ENV_VAR_DATABASE_NAME, "DATABASE_NAME");
 		std::env::set_var(ENV_VAR_STORAGE_DIRECTORYPHOTOS, "STORAGE_DIRECTORYPHOTOS");
 
 		// Create settings
@@ -143,7 +139,6 @@ mod tests {
 		// Check if config settings' values are same as set in env vars
 		assert_eq!(settings.server.address, "SERVER_ADDRESS");
 		assert_eq!(settings.database.connection_string, "DATABASE_CONNECTIONSTRING");
-		assert_eq!(settings.database.name, "DATABASE_NAME");
 		assert_eq!(settings.storage.directory_photos, "STORAGE_DIRECTORYPHOTOS");
 	}
 

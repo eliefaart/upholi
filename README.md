@@ -35,7 +35,6 @@ Default configuration is inside ```/server/config/default.toml```. Each setting 
 | :--------------------------------------- | :------------------------------------------------------------------------------------------ |
 | `UPHOLI_SERVER_ADDRESS`                  | Address to bind to.                                                                         |
 | `UPHOLI_DATABASE_CONNECTIONSTRING`       | Connection string to database server.                                                       |
-| `UPHOLI_DATABASE_NAME`                   | Name of database to use.                                                                    |
 | `UPHOLI_STORAGE_PROVIDER`                | ```Disk``` \| ```Azure```. Storage provider.                                                |
 | `UPHOLI_STORAGE_DIRECTORYPHOTOS`         | Only when storage provider is ```Disk```. Path to directory in which photos will be stored. |
 | `UPHOLI_STORAGE_AZURESTORAGEACCOUNTNAME` | Only when storage provider is ```Azure```. Azure storage account name.                      |
