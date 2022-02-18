@@ -1,7 +1,6 @@
-use crate::entities::EntityWithProof;
 use crate::hashing::compute_sha256_hash;
 use reqwest::StatusCode;
-use upholi_lib::http::request::{FindSharesFilter, Login, Register};
+use upholi_lib::http::request::{FindEntity, FindSharesFilter, Login, Register};
 use upholi_lib::http::response::{ErrorResult, UserInfo};
 use upholi_lib::result::Result;
 use upholi_lib::{http::*, PhotoVariant};
@@ -61,8 +60,17 @@ impl HttpClient {
 		Ok(photos)
 	}
 
-	pub async fn get_photos_using_key_access_proof(&self, entities: &[EntityWithProof]) -> Result<Vec<response::PhotoMinimal>> {
+	pub async fn find_photos(&self, entities: &[FindEntity]) -> Result<Vec<response::PhotoMinimal>> {
 		let url = format!("{}/api/photos/find", self.base_url);
+
+		let response = self.client.post(&url).json(&entities).send().await?;
+		let photos = response.json().await?;
+
+		Ok(photos)
+	}
+
+	pub async fn find_photos_full(&self, entities: &[FindEntity]) -> Result<Vec<response::Photo>> {
+		let url = format!("{}/api/photos/find/full", self.base_url);
 
 		let response = self.client.post(&url).json(&entities).send().await?;
 		let photos = response.json().await?;

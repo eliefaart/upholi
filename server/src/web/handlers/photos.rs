@@ -1,7 +1,7 @@
 use actix_multipart::Multipart;
 use actix_web::error::{ErrorBadRequest, ErrorInternalServerError, ErrorNotFound, ErrorUnauthorized};
 use actix_web::{web, HttpRequest, HttpResponse, Result};
-use upholi_lib::http::request::{CheckPhotoExists, EntityAuthorizationProof, RequestedEntity};
+use upholi_lib::http::request::{CheckPhotoExists, EntityAuthorizationProof, FindEntity};
 use upholi_lib::{http::*, PhotoVariant};
 
 use crate::database::entities::photo::Photo;
@@ -22,13 +22,26 @@ pub async fn route_get_photos(user: User) -> Result<HttpResponse> {
 }
 
 /// Retreive 1..n requested photos.
-pub async fn route_find_photos(_user: Option<User>, requested_photos: web::Json<Vec<RequestedEntity>>) -> Result<HttpResponse> {
+pub async fn route_find_photos(_user: Option<User>, requested_photos: web::Json<Vec<FindEntity>>) -> Result<HttpResponse> {
 	let requested_photos = requested_photos.into_inner();
 
 	// TODO: If no user, then proof for each photo must be present.. or something
 	// Either way function feels weird still.
 
-	let photos = database::get_photos(requested_photos)
+	let photos = database::find_photos(requested_photos)
+		.await
+		.map_err(|error| ErrorInternalServerError(error))?;
+	Ok(HttpResponse::Ok().json(photos))
+}
+
+/// Retreive 1..n requested photos.
+pub async fn route_find_photos_full(_user: Option<User>, requested_photos: web::Json<Vec<FindEntity>>) -> Result<HttpResponse> {
+	let requested_photos = requested_photos.into_inner();
+
+	// TODO: If no user, then proof for each photo must be present.. or something
+	// Either way function feels weird still.
+
+	let photos = database::find_photos_full(requested_photos)
 		.await
 		.map_err(|error| ErrorInternalServerError(error))?;
 	Ok(HttpResponse::Ok().json(photos))

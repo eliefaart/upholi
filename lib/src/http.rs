@@ -4,7 +4,7 @@ pub mod request {
 
 	#[derive(Deserialize, Serialize, Debug)]
 	#[serde(rename_all = "camelCase")]
-	pub struct RequestedEntity {
+	pub struct FindEntity {
 		pub id: String,
 		pub key_hash: Option<String>,
 	}

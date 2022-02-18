@@ -2,7 +2,7 @@ use super::http::HttpClient;
 use crate::entities::album::{self, Album, JsAlbumFull, JsAlbumPhoto};
 use crate::entities::photo::{Photo, PhotoData};
 use crate::entities::share::{Share, ShareData};
-use crate::entities::{Entity, EntityWithProof, Shareable};
+use crate::entities::{Entity, Shareable};
 use crate::exif::Exif;
 use crate::hashing::compute_sha256_hash;
 use crate::images::Image;
@@ -10,7 +10,7 @@ use crate::{encryption, hashing};
 use lazy_static::lazy_static;
 use std::collections::HashMap;
 use std::sync::RwLock;
-use upholi_lib::http::request::{FindSharesFilter, Login, Register};
+use upholi_lib::http::request::{FindEntity, FindSharesFilter, Login, Register};
 use upholi_lib::http::response::UserInfo;
 use upholi_lib::result::Result;
 use upholi_lib::{http::*, PhotoVariant, ShareType};
@@ -434,18 +434,27 @@ impl UpholiClientHelper {
 	pub async fn upsert_share(&self, private_key: &[u8], share_type: ShareType, item_id: &str, password: &str) -> Result<String> {
 		let existing_share_for_album = self.find_share(private_key, &share_type, item_id).await?;
 
-		// TODO: Don't get every single photo, only need the ones included in album
-		let photos = self.http_client.get_photos().await?;
-		let mut all_photos: Vec<Photo> = vec![];
-		for photo in photos {
-			let photo = self.get_photo(private_key, &photo.id, &None).await?;
-			all_photos.push(photo);
-		}
-
 		let data: ShareData = match share_type {
 			ShareType::Album => {
 				let album = self.get_album(private_key, item_id).await?;
-				album.create_share_data(private_key, &all_photos)?
+				let album_data = album.get_data();
+
+				let mut find_request: Vec<FindEntity> = vec![];
+				for photo in &album_data.photos {
+					find_request.push(FindEntity {
+						id: photo.to_string(),
+						key_hash: None,
+					});
+				}
+
+				let album_photos_encrypted = self.http_client.find_photos_full(&find_request).await?;
+				let mut album_photos: Vec<Photo> = vec![];
+				for photo in album_photos_encrypted {
+					let photo = Photo::from_encrypted_with_owner_key(photo, private_key)?;
+					album_photos.push(photo);
+				}
+
+				album.create_share_data(private_key, &album_photos)?
 			}
 		};
 
@@ -544,14 +553,14 @@ impl UpholiClientHelper {
 
 				for photo in &share_data.photos {
 					let photo_key = base64::decode_config(&photo.key, base64::STANDARD)?;
-					photos_proof.push(EntityWithProof {
+					photos_proof.push(FindEntity {
 						id: photo.id.clone(),
-						proof: compute_sha256_hash(&photo_key)?,
+						key_hash: Some(compute_sha256_hash(&photo_key)?),
 					});
 					photo_keys.insert(&photo.id, photo_key);
 				}
 
-				let photos = self.http_client.get_photos_using_key_access_proof(&photos_proof).await?;
+				let photos = self.http_client.find_photos(&photos_proof).await?;
 				let mut js_photos: Vec<JsAlbumPhoto> = Vec::new();
 				for photo in &photos {
 					js_photos.push(JsAlbumPhoto {

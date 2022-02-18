@@ -9,7 +9,7 @@ use bson::doc;
 use futures::TryStreamExt;
 use lazy_static::lazy_static;
 use mongodb::{options::ClientOptions, Client};
-use upholi_lib::http::request::{FindSharesFilter, RequestedEntity};
+use upholi_lib::http::request::{FindEntity, FindSharesFilter};
 use upholi_lib::http::response::PhotoMinimal;
 
 lazy_static! {
@@ -141,7 +141,28 @@ pub async fn get_photos_for_user(user_id: &str) -> Result<Vec<PhotoMinimal>> {
 	get_items_from_cursor(cursor).await
 }
 
-pub async fn get_photos(photos: Vec<RequestedEntity>) -> Result<Vec<PhotoMinimal>> {
+pub async fn find_photos(photos: Vec<FindEntity>) -> Result<Vec<PhotoMinimal>> {
+	find_photos_of::<PhotoMinimal>(
+		photos,
+		Some(doc! {
+			"$project": {
+				"id": "$id",
+				"width": "$width",
+				"height": "$height"
+			}
+		}),
+	)
+	.await
+}
+
+pub async fn find_photos_full(photos: Vec<FindEntity>) -> Result<Vec<upholi_lib::http::response::Photo>> {
+	find_photos_of::<upholi_lib::http::response::Photo>(photos, None).await
+}
+
+async fn find_photos_of<T>(photos: Vec<FindEntity>, project_stage: Option<bson::Document>) -> Result<Vec<T>>
+where
+	T: serde::de::DeserializeOwned,
+{
 	let mongo_collection = DATABASE.get().await.collection::<Photo>(database::COLLECTION_PHOTOS);
 
 	let mut photo_filter_docs: Vec<bson::Document> = Vec::new();
@@ -164,20 +185,15 @@ pub async fn get_photos(photos: Vec<RequestedEntity>) -> Result<Vec<PhotoMinimal
 	}
 
 	if !photo_filter_docs.is_empty() {
-		let pipeline = vec![
-			doc! {
-				"$match": {
-					"$or": photo_filter_docs
-				}
-			},
-			doc! {
-				"$project": {
-					"id": "$id",
-					"width": "$width",
-					"height": "$height"
-				}
-			},
-		];
+		let mut pipeline = vec![doc! {
+			"$match": {
+				"$or": photo_filter_docs
+			}
+		}];
+
+		if let Some(project_stage) = project_stage {
+			pipeline.push(project_stage);
+		}
 
 		let cursor = mongo_collection.aggregate(pipeline, None).await?;
 		get_items_from_cursor(cursor).await

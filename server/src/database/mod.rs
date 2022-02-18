@@ -1,6 +1,6 @@
 use async_trait::async_trait;
-use upholi_lib::http::request::{FindSharesFilter, RequestedEntity};
-use upholi_lib::http::response::PhotoMinimal;
+use upholi_lib::http::request::{FindEntity, FindSharesFilter};
+use upholi_lib::http::response::{Photo, PhotoMinimal};
 
 use self::entities::share::Share;
 use self::entities::user::User;
@@ -105,8 +105,13 @@ pub async fn get_photos_for_user(user_id: &str) -> Result<Vec<PhotoMinimal>> {
 }
 
 /// Get multiple photos
-pub async fn get_photos(photos: Vec<RequestedEntity>) -> Result<Vec<PhotoMinimal>> {
-	mongodb::get_photos(photos).await
+pub async fn find_photos(photos: Vec<FindEntity>) -> Result<Vec<PhotoMinimal>> {
+	mongodb::find_photos(photos).await
+}
+
+/// Get multiple photos
+pub async fn find_photos_full(photos: Vec<FindEntity>) -> Result<Vec<Photo>> {
+	mongodb::find_photos_full(photos).await
 }
 
 /// Delete multiple photos
