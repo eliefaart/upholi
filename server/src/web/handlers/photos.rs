@@ -8,7 +8,7 @@ use crate::database::entities::photo::Photo;
 use crate::database::entities::session::Session;
 use crate::database::entities::user::User;
 use crate::database::entities::AccessControl;
-use crate::database::{self, DatabaseEntity, DatabaseEntityUserOwned};
+use crate::database::{self, DatabaseEntity, DatabaseEntityBatch, DatabaseEntityUserOwned};
 use crate::error::{HttpError, UploadError};
 use crate::storage;
 use crate::web::http::*;
@@ -210,7 +210,7 @@ pub async fn delete_photos(user_id: String, ids: &[&str]) -> Result<HttpResponse
 	}
 
 	// Delete all photos from database
-	database::delete_photos(ids).await.map_err(|_| ErrorNotFound(HttpError::NotFound))?;
+	Photo::delete_many(ids).await.map_err(|_| ErrorNotFound(HttpError::NotFound))?;
 	Ok(create_ok_response())
 }
 

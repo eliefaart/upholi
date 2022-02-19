@@ -56,6 +56,10 @@ impl DatabaseEntityBatch for Album {
 	async fn get_many(ids: &[&str]) -> Result<Vec<Self>> {
 		super::super::find_many(super::super::COLLECTION_ALBUMS, None, Some(ids), None, None).await
 	}
+
+	async fn delete_many(ids: &[&str]) -> Result<()> {
+		super::super::delete_many(super::super::COLLECTION_ALBUMS, ids).await
+	}
 }
 
 #[async_trait]

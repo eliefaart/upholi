@@ -68,6 +68,10 @@ impl DatabaseEntityBatch for Share {
 	async fn get_many(ids: &[&str]) -> Result<Vec<Self>> {
 		super::super::find_many(super::super::COLLECTION_SHARES, None, Some(ids), None, None).await
 	}
+
+	async fn delete_many(ids: &[&str]) -> Result<()> {
+		super::super::delete_many(super::super::COLLECTION_SHARES, ids).await
+	}
 }
 
 #[async_trait]

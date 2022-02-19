@@ -20,7 +20,7 @@ pub struct SortField<'a> {
 	pub ascending: bool,
 }
 
-/// Add standard CRUD operations to a struct
+/// Add standard CRUD operations to an entity
 #[async_trait]
 pub trait DatabaseEntity {
 	/// Get an existing item
@@ -38,16 +38,18 @@ pub trait DatabaseEntity {
 	async fn delete(&self) -> Result<()>;
 }
 
-/// Adds database operations to a struct that targets multiple items
+/// Adds database operations to an entity that targets multiple items
 #[async_trait]
 pub trait DatabaseEntityBatch {
 	/// Get all items with an id contained within given array
 	async fn get_many(ids: &[&str]) -> Result<Vec<Self>>
 	where
 		Self: std::marker::Sized;
+
+	async fn delete_many(ids: &[&str]) -> Result<()>;
 }
 
-/// Adds get operations to a struct, but return a minimal/slim version of an entity
+/// Adds get operations to an entity, but return a minimal/slim version of an entity
 #[async_trait]
 pub trait DatabaseEntityMinimal {
 	type TMinimal;
@@ -63,7 +65,7 @@ pub trait DatabaseEntityMinimal {
 		Self: std::marker::Sized;
 }
 
-/// Add database operations to a struct, which are targetted only to entries owned by given user
+/// Add database operations to an entity, which are targetted only to items owned by given user
 #[async_trait]
 pub trait DatabaseEntityUserOwned: DatabaseEntity {
 	async fn get_for_user(id: &str, user_id: String) -> Result<Option<Self>>
@@ -124,11 +126,6 @@ pub async fn find_photos(photos: Vec<FindEntity>) -> Result<Vec<PhotoMinimal>> {
 /// Get multiple photos
 pub async fn find_photos_full(photos: Vec<FindEntity>) -> Result<Vec<Photo>> {
 	mongodb::find_photos_full(photos).await
-}
-
-/// Delete multiple photos
-pub async fn delete_photos(photo_ids: &[&str]) -> Result<()> {
-	delete_many(COLLECTION_PHOTOS, photo_ids).await
 }
 
 /// Check if a photo already exists for user, by hash
