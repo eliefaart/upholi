@@ -2,7 +2,7 @@ use crate::database::entities::album::Album;
 use crate::database::entities::session::Session;
 use crate::database::entities::user::User;
 use crate::database::entities::AccessControl;
-use crate::database::{DatabaseEntity, DatabaseUserEntity};
+use crate::database::{DatabaseEntity, DatabaseEntityUserOwned};
 use crate::error::HttpError;
 use crate::web::http::*;
 use actix_web::error::{ErrorInternalServerError, ErrorNotFound, ErrorUnauthorized};
@@ -11,7 +11,7 @@ use upholi_lib::http::request::{CreateAlbum, EntityAuthorizationProof};
 
 /// Get all albums
 pub async fn route_get_albums(user: User) -> Result<HttpResponse> {
-	let albums = Album::get_all_as_user(user.id).await?;
+	let albums = Album::get_all_for_user(user.id).await?;
 	Ok(HttpResponse::Ok().json(albums))
 }
 
@@ -51,7 +51,7 @@ pub async fn route_update_album(session: Session, req: HttpRequest, updated_albu
 	let updated_album = updated_album.into_inner();
 
 	let user_id = session.user_id.clone().ok_or(ErrorUnauthorized(HttpError::Unauthorized))?;
-	let mut album = Album::get_as_user(album_id, user_id.to_string())
+	let mut album = Album::get_for_user(album_id, user_id.to_string())
 		.await
 		.map_err(|_| ErrorUnauthorized(HttpError::Unauthorized))?
 		.ok_or(ErrorNotFound(HttpError::NotFound))?;
@@ -73,7 +73,7 @@ pub async fn route_delete_album(session: Session, req: HttpRequest) -> Result<Ht
 	let album_id = req.match_info().get("album_id").unwrap();
 
 	let user_id = session.user_id.clone().ok_or(ErrorUnauthorized(HttpError::Unauthorized))?;
-	let album = Album::get_as_user(album_id, user_id.to_string())
+	let album = Album::get_for_user(album_id, user_id.to_string())
 		.await
 		.map_err(|_| ErrorUnauthorized(HttpError::Unauthorized))?
 		.ok_or(ErrorNotFound(HttpError::NotFound))?;

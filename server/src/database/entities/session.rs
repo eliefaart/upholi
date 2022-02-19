@@ -36,7 +36,7 @@ impl Session {
 impl DatabaseEntity for Session {
 	/// Get an existing item
 	async fn get(id: &str) -> Result<Option<Self>> {
-		super::super::find_one(super::super::COLLECTION_SESSIONS, id).await
+		super::super::find_one(super::super::COLLECTION_SESSIONS, id, None).await
 	}
 
 	/// Insert item as new record

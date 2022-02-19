@@ -41,8 +41,12 @@ async fn initialize(database: &mongodb::Database) -> Result<()> {
 	Ok(())
 }
 
-pub async fn find_one<T: serde::de::DeserializeOwned>(collection: &str, id: &str) -> Result<Option<T>> {
-	let mut items: Vec<T> = find_many(collection, None, Some(&[id]), None).await?;
+pub async fn find_one<T: serde::de::DeserializeOwned>(
+	collection: &str,
+	id: &str,
+	limit_fields: Option<Vec<String>>,
+) -> Result<Option<T>> {
+	let mut items: Vec<T> = find_many(collection, None, Some(&[id]), None, limit_fields).await?;
 
 	if !items.is_empty() {
 		Ok(items.pop())
@@ -56,6 +60,7 @@ pub async fn find_many<T: serde::de::DeserializeOwned>(
 	user_id: Option<&str>,
 	ids: Option<&[&str]>,
 	sort_field: Option<&SortField<'_>>,
+	limit_fields: Option<Vec<String>>,
 ) -> Result<Vec<T>> {
 	let mongo_collection = DATABASE.get().await.collection::<bson::Document>(collection);
 	let mut pipeline = vec![doc! {
@@ -71,10 +76,15 @@ pub async fn find_many<T: serde::de::DeserializeOwned>(
 		});
 	}
 
-	// Since id is unique, we can optimize the query a bit by adding a $limit stage
-	if let Some(ids_info) = ids {
+	if let Some(fields) = limit_fields {
+		let mut project_stage_fields = doc! {};
+
+		for field in fields {
+			project_stage_fields.insert(field, "1");
+		}
+
 		pipeline.push(doc! {
-			"$limit": ids_info.len() as u32
+			"$project": project_stage_fields
 		});
 	}
 
@@ -118,27 +128,6 @@ pub async fn delete_many(collection: &str, ids: &[&str]) -> Result<()> {
 
 	mongo_collection.delete_many(filter, None).await?;
 	Ok(())
-}
-
-pub async fn get_photos_for_user(user_id: &str) -> Result<Vec<PhotoMinimal>> {
-	let mongo_collection = DATABASE.get().await.collection::<Photo>(database::COLLECTION_PHOTOS);
-	let pipeline = vec![
-		doc! {
-			"$match": {
-				"userId": user_id
-			}
-		},
-		doc! {
-			"$project": {
-				"id": "$id",
-				"width": "$width",
-				"height": "$height"
-			}
-		},
-	];
-
-	let cursor = mongo_collection.aggregate(pipeline, None).await?;
-	get_items_from_cursor(cursor).await
 }
 
 pub async fn find_photos(photos: Vec<FindEntity>) -> Result<Vec<PhotoMinimal>> {

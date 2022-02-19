@@ -47,7 +47,7 @@ impl User {
 #[async_trait]
 impl DatabaseEntity for User {
 	async fn get(id: &str) -> Result<Option<Self>> {
-		super::super::find_one(super::super::COLLECTION_USERS, id).await
+		super::super::find_one(super::super::COLLECTION_USERS, id, None).await
 	}
 
 	async fn insert(&self) -> Result<()> {

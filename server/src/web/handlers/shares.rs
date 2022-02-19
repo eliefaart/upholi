@@ -2,7 +2,7 @@ use crate::database::entities::session::Session;
 use crate::database::entities::share::Share;
 use crate::database::entities::user::User;
 use crate::database::entities::AccessControl;
-use crate::database::{DatabaseEntity, DatabaseUserEntity};
+use crate::database::{DatabaseEntity, DatabaseEntityUserOwned};
 use crate::error::HttpError;
 use crate::web::http::*;
 use actix_web::error::{ErrorInternalServerError, ErrorNotFound, ErrorUnauthorized};
@@ -50,7 +50,7 @@ pub async fn route_update_share(session: Session, req: HttpRequest, updated_shar
 	let updated_share = updated_share.into_inner();
 
 	let user_id = session.user_id.clone().ok_or(ErrorUnauthorized(HttpError::Unauthorized))?;
-	let mut share = Share::get_as_user(share_id, user_id.to_string())
+	let mut share = Share::get_for_user(share_id, user_id.to_string())
 		.await
 		.map_err(|_| ErrorUnauthorized(HttpError::Unauthorized))?
 		.ok_or(ErrorNotFound(HttpError::NotFound))?;
@@ -74,7 +74,7 @@ pub async fn route_delete_share(session: Session, req: HttpRequest) -> Result<Ht
 	let share_id = req.match_info().get("share_id").unwrap();
 
 	let user_id = session.user_id.clone().ok_or(ErrorUnauthorized(HttpError::Unauthorized))?;
-	let share = Share::get_as_user(share_id, user_id.to_string())
+	let share = Share::get_for_user(share_id, user_id.to_string())
 		.await
 		.map_err(|error| ErrorInternalServerError(error))?
 		.ok_or(ErrorUnauthorized(HttpError::Unauthorized))?;

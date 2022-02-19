@@ -34,7 +34,7 @@ impl From<CreateAlbum> for Album {
 #[async_trait]
 impl DatabaseEntity for Album {
 	async fn get(id: &str) -> Result<Option<Self>> {
-		super::super::find_one(super::super::COLLECTION_ALBUMS, id).await
+		super::super::find_one(super::super::COLLECTION_ALBUMS, id, None).await
 	}
 
 	async fn insert(&self) -> Result<()> {
@@ -53,14 +53,14 @@ impl DatabaseEntity for Album {
 
 #[async_trait]
 impl DatabaseEntityBatch for Album {
-	async fn get_with_ids(ids: &[&str]) -> Result<Vec<Self>> {
-		super::super::find_many(super::super::COLLECTION_ALBUMS, None, Some(ids), None).await
+	async fn get_many(ids: &[&str]) -> Result<Vec<Self>> {
+		super::super::find_many(super::super::COLLECTION_ALBUMS, None, Some(ids), None, None).await
 	}
 }
 
 #[async_trait]
-impl DatabaseUserEntity for Album {
-	async fn get_as_user(id: &str, user_id: String) -> Result<Option<Self>> {
+impl DatabaseEntityUserOwned for Album {
+	async fn get_for_user(id: &str, user_id: String) -> Result<Option<Self>> {
 		match Self::get(id).await? {
 			Some(album) => {
 				if album.user_id != user_id {
@@ -73,12 +73,12 @@ impl DatabaseUserEntity for Album {
 		}
 	}
 
-	async fn get_all_as_user(user_id: String) -> Result<Vec<Self>> {
-		super::super::find_many(super::super::COLLECTION_ALBUMS, Some(&user_id), None, None).await
+	async fn get_all_for_user(user_id: String) -> Result<Vec<Self>> {
+		super::super::find_many(super::super::COLLECTION_ALBUMS, Some(&user_id), None, None, None).await
 	}
 
-	async fn get_all_with_ids_as_user(ids: &[&str], user_id: String) -> Result<Vec<Self>> {
-		super::super::find_many(super::super::COLLECTION_ALBUMS, Some(&user_id), Some(ids), None).await
+	async fn get_many_for_user(ids: &[&str], user_id: String) -> Result<Vec<Self>> {
+		super::super::find_many(super::super::COLLECTION_ALBUMS, Some(&user_id), Some(ids), None, None).await
 	}
 }
 

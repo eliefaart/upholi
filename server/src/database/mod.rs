@@ -9,11 +9,11 @@ use crate::error::*;
 pub mod entities;
 mod mongodb;
 
-const COLLECTION_SESSIONS: &str = "sessions";
-const COLLECTION_USERS: &str = "users";
-const COLLECTION_PHOTOS: &str = "photos";
-const COLLECTION_ALBUMS: &str = "albums";
-const COLLECTION_SHARES: &str = "shares";
+static COLLECTION_SESSIONS: &str = "sessions";
+static COLLECTION_USERS: &str = "users";
+static COLLECTION_PHOTOS: &str = "photos";
+static COLLECTION_ALBUMS: &str = "albums";
+static COLLECTION_SHARES: &str = "shares";
 
 pub struct SortField<'a> {
 	pub field: &'a str,
@@ -38,34 +38,50 @@ pub trait DatabaseEntity {
 	async fn delete(&self) -> Result<()>;
 }
 
-/// Adds CRUD operations to a struct that targets multiple items
+/// Adds database operations to a struct that targets multiple items
 #[async_trait]
 pub trait DatabaseEntityBatch {
 	/// Get all items with an id contained within given array
-	async fn get_with_ids(ids: &[&str]) -> Result<Vec<Self>>
+	async fn get_many(ids: &[&str]) -> Result<Vec<Self>>
+	where
+		Self: std::marker::Sized;
+}
+
+/// Adds get operations to a struct, but return a minimal/slim version of an entity
+#[async_trait]
+pub trait DatabaseEntityMinimal {
+	type TMinimal;
+
+	/// Get all items with an id contained within given array
+	async fn get_minimal(id: &str) -> Result<Option<Self::TMinimal>>
+	where
+		Self: std::marker::Sized;
+
+	/// Get all items with an id contained within given array
+	async fn get_many_minimal(ids: &[&str]) -> Result<Vec<Self::TMinimal>>
 	where
 		Self: std::marker::Sized;
 }
 
 /// Add database operations to a struct, which are targetted only to entries owned by given user
 #[async_trait]
-pub trait DatabaseUserEntity: DatabaseEntity {
-	async fn get_as_user(id: &str, user_id: String) -> Result<Option<Self>>
+pub trait DatabaseEntityUserOwned: DatabaseEntity {
+	async fn get_for_user(id: &str, user_id: String) -> Result<Option<Self>>
 	where
 		Self: std::marker::Sized;
 
-	async fn get_all_as_user(user_id: String) -> Result<Vec<Self>>
+	async fn get_all_for_user(user_id: String) -> Result<Vec<Self>>
 	where
 		Self: std::marker::Sized;
 
-	async fn get_all_with_ids_as_user(ids: &[&str], user_id: String) -> Result<Vec<Self>>
+	async fn get_many_for_user(ids: &[&str], user_id: String) -> Result<Vec<Self>>
 	where
 		Self: std::marker::Sized;
 }
 
 /// Get a single item from a collection
-async fn find_one<T: serde::de::DeserializeOwned>(collection: &str, id: &str) -> Result<Option<T>> {
-	mongodb::find_one(collection, id).await
+async fn find_one<T: serde::de::DeserializeOwned>(collection: &str, id: &str, limit_fields: Option<Vec<String>>) -> Result<Option<T>> {
+	mongodb::find_one(collection, id, limit_fields).await
 }
 
 /// Get multiple items from a collection
@@ -74,8 +90,9 @@ async fn find_many<T: serde::de::DeserializeOwned>(
 	user_id: Option<&str>,
 	ids: Option<&[&str]>,
 	sort_field: Option<&SortField<'_>>,
+	limit_fields: Option<Vec<String>>,
 ) -> Result<Vec<T>> {
-	mongodb::find_many(collection, user_id, ids, sort_field).await
+	mongodb::find_many(collection, user_id, ids, sort_field, limit_fields).await
 }
 
 /// Insert a single item into a collection.
@@ -97,11 +114,6 @@ async fn delete_one(collection: &str, id: &str) -> Result<()> {
 /// Delete multiple items from a collection
 async fn delete_many(collection: &str, ids: &[&str]) -> Result<()> {
 	mongodb::delete_many(collection, ids).await
-}
-
-/// Get all photos of given user, returning only minimal info per user.
-pub async fn get_photos_for_user(user_id: &str) -> Result<Vec<PhotoMinimal>> {
-	mongodb::get_photos_for_user(user_id).await
 }
 
 /// Get multiple photos

@@ -8,16 +8,17 @@ use crate::database::entities::photo::Photo;
 use crate::database::entities::session::Session;
 use crate::database::entities::user::User;
 use crate::database::entities::AccessControl;
-use crate::database::{self, DatabaseEntity};
+use crate::database::{self, DatabaseEntity, DatabaseEntityUserOwned};
 use crate::error::{HttpError, UploadError};
 use crate::storage;
 use crate::web::http::*;
 
 /// Get all photos
 pub async fn route_get_photos(user: User) -> Result<HttpResponse> {
-	let photos = database::get_photos_for_user(&user.id)
+	let photos = Photo::get_all_for_user(user.id)
 		.await
 		.map_err(|error| ErrorInternalServerError(error))?;
+
 	Ok(HttpResponse::Ok().json(photos))
 }
 

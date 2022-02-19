@@ -1,11 +1,13 @@
+use crate::database::DatabaseEntityMinimal;
 use crate::error::*;
 use crate::{
-	database::{self, DatabaseEntity, DatabaseEntityBatch, DatabaseUserEntity},
+	database::{self, DatabaseEntity, DatabaseEntityBatch, DatabaseEntityUserOwned},
 	error::EntityError,
 };
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use upholi_lib::http::request::{EntityAuthorizationProof, UploadPhoto};
+use upholi_lib::http::response::PhotoMinimal;
 use upholi_lib::ids::create_unique_id;
 use upholi_lib::EncryptedData;
 
@@ -52,12 +54,17 @@ impl Photo {
 	pub async fn hash_exists_for_user(user_id: &str, hash: &str) -> Result<bool> {
 		super::super::photo_exists_for_user(user_id, hash).await
 	}
+
+	/// Get the fields contained in the PhotoMinimal struct
+	fn get_fields_minimal() -> Vec<String> {
+		vec![String::from("id"), String::from("width"), String::from("height")]
+	}
 }
 
 #[async_trait]
 impl DatabaseEntity for Photo {
 	async fn get(id: &str) -> Result<Option<Self>> {
-		super::super::find_one(super::super::COLLECTION_PHOTOS, id).await
+		super::super::find_one(super::super::COLLECTION_PHOTOS, id, None).await
 	}
 
 	async fn insert(&self) -> Result<()> {
@@ -75,15 +82,35 @@ impl DatabaseEntity for Photo {
 }
 
 #[async_trait]
-impl DatabaseEntityBatch for Photo {
-	async fn get_with_ids(ids: &[&str]) -> Result<Vec<Self>> {
-		super::super::find_many(super::super::COLLECTION_PHOTOS, None, Some(ids), None).await
+impl DatabaseEntityMinimal for Photo {
+	type TMinimal = PhotoMinimal;
+
+	async fn get_minimal(id: &str) -> Result<Option<Self::TMinimal>> {
+		super::super::find_one(super::super::COLLECTION_PHOTOS, id, Some(Self::get_fields_minimal())).await
+	}
+
+	async fn get_many_minimal(ids: &[&str]) -> Result<Vec<Self::TMinimal>> {
+		super::super::find_many(
+			super::super::COLLECTION_PHOTOS,
+			None,
+			Some(ids),
+			None,
+			Some(Self::get_fields_minimal()),
+		)
+		.await
 	}
 }
 
 #[async_trait]
-impl DatabaseUserEntity for Photo {
-	async fn get_as_user(id: &str, user_id: String) -> Result<Option<Self>> {
+impl DatabaseEntityBatch for Photo {
+	async fn get_many(ids: &[&str]) -> Result<Vec<Self>> {
+		super::super::find_many(super::super::COLLECTION_PHOTOS, None, Some(ids), None, None).await
+	}
+}
+
+#[async_trait]
+impl DatabaseEntityUserOwned for Photo {
+	async fn get_for_user(id: &str, user_id: String) -> Result<Option<Self>> {
 		match Self::get(id).await? {
 			Some(photo) => {
 				if photo.user_id != user_id {
@@ -96,20 +123,20 @@ impl DatabaseUserEntity for Photo {
 		}
 	}
 
-	async fn get_all_as_user(user_id: String) -> Result<Vec<Self>> {
+	async fn get_all_for_user(user_id: String) -> Result<Vec<Self>> {
 		let sort = database::SortField {
 			field: "createdOn",
 			ascending: false,
 		};
-		super::super::find_many(super::super::COLLECTION_PHOTOS, Some(&user_id), None, Some(&sort)).await
+		super::super::find_many(super::super::COLLECTION_PHOTOS, Some(&user_id), None, Some(&sort), None).await
 	}
 
-	async fn get_all_with_ids_as_user(ids: &[&str], user_id: String) -> Result<Vec<Self>> {
+	async fn get_many_for_user(ids: &[&str], user_id: String) -> Result<Vec<Self>> {
 		let sort = database::SortField {
 			field: "createdOn",
 			ascending: false,
 		};
-		super::super::find_many(super::super::COLLECTION_PHOTOS, Some(&user_id), Some(ids), Some(&sort)).await
+		super::super::find_many(super::super::COLLECTION_PHOTOS, Some(&user_id), Some(ids), Some(&sort), None).await
 	}
 }
 

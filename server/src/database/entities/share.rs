@@ -46,7 +46,7 @@ impl From<UpsertShare> for Share {
 #[async_trait]
 impl DatabaseEntity for Share {
 	async fn get(id: &str) -> Result<Option<Self>> {
-		super::super::find_one(super::super::COLLECTION_SHARES, id).await
+		super::super::find_one(super::super::COLLECTION_SHARES, id, None).await
 	}
 
 	async fn insert(&self) -> Result<()> {
@@ -65,14 +65,14 @@ impl DatabaseEntity for Share {
 
 #[async_trait]
 impl DatabaseEntityBatch for Share {
-	async fn get_with_ids(ids: &[&str]) -> Result<Vec<Self>> {
-		super::super::find_many(super::super::COLLECTION_SHARES, None, Some(ids), None).await
+	async fn get_many(ids: &[&str]) -> Result<Vec<Self>> {
+		super::super::find_many(super::super::COLLECTION_SHARES, None, Some(ids), None, None).await
 	}
 }
 
 #[async_trait]
-impl DatabaseUserEntity for Share {
-	async fn get_as_user(id: &str, user_id: String) -> Result<Option<Self>> {
+impl DatabaseEntityUserOwned for Share {
+	async fn get_for_user(id: &str, user_id: String) -> Result<Option<Self>> {
 		match Self::get(id).await? {
 			Some(share) => {
 				if share.user_id != user_id {
@@ -85,12 +85,12 @@ impl DatabaseUserEntity for Share {
 		}
 	}
 
-	async fn get_all_as_user(user_id: String) -> Result<Vec<Self>> {
-		super::super::find_many(super::super::COLLECTION_SHARES, Some(&user_id), None, None).await
+	async fn get_all_for_user(user_id: String) -> Result<Vec<Self>> {
+		super::super::find_many(super::super::COLLECTION_SHARES, Some(&user_id), None, None, None).await
 	}
 
-	async fn get_all_with_ids_as_user(ids: &[&str], user_id: String) -> Result<Vec<Self>> {
-		super::super::find_many(super::super::COLLECTION_SHARES, Some(&user_id), Some(ids), None).await
+	async fn get_many_for_user(ids: &[&str], user_id: String) -> Result<Vec<Self>> {
+		super::super::find_many(super::super::COLLECTION_SHARES, Some(&user_id), Some(ids), None, None).await
 	}
 }
 
