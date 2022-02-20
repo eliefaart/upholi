@@ -12,9 +12,6 @@ pub struct Session {
 	pub id: String,
 	pub user_id: Option<String>,
 	created_on: chrono::DateTime<Utc>,
-
-	/// List of tokens (not fixed IDs) of collections that this session is authenticated to access
-	pub authenticated_for_collection_tokens: Vec<String>,
 }
 
 impl Session {
@@ -23,7 +20,6 @@ impl Session {
 			id: create_unique_id(),
 			user_id: None,
 			created_on: Utc::now(),
-			authenticated_for_collection_tokens: vec![],
 		}
 	}
 

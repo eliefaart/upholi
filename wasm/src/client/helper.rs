@@ -447,7 +447,7 @@ impl UpholiClientHelper {
 					});
 				}
 
-				let album_photos_encrypted = self.http_client.find_photos_full(&find_request).await?;
+				let album_photos_encrypted = self.http_client.find_photos(&find_request).await?;
 				let mut album_photos: Vec<Photo> = vec![];
 				for photo in album_photos_encrypted {
 					let photo = Photo::from_encrypted_with_owner_key(photo, private_key)?;
@@ -560,7 +560,7 @@ impl UpholiClientHelper {
 					photo_keys.insert(&photo.id, photo_key);
 				}
 
-				let photos = self.http_client.find_photos(&photos_proof).await?;
+				let photos = self.http_client.find_photos_minimal(&photos_proof).await?;
 				let mut js_photos: Vec<JsAlbumPhoto> = Vec::new();
 				for photo in &photos {
 					js_photos.push(JsAlbumPhoto {

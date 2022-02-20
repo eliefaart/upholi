@@ -8,7 +8,7 @@ use crate::database::entities::photo::Photo;
 use crate::database::entities::session::Session;
 use crate::database::entities::user::User;
 use crate::database::entities::AccessControl;
-use crate::database::{self, DatabaseEntity, DatabaseEntityBatch, DatabaseEntityUserOwned};
+use crate::database::{self, DatabaseEntity, DatabaseEntityBatch, DatabaseEntityMinimal, DatabaseEntityUserOwned};
 use crate::error::{HttpError, UploadError};
 use crate::storage;
 use crate::web::http::*;
@@ -16,6 +16,14 @@ use crate::web::http::*;
 /// Get all photos
 pub async fn route_get_photos(user: User) -> Result<HttpResponse> {
 	let photos = Photo::get_all_for_user(user.id)
+		.await
+		.map_err(|error| ErrorInternalServerError(error))?;
+
+	Ok(HttpResponse::Ok().json(photos))
+}
+
+pub async fn route_get_photos_minimal(user: User) -> Result<HttpResponse> {
+	let photos = Photo::get_all_for_user_minimal(user.id)
 		.await
 		.map_err(|error| ErrorInternalServerError(error))?;
 
@@ -36,13 +44,9 @@ pub async fn route_find_photos(_user: Option<User>, requested_photos: web::Json<
 }
 
 /// Retreive 1..n requested photos.
-pub async fn route_find_photos_full(_user: Option<User>, requested_photos: web::Json<Vec<FindEntity>>) -> Result<HttpResponse> {
+pub async fn route_find_photos_minimal(_user: Option<User>, requested_photos: web::Json<Vec<FindEntity>>) -> Result<HttpResponse> {
 	let requested_photos = requested_photos.into_inner();
-
-	// TODO: If no user, then proof for each photo must be present.. or something
-	// Either way function feels weird still.
-
-	let photos = database::find_photos_full(requested_photos)
+	let photos = database::find_photos_minimal(requested_photos)
 		.await
 		.map_err(|error| ErrorInternalServerError(error))?;
 	Ok(HttpResponse::Ok().json(photos))

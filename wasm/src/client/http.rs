@@ -53,14 +53,14 @@ impl HttpClient {
 	}
 
 	pub async fn get_photos(&self) -> Result<Vec<response::PhotoMinimal>> {
-		let url = format!("{}/api/photos", self.base_url);
+		let url = format!("{}/api/photos/minimal", self.base_url);
 		let response = self.client.get(url).send().await?;
 		let photos = response.json::<Vec<response::PhotoMinimal>>().await?;
 
 		Ok(photos)
 	}
 
-	pub async fn find_photos(&self, entities: &[FindEntity]) -> Result<Vec<response::PhotoMinimal>> {
+	pub async fn find_photos(&self, entities: &[FindEntity]) -> Result<Vec<response::Photo>> {
 		let url = format!("{}/api/photos/find", self.base_url);
 
 		let response = self.client.post(&url).json(&entities).send().await?;
@@ -69,8 +69,8 @@ impl HttpClient {
 		Ok(photos)
 	}
 
-	pub async fn find_photos_full(&self, entities: &[FindEntity]) -> Result<Vec<response::Photo>> {
-		let url = format!("{}/api/photos/find/full", self.base_url);
+	pub async fn find_photos_minimal(&self, entities: &[FindEntity]) -> Result<Vec<response::PhotoMinimal>> {
+		let url = format!("{}/api/photos/find/minimal", self.base_url);
 
 		let response = self.client.post(&url).json(&entities).send().await?;
 		let photos = response.json().await?;

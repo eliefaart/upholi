@@ -18,7 +18,7 @@ pub async fn route_get_shares(user: User, filters: web::Query<FindSharesFilter>)
 	Ok(HttpResponse::Ok().json(shares))
 }
 
-/// Get extended information of an share
+/// Get extended information of a share
 pub async fn route_get_share(session: Option<Session>, req: HttpRequest) -> Result<HttpResponse> {
 	let share_id = req.match_info().get("share_id").unwrap();
 
@@ -44,7 +44,7 @@ pub async fn route_create_share(user: User, share: web::Json<UpsertShare>) -> Re
 	Ok(create_created_response(&share.id))
 }
 
-/// Update an share
+/// Update a share
 pub async fn route_update_share(session: Session, req: HttpRequest, updated_share: web::Json<UpsertShare>) -> Result<HttpResponse> {
 	let share_id = req.match_info().get("share_id").unwrap();
 	let updated_share = updated_share.into_inner();
@@ -69,7 +69,7 @@ pub async fn route_update_share(session: Session, req: HttpRequest, updated_shar
 	}
 }
 
-/// Delete an share
+/// Delete a share
 pub async fn route_delete_share(session: Session, req: HttpRequest) -> Result<HttpResponse> {
 	let share_id = req.match_info().get("share_id").unwrap();
 

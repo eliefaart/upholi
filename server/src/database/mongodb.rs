@@ -80,7 +80,7 @@ pub async fn find_many<T: serde::de::DeserializeOwned>(
 		let mut project_stage_fields = doc! {};
 
 		for field in fields {
-			project_stage_fields.insert(field, "1");
+			project_stage_fields.insert(field, 1u32);
 		}
 
 		pipeline.push(doc! {
@@ -130,8 +130,12 @@ pub async fn delete_many(collection: &str, ids: &[&str]) -> Result<()> {
 	Ok(())
 }
 
-pub async fn find_photos(photos: Vec<FindEntity>) -> Result<Vec<PhotoMinimal>> {
-	find_photos_of::<PhotoMinimal>(
+pub async fn find_photos(photos: Vec<FindEntity>) -> Result<Vec<upholi_lib::http::response::Photo>> {
+	find_photos_with_fields::<upholi_lib::http::response::Photo>(photos, None).await
+}
+
+pub async fn find_photos_minimal(photos: Vec<FindEntity>) -> Result<Vec<PhotoMinimal>> {
+	find_photos_with_fields::<PhotoMinimal>(
 		photos,
 		Some(doc! {
 			"$project": {
@@ -144,11 +148,7 @@ pub async fn find_photos(photos: Vec<FindEntity>) -> Result<Vec<PhotoMinimal>> {
 	.await
 }
 
-pub async fn find_photos_full(photos: Vec<FindEntity>) -> Result<Vec<upholi_lib::http::response::Photo>> {
-	find_photos_of::<upholi_lib::http::response::Photo>(photos, None).await
-}
-
-async fn find_photos_of<T>(photos: Vec<FindEntity>, project_stage: Option<bson::Document>) -> Result<Vec<T>>
+async fn find_photos_with_fields<T>(photos: Vec<FindEntity>, project_stage: Option<bson::Document>) -> Result<Vec<T>>
 where
 	T: serde::de::DeserializeOwned,
 {

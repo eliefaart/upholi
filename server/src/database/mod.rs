@@ -63,6 +63,10 @@ pub trait DatabaseEntityMinimal {
 	async fn get_many_minimal(ids: &[&str]) -> Result<Vec<Self::TMinimal>>
 	where
 		Self: std::marker::Sized;
+
+	async fn get_all_for_user_minimal(user_id: String) -> Result<Vec<Self::TMinimal>>
+	where
+		Self: std::marker::Sized;
 }
 
 /// Add database operations to an entity, which are targetted only to items owned by given user
@@ -119,13 +123,13 @@ async fn delete_many(collection: &str, ids: &[&str]) -> Result<()> {
 }
 
 /// Get multiple photos
-pub async fn find_photos(photos: Vec<FindEntity>) -> Result<Vec<PhotoMinimal>> {
+pub async fn find_photos(photos: Vec<FindEntity>) -> Result<Vec<Photo>> {
 	mongodb::find_photos(photos).await
 }
 
 /// Get multiple photos
-pub async fn find_photos_full(photos: Vec<FindEntity>) -> Result<Vec<Photo>> {
-	mongodb::find_photos_full(photos).await
+pub async fn find_photos_minimal(photos: Vec<FindEntity>) -> Result<Vec<PhotoMinimal>> {
+	mongodb::find_photos_minimal(photos).await
 }
 
 /// Check if a photo already exists for user, by hash

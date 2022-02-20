@@ -99,6 +99,21 @@ impl DatabaseEntityMinimal for Photo {
 		)
 		.await
 	}
+
+	async fn get_all_for_user_minimal(user_id: String) -> Result<Vec<Self::TMinimal>> {
+		let sort = database::SortField {
+			field: "createdOn",
+			ascending: false,
+		};
+		super::super::find_many(
+			super::super::COLLECTION_PHOTOS,
+			Some(&user_id),
+			None,
+			Some(&sort),
+			Some(Self::get_fields_minimal()),
+		)
+		.await
+	}
 }
 
 #[async_trait]
