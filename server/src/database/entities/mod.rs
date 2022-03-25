@@ -1,12 +1,21 @@
-use upholi_lib::http::request::EntityAuthorizationProof;
-
+use serde::{Deserialize, Serialize};
 use session::Session;
+use upholi_lib::http::request::EntityAuthorizationProof;
 
 pub mod album;
 pub mod photo;
 pub mod session;
 pub mod share;
 pub mod user;
+
+#[derive(Deserialize, Serialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct UserEntity<T> {
+	pub id: String,
+	pub user_id: String,
+	//pub access_proof: Option<String>,
+	pub entity: T,
+}
 
 pub trait AccessControl {
 	// TODO: A borrowed Option<T> is weird I guess. Refactor to Option<&T>

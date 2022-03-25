@@ -1,38 +1,48 @@
+use crate::database::{DatabaseEntity, DatabaseEntityUserOwned};
+use crate::error::*;
 use async_trait::async_trait;
-use serde::{Deserialize, Serialize};
-use upholi_lib::http::request::CreateAlbum;
-use upholi_lib::http::request::EntityAuthorizationProof;
-use upholi_lib::ids::create_unique_id;
-use upholi_lib::EncryptedData;
+use upholi_lib::http::request::{CreateAlbum, EntityAuthorizationProof};
+use upholi_lib::http::response::Album;
+use upholi_lib::ids;
 
 use super::session::Session;
-use super::AccessControl;
-use crate::database::*;
+use super::{AccessControl, UserEntity};
 
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct Album {
-	pub id: String,
-	pub user_id: String,
-	pub data: EncryptedData,
-	pub key: EncryptedData,
-	pub key_hash: String,
+pub type DbAlbum = UserEntity<CreateAlbum>;
+
+// encrypted album, without id field. lib::request::CreateAlbum (lib::models::Album?)
+// encrypted album, with id field. lib::response::Album (lib::models::EncryptedAlbum?)
+// decrypted album, with id field. wasm::models::Album
+//
+// database stores UserEntity<CreateAlbum>
+// server returns lib::response::Album
+//
+// impl From<UserEntity<CreateAlbum>> for lib::response::Album
+// impl From<lib::request::CreateAlbum> for UserEntity<CreateAlbum>
+
+impl From<DbAlbum> for Album {
+	fn from(entity: DbAlbum) -> Self {
+		Self {
+			id: entity.id,
+			user_id: entity.user_id,
+			data: entity.entity.data,
+			key: entity.entity.key,
+		}
+	}
 }
 
-impl From<CreateAlbum> for Album {
-	fn from(source: CreateAlbum) -> Self {
+impl DbAlbum {
+	pub fn from(album: CreateAlbum, user_id: &str) -> Self {
 		Self {
-			id: create_unique_id(),
-			user_id: String::new(),
-			data: source.data,
-			key: source.key,
-			key_hash: source.key_hash,
+			id: ids::create_unique_id(),
+			user_id: user_id.to_string(),
+			entity: album,
 		}
 	}
 }
 
 #[async_trait]
-impl DatabaseEntity for Album {
+impl DatabaseEntity for DbAlbum {
 	async fn get(id: &str) -> Result<Option<Self>> {
 		super::super::find_one(super::super::COLLECTION_ALBUMS, id, None).await
 	}
@@ -52,18 +62,7 @@ impl DatabaseEntity for Album {
 }
 
 #[async_trait]
-impl DatabaseEntityBatch for Album {
-	async fn get_many(ids: &[&str]) -> Result<Vec<Self>> {
-		super::super::find_many(super::super::COLLECTION_ALBUMS, None, Some(ids), None, None).await
-	}
-
-	async fn delete_many(ids: &[&str]) -> Result<()> {
-		super::super::delete_many(super::super::COLLECTION_ALBUMS, ids).await
-	}
-}
-
-#[async_trait]
-impl DatabaseEntityUserOwned for Album {
+impl DatabaseEntityUserOwned for DbAlbum {
 	async fn get_for_user(id: &str, user_id: String) -> Result<Option<Self>> {
 		match Self::get(id).await? {
 			Some(album) => {
@@ -86,32 +85,67 @@ impl DatabaseEntityUserOwned for Album {
 	}
 }
 
-impl AccessControl for Album {
+impl AccessControl for DbAlbum {
 	fn can_view(&self, session: &Option<Session>, proof: Option<EntityAuthorizationProof>) -> bool {
 		// Check if user is owner of album
-		if session_owns_album(self, session) {
+		if session_owns_entity(self, session) {
 			true
 		} else if let Some(proof) = proof {
-			proof.key_hash == self.key_hash
+			proof.key_hash == self.entity.key_hash
 		} else {
 			false
 		}
 	}
 
 	fn can_update(&self, session: &Option<Session>) -> bool {
-		session_owns_album(self, session)
+		session_owns_entity(self, session)
 	}
 }
 
 /// Check if Album is owned by user of given session
-fn session_owns_album(album: &Album, session_opt: &Option<Session>) -> bool {
+fn session_owns_entity<T>(entity: &UserEntity<T>, session_opt: &Option<Session>) -> bool {
 	if let Some(session) = session_opt {
 		if let Some(user_id) = &session.user_id {
-			if &album.user_id == user_id {
+			if &entity.user_id == user_id {
 				return true;
 			}
 		}
 	}
 
 	false
+}
+
+#[cfg(test)]
+mod tests {
+	use crate::database::entities::UserEntity;
+	use upholi_lib::{
+		http::{request::CreateAlbum, response::Album},
+		EncryptedData,
+	};
+
+	#[test]
+	fn no_env_vars() {
+		let user_id = "user_id";
+		let key_hash = "key_hash";
+
+		let album = CreateAlbum {
+			data: EncryptedData {
+				base64: String::new(),
+				nonce: String::new(),
+				format_version: 1,
+			},
+			key: EncryptedData {
+				base64: String::new(),
+				nonce: String::new(),
+				format_version: 1,
+			},
+			key_hash: String::from(key_hash),
+		};
+
+		let db_album: UserEntity<CreateAlbum> = UserEntity::<CreateAlbum>::from(album, user_id);
+		assert_eq!(db_album.entity.key_hash, key_hash);
+
+		let album: Album = db_album.into();
+		assert_eq!(album.user_id, user_id);
+	}
 }

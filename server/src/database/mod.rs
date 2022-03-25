@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+
 use upholi_lib::http::request::{FindEntity, FindSharesFilter};
 use upholi_lib::http::response::{Photo, PhotoMinimal};
 
@@ -103,7 +104,7 @@ async fn find_many<T: serde::de::DeserializeOwned>(
 
 /// Insert a single item into a collection.
 /// Returns the ID of created item if succesfull.
-async fn insert_one<'de, T: serde::Serialize + serde::Deserialize<'de>>(collection: &str, item: &T) -> Result<String> {
+async fn insert_one<T: serde::Serialize + serde::de::DeserializeOwned>(collection: &str, item: &T) -> Result<String> {
 	mongodb::insert_one(collection, item).await
 }
 
