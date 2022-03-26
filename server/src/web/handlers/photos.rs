@@ -2,9 +2,11 @@ use actix_multipart::Multipart;
 use actix_web::error::{ErrorBadRequest, ErrorInternalServerError, ErrorNotFound, ErrorUnauthorized};
 use actix_web::{web, HttpRequest, HttpResponse, Result};
 use upholi_lib::http::request::{CheckPhotoExists, EntityAuthorizationProof, FindEntity};
+use upholi_lib::http::response::Photo;
 use upholi_lib::{http::*, PhotoVariant};
 
-use crate::database::entities::photo::Photo;
+use crate::database::entities::photo::DbPhoto;
+//use crate::database::entities::DbPhoto::Photo;
 use crate::database::entities::session::Session;
 use crate::database::entities::user::User;
 use crate::database::entities::AccessControl;
@@ -15,15 +17,18 @@ use crate::web::http::*;
 
 /// Get all photos
 pub async fn route_get_photos(user: User) -> Result<HttpResponse> {
-	let photos = Photo::get_all_for_user(user.id)
+	let photos: Vec<Photo> = DbPhoto::get_all_for_user(user.id)
 		.await
-		.map_err(|error| ErrorInternalServerError(error))?;
+		.map_err(|error| ErrorInternalServerError(error))?
+		.into_iter()
+		.map(|p| p.into())
+		.collect();
 
 	Ok(HttpResponse::Ok().json(photos))
 }
 
 pub async fn route_get_photos_minimal(user: User) -> Result<HttpResponse> {
-	let photos = Photo::get_all_for_user_minimal(user.id)
+	let photos = DbPhoto::get_all_for_user_minimal(user.id)
 		.await
 		.map_err(|error| ErrorInternalServerError(error))?;
 
@@ -37,9 +42,13 @@ pub async fn route_find_photos(_user: Option<User>, requested_photos: web::Json<
 	// TODO: If no user, then proof for each photo must be present.. or something
 	// Either way function feels weird still.
 
-	let photos = database::find_photos(requested_photos)
+	let photos: Vec<Photo> = database::find_photos(requested_photos)
 		.await
-		.map_err(|error| ErrorInternalServerError(error))?;
+		.map_err(|error| ErrorInternalServerError(error))?
+		.into_iter()
+		.map(|p| p.into())
+		.collect();
+
 	Ok(HttpResponse::Ok().json(photos))
 }
 
@@ -61,12 +70,13 @@ pub async fn route_get_photo(
 	let proof = proof.map(|proof| proof.into_inner());
 
 	let photo_id = req.match_info().get("photo_id").ok_or(ErrorNotFound(HttpError::NotFound))?;
-	let photo = Photo::get(photo_id)
+	let photo = DbPhoto::get(photo_id)
 		.await
 		.map_err(|error| ErrorInternalServerError(error))?
 		.ok_or(ErrorNotFound(HttpError::NotFound))?;
 
 	if photo.can_view(&session, proof) {
+		let photo: Photo = photo.into();
 		Ok(HttpResponse::Ok().json(photo))
 	} else {
 		Err(ErrorUnauthorized(HttpError::Unauthorized))
@@ -81,7 +91,7 @@ pub async fn route_delete_photo(user: User, req: HttpRequest) -> Result<HttpResp
 
 /// Check if a photo exists for user by hash
 pub async fn route_check_photo_exists(user: User, check: web::Query<CheckPhotoExists>) -> Result<HttpResponse> {
-	let exists = Photo::hash_exists_for_user(&user.id, &check.hash)
+	let exists = DbPhoto::hash_exists_for_user(&user.id, &check.hash)
 		.await
 		.map_err(|error| ErrorInternalServerError(error))?;
 
@@ -111,7 +121,7 @@ pub async fn route_upload_photo(user: User, payload: Multipart) -> Result<HttpRe
 
 	let photo = serde_json::from_slice::<request::UploadPhoto>(&bytes_data).map_err(|error| ErrorBadRequest(error))?;
 
-	let mut db_photo: Photo = photo.into();
+	let mut db_photo = DbPhoto::from(photo, &user.id);
 	db_photo.user_id = user.id.clone();
 
 	let file_id_thumbnail = format!("{}-thumbnail", &db_photo.id);
@@ -174,7 +184,7 @@ async fn download_photo(
 		.match_info()
 		.get("photo_id")
 		.ok_or(ErrorBadRequest("Photo ID invalid or missing"))?;
-	let photo = Photo::get(photo_id)
+	let photo = DbPhoto::get(photo_id)
 		.await
 		.map_err(|error| ErrorInternalServerError(error))?
 		.ok_or(ErrorNotFound(HttpError::NotFound))?;
@@ -193,11 +203,11 @@ async fn download_photo(
 
 /// Delete multiple photos from database and disk
 pub async fn delete_photos(user_id: String, ids: &[&str]) -> Result<HttpResponse> {
-	let mut photos: Vec<Photo> = Vec::new();
+	let mut photos: Vec<DbPhoto> = Vec::new();
 
 	// Check if all ids to be deleted are owned by user_id
 	for id in ids {
-		let photo = Photo::get(id).await.map_err(|error| ErrorInternalServerError(error))?;
+		let photo = DbPhoto::get(id).await.map_err(|error| ErrorInternalServerError(error))?;
 
 		if let Some(photo) = photo {
 			if photo.user_id != user_id {
@@ -214,13 +224,13 @@ pub async fn delete_photos(user_id: String, ids: &[&str]) -> Result<HttpResponse
 	}
 
 	// Delete all photos from database
-	Photo::delete_many(ids).await.map_err(|_| ErrorNotFound(HttpError::NotFound))?;
+	DbPhoto::delete_many(ids).await.map_err(|_| ErrorNotFound(HttpError::NotFound))?;
 	Ok(create_ok_response())
 }
 
 /// Deletes all physical files of a photo from file system
 /// Original, thumbnail and preview images.
-async fn delete_photo_files(photo: &Photo) -> Result<()> {
+async fn delete_photo_files(photo: &DbPhoto) -> Result<()> {
 	storage::delete_file(&format!("{}-{}", &photo.id, &PhotoVariant::Original.to_string()), &photo.user_id).await?;
 	storage::delete_file(&format!("{}-{}", &photo.id, &PhotoVariant::Preview.to_string()), &photo.user_id).await?;
 	storage::delete_file(&format!("{}-{}", &photo.id, &PhotoVariant::Thumbnail.to_string()), &photo.user_id).await?;

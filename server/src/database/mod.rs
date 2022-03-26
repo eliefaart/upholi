@@ -1,11 +1,10 @@
-use async_trait::async_trait;
-
-use upholi_lib::http::request::{FindEntity, FindSharesFilter};
-use upholi_lib::http::response::{Photo, PhotoMinimal};
-
-use self::entities::share::Share;
+use self::entities::photo::DbPhoto;
+use self::entities::share::DbShare;
 use self::entities::user::User;
 use crate::error::*;
+use async_trait::async_trait;
+use upholi_lib::http::request::{FindEntity, FindSharesFilter};
+use upholi_lib::http::response::{Photo, PhotoMinimal};
 
 pub mod entities;
 mod mongodb;
@@ -15,6 +14,11 @@ static COLLECTION_USERS: &str = "users";
 static COLLECTION_PHOTOS: &str = "photos";
 static COLLECTION_ALBUMS: &str = "albums";
 static COLLECTION_SHARES: &str = "shares";
+
+pub struct ProjectField<'a> {
+	pub path: &'a str,
+	pub name: &'a str,
+}
 
 pub struct SortField<'a> {
 	pub field: &'a str,
@@ -87,7 +91,11 @@ pub trait DatabaseEntityUserOwned: DatabaseEntity {
 }
 
 /// Get a single item from a collection
-async fn find_one<T: serde::de::DeserializeOwned>(collection: &str, id: &str, limit_fields: Option<Vec<String>>) -> Result<Option<T>> {
+async fn find_one<T: serde::de::DeserializeOwned>(
+	collection: &str,
+	id: &str,
+	limit_fields: Option<Vec<ProjectField<'_>>>,
+) -> Result<Option<T>> {
 	mongodb::find_one(collection, id, limit_fields).await
 }
 
@@ -97,7 +105,7 @@ async fn find_many<T: serde::de::DeserializeOwned>(
 	user_id: Option<&str>,
 	ids: Option<&[&str]>,
 	sort_field: Option<&SortField<'_>>,
-	limit_fields: Option<Vec<String>>,
+	limit_fields: Option<Vec<ProjectField<'_>>>,
 ) -> Result<Vec<T>> {
 	mongodb::find_many(collection, user_id, ids, sort_field, limit_fields).await
 }
@@ -124,7 +132,7 @@ async fn delete_many(collection: &str, ids: &[&str]) -> Result<()> {
 }
 
 /// Get multiple photos
-pub async fn find_photos(photos: Vec<FindEntity>) -> Result<Vec<Photo>> {
+pub async fn find_photos(photos: Vec<FindEntity>) -> Result<Vec<DbPhoto>> {
 	mongodb::find_photos(photos).await
 }
 
@@ -144,6 +152,6 @@ pub async fn get_user_by_username(username: &str) -> Result<Option<User>> {
 }
 
 /// Find shares based on certain filters
-pub async fn find_shares(user_id: &str, filters: FindSharesFilter) -> Result<Vec<Share>> {
+pub async fn find_shares(user_id: &str, filters: FindSharesFilter) -> Result<Vec<DbShare>> {
 	mongodb::find_shares(user_id, filters).await
 }

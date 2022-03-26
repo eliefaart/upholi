@@ -6,7 +6,7 @@ use upholi_lib::http::response::Album;
 use upholi_lib::ids;
 
 use super::session::Session;
-use super::{AccessControl, UserEntity};
+use super::{session_owns_entity, AccessControl, UserEntity};
 
 pub type DbAlbum = UserEntity<CreateAlbum>;
 
@@ -100,19 +100,6 @@ impl AccessControl for DbAlbum {
 	fn can_update(&self, session: &Option<Session>) -> bool {
 		session_owns_entity(self, session)
 	}
-}
-
-/// Check if Album is owned by user of given session
-fn session_owns_entity<T>(entity: &UserEntity<T>, session_opt: &Option<Session>) -> bool {
-	if let Some(session) = session_opt {
-		if let Some(user_id) = &session.user_id {
-			if &entity.user_id == user_id {
-				return true;
-			}
-		}
-	}
-
-	false
 }
 
 #[cfg(test)]

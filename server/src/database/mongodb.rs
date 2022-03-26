@@ -1,6 +1,7 @@
-use super::entities::photo::Photo;
-use super::entities::share::Share;
+use super::entities::photo::DbPhoto;
+use super::entities::share::DbShare;
 use super::entities::user::User;
+use super::ProjectField;
 use crate::database;
 use crate::database::SortField;
 use crate::error::*;
@@ -44,7 +45,7 @@ async fn initialize(database: &mongodb::Database) -> Result<()> {
 pub async fn find_one<T: serde::de::DeserializeOwned>(
 	collection: &str,
 	id: &str,
-	limit_fields: Option<Vec<String>>,
+	limit_fields: Option<Vec<ProjectField<'_>>>,
 ) -> Result<Option<T>> {
 	let mut items: Vec<T> = find_many(collection, None, Some(&[id]), None, limit_fields).await?;
 
@@ -60,7 +61,7 @@ pub async fn find_many<T: serde::de::DeserializeOwned>(
 	user_id: Option<&str>,
 	ids: Option<&[&str]>,
 	sort_field: Option<&SortField<'_>>,
-	limit_fields: Option<Vec<String>>,
+	limit_fields: Option<Vec<ProjectField<'_>>>,
 ) -> Result<Vec<T>> {
 	let mongo_collection = DATABASE.get().await.collection::<bson::Document>(collection);
 	let mut pipeline = vec![doc! {
@@ -80,7 +81,7 @@ pub async fn find_many<T: serde::de::DeserializeOwned>(
 		let mut project_stage_fields = doc! {};
 
 		for field in fields {
-			project_stage_fields.insert(field, 1u32);
+			project_stage_fields.insert(field.name, format!("${}", field.path));
 		}
 
 		pipeline.push(doc! {
@@ -130,8 +131,8 @@ pub async fn delete_many(collection: &str, ids: &[&str]) -> Result<()> {
 	Ok(())
 }
 
-pub async fn find_photos(photos: Vec<FindEntity>) -> Result<Vec<upholi_lib::http::response::Photo>> {
-	find_photos_with_fields::<upholi_lib::http::response::Photo>(photos, None).await
+pub async fn find_photos(photos: Vec<FindEntity>) -> Result<Vec<DbPhoto>> {
+	find_photos_with_fields::<DbPhoto>(photos, None).await
 }
 
 pub async fn find_photos_minimal(photos: Vec<FindEntity>) -> Result<Vec<PhotoMinimal>> {
@@ -140,8 +141,8 @@ pub async fn find_photos_minimal(photos: Vec<FindEntity>) -> Result<Vec<PhotoMin
 		Some(doc! {
 			"$project": {
 				"id": "$id",
-				"width": "$width",
-				"height": "$height"
+				"width": "$entity.width",
+				"height": "$entity.height"
 			}
 		}),
 	)
@@ -152,7 +153,7 @@ async fn find_photos_with_fields<T>(photos: Vec<FindEntity>, project_stage: Opti
 where
 	T: serde::de::DeserializeOwned,
 {
-	let mongo_collection = DATABASE.get().await.collection::<Photo>(database::COLLECTION_PHOTOS);
+	let mongo_collection = DATABASE.get().await.collection::<bson::Document>(database::COLLECTION_PHOTOS);
 
 	let mut photo_filter_docs: Vec<bson::Document> = Vec::new();
 	for photo in photos {
@@ -160,7 +161,7 @@ where
 			Some(key_hash) => {
 				doc! {
 					"id": photo.id,
-					"keyHash": key_hash
+					"entity.keyHash": key_hash
 				}
 			}
 			None => {
@@ -193,10 +194,10 @@ where
 }
 
 pub async fn photo_exists_for_user(user_id: &str, hash: &str) -> Result<bool> {
-	let mongo_collection = DATABASE.get().await.collection::<Photo>(database::COLLECTION_PHOTOS);
+	let mongo_collection = DATABASE.get().await.collection::<DbPhoto>(database::COLLECTION_PHOTOS);
 	let filter = doc! {
 		"userId": user_id,
-		"hash": hash
+		"entity.hash": hash
 	};
 
 	let count = mongo_collection.count_documents(filter, None).await?;
@@ -219,14 +220,14 @@ pub async fn get_user_by_username(username: &str) -> Result<Option<User>> {
 	}
 }
 
-pub async fn find_shares(user_id: &str, filters: FindSharesFilter) -> Result<Vec<Share>> {
+pub async fn find_shares(user_id: &str, filters: FindSharesFilter) -> Result<Vec<DbShare>> {
 	let mongo_collection = DATABASE.get().await.collection(database::COLLECTION_SHARES);
 	let mut query = doc! {
 		"userId": user_id,
 	};
 
 	if let Some(identifier_hash) = filters.identifier_hash {
-		query.extend(doc! {"identifierHash": identifier_hash});
+		query.extend(doc! {"entity.identifierHash": identifier_hash});
 	}
 
 	let cursor = mongo_collection.find(query, None).await?;

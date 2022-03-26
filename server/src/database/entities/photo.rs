@@ -1,68 +1,68 @@
-use crate::database::DatabaseEntityMinimal;
+use super::{session::Session, AccessControl};
+use super::{session_owns_entity, UserEntity};
+use crate::database::{DatabaseEntityMinimal, ProjectField};
 use crate::error::*;
 use crate::{
 	database::{self, DatabaseEntity, DatabaseEntityBatch, DatabaseEntityUserOwned},
 	error::EntityError,
 };
 use async_trait::async_trait;
-use serde::{Deserialize, Serialize};
 use upholi_lib::http::request::{EntityAuthorizationProof, UploadPhoto};
-use upholi_lib::http::response::PhotoMinimal;
-use upholi_lib::ids::create_unique_id;
-use upholi_lib::EncryptedData;
+use upholi_lib::http::response::{Photo, PhotoMinimal};
+use upholi_lib::ids::{self};
 
-use super::{session::Session, AccessControl};
+pub type DbPhoto = UserEntity<UploadPhoto>;
 
-#[derive(Deserialize, Serialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct Photo {
-	pub id: String,
-	/// Hash of original photo file
-	pub hash: String,
-	/// Owner user id
-	pub user_id: String,
-	pub width: i32,
-	pub height: i32,
-	/// Encrypted data, contains width, height, exif, etc
-	pub data: EncryptedData,
-	pub key: EncryptedData,
-	pub key_hash: String,
-	pub thumbnail_nonce: String,
-	pub preview_nonce: String,
-	pub original_nonce: String,
-}
-
-impl From<UploadPhoto> for Photo {
-	fn from(source: UploadPhoto) -> Self {
+impl From<DbPhoto> for Photo {
+	fn from(photo: DbPhoto) -> Self {
 		Self {
-			id: create_unique_id(),
-			hash: source.hash,
-			user_id: String::new(),
-			width: source.width as i32,
-			height: source.height as i32,
-			data: source.data,
-			key: source.key,
-			key_hash: source.key_hash,
-			thumbnail_nonce: source.thumbnail_nonce,
-			preview_nonce: source.preview_nonce,
-			original_nonce: source.original_nonce,
+			id: photo.id,
+			user_id: photo.user_id,
+			hash: photo.entity.hash,
+			width: photo.entity.width as i32,
+			height: photo.entity.height as i32,
+			data: photo.entity.data,
+			key: photo.entity.key,
+			thumbnail_nonce: photo.entity.thumbnail_nonce,
+			preview_nonce: photo.entity.preview_nonce,
+			original_nonce: photo.entity.original_nonce,
 		}
 	}
 }
 
-impl Photo {
+impl DbPhoto {
+	pub fn from(photo: UploadPhoto, user_id: &str) -> Self {
+		Self {
+			id: ids::create_unique_id(),
+			user_id: user_id.to_string(),
+			entity: photo,
+		}
+	}
+}
+
+impl DbPhoto {
 	pub async fn hash_exists_for_user(user_id: &str, hash: &str) -> Result<bool> {
 		super::super::photo_exists_for_user(user_id, hash).await
 	}
 
 	/// Get the fields contained in the PhotoMinimal struct
-	fn get_fields_minimal() -> Vec<String> {
-		vec![String::from("id"), String::from("width"), String::from("height")]
+	fn get_fields_minimal<'a>() -> Vec<ProjectField<'a>> {
+		vec![
+			ProjectField { path: "id", name: "id" },
+			ProjectField {
+				path: "entity.width",
+				name: "width",
+			},
+			ProjectField {
+				path: "entity.height",
+				name: "height",
+			},
+		]
 	}
 }
 
 #[async_trait]
-impl DatabaseEntity for Photo {
+impl DatabaseEntity for DbPhoto {
 	async fn get(id: &str) -> Result<Option<Self>> {
 		super::super::find_one(super::super::COLLECTION_PHOTOS, id, None).await
 	}
@@ -82,7 +82,7 @@ impl DatabaseEntity for Photo {
 }
 
 #[async_trait]
-impl DatabaseEntityMinimal for Photo {
+impl DatabaseEntityMinimal for DbPhoto {
 	type TMinimal = PhotoMinimal;
 
 	async fn get_minimal(id: &str) -> Result<Option<Self::TMinimal>> {
@@ -117,7 +117,7 @@ impl DatabaseEntityMinimal for Photo {
 }
 
 #[async_trait]
-impl DatabaseEntityBatch for Photo {
+impl DatabaseEntityBatch for DbPhoto {
 	async fn get_many(ids: &[&str]) -> Result<Vec<Self>> {
 		super::super::find_many(super::super::COLLECTION_PHOTOS, None, Some(ids), None, None).await
 	}
@@ -128,7 +128,7 @@ impl DatabaseEntityBatch for Photo {
 }
 
 #[async_trait]
-impl DatabaseEntityUserOwned for Photo {
+impl DatabaseEntityUserOwned for DbPhoto {
 	async fn get_for_user(id: &str, user_id: String) -> Result<Option<Self>> {
 		match Self::get(id).await? {
 			Some(photo) => {
@@ -159,32 +159,19 @@ impl DatabaseEntityUserOwned for Photo {
 	}
 }
 
-impl AccessControl for Photo {
+impl AccessControl for DbPhoto {
 	fn can_view(&self, session: &Option<Session>, proof: Option<EntityAuthorizationProof>) -> bool {
 		// Check if user is owner of album
-		if session_owns_photo(self, session) {
+		if session_owns_entity(self, session) {
 			true
 		} else if let Some(proof) = proof {
-			proof.key_hash == self.key_hash
+			proof.key_hash == self.entity.key_hash
 		} else {
 			false
 		}
 	}
 
 	fn can_update(&self, session: &Option<Session>) -> bool {
-		session_owns_photo(self, session)
+		session_owns_entity(self, session)
 	}
-}
-
-/// Check if Photo is owned by user of given session
-fn session_owns_photo(photo: &Photo, session: &Option<Session>) -> bool {
-	if let Some(session) = session {
-		if let Some(user_id) = &session.user_id {
-			if &photo.user_id == user_id {
-				return true;
-			}
-		}
-	}
-
-	false
 }

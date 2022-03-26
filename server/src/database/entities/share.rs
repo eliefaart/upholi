@@ -1,50 +1,77 @@
+use super::session::Session;
+use super::session_owns_entity;
+use super::AccessControl;
+use super::UserEntity;
 use crate::database::*;
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use upholi_lib::http::request::EntityAuthorizationProof;
 use upholi_lib::http::request::FindSharesFilter;
 use upholi_lib::http::request::UpsertShare;
+use upholi_lib::http::response::Share;
+use upholi_lib::ids;
 use upholi_lib::ids::create_unique_id;
 use upholi_lib::EncryptedData;
 use upholi_lib::ShareType;
 
-use super::session::Session;
-use super::AccessControl;
+pub type DbShare = UserEntity<UpsertShare>;
 
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct Share {
-	pub id: String,
-	pub user_id: String,
-	pub identifier_hash: String,
-	pub type_: ShareType,
-	pub password: EncryptedData,
-	pub data: EncryptedData,
-	pub key: EncryptedData,
+// #[derive(Serialize, Deserialize, Debug)]
+// #[serde(rename_all = "camelCase")]
+// pub struct Share {
+// 	pub id: String,
+// 	pub user_id: String,
+// 	pub identifier_hash: String,
+// 	pub type_: ShareType,
+// 	pub password: EncryptedData,
+// 	pub data: EncryptedData,
+// 	pub key: EncryptedData,
+// }
+
+impl From<DbShare> for Share {
+	fn from(db_share: DbShare) -> Self {
+		Self {
+			id: db_share.id,
+			user_id: db_share.user_id,
+			identifier_hash: db_share.entity.identifier_hash,
+			type_: db_share.entity.type_,
+			password: db_share.entity.password,
+			data: db_share.entity.data,
+			key: db_share.entity.key,
+		}
+	}
 }
 
-impl Share {
+impl DbShare {
+	pub fn from(share: UpsertShare, user_id: &str) -> Self {
+		Self {
+			id: ids::create_unique_id(),
+			user_id: user_id.to_string(),
+			entity: share,
+		}
+	}
+
 	pub async fn find_shares(user_id: &str, filters: FindSharesFilter) -> Result<Vec<Self>> {
 		super::super::find_shares(user_id, filters).await
 	}
 }
 
-impl From<UpsertShare> for Share {
-	fn from(source: UpsertShare) -> Self {
-		Self {
-			id: create_unique_id(),
-			user_id: String::new(),
-			identifier_hash: source.identifier_hash,
-			type_: source.type_,
-			password: source.password,
-			data: source.data,
-			key: source.key,
-		}
-	}
-}
+// impl From<UpsertShare> for DbShare {
+// 	fn from(source: UpsertShare) -> Self {
+// 		Self {
+// 			id: create_unique_id(),
+// 			user_id: String::new(),
+// 			identifier_hash: source.identifier_hash,
+// 			type_: source.type_,
+// 			password: source.password,
+// 			data: source.data,
+// 			key: source.key,
+// 		}
+// 	}
+// }
 
 #[async_trait]
-impl DatabaseEntity for Share {
+impl DatabaseEntity for DbShare {
 	async fn get(id: &str) -> Result<Option<Self>> {
 		super::super::find_one(super::super::COLLECTION_SHARES, id, None).await
 	}
@@ -64,7 +91,7 @@ impl DatabaseEntity for Share {
 }
 
 #[async_trait]
-impl DatabaseEntityBatch for Share {
+impl DatabaseEntityBatch for DbShare {
 	async fn get_many(ids: &[&str]) -> Result<Vec<Self>> {
 		super::super::find_many(super::super::COLLECTION_SHARES, None, Some(ids), None, None).await
 	}
@@ -75,7 +102,7 @@ impl DatabaseEntityBatch for Share {
 }
 
 #[async_trait]
-impl DatabaseEntityUserOwned for Share {
+impl DatabaseEntityUserOwned for DbShare {
 	async fn get_for_user(id: &str, user_id: String) -> Result<Option<Self>> {
 		match Self::get(id).await? {
 			Some(share) => {
@@ -98,25 +125,12 @@ impl DatabaseEntityUserOwned for Share {
 	}
 }
 
-impl AccessControl for Share {
+impl AccessControl for DbShare {
 	fn can_view(&self, _session: &Option<Session>, _proof: Option<EntityAuthorizationProof>) -> bool {
 		true
 	}
 
 	fn can_update(&self, session: &Option<Session>) -> bool {
-		session_owns_share(self, session)
+		session_owns_entity(self, session)
 	}
-}
-
-/// Check if Share is owned by user of given session
-fn session_owns_share(share: &Share, session_opt: &Option<Session>) -> bool {
-	if let Some(session) = session_opt {
-		if let Some(user_id) = &session.user_id {
-			if &share.user_id == user_id {
-				return true;
-			}
-		}
-	}
-
-	false
 }
