@@ -10,13 +10,12 @@ use actix_multipart::Multipart;
 use actix_web::error::{ErrorBadRequest, ErrorInternalServerError, ErrorNotFound, ErrorUnauthorized};
 use actix_web::{web, HttpRequest, HttpResponse, Result};
 use upholi_lib::http::request::{CheckPhotoExists, EntityAuthorizationProof, FindEntity};
-use upholi_lib::http::response::Photo;
-use upholi_lib::models::EncryptedPhoto;
+use upholi_lib::models::{EncryptedPhoto, EncryptedPhotoUpsert};
 use upholi_lib::{http::*, PhotoVariant};
 
 /// Get all photos
 pub async fn route_get_photos(user: User) -> Result<HttpResponse> {
-	let photos: Vec<Photo> = DbPhoto::get_all_for_user(user.id)
+	let photos: Vec<EncryptedPhoto> = DbPhoto::get_all_for_user(user.id)
 		.await
 		.map_err(|error| ErrorInternalServerError(error))?
 		.into_iter()
@@ -41,7 +40,7 @@ pub async fn route_find_photos(_user: Option<User>, requested_photos: web::Json<
 	// TODO: If no user, then proof for each photo must be present.. or something
 	// Either way function feels weird still.
 
-	let photos: Vec<Photo> = database::find_photos(requested_photos)
+	let photos: Vec<EncryptedPhoto> = database::find_photos(requested_photos)
 		.await
 		.map_err(|error| ErrorInternalServerError(error))?
 		.into_iter()
@@ -75,7 +74,7 @@ pub async fn route_get_photo(
 		.ok_or(ErrorNotFound(HttpError::NotFound))?;
 
 	if photo.can_view(&session, proof) {
-		let photo: Photo = photo.into();
+		let photo: EncryptedPhoto = photo.into();
 		Ok(HttpResponse::Ok().json(photo))
 	} else {
 		Err(ErrorUnauthorized(HttpError::Unauthorized))
@@ -118,7 +117,7 @@ pub async fn route_upload_photo(user: User, payload: Multipart) -> Result<HttpRe
 		}
 	}
 
-	let photo = serde_json::from_slice::<EncryptedPhoto>(&bytes_data).map_err(|error| ErrorBadRequest(error))?;
+	let photo = serde_json::from_slice::<EncryptedPhotoUpsert>(&bytes_data).map_err(|error| ErrorBadRequest(error))?;
 
 	let mut db_photo = DbPhoto::from(photo, &user.id);
 	db_photo.user_id = user.id.clone();

@@ -8,13 +8,12 @@ use crate::web::http::*;
 use actix_web::error::{ErrorInternalServerError, ErrorNotFound, ErrorUnauthorized};
 use actix_web::{web, HttpRequest, HttpResponse, Result};
 use upholi_lib::http::request::EntityAuthorizationProof;
-use upholi_lib::http::response::Album;
-use upholi_lib::models::EncryptedAlbum;
+use upholi_lib::models::{EncryptedAlbum, EncryptedAlbumUpsert};
 
 /// Get all albums
 pub async fn route_get_albums(user: User) -> Result<HttpResponse> {
 	let db_albums = DbAlbum::get_all_for_user(user.id).await?;
-	let albums: Vec<Album> = db_albums.into_iter().map(|a| a.into()).collect();
+	let albums: Vec<EncryptedAlbum> = db_albums.into_iter().map(|a| a.into()).collect();
 	Ok(HttpResponse::Ok().json(albums))
 }
 
@@ -33,7 +32,7 @@ pub async fn route_get_album(
 		.ok_or(ErrorNotFound(HttpError::NotFound))?;
 
 	if db_album.can_view(&session, proof) {
-		let album: Album = db_album.into();
+		let album: EncryptedAlbum = db_album.into();
 		Ok(HttpResponse::Ok().json(album))
 	} else {
 		Err(ErrorUnauthorized(HttpError::Unauthorized))
@@ -41,7 +40,7 @@ pub async fn route_get_album(
 }
 
 /// Create a new album
-pub async fn route_create_album(user: User, album: web::Json<EncryptedAlbum>) -> Result<HttpResponse> {
+pub async fn route_create_album(user: User, album: web::Json<EncryptedAlbumUpsert>) -> Result<HttpResponse> {
 	let mut db_album = DbAlbum::from(album.into_inner(), &user.id);
 	db_album.user_id = user.id;
 
@@ -50,7 +49,11 @@ pub async fn route_create_album(user: User, album: web::Json<EncryptedAlbum>) ->
 }
 
 /// Update an album
-pub async fn route_update_album(session: Session, req: HttpRequest, updated_album: web::Json<EncryptedAlbum>) -> Result<HttpResponse> {
+pub async fn route_update_album(
+	session: Session,
+	req: HttpRequest,
+	updated_album: web::Json<EncryptedAlbumUpsert>,
+) -> Result<HttpResponse> {
 	let album_id = req.match_info().get("album_id").unwrap();
 	let updated_album = updated_album.into_inner();
 

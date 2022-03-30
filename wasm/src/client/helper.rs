@@ -12,7 +12,7 @@ use std::collections::HashMap;
 use std::sync::RwLock;
 use upholi_lib::http::request::{FindEntity, FindSharesFilter, Login, Register};
 use upholi_lib::http::response::UserInfo;
-use upholi_lib::models::{EncryptedAlbum, EncryptedPhoto, EncryptedShare};
+use upholi_lib::models::{EncryptedAlbumUpsert, EncryptedPhotoUpsert, EncryptedShare, EncryptedShareUpsert};
 use upholi_lib::result::Result;
 use upholi_lib::{http::*, PhotoVariant, ShareType};
 
@@ -238,7 +238,7 @@ impl UpholiClientHelper {
 	}
 
 	/// Get data about photo to send as part of the HTTP request's body
-	pub fn get_upload_photo_request_data(photo: &PhotoUploadInfo, private_key: &[u8]) -> Result<EncryptedPhoto> {
+	pub fn get_upload_photo_request_data(photo: &PhotoUploadInfo, private_key: &[u8]) -> Result<EncryptedPhotoUpsert> {
 		// Generate a key and encrypt it
 		let photo_key = crate::encryption::symmetric::generate_key();
 		let photo_key_hash = compute_sha256_hash(&photo_key)?;
@@ -256,7 +256,7 @@ impl UpholiClientHelper {
 		let data_bytes = data_json.as_bytes();
 		let data_encrypt_result = crate::encryption::symmetric::encrypt_slice(&photo_key, data_bytes)?;
 
-		Ok(EncryptedPhoto {
+		Ok(EncryptedPhotoUpsert {
 			hash: photo.image.hash.clone(),
 			width: photo.image.width,
 			height: photo.image.height,
@@ -352,7 +352,7 @@ impl UpholiClientHelper {
 		let data_bytes = data_json.as_bytes();
 		let data_encrypt_result = crate::encryption::symmetric::encrypt_slice(&album_key, data_bytes)?;
 
-		let body = EncryptedAlbum {
+		let body = EncryptedAlbumUpsert {
 			data: data_encrypt_result.into(),
 			key: album_key_encrypt_result.into(),
 			key_hash: album_key_hash,
@@ -479,7 +479,7 @@ impl UpholiClientHelper {
 		item_id: &str,
 		password: &str,
 		share_data: &ShareData,
-	) -> Result<EncryptedShare> {
+	) -> Result<EncryptedShareUpsert> {
 		let identifier_hash = Share::get_identifier_hash(&share_type, item_id)?;
 		let salt = &identifier_hash;
 		let share_key = crate::encryption::symmetric::derive_key_from_string(password, salt)?;
@@ -491,7 +491,7 @@ impl UpholiClientHelper {
 
 		let password_encrypt_result = crate::encryption::symmetric::encrypt_slice(&share_key, password.as_bytes())?;
 
-		Ok(EncryptedShare {
+		Ok(EncryptedShareUpsert {
 			identifier_hash: Share::get_identifier_hash(&share_type, item_id)?,
 			type_: share_type,
 			password: password_encrypt_result.into(),
@@ -529,7 +529,7 @@ impl UpholiClientHelper {
 		Ok(share)
 	}
 
-	fn decrypt_share_using_password(share: response::Share, password: &str) -> Result<Share> {
+	fn decrypt_share_using_password(share: EncryptedShare, password: &str) -> Result<Share> {
 		let salt = &share.identifier_hash;
 		let key = encryption::symmetric::derive_key_from_string(password, salt)?;
 		let share = Share::from_encrypted(share, &key)?;
@@ -689,7 +689,7 @@ mod tests {
 			UpholiClientHelper::create_share(&user_private_key, ShareType::Album, album_id, share_password, &share_data).unwrap();
 
 		// Convert the encryped share to the type the server will send in response.
-		let http_response_share = response::Share {
+		let http_response_share = EncryptedShare {
 			id: String::from("id"),
 			user_id: String::from("user_id"),
 			identifier_hash: encrypted_share.identifier_hash,

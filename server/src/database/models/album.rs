@@ -2,16 +2,15 @@ use crate::database::{DatabaseEntity, DatabaseEntityUserOwned};
 use crate::error::*;
 use async_trait::async_trait;
 use upholi_lib::http::request::EntityAuthorizationProof;
-use upholi_lib::http::response::Album;
 use upholi_lib::ids;
-use upholi_lib::models::EncryptedAlbum;
+use upholi_lib::models::{EncryptedAlbum, EncryptedAlbumUpsert};
 
 use super::session::Session;
 use super::{session_owns_entity, AccessControl, UserEntity};
 
-pub type DbAlbum = UserEntity<EncryptedAlbum>;
+pub type DbAlbum = UserEntity<EncryptedAlbumUpsert>;
 
-impl From<DbAlbum> for Album {
+impl From<DbAlbum> for EncryptedAlbum {
 	fn from(entity: DbAlbum) -> Self {
 		Self {
 			id: entity.id,
@@ -23,7 +22,7 @@ impl From<DbAlbum> for Album {
 }
 
 impl DbAlbum {
-	pub fn from(album: EncryptedAlbum, user_id: &str) -> Self {
+	pub fn from(album: EncryptedAlbumUpsert, user_id: &str) -> Self {
 		Self {
 			id: ids::create_unique_id(),
 			user_id: user_id.to_string(),
@@ -96,14 +95,17 @@ impl AccessControl for DbAlbum {
 #[cfg(test)]
 mod tests {
 	use crate::database::models::album::DbAlbum;
-	use upholi_lib::{http::response::Album, models::EncryptedAlbum, EncryptedData};
+	use upholi_lib::{
+		models::{EncryptedAlbum, EncryptedAlbumUpsert},
+		EncryptedData,
+	};
 
 	#[test]
 	fn no_env_vars() {
 		let user_id = "user_id";
 		let key_hash = "key_hash";
 
-		let album = EncryptedAlbum {
+		let album = EncryptedAlbumUpsert {
 			data: EncryptedData {
 				base64: String::new(),
 				nonce: String::new(),
@@ -120,7 +122,7 @@ mod tests {
 		let db_album = DbAlbum::from(album, user_id);
 		assert_eq!(db_album.entity.key_hash, key_hash);
 
-		let album: Album = db_album.into();
+		let album: EncryptedAlbum = db_album.into();
 		assert_eq!(album.user_id, user_id);
 	}
 }

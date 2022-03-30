@@ -1,6 +1,6 @@
 use crate::{encryption::symmetric::decrypt_data_base64, hashing};
 use serde::{Deserialize, Serialize};
-use upholi_lib::http::response;
+use upholi_lib::models::EncryptedShare;
 use upholi_lib::result::Result;
 use upholi_lib::ShareType;
 
@@ -8,7 +8,7 @@ use super::{Entity, EntityKey};
 
 pub struct Share {
 	key: Vec<u8>,
-	encrypted: response::Share,
+	encrypted: EncryptedShare,
 	data: ShareData,
 	js_value: JsShare,
 }
@@ -73,7 +73,7 @@ impl Share {
 }
 
 impl Entity for Share {
-	type TEncrypted = response::Share;
+	type TEncrypted = EncryptedShare;
 	type TData = ShareData;
 	type TJavaScript = JsShare;
 

@@ -1,8 +1,7 @@
 use crate::encryption::symmetric::decrypt_data_base64;
 use crate::exif::Exif;
 use serde::{Deserialize, Serialize};
-use upholi_lib::http::response;
-use upholi_lib::result::Result;
+use upholi_lib::{models::EncryptedPhoto, result::Result};
 
 use super::Entity;
 
@@ -30,13 +29,13 @@ pub struct JsPhoto {
 
 pub struct Photo {
 	key: Vec<u8>,
-	encrypted: response::Photo,
+	encrypted: EncryptedPhoto,
 	data: PhotoData,
 	js_value: JsPhoto,
 }
 
 impl Entity for Photo {
-	type TEncrypted = response::Photo;
+	type TEncrypted = EncryptedPhoto;
 	type TData = PhotoData;
 	type TJavaScript = JsPhoto;
 

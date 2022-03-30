@@ -2,7 +2,9 @@ use crate::hashing::compute_sha256_hash;
 use reqwest::StatusCode;
 use upholi_lib::http::request::{FindEntity, FindSharesFilter, Login, Register};
 use upholi_lib::http::response::{ErrorResult, UserInfo};
-use upholi_lib::models::{EncryptedAlbum, EncryptedPhoto, EncryptedShare};
+use upholi_lib::models::{
+	EncryptedAlbum, EncryptedAlbumUpsert, EncryptedPhoto, EncryptedPhotoUpsert, EncryptedShare, EncryptedShareUpsert,
+};
 use upholi_lib::result::Result;
 use upholi_lib::{http::*, PhotoVariant};
 
@@ -61,7 +63,7 @@ impl HttpClient {
 		Ok(photos)
 	}
 
-	pub async fn find_photos(&self, entities: &[FindEntity]) -> Result<Vec<response::Photo>> {
+	pub async fn find_photos(&self, entities: &[FindEntity]) -> Result<Vec<EncryptedPhoto>> {
 		let url = format!("{}/api/photos/find", self.base_url);
 
 		let response = self.client.post(&url).json(&entities).send().await?;
@@ -79,7 +81,7 @@ impl HttpClient {
 		Ok(photos)
 	}
 
-	pub async fn get_photo(&self, id: &str, key: &Option<String>) -> Result<response::Photo> {
+	pub async fn get_photo(&self, id: &str, key: &Option<String>) -> Result<EncryptedPhoto> {
 		let mut url = format!("{}/api/photo/{}", self.base_url, id);
 		if let Some(key) = key {
 			let key_hash = compute_sha256_hash(&base64::decode_config(key, base64::STANDARD)?)?;
@@ -87,7 +89,7 @@ impl HttpClient {
 		}
 
 		let response = self.client.get(url).send().await?;
-		let encrypted_photo = response.json::<response::Photo>().await?;
+		let encrypted_photo = response.json::<EncryptedPhoto>().await?;
 
 		Ok(encrypted_photo)
 	}
@@ -121,7 +123,7 @@ impl HttpClient {
 
 	pub async fn create_photo(
 		&self,
-		data: &EncryptedPhoto,
+		data: &EncryptedPhotoUpsert,
 		thumbnail_bytes: &[u8],
 		preview_bytes: &[u8],
 		original_bytes: &[u8],
@@ -156,7 +158,7 @@ impl HttpClient {
 		Ok(())
 	}
 
-	pub async fn get_albums(&self) -> Result<Vec<response::Album>> {
+	pub async fn get_albums(&self) -> Result<Vec<EncryptedAlbum>> {
 		let url = format!("{}/api/albums", self.base_url);
 		let response = self.client.get(url).send().await?;
 		let albums = response.json().await?;
@@ -164,16 +166,16 @@ impl HttpClient {
 		Ok(albums)
 	}
 
-	pub async fn get_album_using_key_access_proof(&self, id: &str, album_key: &[u8]) -> Result<response::Album> {
+	pub async fn get_album_using_key_access_proof(&self, id: &str, album_key: &[u8]) -> Result<EncryptedAlbum> {
 		let album_key_hash = compute_sha256_hash(album_key)?;
 		let url = format!("{}/api/album/{}?key_hash={}", self.base_url, id, &album_key_hash);
 		let response = self.client.get(url).send().await?;
-		let album_encrypted = response.json::<response::Album>().await?;
+		let album_encrypted = response.json::<EncryptedAlbum>().await?;
 
 		Ok(album_encrypted)
 	}
 
-	pub async fn create_album(&self, body: &EncryptedAlbum) -> Result<response::CreateAlbum> {
+	pub async fn create_album(&self, body: &EncryptedAlbumUpsert) -> Result<response::CreateAlbum> {
 		let url = format!("{}/api/album", self.base_url).to_owned();
 
 		let request = self.client.post(&url).json(&body);
@@ -183,7 +185,7 @@ impl HttpClient {
 		Ok(response_body)
 	}
 
-	pub async fn update_album(&self, id: &str, album: &EncryptedAlbum) -> Result<()> {
+	pub async fn update_album(&self, id: &str, album: &EncryptedAlbumUpsert) -> Result<()> {
 		let url = format!("{}/api/album/{}", self.base_url, id).to_owned();
 		self.client.put(&url).json(album).send().await?;
 
@@ -197,7 +199,7 @@ impl HttpClient {
 		Ok(())
 	}
 
-	pub async fn get_shares(&self, filters: Option<FindSharesFilter>) -> Result<Vec<response::Share>> {
+	pub async fn get_shares(&self, filters: Option<FindSharesFilter>) -> Result<Vec<EncryptedShare>> {
 		let mut url = format!("{}/api/shares", self.base_url);
 		if let Some(filters) = filters {
 			if let Some(identifier_hash) = filters.identifier_hash {
@@ -211,7 +213,7 @@ impl HttpClient {
 		Ok(shares)
 	}
 
-	pub async fn get_share(&self, id: &str) -> Result<response::Share> {
+	pub async fn get_share(&self, id: &str) -> Result<EncryptedShare> {
 		let url = format!("{}/api/share/{}", self.base_url, id);
 		let response = self.client.get(url).send().await?;
 		let share = response.json().await?;
@@ -219,7 +221,7 @@ impl HttpClient {
 		Ok(share)
 	}
 
-	pub async fn create_share(&self, body: &EncryptedShare) -> Result<String> {
+	pub async fn create_share(&self, body: &EncryptedShareUpsert) -> Result<String> {
 		let url = format!("{}/api/share", self.base_url);
 
 		let request = self.client.post(&url).json(&body);
@@ -229,7 +231,7 @@ impl HttpClient {
 		Ok(response_body.id)
 	}
 
-	pub async fn update_share(&self, id: &str, body: &EncryptedShare) -> Result<()> {
+	pub async fn update_share(&self, id: &str, body: &EncryptedShareUpsert) -> Result<()> {
 		let url = format!("{}/api/share/{}", self.base_url, id);
 
 		let request = self.client.put(&url).json(&body);

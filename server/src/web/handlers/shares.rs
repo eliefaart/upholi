@@ -8,13 +8,12 @@ use crate::web::http::*;
 use actix_web::error::{ErrorInternalServerError, ErrorNotFound, ErrorUnauthorized};
 use actix_web::{web, HttpRequest, HttpResponse, Result};
 use upholi_lib::http::request::FindSharesFilter;
-use upholi_lib::http::response::Share;
-use upholi_lib::models::EncryptedShare;
+use upholi_lib::models::{EncryptedShare, EncryptedShareUpsert};
 
 /// Get all shares
 pub async fn route_get_shares(user: User, filters: web::Query<FindSharesFilter>) -> Result<HttpResponse> {
 	let filters = filters.into_inner();
-	let shares: Vec<Share> = DbShare::find_shares(&user.id, filters)
+	let shares: Vec<EncryptedShare> = DbShare::find_shares(&user.id, filters)
 		.await
 		.map_err(|error| ErrorInternalServerError(error))?
 		.into_iter()
@@ -33,7 +32,7 @@ pub async fn route_get_share(session: Option<Session>, req: HttpRequest) -> Resu
 		.ok_or(ErrorNotFound(HttpError::NotFound))?;
 
 	if share.can_view(&session, None) {
-		let share: Share = share.into();
+		let share: EncryptedShare = share.into();
 		Ok(HttpResponse::Ok().json(share))
 	} else {
 		Err(ErrorUnauthorized(HttpError::Unauthorized))
@@ -41,7 +40,7 @@ pub async fn route_get_share(session: Option<Session>, req: HttpRequest) -> Resu
 }
 
 /// Create a new share
-pub async fn route_create_share(user: User, share: web::Json<EncryptedShare>) -> Result<HttpResponse> {
+pub async fn route_create_share(user: User, share: web::Json<EncryptedShareUpsert>) -> Result<HttpResponse> {
 	let share = DbShare::from(share.into_inner(), &user.id);
 
 	share.insert().await.map_err(|error| ErrorInternalServerError(error))?;
@@ -50,7 +49,11 @@ pub async fn route_create_share(user: User, share: web::Json<EncryptedShare>) ->
 }
 
 /// Update a share
-pub async fn route_update_share(session: Session, req: HttpRequest, updated_share: web::Json<EncryptedShare>) -> Result<HttpResponse> {
+pub async fn route_update_share(
+	session: Session,
+	req: HttpRequest,
+	updated_share: web::Json<EncryptedShareUpsert>,
+) -> Result<HttpResponse> {
 	let share_id = req.match_info().get("share_id").unwrap();
 	let updated_share = updated_share.into_inner();
 

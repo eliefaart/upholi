@@ -4,7 +4,7 @@ use self::models::user::User;
 use crate::error::*;
 use async_trait::async_trait;
 use upholi_lib::http::request::{FindEntity, FindSharesFilter};
-use upholi_lib::http::response::{Photo, PhotoMinimal};
+use upholi_lib::http::response::PhotoMinimal;
 
 pub mod models;
 mod mongodb;

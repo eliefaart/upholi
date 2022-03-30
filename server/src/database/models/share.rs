@@ -6,13 +6,13 @@ use crate::database::*;
 use async_trait::async_trait;
 use upholi_lib::http::request::EntityAuthorizationProof;
 use upholi_lib::http::request::FindSharesFilter;
-use upholi_lib::http::response::Share;
 use upholi_lib::ids;
 use upholi_lib::models::EncryptedShare;
+use upholi_lib::models::EncryptedShareUpsert;
 
-pub type DbShare = UserEntity<EncryptedShare>;
+pub type DbShare = UserEntity<EncryptedShareUpsert>;
 
-impl From<DbShare> for Share {
+impl From<DbShare> for EncryptedShare {
 	fn from(db_share: DbShare) -> Self {
 		Self {
 			id: db_share.id,
@@ -27,7 +27,7 @@ impl From<DbShare> for Share {
 }
 
 impl DbShare {
-	pub fn from(share: EncryptedShare, user_id: &str) -> Self {
+	pub fn from(share: EncryptedShareUpsert, user_id: &str) -> Self {
 		Self {
 			id: ids::create_unique_id(),
 			user_id: user_id.to_string(),

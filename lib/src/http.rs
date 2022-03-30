@@ -82,34 +82,10 @@ pub mod response {
 
 	#[derive(Deserialize, Serialize, Debug)]
 	#[serde(rename_all = "camelCase")]
-	pub struct Photo {
-		pub id: String,
-		pub user_id: String,
-		pub hash: String,
-		pub width: i32,
-		pub height: i32,
-		pub data: crate::EncryptedData,
-		pub key: crate::EncryptedData,
-		pub thumbnail_nonce: String,
-		pub preview_nonce: String,
-		pub original_nonce: String,
-	}
-
-	#[derive(Deserialize, Serialize, Debug)]
-	#[serde(rename_all = "camelCase")]
 	pub struct PhotoMinimal {
 		pub id: String,
 		pub width: u32,
 		pub height: u32,
-	}
-
-	#[derive(Deserialize, Serialize, Debug)]
-	#[serde(rename_all = "camelCase")]
-	pub struct Album {
-		pub id: String,
-		pub user_id: String,
-		pub data: crate::EncryptedData,
-		pub key: crate::EncryptedData,
 	}
 
 	impl Clone for PhotoMinimal {
@@ -126,17 +102,5 @@ pub mod response {
 	#[serde(rename_all = "camelCase")]
 	pub struct CreateShare {
 		pub id: String,
-	}
-
-	#[derive(Deserialize, Serialize, Debug)]
-	#[serde(rename_all = "camelCase")]
-	pub struct Share {
-		pub id: String,
-		pub user_id: String,
-		pub identifier_hash: String,
-		pub type_: crate::ShareType,
-		pub password: crate::EncryptedData,
-		pub key: crate::EncryptedData,
-		pub data: crate::EncryptedData,
 	}
 }
