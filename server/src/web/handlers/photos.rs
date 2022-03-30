@@ -1,19 +1,18 @@
+use crate::database::models::photo::DbPhoto;
+use crate::database::models::session::Session;
+use crate::database::models::user::User;
+use crate::database::models::AccessControl;
+use crate::database::{self, DatabaseEntity, DatabaseEntityBatch, DatabaseEntityMinimal, DatabaseEntityUserOwned};
+use crate::error::{HttpError, UploadError};
+use crate::storage;
+use crate::web::http::*;
 use actix_multipart::Multipart;
 use actix_web::error::{ErrorBadRequest, ErrorInternalServerError, ErrorNotFound, ErrorUnauthorized};
 use actix_web::{web, HttpRequest, HttpResponse, Result};
 use upholi_lib::http::request::{CheckPhotoExists, EntityAuthorizationProof, FindEntity};
 use upholi_lib::http::response::Photo;
+use upholi_lib::models::EncryptedPhoto;
 use upholi_lib::{http::*, PhotoVariant};
-
-use crate::database::entities::photo::DbPhoto;
-//use crate::database::entities::DbPhoto::Photo;
-use crate::database::entities::session::Session;
-use crate::database::entities::user::User;
-use crate::database::entities::AccessControl;
-use crate::database::{self, DatabaseEntity, DatabaseEntityBatch, DatabaseEntityMinimal, DatabaseEntityUserOwned};
-use crate::error::{HttpError, UploadError};
-use crate::storage;
-use crate::web::http::*;
 
 /// Get all photos
 pub async fn route_get_photos(user: User) -> Result<HttpResponse> {
@@ -119,7 +118,7 @@ pub async fn route_upload_photo(user: User, payload: Multipart) -> Result<HttpRe
 		}
 	}
 
-	let photo = serde_json::from_slice::<request::UploadPhoto>(&bytes_data).map_err(|error| ErrorBadRequest(error))?;
+	let photo = serde_json::from_slice::<EncryptedPhoto>(&bytes_data).map_err(|error| ErrorBadRequest(error))?;
 
 	let mut db_photo = DbPhoto::from(photo, &user.id);
 	db_photo.user_id = user.id.clone();

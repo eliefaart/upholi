@@ -7,11 +7,12 @@ use crate::{
 	error::EntityError,
 };
 use async_trait::async_trait;
-use upholi_lib::http::request::{EntityAuthorizationProof, UploadPhoto};
+use upholi_lib::http::request::EntityAuthorizationProof;
 use upholi_lib::http::response::{Photo, PhotoMinimal};
 use upholi_lib::ids::{self};
+use upholi_lib::models::EncryptedPhoto;
 
-pub type DbPhoto = UserEntity<UploadPhoto>;
+pub type DbPhoto = UserEntity<EncryptedPhoto>;
 
 impl From<DbPhoto> for Photo {
 	fn from(photo: DbPhoto) -> Self {
@@ -31,7 +32,7 @@ impl From<DbPhoto> for Photo {
 }
 
 impl DbPhoto {
-	pub fn from(photo: UploadPhoto, user_id: &str) -> Self {
+	pub fn from(photo: EncryptedPhoto, user_id: &str) -> Self {
 		Self {
 			id: ids::create_unique_id(),
 			user_id: user_id.to_string(),

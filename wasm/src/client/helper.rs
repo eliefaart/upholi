@@ -12,6 +12,7 @@ use std::collections::HashMap;
 use std::sync::RwLock;
 use upholi_lib::http::request::{FindEntity, FindSharesFilter, Login, Register};
 use upholi_lib::http::response::UserInfo;
+use upholi_lib::models::{EncryptedAlbum, EncryptedPhoto, EncryptedShare};
 use upholi_lib::result::Result;
 use upholi_lib::{http::*, PhotoVariant, ShareType};
 
@@ -237,7 +238,7 @@ impl UpholiClientHelper {
 	}
 
 	/// Get data about photo to send as part of the HTTP request's body
-	pub fn get_upload_photo_request_data(photo: &PhotoUploadInfo, private_key: &[u8]) -> Result<request::UploadPhoto> {
+	pub fn get_upload_photo_request_data(photo: &PhotoUploadInfo, private_key: &[u8]) -> Result<EncryptedPhoto> {
 		// Generate a key and encrypt it
 		let photo_key = crate::encryption::symmetric::generate_key();
 		let photo_key_hash = compute_sha256_hash(&photo_key)?;
@@ -255,7 +256,7 @@ impl UpholiClientHelper {
 		let data_bytes = data_json.as_bytes();
 		let data_encrypt_result = crate::encryption::symmetric::encrypt_slice(&photo_key, data_bytes)?;
 
-		Ok(request::UploadPhoto {
+		Ok(EncryptedPhoto {
 			hash: photo.image.hash.clone(),
 			width: photo.image.width,
 			height: photo.image.height,
@@ -351,7 +352,7 @@ impl UpholiClientHelper {
 		let data_bytes = data_json.as_bytes();
 		let data_encrypt_result = crate::encryption::symmetric::encrypt_slice(&album_key, data_bytes)?;
 
-		let body = request::CreateAlbum {
+		let body = EncryptedAlbum {
 			data: data_encrypt_result.into(),
 			key: album_key_encrypt_result.into(),
 			key_hash: album_key_hash,
@@ -478,7 +479,7 @@ impl UpholiClientHelper {
 		item_id: &str,
 		password: &str,
 		share_data: &ShareData,
-	) -> Result<request::UpsertShare> {
+	) -> Result<EncryptedShare> {
 		let identifier_hash = Share::get_identifier_hash(&share_type, item_id)?;
 		let salt = &identifier_hash;
 		let share_key = crate::encryption::symmetric::derive_key_from_string(password, salt)?;
@@ -490,7 +491,7 @@ impl UpholiClientHelper {
 
 		let password_encrypt_result = crate::encryption::symmetric::encrypt_slice(&share_key, password.as_bytes())?;
 
-		Ok(request::UpsertShare {
+		Ok(EncryptedShare {
 			identifier_hash: Share::get_identifier_hash(&share_type, item_id)?,
 			type_: share_type,
 			password: password_encrypt_result.into(),

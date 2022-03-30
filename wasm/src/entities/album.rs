@@ -2,8 +2,8 @@ use crate::encryption::symmetric::decrypt_data_base64;
 use crate::entities::EntityKey;
 use crate::hashing::compute_sha256_hash;
 use serde::{Deserialize, Serialize};
-use upholi_lib::http::request::CreateAlbum;
 use upholi_lib::http::response;
+use upholi_lib::models::EncryptedAlbum;
 use upholi_lib::result::Result;
 
 use super::photo::Photo;
@@ -57,12 +57,12 @@ pub struct Album {
 }
 
 impl Album {
-	pub fn create_update_request_struct(&self) -> Result<CreateAlbum> {
+	pub fn create_update_request_struct(&self) -> Result<EncryptedAlbum> {
 		let data_json = serde_json::to_string(&self.data)?;
 		let data_bytes = data_json.as_bytes();
 		let data_encrypt_result = crate::encryption::symmetric::encrypt_slice(&self.key, data_bytes)?;
 
-		Ok(CreateAlbum {
+		Ok(EncryptedAlbum {
 			data: data_encrypt_result.into(),
 			key: self.encrypted.key.clone(),
 			key_hash: compute_sha256_hash(&self.key)?,

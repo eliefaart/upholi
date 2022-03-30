@@ -1,6 +1,6 @@
-use super::entities::photo::DbPhoto;
-use super::entities::share::DbShare;
-use super::entities::user::User;
+use super::models::photo::DbPhoto;
+use super::models::share::DbShare;
+use super::models::user::User;
 use super::ProjectField;
 use crate::database;
 use crate::database::SortField;

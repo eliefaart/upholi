@@ -1,14 +1,15 @@
-use crate::database::entities::album::DbAlbum;
-use crate::database::entities::session::Session;
-use crate::database::entities::user::User;
-use crate::database::entities::AccessControl;
+use crate::database::models::album::DbAlbum;
+use crate::database::models::session::Session;
+use crate::database::models::user::User;
+use crate::database::models::AccessControl;
 use crate::database::{DatabaseEntity, DatabaseEntityUserOwned};
 use crate::error::HttpError;
 use crate::web::http::*;
 use actix_web::error::{ErrorInternalServerError, ErrorNotFound, ErrorUnauthorized};
 use actix_web::{web, HttpRequest, HttpResponse, Result};
-use upholi_lib::http::request::{CreateAlbum, EntityAuthorizationProof};
+use upholi_lib::http::request::EntityAuthorizationProof;
 use upholi_lib::http::response::Album;
+use upholi_lib::models::EncryptedAlbum;
 
 /// Get all albums
 pub async fn route_get_albums(user: User) -> Result<HttpResponse> {
@@ -40,7 +41,7 @@ pub async fn route_get_album(
 }
 
 /// Create a new album
-pub async fn route_create_album(user: User, album: web::Json<CreateAlbum>) -> Result<HttpResponse> {
+pub async fn route_create_album(user: User, album: web::Json<EncryptedAlbum>) -> Result<HttpResponse> {
 	let mut db_album = DbAlbum::from(album.into_inner(), &user.id);
 	db_album.user_id = user.id;
 
@@ -49,7 +50,7 @@ pub async fn route_create_album(user: User, album: web::Json<CreateAlbum>) -> Re
 }
 
 /// Update an album
-pub async fn route_update_album(session: Session, req: HttpRequest, updated_album: web::Json<CreateAlbum>) -> Result<HttpResponse> {
+pub async fn route_update_album(session: Session, req: HttpRequest, updated_album: web::Json<EncryptedAlbum>) -> Result<HttpResponse> {
 	let album_id = req.match_info().get("album_id").unwrap();
 	let updated_album = updated_album.into_inner();
 

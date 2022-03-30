@@ -1,6 +1,6 @@
 use actix_web::cookie::Cookie;
 
-use crate::database::entities::session::Session;
+use crate::database::models::session::Session;
 
 use super::http::SESSION_COOKIE_NAME;
 

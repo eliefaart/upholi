@@ -4,29 +4,13 @@ use super::AccessControl;
 use super::UserEntity;
 use crate::database::*;
 use async_trait::async_trait;
-use serde::{Deserialize, Serialize};
 use upholi_lib::http::request::EntityAuthorizationProof;
 use upholi_lib::http::request::FindSharesFilter;
-use upholi_lib::http::request::UpsertShare;
 use upholi_lib::http::response::Share;
 use upholi_lib::ids;
-use upholi_lib::ids::create_unique_id;
-use upholi_lib::EncryptedData;
-use upholi_lib::ShareType;
+use upholi_lib::models::EncryptedShare;
 
-pub type DbShare = UserEntity<UpsertShare>;
-
-// #[derive(Serialize, Deserialize, Debug)]
-// #[serde(rename_all = "camelCase")]
-// pub struct Share {
-// 	pub id: String,
-// 	pub user_id: String,
-// 	pub identifier_hash: String,
-// 	pub type_: ShareType,
-// 	pub password: EncryptedData,
-// 	pub data: EncryptedData,
-// 	pub key: EncryptedData,
-// }
+pub type DbShare = UserEntity<EncryptedShare>;
 
 impl From<DbShare> for Share {
 	fn from(db_share: DbShare) -> Self {
@@ -43,7 +27,7 @@ impl From<DbShare> for Share {
 }
 
 impl DbShare {
-	pub fn from(share: UpsertShare, user_id: &str) -> Self {
+	pub fn from(share: EncryptedShare, user_id: &str) -> Self {
 		Self {
 			id: ids::create_unique_id(),
 			user_id: user_id.to_string(),
@@ -55,20 +39,6 @@ impl DbShare {
 		super::super::find_shares(user_id, filters).await
 	}
 }
-
-// impl From<UpsertShare> for DbShare {
-// 	fn from(source: UpsertShare) -> Self {
-// 		Self {
-// 			id: create_unique_id(),
-// 			user_id: String::new(),
-// 			identifier_hash: source.identifier_hash,
-// 			type_: source.type_,
-// 			password: source.password,
-// 			data: source.data,
-// 			key: source.key,
-// 		}
-// 	}
-// }
 
 #[async_trait]
 impl DatabaseEntity for DbShare {

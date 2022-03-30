@@ -1,14 +1,15 @@
-use crate::database::entities::session::Session;
-use crate::database::entities::share::DbShare;
-use crate::database::entities::user::User;
-use crate::database::entities::AccessControl;
+use crate::database::models::session::Session;
+use crate::database::models::share::DbShare;
+use crate::database::models::user::User;
+use crate::database::models::AccessControl;
 use crate::database::{DatabaseEntity, DatabaseEntityUserOwned};
 use crate::error::HttpError;
 use crate::web::http::*;
 use actix_web::error::{ErrorInternalServerError, ErrorNotFound, ErrorUnauthorized};
 use actix_web::{web, HttpRequest, HttpResponse, Result};
-use upholi_lib::http::request::{FindSharesFilter, UpsertShare};
+use upholi_lib::http::request::FindSharesFilter;
 use upholi_lib::http::response::Share;
+use upholi_lib::models::EncryptedShare;
 
 /// Get all shares
 pub async fn route_get_shares(user: User, filters: web::Query<FindSharesFilter>) -> Result<HttpResponse> {
@@ -40,7 +41,7 @@ pub async fn route_get_share(session: Option<Session>, req: HttpRequest) -> Resu
 }
 
 /// Create a new share
-pub async fn route_create_share(user: User, share: web::Json<UpsertShare>) -> Result<HttpResponse> {
+pub async fn route_create_share(user: User, share: web::Json<EncryptedShare>) -> Result<HttpResponse> {
 	let share = DbShare::from(share.into_inner(), &user.id);
 
 	share.insert().await.map_err(|error| ErrorInternalServerError(error))?;
@@ -49,7 +50,7 @@ pub async fn route_create_share(user: User, share: web::Json<UpsertShare>) -> Re
 }
 
 /// Update a share
-pub async fn route_update_share(session: Session, req: HttpRequest, updated_share: web::Json<UpsertShare>) -> Result<HttpResponse> {
+pub async fn route_update_share(session: Session, req: HttpRequest, updated_share: web::Json<EncryptedShare>) -> Result<HttpResponse> {
 	let share_id = req.match_info().get("share_id").unwrap();
 	let updated_share = updated_share.into_inner();
 

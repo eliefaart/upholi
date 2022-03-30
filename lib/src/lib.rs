@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 
 pub mod http;
 pub mod ids;
+pub mod models;
 pub mod passwords;
 pub mod result;
 

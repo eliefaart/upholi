@@ -7,8 +7,8 @@ use futures::{Future, StreamExt, TryStreamExt};
 use std::pin::Pin;
 use upholi_lib::http::response::CreatedResult;
 
-use crate::database::entities::session::Session;
-use crate::database::entities::user::User;
+use crate::database::models::session::Session;
+use crate::database::models::user::User;
 use crate::database::DatabaseEntity;
 use crate::error::*;
 

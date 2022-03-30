@@ -1,6 +1,6 @@
 use crate::{
 	database::{
-		entities::{session::Session, user::User},
+		models::{session::Session, user::User},
 		DatabaseEntity,
 	},
 	error::{LoginError, RegisterError},

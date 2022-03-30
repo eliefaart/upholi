@@ -2,6 +2,7 @@ use crate::hashing::compute_sha256_hash;
 use reqwest::StatusCode;
 use upholi_lib::http::request::{FindEntity, FindSharesFilter, Login, Register};
 use upholi_lib::http::response::{ErrorResult, UserInfo};
+use upholi_lib::models::{EncryptedAlbum, EncryptedPhoto, EncryptedShare};
 use upholi_lib::result::Result;
 use upholi_lib::{http::*, PhotoVariant};
 
@@ -120,7 +121,7 @@ impl HttpClient {
 
 	pub async fn create_photo(
 		&self,
-		data: &request::UploadPhoto,
+		data: &EncryptedPhoto,
 		thumbnail_bytes: &[u8],
 		preview_bytes: &[u8],
 		original_bytes: &[u8],
@@ -172,7 +173,7 @@ impl HttpClient {
 		Ok(album_encrypted)
 	}
 
-	pub async fn create_album(&self, body: &request::CreateAlbum) -> Result<response::CreateAlbum> {
+	pub async fn create_album(&self, body: &EncryptedAlbum) -> Result<response::CreateAlbum> {
 		let url = format!("{}/api/album", self.base_url).to_owned();
 
 		let request = self.client.post(&url).json(&body);
@@ -182,7 +183,7 @@ impl HttpClient {
 		Ok(response_body)
 	}
 
-	pub async fn update_album(&self, id: &str, album: &request::CreateAlbum) -> Result<()> {
+	pub async fn update_album(&self, id: &str, album: &EncryptedAlbum) -> Result<()> {
 		let url = format!("{}/api/album/{}", self.base_url, id).to_owned();
 		self.client.put(&url).json(album).send().await?;
 
@@ -218,7 +219,7 @@ impl HttpClient {
 		Ok(share)
 	}
 
-	pub async fn create_share(&self, body: &request::UpsertShare) -> Result<String> {
+	pub async fn create_share(&self, body: &EncryptedShare) -> Result<String> {
 		let url = format!("{}/api/share", self.base_url);
 
 		let request = self.client.post(&url).json(&body);
@@ -228,7 +229,7 @@ impl HttpClient {
 		Ok(response_body.id)
 	}
 
-	pub async fn update_share(&self, id: &str, body: &request::UpsertShare) -> Result<()> {
+	pub async fn update_share(&self, id: &str, body: &EncryptedShare) -> Result<()> {
 		let url = format!("{}/api/share/{}", self.base_url, id);
 
 		let request = self.client.put(&url).json(&body);

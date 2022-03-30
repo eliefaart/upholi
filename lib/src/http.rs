@@ -11,41 +11,8 @@ pub mod request {
 
 	#[derive(Deserialize, Serialize, Debug)]
 	#[serde(rename_all = "camelCase")]
-	pub struct UploadPhoto {
-		pub hash: String,
-		pub width: u32,
-		pub height: u32,
-		/// Encrypted data, contains width, height, exif, etc
-		pub data: crate::EncryptedData,
-		pub key: crate::EncryptedData,
-		pub key_hash: String,
-		pub thumbnail_nonce: String,
-		pub preview_nonce: String,
-		pub original_nonce: String,
-	}
-
-	#[derive(Deserialize, Serialize, Debug)]
-	#[serde(rename_all = "camelCase")]
 	pub struct CheckPhotoExists {
 		pub hash: String,
-	}
-
-	#[derive(Deserialize, Serialize, Debug)]
-	#[serde(rename_all = "camelCase")]
-	pub struct CreateAlbum {
-		pub data: crate::EncryptedData,
-		pub key: crate::EncryptedData,
-		pub key_hash: String,
-	}
-
-	#[derive(Deserialize, Serialize, Debug)]
-	#[serde(rename_all = "camelCase")]
-	pub struct UpsertShare {
-		pub identifier_hash: String,
-		pub type_: crate::ShareType,
-		pub password: crate::EncryptedData,
-		pub data: crate::EncryptedData,
-		pub key: crate::EncryptedData,
 	}
 
 	#[derive(Deserialize, Serialize, Debug)]

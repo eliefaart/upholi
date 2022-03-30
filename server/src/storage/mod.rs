@@ -1,4 +1,4 @@
-use crate::{database::entities::user::User, error::Result};
+use crate::{database::models::user::User, error::Result};
 use lazy_static::lazy_static;
 
 mod azure_storage;
