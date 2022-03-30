@@ -67,40 +67,4 @@ pub mod response {
 		pub username: String,
 		pub key: crate::EncryptedData,
 	}
-
-	#[derive(Deserialize, Serialize, Debug)]
-	#[serde(rename_all = "camelCase")]
-	pub struct UploadPhoto {
-		pub id: String,
-	}
-
-	#[derive(Deserialize, Serialize, Debug)]
-	#[serde(rename_all = "camelCase")]
-	pub struct CreateAlbum {
-		pub id: String,
-	}
-
-	#[derive(Deserialize, Serialize, Debug)]
-	#[serde(rename_all = "camelCase")]
-	pub struct PhotoMinimal {
-		pub id: String,
-		pub width: u32,
-		pub height: u32,
-	}
-
-	impl Clone for PhotoMinimal {
-		fn clone(&self) -> Self {
-			Self {
-				id: self.id.clone(),
-				height: self.height,
-				width: self.width,
-			}
-		}
-	}
-
-	#[derive(Deserialize, Serialize, Debug)]
-	#[serde(rename_all = "camelCase")]
-	pub struct CreateShare {
-		pub id: String,
-	}
 }

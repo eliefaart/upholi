@@ -2,10 +2,10 @@ use wasm_bindgen::prelude::*;
 
 mod client;
 mod encryption;
-mod entities;
 mod exif;
 mod hashing;
 mod images;
+mod models;
 mod multipart;
 
 #[wasm_bindgen]

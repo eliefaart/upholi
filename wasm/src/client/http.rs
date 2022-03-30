@@ -1,12 +1,12 @@
 use crate::hashing::compute_sha256_hash;
 use reqwest::StatusCode;
 use upholi_lib::http::request::{FindEntity, FindSharesFilter, Login, Register};
-use upholi_lib::http::response::{ErrorResult, UserInfo};
+use upholi_lib::http::response::{CreatedResult, ErrorResult, UserInfo};
 use upholi_lib::models::{
-	EncryptedAlbum, EncryptedAlbumUpsert, EncryptedPhoto, EncryptedPhotoUpsert, EncryptedShare, EncryptedShareUpsert,
+	EncryptedAlbum, EncryptedAlbumUpsert, EncryptedPhoto, EncryptedPhotoUpsert, EncryptedShare, EncryptedShareUpsert, PhotoMinimal,
 };
 use upholi_lib::result::Result;
-use upholi_lib::{http::*, PhotoVariant};
+use upholi_lib::PhotoVariant;
 
 /// Client for all HTTP calls to the API.
 pub struct HttpClient {
@@ -55,10 +55,10 @@ impl HttpClient {
 		Ok(user_info)
 	}
 
-	pub async fn get_photos(&self) -> Result<Vec<response::PhotoMinimal>> {
+	pub async fn get_photos(&self) -> Result<Vec<PhotoMinimal>> {
 		let url = format!("{}/api/photos/minimal", self.base_url);
 		let response = self.client.get(url).send().await?;
-		let photos = response.json::<Vec<response::PhotoMinimal>>().await?;
+		let photos = response.json::<Vec<PhotoMinimal>>().await?;
 
 		Ok(photos)
 	}
@@ -72,7 +72,7 @@ impl HttpClient {
 		Ok(photos)
 	}
 
-	pub async fn find_photos_minimal(&self, entities: &[FindEntity]) -> Result<Vec<response::PhotoMinimal>> {
+	pub async fn find_photos_minimal(&self, entities: &[FindEntity]) -> Result<Vec<PhotoMinimal>> {
 		let url = format!("{}/api/photos/find/minimal", self.base_url);
 
 		let response = self.client.post(&url).json(&entities).send().await?;
@@ -146,7 +146,7 @@ impl HttpClient {
 			.header("Content-Length", multipart.content_length)
 			.send()
 			.await?;
-		let respone: response::UploadPhoto = response.json().await?;
+		let respone: CreatedResult = response.json().await?;
 
 		Ok(respone.id)
 	}
@@ -175,12 +175,12 @@ impl HttpClient {
 		Ok(album_encrypted)
 	}
 
-	pub async fn create_album(&self, body: &EncryptedAlbumUpsert) -> Result<response::CreateAlbum> {
+	pub async fn create_album(&self, body: &EncryptedAlbumUpsert) -> Result<CreatedResult> {
 		let url = format!("{}/api/album", self.base_url).to_owned();
 
 		let request = self.client.post(&url).json(&body);
 		let response = request.send().await?;
-		let response_body: response::CreateAlbum = response.json().await?;
+		let response_body: CreatedResult = response.json().await?;
 
 		Ok(response_body)
 	}
@@ -226,7 +226,7 @@ impl HttpClient {
 
 		let request = self.client.post(&url).json(&body);
 		let response = request.send().await?;
-		let response_body: response::CreateShare = response.json().await?;
+		let response_body: CreatedResult = response.json().await?;
 
 		Ok(response_body.id)
 	}

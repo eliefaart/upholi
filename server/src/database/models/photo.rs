@@ -8,9 +8,8 @@ use crate::{
 };
 use async_trait::async_trait;
 use upholi_lib::http::request::EntityAuthorizationProof;
-use upholi_lib::http::response::PhotoMinimal;
 use upholi_lib::ids::{self};
-use upholi_lib::models::{EncryptedPhoto, EncryptedPhotoUpsert};
+use upholi_lib::models::{EncryptedPhoto, EncryptedPhotoUpsert, PhotoMinimal};
 
 pub type DbPhoto = UserEntity<EncryptedPhotoUpsert>;
 

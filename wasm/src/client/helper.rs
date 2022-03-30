@@ -1,20 +1,20 @@
 use super::http::HttpClient;
-use crate::entities::album::{self, Album, JsAlbumFull, JsAlbumPhoto};
-use crate::entities::photo::{Photo, PhotoData};
-use crate::entities::share::{Share, ShareData};
-use crate::entities::{Entity, Shareable};
 use crate::exif::Exif;
 use crate::hashing::compute_sha256_hash;
 use crate::images::Image;
+use crate::models::album::{self, Album, JsAlbumFull, JsAlbumPhoto};
+use crate::models::photo::{Photo, PhotoData};
+use crate::models::share::{Share, ShareData};
+use crate::models::{Entity, Shareable};
 use crate::{encryption, hashing};
 use lazy_static::lazy_static;
 use std::collections::HashMap;
 use std::sync::RwLock;
 use upholi_lib::http::request::{FindEntity, FindSharesFilter, Login, Register};
 use upholi_lib::http::response::UserInfo;
-use upholi_lib::models::{EncryptedAlbumUpsert, EncryptedPhotoUpsert, EncryptedShare, EncryptedShareUpsert};
+use upholi_lib::models::{EncryptedAlbumUpsert, EncryptedPhotoUpsert, EncryptedShare, EncryptedShareUpsert, PhotoMinimal};
 use upholi_lib::result::Result;
-use upholi_lib::{http::*, PhotoVariant, ShareType};
+use upholi_lib::{PhotoVariant, ShareType};
 
 lazy_static! {
 	pub static ref CLIENT: RwLock<UpholiClientHelper> = {
@@ -128,7 +128,7 @@ impl UpholiClientHelper {
 		self.http_client.get_user_info().await
 	}
 
-	pub async fn get_photos(&self) -> Result<Vec<response::PhotoMinimal>> {
+	pub async fn get_photos(&self) -> Result<Vec<PhotoMinimal>> {
 		self.http_client.get_photos().await
 	}
 
@@ -642,7 +642,7 @@ impl UpholiClientHelper {
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::entities::EntityKey;
+	use crate::models::EntityKey;
 
 	#[test]
 	fn get_key_from_user_credentials_consistency() {
@@ -680,7 +680,7 @@ mod tests {
 			key: String::from("_key"),
 		}];
 
-		let share_data: ShareData = ShareData::Album(crate::entities::share::AlbumShareData {
+		let share_data: ShareData = ShareData::Album(crate::models::share::AlbumShareData {
 			album_id: album_id.to_string(),
 			album_key: album_key.clone(),
 			photos: album_photos.clone(),

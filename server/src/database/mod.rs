@@ -3,8 +3,10 @@ use self::models::share::DbShare;
 use self::models::user::User;
 use crate::error::*;
 use async_trait::async_trait;
-use upholi_lib::http::request::{FindEntity, FindSharesFilter};
-use upholi_lib::http::response::PhotoMinimal;
+use upholi_lib::{
+	http::request::{FindEntity, FindSharesFilter},
+	models::PhotoMinimal,
+};
 
 pub mod models;
 mod mongodb;

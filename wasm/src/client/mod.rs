@@ -1,5 +1,5 @@
 use crate::client::helper::PhotoUploadInfo;
-use crate::entities::Entity;
+use crate::models::Entity;
 use js_sys::{Array, JsString};
 use upholi_lib::result::Result;
 use upholi_lib::{PhotoVariant, ShareType};

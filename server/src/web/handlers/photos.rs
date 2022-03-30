@@ -10,8 +10,9 @@ use actix_multipart::Multipart;
 use actix_web::error::{ErrorBadRequest, ErrorInternalServerError, ErrorNotFound, ErrorUnauthorized};
 use actix_web::{web, HttpRequest, HttpResponse, Result};
 use upholi_lib::http::request::{CheckPhotoExists, EntityAuthorizationProof, FindEntity};
+use upholi_lib::http::response::CreatedResult;
 use upholi_lib::models::{EncryptedPhoto, EncryptedPhotoUpsert};
-use upholi_lib::{http::*, PhotoVariant};
+use upholi_lib::PhotoVariant;
 
 /// Get all photos
 pub async fn route_get_photos(user: User) -> Result<HttpResponse> {
@@ -140,7 +141,7 @@ pub async fn route_upload_photo(user: User, payload: Multipart) -> Result<HttpRe
 		.await
 		.map_err(|error| ErrorInternalServerError(error))?;
 
-	Ok(HttpResponse::Created().json(response::UploadPhoto { id: db_photo.id }))
+	Ok(HttpResponse::Created().json(CreatedResult { id: db_photo.id }))
 }
 
 /// Get the thumbnail of a photo as file

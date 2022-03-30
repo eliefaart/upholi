@@ -10,8 +10,10 @@ use bson::doc;
 use futures::TryStreamExt;
 use lazy_static::lazy_static;
 use mongodb::{options::ClientOptions, Client};
-use upholi_lib::http::request::{FindEntity, FindSharesFilter};
-use upholi_lib::http::response::PhotoMinimal;
+use upholi_lib::{
+	http::request::{FindEntity, FindSharesFilter},
+	models::PhotoMinimal,
+};
 
 lazy_static! {
 	/// A reference to the database that can be used to execute queries etc

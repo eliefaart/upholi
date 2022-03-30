@@ -1,7 +1,6 @@
+use self::{photo::Photo, share::ShareData};
 use serde::{Deserialize, Serialize};
 use upholi_lib::result::Result;
-
-use self::{photo::Photo, share::ShareData};
 
 pub mod album;
 pub mod photo;

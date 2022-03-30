@@ -31,6 +31,15 @@ pub struct EncryptedPhotoUpsert {
 	pub original_nonce: String,
 }
 
+/// A very small photo model containing just its dimensions
+#[derive(Deserialize, Clone, Serialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct PhotoMinimal {
+	pub id: String,
+	pub width: u32,
+	pub height: u32,
+}
+
 /// An encrypted album
 #[derive(Deserialize, Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
