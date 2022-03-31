@@ -102,7 +102,7 @@ impl DatabaseEntityMinimal for DbPhoto {
 
 	async fn get_all_for_user_minimal(user_id: String) -> Result<Vec<Self::TMinimal>> {
 		let sort = database::SortField {
-			field: "createdOn",
+			field: "_id",
 			ascending: false,
 		};
 		super::super::find_many(
@@ -144,7 +144,7 @@ impl DatabaseEntityUserOwned for DbPhoto {
 
 	async fn get_all_for_user(user_id: String) -> Result<Vec<Self>> {
 		let sort = database::SortField {
-			field: "createdOn",
+			field: "_id",
 			ascending: false,
 		};
 		super::super::find_many(super::super::COLLECTION_PHOTOS, Some(&user_id), None, Some(&sort), None).await
@@ -152,7 +152,7 @@ impl DatabaseEntityUserOwned for DbPhoto {
 
 	async fn get_many_for_user(ids: &[&str], user_id: String) -> Result<Vec<Self>> {
 		let sort = database::SortField {
-			field: "createdOn",
+			field: "_id",
 			ascending: false,
 		};
 		super::super::find_many(super::super::COLLECTION_PHOTOS, Some(&user_id), Some(ids), Some(&sort), None).await
