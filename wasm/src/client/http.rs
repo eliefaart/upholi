@@ -232,10 +232,9 @@ impl HttpClient {
 
 	pub async fn update_share(&self, id: &str, body: &EncryptedShareUpsert) -> Result<()> {
 		let url = format!("{}/api/share/{}", self.base_url, id);
-
 		let request = self.client.put(&url).json(&body);
-		let response = request.send().await?;
-		response.json().await?;
+
+		request.send().await?;
 
 		Ok(())
 	}
