@@ -92,6 +92,7 @@ const AlbumPage: FC<Props> = (props: Props) => {
 				const photoIds = queue
 					.map(file => file.uploadedPhotoId || "")
 					.filter(id => !!id);
+
 				upholiService.addPhotosToAlbum(album.id, photoIds)
 					.finally(fnOnUploadFinished);
 			}

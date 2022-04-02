@@ -9,8 +9,8 @@ use crate::web::http::*;
 use actix_multipart::Multipart;
 use actix_web::error::{ErrorBadRequest, ErrorInternalServerError, ErrorNotFound, ErrorUnauthorized};
 use actix_web::{web, HttpRequest, HttpResponse, Result};
-use upholi_lib::http::request::{CheckPhotoExists, EntityAuthorizationProof, FindEntity};
-use upholi_lib::http::response::CreatedResult;
+use upholi_lib::http::request::{CheckExists, EntityAuthorizationProof, FindEntity};
+use upholi_lib::http::response::{CheckExistsResult, CreatedResult};
 use upholi_lib::models::{EncryptedPhoto, EncryptedPhotoUpsert};
 use upholi_lib::PhotoVariant;
 
@@ -89,16 +89,15 @@ pub async fn route_delete_photo(user: User, req: HttpRequest) -> Result<HttpResp
 }
 
 /// Check if a photo exists for user by hash
-pub async fn route_check_photo_exists(user: User, check: web::Query<CheckPhotoExists>) -> Result<HttpResponse> {
-	let exists = DbPhoto::hash_exists_for_user(&user.id, &check.hash)
+pub async fn route_check_photo_exists(user: User, check: web::Query<CheckExists>) -> Result<HttpResponse> {
+	let photo_id_option = DbPhoto::get_photo_id_for_hash(&user.id, &check.hash)
 		.await
 		.map_err(|error| ErrorInternalServerError(error))?;
 
-	if exists {
-		Ok(HttpResponse::NoContent().finish())
-	} else {
-		Ok(HttpResponse::NotFound().finish())
-	}
+	Ok(HttpResponse::Ok().json(CheckExistsResult {
+		exists: photo_id_option.is_some(),
+		found_id: photo_id_option,
+	}))
 }
 
 /// Uploads a photo

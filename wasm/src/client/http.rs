@@ -1,7 +1,7 @@
 use crate::hashing::compute_sha256_hash;
 use reqwest::StatusCode;
 use upholi_lib::http::request::{FindEntity, FindSharesFilter, Login, Register};
-use upholi_lib::http::response::{CreatedResult, ErrorResult, UserInfo};
+use upholi_lib::http::response::{CheckExistsResult, CreatedResult, ErrorResult, UserInfo};
 use upholi_lib::models::{
 	EncryptedAlbum, EncryptedAlbumUpsert, EncryptedPhoto, EncryptedPhotoUpsert, EncryptedShare, EncryptedShareUpsert, PhotoMinimal,
 };
@@ -109,14 +109,13 @@ impl HttpClient {
 		Ok(bytes)
 	}
 
-	pub async fn photo_exists(&self, hash: &str) -> Result<bool> {
-		let url = format!("{}/api/photo?hash={}", self.base_url, hash);
+	pub async fn photo_exists(&self, hash: &str) -> Result<CheckExistsResult> {
+		let url = format!("{}/api/photo/exists?hash={}", self.base_url, hash);
 
-		let response = self.client.head(&url).send().await?;
+		let response = self.client.get(&url).send().await?;
 
 		match response.status() {
-			StatusCode::NO_CONTENT => Ok(true),
-			StatusCode::NOT_FOUND => Ok(false),
+			StatusCode::OK => Ok(response.json().await?),
 			status_code => Err(Box::from(format!("Unexpected response code: {}", status_code))),
 		}
 	}

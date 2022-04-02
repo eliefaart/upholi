@@ -195,15 +195,35 @@ where
 	}
 }
 
-pub async fn photo_exists_for_user(user_id: &str, hash: &str) -> Result<bool> {
+pub async fn get_photo_id_for_hash(user_id: &str, hash: &str) -> Result<Option<String>> {
 	let mongo_collection = DATABASE.get().await.collection::<DbPhoto>(database::COLLECTION_PHOTOS);
-	let filter = doc! {
-		"userId": user_id,
-		"entity.hash": hash
-	};
+	let pipeline = vec![
+		doc! {
+			"$match": {
+				"userId": user_id,
+				"entity.hash": hash
+			},
+		},
+		doc! {
+			"$limit": 1u32
+		},
+		doc! {
+			"$project": {
+				"_id": 0u32,
+				"id": 1u32
+			}
+		},
+	];
 
-	let count = mongo_collection.count_documents(filter, None).await?;
-	Ok(count > 0)
+	let mut cursor = mongo_collection.aggregate(pipeline, None).await?;
+	let doc = cursor.try_next().await?;
+	match doc {
+		Some(doc) => {
+			let id = doc.get_str("id")?;
+			Ok(Some(id.into()))
+		}
+		None => Ok(None),
+	}
 }
 
 pub async fn get_user_by_username(username: &str) -> Result<Option<User>> {

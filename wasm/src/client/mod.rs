@@ -152,7 +152,7 @@ impl UpholiClient {
 		future_to_promise(async move {
 			let upload_info = PhotoUploadInfo::try_from_slice(&bytes).unwrap_throw();
 			match helper::CLIENT.read().unwrap().upload_photo(&private_key, &upload_info).await {
-				Ok(id) => Ok(JsValue::from_str(&id)),
+				Ok(result) => Ok(JsValue::from_serde(&result).unwrap_throw()),
 				Err(error) => Err(format!("{}", error).into()),
 			}
 		})

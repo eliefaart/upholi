@@ -11,7 +11,7 @@ pub mod request {
 
 	#[derive(Deserialize, Serialize, Debug)]
 	#[serde(rename_all = "camelCase")]
-	pub struct CheckPhotoExists {
+	pub struct CheckExists {
 		pub hash: String,
 	}
 
@@ -58,6 +58,15 @@ pub mod response {
 	#[serde(rename_all = "camelCase")]
 	pub struct ErrorResult {
 		pub message: String,
+	}
+
+	/// Response data for HTTP 201 results
+	#[derive(Deserialize, Serialize, Debug)]
+	#[serde(rename_all = "camelCase")]
+	pub struct CheckExistsResult {
+		pub exists: bool,
+		/// Contains the ID of the found entity if it does exist, otherwise empty.
+		pub found_id: Option<String>,
 	}
 
 	#[derive(Deserialize, Serialize, Debug)]

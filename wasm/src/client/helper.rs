@@ -8,6 +8,7 @@ use crate::models::share::{Share, ShareData};
 use crate::models::{Entity, Shareable};
 use crate::{encryption, hashing};
 use lazy_static::lazy_static;
+use serde::Serialize;
 use std::collections::HashMap;
 use std::sync::RwLock;
 use upholi_lib::http::request::{FindEntity, FindSharesFilter, Login, Register};
@@ -31,6 +32,13 @@ lazy_static! {
 pub struct PhotoUploadInfo {
 	image: Image,
 	exif: Option<Exif>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PhotoUploadResult {
+	skipped: bool,
+	photo_id: String,
 }
 
 impl PhotoUploadInfo {
@@ -132,13 +140,16 @@ impl UpholiClientHelper {
 		self.http_client.get_photos().await
 	}
 
-	pub async fn upload_photo(&self, private_key: &[u8], upload_info: &PhotoUploadInfo) -> Result<String> {
+	pub async fn upload_photo(&self, private_key: &[u8], upload_info: &PhotoUploadInfo) -> Result<PhotoUploadResult> {
 		let mut request_data = Self::get_upload_photo_request_data(upload_info, private_key)?;
 
-		let exists = self.http_client.photo_exists(&request_data.hash).await?;
-		if exists {
-			// No error, just skipping upload.
-			Ok(String::new())
+		let exists_result = self.http_client.photo_exists(&request_data.hash).await?;
+		if exists_result.exists {
+			// No error, but no need to upload.
+			Ok(PhotoUploadResult {
+				skipped: true,
+				photo_id: exists_result.found_id.unwrap_or(String::new()),
+			})
 		} else {
 			// Decrypt photo key
 			let photo_key = crate::encryption::symmetric::decrypt_data_base64(private_key, &request_data.key)?;
@@ -153,14 +164,20 @@ impl UpholiClientHelper {
 			request_data.preview_nonce = preview_encrypted.nonce;
 			request_data.original_nonce = original_encrypted.nonce;
 
-			self.http_client
+			let photo_id = self
+				.http_client
 				.create_photo(
 					&request_data,
 					&thumbnail_encrypted.bytes,
 					&preview_encrypted.bytes,
 					&original_encrypted.bytes,
 				)
-				.await
+				.await?;
+
+			Ok(PhotoUploadResult {
+				skipped: false,
+				photo_id: photo_id,
+			})
 		}
 	}
 

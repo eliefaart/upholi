@@ -41,8 +41,8 @@ impl DbPhoto {
 }
 
 impl DbPhoto {
-	pub async fn hash_exists_for_user(user_id: &str, hash: &str) -> Result<bool> {
-		super::super::photo_exists_for_user(user_id, hash).await
+	pub async fn get_photo_id_for_hash(user_id: &str, hash: &str) -> Result<Option<String>> {
+		super::super::get_photo_id_for_hash(user_id, hash).await
 	}
 
 	/// Get the fields contained in the PhotoMinimal struct

@@ -4,6 +4,11 @@ import { Album, AlbumPlain } from "../models/Album";
 import { Photo, PhotoMinimal } from "../models/Photo";
 import { Share } from "../models/Share";
 
+interface UploadResult {
+	skipped: boolean,
+	photoId: string
+}
+
 /**
  * This class exists mainly to assign types to the return values of functions within 'wasm.UpholiClient'
  */
@@ -53,9 +58,9 @@ class UpholiService {
 		return await this.client.getUserInfo();
 	}
 
-	async uploadPhoto(bytes: Uint8Array): Promise<string> {
-		const id: string = await this.client.uploadPhoto(bytes);
-		return id;
+	async uploadPhoto(bytes: Uint8Array): Promise<UploadResult> {
+		const result: UploadResult = await this.client.uploadPhoto(bytes);
+		return result;
 	}
 
 	async getPhotos(): Promise<PhotoMinimal[]> {

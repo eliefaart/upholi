@@ -55,11 +55,10 @@ class UploadHelper {
 					const photoBytes = await queueItem.file.arrayBuffer();
 
 					// TODO: Part of this call seems to block UI updates. Not sure what, since it's async
-					const photoId = await upholiService.uploadPhoto(new Uint8Array(photoBytes));
-					queueItem.uploadedPhotoId = photoId;
+					const result = await upholiService.uploadPhoto(new Uint8Array(photoBytes));
+					queueItem.uploadedPhotoId = result.photoId;
 
-					// Some 'magic'.. empty photoId means it was skipped because photo already exists
-					const finishedStatus = photoId ? FileUploadStatus.Done : FileUploadStatus.Exists;
+					const finishedStatus = result.skipped ? FileUploadStatus.Exists : FileUploadStatus.Done;
 					this.updateQueueItemStatus(queueItem, finishedStatus);
 				}
 				catch (error) {

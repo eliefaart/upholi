@@ -144,8 +144,8 @@ pub async fn find_photos_minimal(photos: Vec<FindEntity>) -> Result<Vec<PhotoMin
 }
 
 /// Check if a photo already exists for user, by hash
-pub async fn photo_exists_for_user(user_id: &str, hash: &str) -> Result<bool> {
-	mongodb::photo_exists_for_user(user_id, hash).await
+pub async fn get_photo_id_for_hash(user_id: &str, hash: &str) -> Result<Option<String>> {
+	mongodb::get_photo_id_for_hash(user_id, hash).await
 }
 
 /// Get user for given ID provider name and user-ID, if it exists

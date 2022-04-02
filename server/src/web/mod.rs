@@ -1,4 +1,4 @@
-use actix_web::web::{delete, get, head, post, put};
+use actix_web::web::{delete, get, post, put};
 use actix_web::{App, HttpServer};
 use handlers::{albums::*, photos::*, shares::*, users::*};
 
@@ -22,7 +22,7 @@ pub async fn run_server() -> std::io::Result<()> {
 				.route("/photos/minimal", get().to(route_get_photos_minimal))
 				.route("/photos/find", post().to(route_find_photos))
 				.route("/photos/find/minimal", post().to(route_find_photos_minimal))
-				.route("/photo", head().to(route_check_photo_exists))
+				.route("/photo/exists", get().to(route_check_photo_exists))
 				.route("/photo", post().to(route_upload_photo))
 				.route("/photo/{photo_id}", get().to(route_get_photo))
 				.route("/photo/{photo_id}", delete().to(route_delete_photo))
