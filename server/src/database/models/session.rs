@@ -11,7 +11,8 @@ use upholi_lib::ids::create_unique_id;
 pub struct Session {
 	pub id: String,
 	pub user_id: Option<String>,
-	created_on: chrono::DateTime<Utc>,
+	#[serde(with = "bson::serde_helpers::chrono_datetime_as_bson_datetime")]
+	created_on: DateTime<Utc>,
 }
 
 impl Session {
