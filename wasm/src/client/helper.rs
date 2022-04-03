@@ -273,10 +273,19 @@ impl UpholiClientHelper {
 		let data_bytes = data_json.as_bytes();
 		let data_encrypt_result = crate::encryption::symmetric::encrypt_slice(&photo_key, data_bytes)?;
 
+		// Compute the timestamp to store for this photo
+		let current_timestamp = chrono::Utc::now().timestamp();
+		let photo_timestamp = if let Some(exif) = data.exif {
+			exif.date_taken.map_or(current_timestamp, |dt| dt.timestamp())
+		} else {
+			current_timestamp
+		};
+
 		Ok(EncryptedPhotoUpsert {
 			hash: photo.image.hash.clone(),
 			width: photo.image.width,
 			height: photo.image.height,
+			timestamp: photo_timestamp,
 			data: data_encrypt_result.into(),
 			key: photo_key_encrypt_result.into(),
 			key_hash: photo_key_hash,

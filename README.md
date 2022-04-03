@@ -12,13 +12,14 @@ End-to-end encrypted personal photo library. Upload and view photos, sort them i
 
 ## Development status
 This project is a work in progress. It's basically feature-complete for the initial release and relatively usable, but I may still make breaking changes to the interface and data models until the application is released as v1.
+It is primarily a hobby project for personal use, and wouldn't recommend using it in production.
 
 ## Encryption
 All files and data is end-to-end encrypted, with a few small exceptions. All encryption is done with AES using a 128-bit key.
 
 ### What is not encrypted?
 The following information is not encrypted, and/or can be determined by someone with full access to the database and storage.
-- Dimensions of each photo (width and height)
+- Dimensions (width and height) and timestamp (taken or uploaded on) of each photo
 - File size in bytes of each photo
 - Number of photos, albums and shares of a user
 - Usernames

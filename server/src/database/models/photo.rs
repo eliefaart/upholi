@@ -21,6 +21,7 @@ impl From<DbPhoto> for EncryptedPhoto {
 			hash: photo.entity.hash,
 			width: photo.entity.width as i32,
 			height: photo.entity.height as i32,
+			timestamp: photo.entity.timestamp,
 			data: photo.entity.data,
 			key: photo.entity.key,
 			thumbnail_nonce: photo.entity.thumbnail_nonce,
@@ -102,7 +103,7 @@ impl DatabaseEntityMinimal for DbPhoto {
 
 	async fn get_all_for_user_minimal(user_id: String) -> Result<Vec<Self::TMinimal>> {
 		let sort = database::SortField {
-			field: "_id",
+			field: "entity.timestamp",
 			ascending: false,
 		};
 		super::super::find_many(
@@ -144,7 +145,7 @@ impl DatabaseEntityUserOwned for DbPhoto {
 
 	async fn get_all_for_user(user_id: String) -> Result<Vec<Self>> {
 		let sort = database::SortField {
-			field: "_id",
+			field: "entity.timestamp",
 			ascending: false,
 		};
 		super::super::find_many(super::super::COLLECTION_PHOTOS, Some(&user_id), None, Some(&sort), None).await
@@ -152,7 +153,7 @@ impl DatabaseEntityUserOwned for DbPhoto {
 
 	async fn get_many_for_user(ids: &[&str], user_id: String) -> Result<Vec<Self>> {
 		let sort = database::SortField {
-			field: "_id",
+			field: "entity.timestamp",
 			ascending: false,
 		};
 		super::super::find_many(super::super::COLLECTION_PHOTOS, Some(&user_id), Some(ids), Some(&sort), None).await

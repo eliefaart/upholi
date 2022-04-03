@@ -6,9 +6,15 @@ use serde::{Deserialize, Serialize};
 pub struct EncryptedPhoto {
 	pub id: String,
 	pub user_id: String,
+	/// Hash string of original file bytes
 	pub hash: String,
+	/// Width of photo
 	pub width: i32,
+	/// Height of photo
 	pub height: i32,
+	/// A timestamp of the photo used for sorting purposes.
+	/// To be filles with the datetime a photo was taken on, or uploaded on.
+	pub timestamp: i64,
 	pub data: crate::EncryptedData,
 	pub key: crate::EncryptedData,
 	pub thumbnail_nonce: String,
@@ -23,6 +29,7 @@ pub struct EncryptedPhotoUpsert {
 	pub hash: String,
 	pub width: u32,
 	pub height: u32,
+	pub timestamp: i64,
 	pub data: crate::EncryptedData,
 	pub key: crate::EncryptedData,
 	pub key_hash: String,
