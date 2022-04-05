@@ -30,14 +30,15 @@ const UploadProgress: FC = () => {
 					<IconClose />
 				</button>}
 			</div>
-			{uploadProgress.map(file => (
-				<div key={file.file.name} className="file">
-					<img src={file.objectUrl} className="thumb" />
-					<span className="title">{file.file.name}</span>
-					<span className="status">{file.status}</span>
-					{/* {file.status === "Failed" && <button>retry</button>} */}
-				</div>
-			))}
+			<div className="files">
+				{uploadProgress.map(file => (
+					<div key={file.file.name} className="file">
+						<img src={file.objectUrl} className="thumb" />
+						<span className="title">{file.file.name}</span>
+						<span className="status">{file.status}</span>
+					</div>
+				))}
+			</div>
 		</div>;
 	}
 };

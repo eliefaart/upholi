@@ -7,7 +7,6 @@
 	background: var(--colorBackground);
 	box-shadow: 0 0 5px var(--colorBackgroundShadow, 40);
 	border-radius: $borderRadius;
-	overflow: auto;
 	padding: $spacing;
 	display: flex;
 	flex-direction: column;
@@ -19,24 +18,28 @@
 		justify-content: flex-end;
 	}
 
-	.file {
-		display: flex;
-		width: 100%;
-		height: $headerHeight;
-		align-items: center;
+	.files {
+		overflow: auto;
 
-		.thumb {
-			flex: 0 0 $headerHeight;
+		.file {
+			display: flex;
+			width: 100%;
 			height: $headerHeight;
-			max-width: $headerHeight;
-		}
+			align-items: center;
 
-		.title {
-			flex: 0 1 100%;
-		}
+			.thumb {
+				flex: 0 0 $headerHeight;
+				height: $headerHeight;
+				max-width: $headerHeight;
+			}
 
-		>span {
-			margin: 0 0 0 $spacing;
+			.title {
+				flex: 0 1 100%;
+			}
+
+			>span {
+				margin: 0 0 0 $spacing;
+			}
 		}
 	}
 }
