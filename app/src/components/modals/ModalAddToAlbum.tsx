@@ -12,7 +12,7 @@ interface Props extends ModalPropsBase {
 }
 
 const ModalAddToAlbum: FC<Props> = (props) => {
-	const [albums] = useAlbums();
+	const albums = useAlbums();
 
 	return <Modal
 		title="Add to album"

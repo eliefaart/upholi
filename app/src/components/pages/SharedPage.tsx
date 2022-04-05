@@ -13,7 +13,7 @@ import DefaultHeaderContent from "../headers/DefaultHeaderContent";
 
 const SharedPage: FC<PageProps> = (props: PageProps) => {
 	const context = React.useContext(appStateContext);
-	const [albums] = useAlbums();
+	const albums = useAlbums();
 	const [shares, refreshShares] = useShares();
 
 	useTitle("Shared");
