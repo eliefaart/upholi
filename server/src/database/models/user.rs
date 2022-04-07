@@ -3,6 +3,7 @@ use crate::error::*;
 use crate::storage::init_storage_for_user;
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
+use upholi_lib::http::response::UserInfo;
 use upholi_lib::ids::create_unique_id;
 use upholi_lib::passwords::{hash_password, verify_password_hash};
 use upholi_lib::EncryptedData;
@@ -14,6 +15,16 @@ pub struct User {
 	pub username: String,
 	pub password_phc: String,
 	pub key: EncryptedData,
+}
+
+impl Into<UserInfo> for User {
+	fn into(self) -> UserInfo {
+		UserInfo {
+			id: self.id,
+			username: self.username,
+			key: self.key,
+		}
+	}
 }
 
 impl User {

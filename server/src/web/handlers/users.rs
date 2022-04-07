@@ -11,7 +11,10 @@ use crate::{
 };
 use actix_web::error::{ErrorBadRequest, ErrorInternalServerError};
 use actix_web::{web, HttpResponse, Result};
-use upholi_lib::http::request::{Login, Register};
+use upholi_lib::http::{
+	request::{Login, Register},
+	response::UserInfo,
+};
 
 pub async fn route_register_user(info: web::Json<Register>) -> Result<HttpResponse> {
 	let info = info.into_inner();
@@ -55,5 +58,6 @@ pub async fn route_login_user(session: Option<Session>, info: web::Json<Login>) 
 }
 
 pub async fn route_user_info(user: User) -> Result<HttpResponse> {
-	Ok(HttpResponse::Ok().json(user))
+	let user_info: UserInfo = user.into();
+	Ok(HttpResponse::Ok().json(user_info))
 }
