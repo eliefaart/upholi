@@ -3,6 +3,7 @@ import UpholiServiceLocalStorageHelper from "../helpers/UpholiServiceLocalStorag
 import { Album, AlbumPlain } from "../models/Album";
 import { Photo, PhotoMinimal } from "../models/Photo";
 import { Share } from "../models/Share";
+import { Cache } from "../utils/cache";
 
 interface UploadResult {
 	skipped: boolean,
@@ -13,6 +14,7 @@ interface UploadResult {
  * This class exists mainly to assign types to the return values of functions within 'wasm.UpholiClient'
  */
 class UpholiService {
+	private cache: Cache;
 	private _client: wasm.UpholiClient | null;
 	private get client(): wasm.UpholiClient {
 		if (!this._client) {
@@ -34,6 +36,7 @@ class UpholiService {
 
 	constructor() {
 		this._client = null;
+		this.cache = new Cache();
 	}
 
 	async register(username: string, password: string): Promise<void> {
@@ -60,25 +63,26 @@ class UpholiService {
 
 	async uploadPhoto(bytes: Uint8Array): Promise<UploadResult> {
 		const result: UploadResult = await this.client.uploadPhoto(bytes);
+		this.cache.delete("photos");
 		return result;
 	}
 
 	async getPhotos(): Promise<PhotoMinimal[]> {
-		const photos: PhotoMinimal[] = await this.client.getPhotos();
-		return photos;
+		return this.cache.getOr("photos", () => this.client.getPhotos());
 	}
 
 	async getPhoto(id: string, key?: string): Promise<Photo> {
-		const photo: Photo = key === undefined
-			? await this.client.getPhoto(id)
-			: await this.client.getPhotoWithProof(id, key);
-		return photo;
+		const get = key === undefined
+			? () => this.client.getPhoto(id)
+			: () => this.client.getPhotoWithProof(id, key);
+		return this.cache.getOr(`photo${id}`, get);
 	}
 
 	async getPhotoThumbnailImageSrc(id: string, key?: string): Promise<string> {
-		return key === undefined
-			? await this.client.getPhotoThumbnailImageSrc(id)
-			: await this.client.getPhotoThumbnailImageSrcWithProof(id, key);
+		const get = key === undefined
+			? () => this.client.getPhotoThumbnailImageSrc(id)
+			: () => this.client.getPhotoThumbnailImageSrcWithProof(id, key);
+		return this.cache.getOr(`photo-thumb${id}`, get);
 	}
 
 	async getPhotoPreviewImageSrc(id: string, key?: string): Promise<string> {
@@ -94,12 +98,17 @@ class UpholiService {
 	}
 
 	async deletePhotos(ids: string[]): Promise<void> {
-		return await this.client.deletePhotos(ids);
+		await this.client.deletePhotos(ids);
+
+		this.cache.delete("photos");
+		for (const id of ids) {
+			this.cache.delete(`photo${id}`);
+			this.cache.delete(`photo-thumb${id}`);
+		}
 	}
 
 	async getAlbums(): Promise<AlbumPlain[]> {
-		const albums: AlbumPlain[] = await this.client.getAlbums();
-		return albums;
+		return this.cache.getOr("albums", () => this.client.getAlbums());
 	}
 
 	async getAlbum(id: string): Promise<Album> {
@@ -108,27 +117,34 @@ class UpholiService {
 	}
 
 	async createAlbum(title: string, initialPhotoIds?: string[]): Promise<string> {
+		this.cache.delete("albums");
+
 		const photoIds = initialPhotoIds ?? [];
 		return this.client.createAlbum(title, photoIds);
 	}
 
 	async deleteAlbum(id: string): Promise<void> {
+		this.cache.delete("albums");
 		return this.client.deleteAlbum(id);
 	}
 
 	async updateAlbumTitleTags(id: string, title: string, tags: string[]): Promise<void> {
+		this.cache.delete("albums");
 		return this.client.updateAlbumTitleTags(id, title, tags);
 	}
 
 	async updateAlbumCover(id: string, coverPhotoId: string): Promise<void> {
+		this.cache.delete("albums");
 		return this.client.updateAlbumCover(id, coverPhotoId);
 	}
 
 	async addPhotosToAlbum(id: string, photoIds: string[]): Promise<void> {
+		this.cache.delete("albums");
 		return this.client.addPhotosToAlbum(id, photoIds);
 	}
 
 	async removePhotosFromAlbum(id: string, photoIds: string[]): Promise<void> {
+		this.cache.delete("albums");
 		return this.client.removePhotosFromAlbum(id, photoIds);
 	}
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AlbumPhoto } from "../models/Album";
 import { PhotoMinimal } from "../models/Photo";
 import upholiService from "../services/UpholiService";
@@ -8,38 +8,32 @@ interface PhotoSource {
 	src: string
 }
 
-const cache: PhotoSource[] = [];
-
 export default function usePhotoThumbnailSources(photos: (PhotoMinimal | AlbumPhoto)[]): PhotoSource[] {
 	const [sources, setSources] = useState<PhotoSource[]>([]);
 
-	// Find photos that we still have to fetch.
-	const notInCache = photos.filter(photo => !cache.some(ci => ci.photoId === photo.id));
+	useEffect(() => {
+		// Clear the ones no longer needed
+		const photoSourcesStillRelavant = sources.filter(src => photos.some(p => p.id === src.photoId));
+		if (photoSourcesStillRelavant.length !== sources.length) {
+			setSources(photoSourcesStillRelavant);
+		}
 
-	// fetch source for new photos
-	for (const photo of notInCache) {
-		const cacheItem = {
-			photoId: photo.id,
-			src: ""
-		};
-		cache.push(cacheItem);
-
-		upholiService.getPhotoThumbnailImageSrc(photo.id, (<AlbumPhoto>photo).key ?? undefined)
-			.then(src => {
-				// Update the cache
-				cacheItem.src = src;
-
-				// Set sources from cache
-				setSources(cache.filter(ci => photos.some(photo => photo.id === ci.photoId)));
-			});
-	}
-
-	// Initial sources from cache
-	const notInSources = photos.filter(photo => !sources.some(p => p.photoId === photo.id));
-	if (notInSources.length > 0) {
-		const toAddToSources = cache.filter(ci => notInSources.some(photo => photo.id === ci.photoId));
-		setSources(sources.concat(toAddToSources));
-	}
+		// Fetch photos we don't have in state yet.
+		const notYetFetched = photos.filter(photo => !sources.some(ci => ci.photoId === photo.id));
+		for (const photo of notYetFetched) {
+			upholiService.getPhotoThumbnailImageSrc(photo.id, (<AlbumPhoto>photo).key ?? undefined)
+				.then(src => {
+					setSources(prev => {
+						const updated = [...prev];
+						updated.push({
+							photoId: photo.id,
+							src
+						});
+						return updated;
+					});
+				});
+		}
+	}, [photos]);
 
 	return sources;
 }
