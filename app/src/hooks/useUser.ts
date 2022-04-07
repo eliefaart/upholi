@@ -1,5 +1,10 @@
+import axios from "axios";
 import { useEffect, useState } from "react";
 import { User } from "../models/User";
+
+type UserStatus = User | null | undefined;
+
+let cache: UserStatus = undefined;
 
 /**
  * Needs work; feels hacky having to rely on a special meaning for undefined.
@@ -7,23 +12,17 @@ import { User } from "../models/User";
  * null = no user logged in
  * @returns
  */
-export default function useUser(): User | null | undefined {
-	const [user, setUser] = useState<User | null | undefined>(undefined);
+export default function useUser(): UserStatus {
+	const [user, setUser] = useState<UserStatus>(cache);
 
 	useEffect(() => {
-		fetch("/api/user/info").then(response => {
-			if (response.status === 200) {
-				// TODO: read data from response,
-				// or better: add this route to upholiService + wasm
-				setUser({
-					id: "_",
-					username: "_"
-				});
-			}
-			else {
-				setUser(null);
-			}
-		}).catch(console.error);
+		if (!user) {
+			axios.get<User>("/api/user/info")
+				.then(response => {
+					cache = response.data;
+					setUser(response.data);
+				}).catch(() => setUser(null));
+		}
 	}, []);
 
 	return user;
