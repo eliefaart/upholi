@@ -120,6 +120,10 @@ impl Entity for Share {
 		&self.data
 	}
 
+	fn get_encrypted(&self) -> &Self::TEncrypted {
+		&self.encrypted
+	}
+
 	fn as_js_value(&self) -> &Self::TJavaScript {
 		&self.js_value
 	}

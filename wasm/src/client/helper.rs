@@ -41,6 +41,11 @@ pub struct PhotoUploadResult {
 	photo_id: String,
 }
 
+struct FileBase64 {
+	base64: String,
+	content_type: String,
+}
+
 impl PhotoUploadInfo {
 	/// Try to construct an object from image file bytes
 	pub fn try_from_slice(bytes: &[u8]) -> Result<Self> {
@@ -209,30 +214,35 @@ impl UpholiClientHelper {
 		Ok(())
 	}
 
-	pub async fn get_photo_base64(
+	async fn get_photo_base64(
 		&self,
 		private_key: &[u8],
 		id: &str,
 		photo_variant: PhotoVariant,
 		key: &Option<String>,
-	) -> Result<String> {
-		// Get photo bytes
-		let encrypted_bytes = self.http_client.get_photo_base64(id, &photo_variant, key).await?;
+	) -> Result<FileBase64> {
+		// Get encrypted photo bytes
+		let encrypted_base64 = self.http_client.get_photo_base64(id, &photo_variant, key).await?;
+		let encrypted_photo = self.http_client.get_photo(id, key).await?;
 
-		// Decrypt photo bytes
-		let photo = self.http_client.get_photo(id, key).await?;
 		let photo_key = match key {
 			Some(photo_key) => base64::decode_config(&photo_key, base64::STANDARD)?,
-			None => crate::encryption::symmetric::decrypt_data_base64(private_key, &photo.key)?,
+			None => crate::encryption::symmetric::decrypt_data_base64(private_key, &encrypted_photo.key)?,
 		};
-		let nonce = match photo_variant {
-			PhotoVariant::Thumbnail => photo.thumbnail_nonce.as_bytes(),
-			PhotoVariant::Preview => photo.preview_nonce.as_bytes(),
-			PhotoVariant::Original => photo.original_nonce.as_bytes(),
-		};
-		let bytes = crate::encryption::symmetric::decrypt_slice(&photo_key, nonce, &encrypted_bytes)?;
 
-		Ok(base64::encode_config(&bytes, base64::STANDARD))
+		// Decrypt photo bytes
+		let photo = Photo::from_encrypted(encrypted_photo, &photo_key)?;
+		let nonce = match photo_variant {
+			PhotoVariant::Thumbnail => photo.get_encrypted().thumbnail_nonce.as_bytes(),
+			PhotoVariant::Preview => photo.get_encrypted().preview_nonce.as_bytes(),
+			PhotoVariant::Original => photo.get_encrypted().original_nonce.as_bytes(),
+		};
+		let bytes = crate::encryption::symmetric::decrypt_slice(&photo_key, nonce, &encrypted_base64)?;
+
+		Ok(FileBase64 {
+			base64: base64::encode_config(&bytes, base64::STANDARD),
+			content_type: photo.get_data().content_type.clone(),
+		})
 	}
 
 	pub async fn get_photo_image_src(
@@ -245,11 +255,8 @@ impl UpholiClientHelper {
 		if id.is_empty() {
 			Ok(String::new())
 		} else {
-			let photo = self.get_photo(private_key, id, key).await?;
-			let photo_data = photo.get_data();
-			let base64 = self.get_photo_base64(private_key, id, photo_variant, key).await?;
-
-			let src = format!("data:{};base64,{}", photo_data.content_type, base64);
+			let result = self.get_photo_base64(private_key, id, photo_variant, key).await?;
+			let src = format!("data:{};base64,{}", result.content_type, result.base64);
 			Ok(src)
 		}
 	}

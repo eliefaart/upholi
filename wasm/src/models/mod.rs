@@ -23,6 +23,7 @@ pub trait Entity {
 	fn get_id(&self) -> &str;
 	fn get_data(&self) -> &Self::TData;
 	fn get_data_mut(&mut self) -> &mut Self::TData;
+	fn get_encrypted(&self) -> &Self::TEncrypted;
 	fn as_js_value(&self) -> &Self::TJavaScript;
 }
 
