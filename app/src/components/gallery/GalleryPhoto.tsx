@@ -2,6 +2,7 @@ import * as React from "react";
 import { FC } from "react";
 import { IconCheck } from "../misc/Icons";
 import { default as GalleryPhotoModel } from "../../models/GalleryPhoto";
+import usePhotoThumbnailSource from "../../hooks/usePhotoThumbnailSource";
 
 interface Props {
 	photo: GalleryPhotoModel,
@@ -16,6 +17,7 @@ interface Props {
 
 const GalleryPhoto: FC<Props> = (props: Props) => {
 	const photoId = props.photo.id ?? "";
+	const src = usePhotoThumbnailSource(props.photo.mayLoad ? photoId : "");
 
 	if (!photoId) {
 		return <></>;
@@ -27,7 +29,7 @@ const GalleryPhoto: FC<Props> = (props: Props) => {
 			;
 
 		const imgStyle: React.CSSProperties = {
-			backgroundImage: "url(\"" + props.photo.src + "\")",
+			backgroundImage: "url(\"" + src + "\")",
 			margin: props.margin,
 			width: props.photo.width,
 			height: props.photo.height,

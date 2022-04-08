@@ -22,7 +22,7 @@ function getGalleryViewModel(photos: GalleryPhotoModel[]): PhotoProps[] {
 	const viewModelPhotos = photos.map<PhotoProps>(photo => {
 		return {
 			key: photo.id,
-			src: photo.src,
+			src: "", // GalleryPhoto component will set this.
 			width: photo.width,
 			height: photo.height
 		};
@@ -58,59 +58,58 @@ const PhotoGallery: FC<Props> = (props) => {
 	let galleryViewModelPhotos = getGalleryViewModel(props.photos);
 	galleryViewModelPhotos = padViewModel(galleryViewModelPhotos, 20);
 
-	return (
-		<div className="photo-gallery">
-			<Gallery photos={galleryViewModelPhotos}
-				margin={PHOTO_MARGIN}
-				targetRowHeight={PHOTO_HEIGHT}
-				renderImage={(renderProps) => {
-					const photoViewModel = props.photos.find(p => p.id === renderProps.photo.key);
+	return <div className="photo-gallery">
+		<Gallery photos={galleryViewModelPhotos}
+			margin={PHOTO_MARGIN}
+			targetRowHeight={PHOTO_HEIGHT}
+			renderImage={(renderProps) => {
+				const photoViewModel = props.photos.find(p => p.id === renderProps.photo.key);
 
-					if (!photoViewModel) {
-						return null;
-					}
-					else {
-						const photoId = photoViewModel.id;
-						const selected = props.selectedItems.indexOf(photoId) !== -1;
+				if (!photoViewModel) {
+					return null;
+				}
+				else {
+					const photoId = photoViewModel.id;
+					const selected = props.selectedItems.indexOf(photoId) !== -1;
 
-						// Toggle selected state of current photo
-						const fnToggleSelected = () => {
-							if (props.onPhotoSelectionChanged) {
-								// If selected, then on callback we must unselect. And visa versa
-								const newSelectedPhotoIds = selected
-									? props.selectedItems.filter(pId => pId !== photoId)
-									: [photoId, ...props.selectedItems];
+					// Toggle selected state of current photo
+					const fnToggleSelected = () => {
+						if (props.onPhotoSelectionChanged) {
+							// If selected, then on callback we must unselect. And visa versa
+							const newSelectedPhotoIds = selected
+								? props.selectedItems.filter(pId => pId !== photoId)
+								: [photoId, ...props.selectedItems];
 
-								props.onPhotoSelectionChanged(newSelectedPhotoIds);
+							props.onPhotoSelectionChanged(newSelectedPhotoIds);
+						}
+					};
+
+					const gpiProps = {
+						key: photoViewModel.id,
+						photo: {
+							...photoViewModel,
+							width: renderProps.photo.width,
+							height: renderProps.photo.height
+						},
+						margin: renderProps.margin,
+						selected,
+						anySiblingPhotoSelected: props.selectedItems.length > 0,
+						onClick: () => {
+							if (anyPhotoSelected) {
+								fnToggleSelected();
 							}
-						};
+							else {
+								props.onClick(photoId);
+							}
 
-						const gpiProps = {
-							photo: {
-								...photoViewModel,
-								width: renderProps.photo.width,
-								height: renderProps.photo.height
-							},
-							margin: renderProps.margin,
-							selected,
-							anySiblingPhotoSelected: props.selectedItems.length > 0,
-							onClick: () => {
-								if (anyPhotoSelected) {
-									fnToggleSelected();
-								}
-								else {
-									props.onClick(photoId);
-								}
-
-							},
-							onToggleSelect: fnToggleSelected,
-						};
-						return GalleryPhoto(gpiProps);
-					}
-				}}
-			/>
-		</div>
-	);
+						},
+						onToggleSelect: fnToggleSelected,
+					};
+					return <GalleryPhoto {...gpiProps} />;
+				}
+			}}
+		/>
+	</div>;
 };
 
 export default PhotoGallery;

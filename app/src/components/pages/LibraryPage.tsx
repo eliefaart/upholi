@@ -14,13 +14,13 @@ import uploadHelper from "../../helpers/UploadHelper";
 import upholiService from "../../services/UpholiService";
 import { useTitle } from "../../hooks/useTitle";
 import usePhotos from "../../hooks/usePhotos";
-import usePhotoThumbnailSources from "../../hooks/usePhotoThumbnailSources";
 import { PhotoMinimal } from "../../models/Photo";
 import { elementIsInViewport } from "../../utils/dom";
 import * as _ from "underscore";
 import { PageProps } from "../../models/PageProps";
 import ItemsSelectedHeaderContent from "../headers/ItemsSelectedHeaderContent";
 import DefaultHeaderContent from "../headers/DefaultHeaderContent";
+import GalleryPhoto from "../../models/GalleryPhoto";
 
 const queryStringParamNamePhotoId = "photoId";
 
@@ -28,7 +28,6 @@ const LibraryPage: FC<PageProps> = (props: PageProps) => {
 	const context = React.useContext(appStateContext);
 	const [photosThatHaveBeenInView, setPhotosThatHaveBeenInView] = useState<string[]>([]);
 	const [photos, refreshPhotos] = usePhotos();
-	const photoSources = usePhotoThumbnailSources(photos.filter(p => photosThatHaveBeenInView.some(id => id === p.id)));
 	const [selectedPhotoIds, setSelectedPhotoIds] = useState<string[]>([]);
 	const [openedPhotoId, setOpenedPhotoId] = useState<string>("");
 	const [confirmDeletePhotosOpen, setConfirmDeletePhotosOpen] = useState<boolean>(false);
@@ -153,12 +152,12 @@ const LibraryPage: FC<PageProps> = (props: PageProps) => {
 		}
 	}, [photos]);
 
-	const galleryPhotos = photos.map(photo => {
+	const galleryPhotos: GalleryPhoto[] = photos.map(photo => {
 		return {
 			id: photo.id,
 			width: photo.width,
 			height: photo.height,
-			src: photoSources.find(p => p.photoId === photo.id)?.src ?? ""
+			mayLoad: photosThatHaveBeenInView.some(p => p === photo.id)
 		};
 	});
 

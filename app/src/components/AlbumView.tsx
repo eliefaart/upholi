@@ -5,7 +5,6 @@ import { Album } from "../models/Album";
 import GalleryPhoto from "../models/GalleryPhoto";
 import ModalPhotoDetail from "./modals/ModalPhotoDetail";
 import PhotoGallery from "./gallery/PhotoGallery";
-import usePhotoThumbnailSources from "../hooks/usePhotoThumbnailSources";
 import { FC, useContext, useState } from "react";
 
 const queryStringParamNamePhotoId = "photoId";
@@ -20,7 +19,6 @@ interface Props {
 
 const AlbumView: FC<Props> = (props: Props) => {
 	const context = useContext(appStateContext);
-	const photoSources = usePhotoThumbnailSources(props.album.photos);
 	const [openedPhotoId, setOpenedPhotoId] = useState<string>("");
 
 	// Open photo, if indicated as such by query string
@@ -38,9 +36,9 @@ const AlbumView: FC<Props> = (props: Props) => {
 	const galleryPhotos = props.album.photos.map((photo): GalleryPhoto => {
 		return {
 			id: photo.id,
-			src: photoSources.find(ps => ps.photoId === photo.id)?.src ?? "",
 			width: photo.width,
-			height: photo.height
+			height: photo.height,
+			mayLoad: true,
 		};
 	});
 
