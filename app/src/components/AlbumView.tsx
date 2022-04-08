@@ -39,6 +39,7 @@ const AlbumView: FC<Props> = (props: Props) => {
 			width: photo.width,
 			height: photo.height,
 			mayLoad: true,
+			key: photo.key ?? undefined
 		};
 	});
 

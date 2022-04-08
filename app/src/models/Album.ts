@@ -1,7 +1,7 @@
 import { PhotoMinimal } from "./Photo";
 
 export interface AlbumPhoto extends PhotoMinimal {
-	key: string | null
+	key?: string
 }
 
 /**
