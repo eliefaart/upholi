@@ -2,9 +2,13 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { User } from "../models/User";
 
+type resetAuthenticationStatus = () => void;
+
 export enum AuthenticationStatus {
-	// Hasn't been determined yet.
+	// Status hasn't been determined yet.
 	Unknown,
+	// Status is currently being fetched from server.
+	Refreshing,
 	// Client is an authenticated user.
 	Authenticated,
 	// Client is not an authenticated user, anonymous client.
@@ -13,21 +17,28 @@ export enum AuthenticationStatus {
 
 let lastStatus: AuthenticationStatus = AuthenticationStatus.Unknown;
 
-export default function useAuthenticationStatus(): AuthenticationStatus {
+export default function useAuthenticationStatus(): [AuthenticationStatus, resetAuthenticationStatus] {
 	const [state, setState] = useState<AuthenticationStatus>(lastStatus);
 
+	const resetStatus = () => setState(AuthenticationStatus.Unknown);
+
+	const refresh = () => {
+		setState(AuthenticationStatus.Refreshing);
+		axios.get<User>("/api/user/info")
+			.then(() => setState(AuthenticationStatus.Authenticated))
+			.catch(() => setState(AuthenticationStatus.Unauthenticad));
+	};
+
 	useEffect(() => {
-		if (!state) {
-			axios.get<User>("/api/user/info")
-				.then(() => setState(AuthenticationStatus.Authenticated))
-				.catch(() => setState(AuthenticationStatus.Unauthenticad));
+		if (state === AuthenticationStatus.Unknown) {
+			refresh();
 		}
 	}, []);
 
+	// Keep track of last known status, so we don't need to redetermine if client navigates to another page
 	useEffect(() => {
-		// Keep track of last known status, so we don't need to redetermine if client navigates to another page
 		lastStatus = state;
 	}, [state]);
 
-	return state;
+	return [state, resetStatus];
 }

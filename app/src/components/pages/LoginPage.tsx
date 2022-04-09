@@ -1,6 +1,7 @@
 import * as React from "react";
 import { FC } from "react";
 import appStateContext from "../../contexts/AppStateContext";
+import useAuthenticationStatus from "../../hooks/useAuthenticationStatus";
 import { useTitle } from "../../hooks/useTitle";
 import upholiService from "../../services/UpholiService";
 import Content from "../layout/Content";
@@ -11,7 +12,7 @@ import { IconChevronRight } from "../misc/Icons";
 
 const LoginPage: FC = () => {
 	useTitle("Login");
-
+	const [_, resetAuthenticationStatus] = useAuthenticationStatus();
 	const context = React.useContext(appStateContext);
 	const usernameInput = React.createRef<HTMLInputElement>();
 	const passwordInput = React.createRef<HTMLInputElement>();
@@ -27,6 +28,7 @@ const LoginPage: FC = () => {
 			const password = passwordInput.current.value;
 
 			if (username && password) {
+				resetAuthenticationStatus();
 				upholiService.login(username, password)
 					.then(() => {
 						context.history.push("/");

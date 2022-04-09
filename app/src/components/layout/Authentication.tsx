@@ -8,10 +8,11 @@ interface Props {
 }
 
 const Authentication: FC<Props> = (props) => {
-	const authenticationStatus = useAuthenticationStatus();
+	const [authenticationStatus] = useAuthenticationStatus();
 	const context = React.useContext(appStateContext);
 
-	if (authenticationStatus === AuthenticationStatus.Unknown) {
+	if (authenticationStatus === AuthenticationStatus.Unknown
+		|| authenticationStatus === AuthenticationStatus.Refreshing) {
 		// User info is still being fetched.
 		return <></>;
 	}
