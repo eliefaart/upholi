@@ -4,6 +4,7 @@
 	background: var(--colorHeaderBackground);
 	width: 100%;
 	z-index: 1;
+	padding-left: $spacing;
 
 	.left {
 		display: flex;
@@ -25,7 +26,8 @@
 			font-size: $fontSize * 1.2;
 			line-height: $headerHeight;
 			height: $headerHeight;
-			padding-left: $spacingLarge;
+			padding-left: $spacing;
+			padding-right: $spacing;
 
 			&:hover {
 				filter: brightness(1.2);
