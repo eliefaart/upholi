@@ -13,20 +13,23 @@ const DefaultHeaderContent: FC<Props> = (props) => {
 	const context = React.useContext<AppState>(appStateContext);
 
 	const menuItems = [
-		{ path: "/", title: "Library" },
-		{ path: "/albums", title: "Albums" },
-		{ path: "/shared", title: "Shared" }
+		{ path: "/", title: "Library", childPaths: [] },
+		{ path: "/albums", title: "Albums", childPaths: ["/album"] },
+		{ path: "/shared", title: "Shared", childPaths: [] },
 	];
 
 	return <>
 		{/* Navigation menu */}
 		<nav>
-			{menuItems.map((menuItem) =>
-			(<span key={menuItem.path}
-				onClick={() => context.history.push(menuItem.path)}
-				className={location.pathname === menuItem.path ? "active" : ""}
-			>{menuItem.title}</span>)
-			)}
+			{menuItems.map((menuItem) => {
+				const isActive = location.pathname === menuItem.path
+					|| menuItem.childPaths.some(p => location.pathname.startsWith(p));
+				return <span key={menuItem.path}
+					onClick={() => context.history.push(menuItem.path)}
+					className={isActive ? "active" : ""}>
+					{menuItem.title}
+				</span>;
+			})}
 		</nav>
 
 		{/* Empty filler space in middle */}

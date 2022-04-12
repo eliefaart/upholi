@@ -1,5 +1,6 @@
 import * as React from "react";
 import { FC } from "react";
+import Button from "../misc/Button";
 import { IconClose } from "../misc/Icons";
 
 interface Props {
@@ -19,12 +20,12 @@ const ItemsSelectedHeaderContent: FC<Props> = (props) => {
 				{props.actions}
 			</div>
 			<div className="right">
-				{props.selectedItems.length > 0 && <button
-					className="with-icon"
+				{props.selectedItems.length > 0 && <Button
 					onClick={() => props.onSelectionCleared()}
-					title={props.selectedItems.length + "selected"}>
-					{props.selectedItems.length} selected<IconClose />
-				</button>}
+					label={props.selectedItems.length + " selected"}
+					icon={<IconClose />}
+					iconPosition="right"
+				/>}
 			</div>
 		</>;
 	}

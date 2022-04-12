@@ -2,8 +2,6 @@
 	display: flex;
 	height: $headerHeight;
 	background: var(--colorHeaderBackground);
-	//background-color: var(--colorHeaderBackground);
-	//border-bottom: 3px solid var(--colorText);
 	width: 100%;
 	z-index: 1;
 
@@ -14,7 +12,6 @@
 
 	.right {
 		display: flex;
-		padding-right: $spacing;
 		justify-content: right;
 		align-items: center;
 	}
@@ -28,8 +25,6 @@
 			font-size: $fontSize * 1.2;
 			line-height: $headerHeight;
 			height: $headerHeight;
-			margin: 0 $spacing 0 0;
-			padding-right: $spacingLarge;
 			padding-left: $spacingLarge;
 
 			&:hover {
@@ -47,11 +42,8 @@
 	.as-button {
 		line-height: $headerHeight;
 		height: $headerHeight;
-		margin: 0 0 0 $spacing;
-		padding: 0px $spacing;
 
 		span {
-			margin-right: $spacing;
 			color: var(--colorText);
 		}
 	}
@@ -61,17 +53,7 @@
 		padding-left: $spacingLarge;
 	}
 
-	.context-menu-toggle {
-		height: $headerHeight;
-		width: $headerHeight;
-		min-width: $headerHeight;
-		background-color: transparent;
-		color: var(--colorText);
-	}
-
 	.actions {
-		padding-right: $spacing;
-
 		span {
 			white-space: nowrap;
 		}
@@ -82,6 +64,15 @@
 			justify-content: right;
 			align-items: center;
 		}
+	}
+
+	.context-menu-toggle {
+		height: $headerHeight;
+		width: $headerHeight;
+		min-width: $headerHeight;
+		background-color: transparent;
+		color: var(--colorText);
+		margin: 0;
 	}
 
 	.context-menu {

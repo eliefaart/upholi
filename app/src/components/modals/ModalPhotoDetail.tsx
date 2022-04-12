@@ -7,6 +7,7 @@ import ModalPropsBase from "../../models/ModalPropsBase";
 import upholiService from "../../services/UpholiService";
 import { Photo } from "../../models/Photo";
 import { downloadPhoto } from "../../utils/files";
+import Button from "../misc/Button";
 
 interface Props extends ModalPropsBase {
 	photoId: string,
@@ -29,12 +30,14 @@ const ModalPhotoDetail: FC<Props> = (props) => {
 	}, [props.photoId]);
 
 	const headerActions = <>
-		<a className="with-icon as-button" title="Download" onClick={() => downloadPhoto(props.photoId, props.photoKey)}>
-			<IconDownload />Download
-		</a>
-		{photo?.exif && <a className="with-icon as-button" title="Info" onClick={() => setShowExif(!showExif)}>
-			<IconInfo />Info
-		</a>}
+		{photo?.exif && <Button onClick={() => setShowExif(!showExif)}
+			label="Info"
+			icon={<IconInfo />}
+		/>}
+		<Button onClick={() => downloadPhoto(props.photoId, props.photoKey)}
+			label="Download"
+			icon={<IconDownload />}
+		/>
 	</>;
 
 	return (

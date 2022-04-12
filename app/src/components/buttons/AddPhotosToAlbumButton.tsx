@@ -3,6 +3,7 @@ import { FC } from "react";
 import { toast } from "react-toastify";
 import { AlbumPlain } from "../../models/Album";
 import upholiService from "../../services/UpholiService";
+import Button from "../misc/Button";
 import { IconAddToAlbum } from "../misc/Icons";
 import ModalAddToAlbum from "../modals/ModalAddToAlbum";
 import ModalCreateAlbum from "../modals/ModalCreateAlbum";
@@ -43,9 +44,9 @@ const AddPhotosToAlbumButton: FC<Props> = (props) => {
 	}
 	else {
 		return <>
-			<button className="with-icon" onClick={openSelectAlbumModal} title="Add to album">
-				<IconAddToAlbum />Add to album
-			</button>
+			<Button onClick={openSelectAlbumModal}
+				label="Add to album"
+				icon={<IconAddToAlbum />} />
 
 			<ModalAddToAlbum
 				isOpen={selectAlbumModelOpen}

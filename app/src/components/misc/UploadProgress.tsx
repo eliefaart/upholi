@@ -4,6 +4,7 @@ import { uploadFinishedStatusses } from "../../models/File";
 import { IconClose } from "./Icons";
 import uploadHelper from "../../helpers/UploadHelper";
 import useUploadProgress from "../../hooks/useUploadProgress";
+import Button from "./Button";
 
 const UploadProgress: FC = () => {
 	const [queueFinished, setQueueFinished] = React.useState(false);
@@ -24,11 +25,10 @@ const UploadProgress: FC = () => {
 	else {
 		return <div className="upload-progress">
 			<div className="header">
-				{queueFinished && <button
+				{queueFinished && <Button
 					onClick={() => uploadHelper.clearQueue()}
-					className="with-icon">
-					<IconClose />
-				</button>}
+					label=""
+					icon={<IconClose />} />}
 			</div>
 			<div className="files">
 				{uploadProgress.map(file => (

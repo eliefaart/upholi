@@ -6,9 +6,9 @@ $spacing: 10px;
 $spacingLarge: 20px;
 $transitionSpeed: 0.2s;
 $borderRadius: 3px;
-$headerHeight: 50px;
+$headerHeight: 55px;
 $buttonHeight: 32px;
-$breakpointMobile: 890px;
+$breakpointMobile: 600px;
 
 @import "themes/theme-default-dark";
 
@@ -43,7 +43,7 @@ html {
 				overflow: auto;
 
 				&.padding-top {
-					padding-top: $headerHeight / 2;
+					padding-top: calc($headerHeight / 2);
 				}
 			}
 		}
@@ -77,7 +77,7 @@ input,
 select,
 button,
 .as-button {
-	margin: 10px 0 10px 0;
+	margin: 10px 0px;
 	height: $buttonHeight;
 	line-height: $buttonHeight;
 	border-radius: $borderRadius;
@@ -145,7 +145,7 @@ button,
 	width: auto;
 	text-decoration: none;
 	padding: 0;
-	margin: 0;
+	margin: 0 $spacing;
 	display: inline-block;
 	text-align: center;
 	display: flex;
@@ -157,6 +157,20 @@ button,
 		background-color: var(--colorAccent);
 	}
 
+	&.with-icon {
+		&.icon-right {
+			svg {
+				margin-left: calc($spacing / 2);
+			}
+		}
+
+		&.icon-left {
+			svg {
+				margin-right: calc($spacing / 2);
+			}
+		}
+	}
+
 	&:hover,
 	&:active {
 		filter: brightness(1.2);
@@ -164,10 +178,6 @@ button,
 
 	&:disabled {
 		color: var(--colorDisabled)
-	}
-
-	&.with-icon {
-		margin-left: $spacingLarge;
 	}
 
 	&:not(.with-icon) {

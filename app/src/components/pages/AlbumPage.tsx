@@ -19,6 +19,7 @@ import useFoundAlbumShare from "../../hooks/useFoundAlbumShare";
 import { PageProps } from "../../models/PageProps";
 import DefaultHeaderContent from "../headers/DefaultHeaderContent";
 import ItemsSelectedHeaderContent from "../headers/ItemsSelectedHeaderContent";
+import Button from "../misc/Button";
 
 interface Props extends PageProps {
 	// Note; this field represents the object set by react router
@@ -125,19 +126,17 @@ const AlbumPage: FC<Props> = (props: Props) => {
 			headerContentElement: selectedPhotoIds.length === 0
 				? <DefaultHeaderContent
 					actions={<>
-						<button className="with-icon" title="Sharing options"
-							onClick={() => setSharingOptionsOpen(true)}>
-							<IconShare />Share
-						</button>
-						<button className="with-icon" title="Upload photos"
-							onClick={() => {
-								const selectPhotosElement = document.getElementById("select-photos");
-								if (selectPhotosElement) {
-									selectPhotosElement.click();
-								}
-							}} >
-							<IconUpload />Upload
-						</button>
+						<Button onClick={() => setSharingOptionsOpen(true)}
+							label="Share"
+							icon={<IconShare />} />
+						<Button onClick={() => {
+							const selectPhotosElement = document.getElementById("select-photos");
+							if (selectPhotosElement) {
+								selectPhotosElement.click();
+							}
+						}}
+							label="Upload"
+							icon={<IconUpload />} />
 					</>}
 					contextMenu={<>
 						{<button onClick={() => setEditAlbumOpen(true)}>Edit album</button>}
@@ -147,15 +146,16 @@ const AlbumPage: FC<Props> = (props: Props) => {
 					selectedItems={selectedPhotoIds}
 					onSelectionCleared={() => setSelectedPhotoIds([])}
 					actions={<>
+						<Button onClick={setSelectedPhotoAsAlbumCover}
+							label="Set album cover"
+							icon={<IconImage />} />
 						<AddPhotosToAlbumButton
 							selectedPhotoIds={selectedPhotoIds}
 							onSelectionAddedToAlbum={() => setSelectedPhotoIds([])} />
-						<button className="with-icon" onClick={setSelectedPhotoAsAlbumCover} title="Set album cover">
-							<IconImage />Set album cover
-						</button>
-						<button className="with-icon" onClick={() => setConfirmRemovePhotosOpen(true)} title="Remove from album">
-							<IconRemove />Remove from album
-						</button>
+						<Button onClick={() => setConfirmRemovePhotosOpen(true)}
+							label="Remove"
+							icon={<IconRemove />}
+							iconPosition="left" />
 					</>} />,
 		});
 	}, [selectedPhotoIds.length]);

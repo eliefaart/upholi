@@ -25,7 +25,7 @@ $modalHeaderHeight: $buttonHeight;
 
 	.modal-header {
 		display: flex;
-		padding: $spacing;
+		padding: $spacing 0px;
 		z-index: 1;
 		background: var(--colorBackground);
 
@@ -34,7 +34,11 @@ $modalHeaderHeight: $buttonHeight;
 			flex: 0 1 100%;
 			line-height: $modalHeaderHeight;
 			font-weight: bold;
-			font-size: $fontSize;
+			margin-left: $spacing;
+		}
+
+		button svg {
+			height: 100%;
 		}
 	}
 
@@ -53,6 +57,7 @@ $modalHeaderHeight: $buttonHeight;
 		flex: 0 0 auto;
 		display: flex;
 		justify-content: right;
+
 
 		&:not(:empty) {
 			padding: $spacing;
@@ -87,7 +92,6 @@ $modalHeaderHeight: $buttonHeight;
 
 	&:not(.fullscreen) .modal-body {
 		max-height: 80vh;
-		//margin: $spacingLarge 0px;
 	}
 }
 

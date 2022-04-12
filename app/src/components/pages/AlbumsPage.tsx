@@ -9,6 +9,7 @@ import useAlbums from "../../hooks/useAlbums";
 import { PageProps } from "../../models/PageProps";
 import TagGroupedAlbums from "../misc/TagGroupedAlbums";
 import DefaultHeaderContent from "../headers/DefaultHeaderContent";
+import Button from "../misc/Button";
 
 const AlbumsPage: FC<PageProps> = (props: PageProps) => {
 	const [newAlbumDialogOpen, setNewAlbumDialogOpen] = React.useState(false);
@@ -20,12 +21,9 @@ const AlbumsPage: FC<PageProps> = (props: PageProps) => {
 		props.setHeader({
 			headerContentElement: <DefaultHeaderContent
 				actions={<>
-					{<button
-						className="with-icon"
-						onClick={() => setNewAlbumDialogOpen(true)}
-						title="Create album">
-						<IconCreate />Create album
-					</button>}
+					<Button onClick={() => setNewAlbumDialogOpen(true)}
+						label="Create album"
+						icon={<IconCreate />} />
 				</>} />
 		});
 	}, []);

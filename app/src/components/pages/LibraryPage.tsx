@@ -21,6 +21,7 @@ import { PageProps } from "../../models/PageProps";
 import ItemsSelectedHeaderContent from "../headers/ItemsSelectedHeaderContent";
 import DefaultHeaderContent from "../headers/DefaultHeaderContent";
 import GalleryPhoto from "../../models/GalleryPhoto";
+import Button from "../misc/Button";
 
 const queryStringParamNamePhotoId = "photoId";
 
@@ -41,17 +42,14 @@ const LibraryPage: FC<PageProps> = (props: PageProps) => {
 			headerContentElement: selectedPhotoIds.length === 0
 				? <DefaultHeaderContent
 					actions={<>
-						{selectedPhotoIds.length === 0 && <button
-							className="with-icon"
-							onClick={() => {
-								const element = document.getElementById("select-photos");
-								if (element) {
-									element.click();
-								}
-							}}
-							title="Upload photos">
-							<IconUpload />Upload
-						</button>}
+						{selectedPhotoIds.length === 0 && <Button onClick={() => {
+							const element = document.getElementById("select-photos");
+							if (element) {
+								element.click();
+							}
+						}}
+							label="Upload"
+							icon={<IconUpload />} />}
 					</>}
 					contextMenu={null} />
 				: <ItemsSelectedHeaderContent
@@ -61,12 +59,9 @@ const LibraryPage: FC<PageProps> = (props: PageProps) => {
 						<AddPhotosToAlbumButton
 							selectedPhotoIds={selectedPhotoIds}
 							onSelectionAddedToAlbum={() => setSelectedPhotoIds([])} />
-						<button
-							className="with-icon"
-							onClick={() => setConfirmDeletePhotosOpen(true)}
-							title="Delete photos">
-							<IconDelete />Delete
-						</button>
+						<Button onClick={() => setConfirmDeletePhotosOpen(true)}
+							label="Delete"
+							icon={<IconDelete />} />
 					</>} />,
 		});
 	}, [selectedPhotoIds.length]);
