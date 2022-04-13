@@ -76,7 +76,7 @@ impl Settings {
 		// I would prefer to use this method instead of the solution below,
 		// but not sure how to get around underscores issue.
 		// Setting 'rename' or 'alias' via serde's attributes doesn't work.
-		// config.merge(Environment::with_prefix("HB"))
+		// config.merge(Environment::with_prefix("UPHOLI"))
 		// 	.expect("Failed to set settings from env variables");
 
 		// Set/overwrite certain settings from environment variables

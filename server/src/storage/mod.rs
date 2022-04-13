@@ -31,14 +31,11 @@ pub async fn init_storage_for_user(user: &User) -> Result<()> {
 
 /// Store a file
 /// Returns a unique id for the file
-pub async fn store_file(file_id: &str, owner_user_id: &str, file_bytes: &[u8]) -> Result<String> {
+pub async fn store_file(file_id: &str, owner_user_id: &str, file_bytes: &[u8]) -> Result<()> {
 	// Store bytes
 	match get_provider() {
-		StorageProvider::Disk(disk) => disk.store_file(file_bytes),
-		StorageProvider::Azure(azure) => {
-			azure.store_file(owner_user_id, file_id, file_bytes).await?;
-			Ok(file_id.to_string())
-		}
+		StorageProvider::Disk(disk) => disk.store_file(file_id, file_bytes),
+		StorageProvider::Azure(azure) => azure.store_file(owner_user_id, file_id, file_bytes).await,
 	}
 }
 

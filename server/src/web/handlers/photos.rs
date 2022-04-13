@@ -126,9 +126,6 @@ pub async fn route_upload_photo(user: User, payload: Multipart) -> Result<HttpRe
 	let file_id_preview = format!("{}-preview", &db_photo.id);
 	let file_id_original = format!("{}-original", &db_photo.id);
 
-	// Insert photo into DB
-	db_photo.insert().await.map_err(|error| ErrorInternalServerError(error))?;
-
 	// Store photo bytes
 	storage::store_file(&file_id_thumbnail, &user.id, &bytes_thumbnail)
 		.await
@@ -139,6 +136,9 @@ pub async fn route_upload_photo(user: User, payload: Multipart) -> Result<HttpRe
 	storage::store_file(&file_id_original, &user.id, &data_original)
 		.await
 		.map_err(|error| ErrorInternalServerError(error))?;
+
+	// Insert photo into DB
+	db_photo.insert().await.map_err(|error| ErrorInternalServerError(error))?;
 
 	Ok(HttpResponse::Created().json(CreatedResult { id: db_photo.id }))
 }

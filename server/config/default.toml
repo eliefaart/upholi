@@ -10,7 +10,7 @@ connection_string = ""
 [storage]
 # Possible values: Disk | Azure
 # Can also by set using env var UPHOLI_STORAGE_PROVIDER
-provider = "Azure"
+provider = "Disk"
 # [Required if provider = "Disk"]
 # Path to directory where photos will be stored
 # Can also by set using env var UPHOLI_STORAGE_DIRECTORYPHOTOS
@@ -18,7 +18,7 @@ directory_photos = "/srv/upholi/photos"
 # [Required if provider = "Azure"]
 # Azure Storage Account name
 # Can also by set using env var UPHOLI_STORAGE_AZURESTORAGEACCOUNTNAME
-azure_storage_account_name = "upholi"
+azure_storage_account_name = ""
 # [Required if provider = "Azure"]
 # Master key of Azure Storage Account
 # Can also by set using env var UPHOLI_STORAGE_AZURESTORAGEACCOUNTKEY

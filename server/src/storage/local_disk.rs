@@ -1,7 +1,6 @@
 use crate::error::Result;
 use std::path::Path;
 use std::{fs::File, io::prelude::*};
-use upholi_lib::ids::create_unique_id;
 
 pub struct LocalDiskStorageProvider {}
 
@@ -10,15 +9,14 @@ impl LocalDiskStorageProvider {
 		LocalDiskStorageProvider {}
 	}
 
-	pub fn store_file(&self, file_bytes: &[u8]) -> Result<String> {
-		let file_name = Self::generate_file_name();
-		let photo_absolute_path = Self::get_absolute_photo_path(&file_name)?;
+	pub fn store_file(&self, file_name: &str, file_bytes: &[u8]) -> Result<()> {
+		let photo_absolute_path = Self::get_absolute_photo_path(file_name)?;
 
 		let mut file = File::create(photo_absolute_path)?;
 
 		file.write_all(file_bytes)?;
 
-		Ok(file_name)
+		Ok(())
 	}
 
 	pub fn get_file(&self, file_id: &str) -> Result<Option<Vec<u8>>> {
@@ -68,19 +66,5 @@ impl LocalDiskStorageProvider {
 		}
 
 		Ok(photos_path)
-	}
-
-	fn generate_file_name() -> String {
-		create_unique_id()
-	}
-}
-
-#[cfg(test)]
-mod tests {
-	use super::*;
-
-	#[test]
-	fn generate_file_name_not_empty() {
-		assert!(LocalDiskStorageProvider::generate_file_name().len() > 1);
 	}
 }
