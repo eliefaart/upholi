@@ -17,12 +17,12 @@ pub struct User {
 	pub key: EncryptedData,
 }
 
-impl Into<UserInfo> for User {
-	fn into(self) -> UserInfo {
+impl From<User> for UserInfo {
+	fn from(user: User) -> UserInfo {
 		UserInfo {
-			id: self.id,
-			username: self.username,
-			key: self.key,
+			id: user.id,
+			username: user.username,
+			key: user.key,
 		}
 	}
 }
@@ -30,7 +30,6 @@ impl Into<UserInfo> for User {
 impl User {
 	pub async fn create(username: String, password: String, key: EncryptedData) -> Result<User> {
 		let user_id = create_unique_id();
-
 		let salt = create_unique_id();
 		let password_phc = hash_password(&password, &salt)?;
 

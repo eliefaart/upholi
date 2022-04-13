@@ -142,6 +142,6 @@ impl Exif {
 	/// Remove the spaces from the string-value contained within the option.
 	/// If the option contains None, this function will return None.
 	fn remove_spaces(option: &Option<String>) -> Option<String> {
-		option.as_ref().map(|string| string.replace(" ", ""))
+		option.as_ref().map(|string| string.replace(' ', ""))
 	}
 }

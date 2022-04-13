@@ -29,7 +29,7 @@ pub async fn route_get_album(
 	let db_album = DbAlbum::get(album_id)
 		.await
 		.map_err(|_| ErrorUnauthorized(HttpError::Unauthorized))?
-		.ok_or(ErrorNotFound(HttpError::NotFound))?;
+		.ok_or_else(|| ErrorNotFound(HttpError::NotFound))?;
 
 	if db_album.can_view(&session, proof) {
 		let album: EncryptedAlbum = db_album.into();
@@ -57,11 +57,11 @@ pub async fn route_update_album(
 	let album_id = req.match_info().get("album_id").unwrap();
 	let updated_album = updated_album.into_inner();
 
-	let user_id = session.user_id.clone().ok_or(ErrorUnauthorized(HttpError::Unauthorized))?;
+	let user_id = session.user_id.clone().ok_or_else(|| ErrorUnauthorized(HttpError::Unauthorized))?;
 	let mut db_album = DbAlbum::get_for_user(album_id, user_id.to_string())
 		.await
 		.map_err(|_| ErrorUnauthorized(HttpError::Unauthorized))?
-		.ok_or(ErrorNotFound(HttpError::NotFound))?;
+		.ok_or_else(|| ErrorNotFound(HttpError::NotFound))?;
 
 	if !db_album.can_update(&Some(session)) {
 		Err(ErrorUnauthorized(HttpError::Unauthorized))
@@ -70,7 +70,7 @@ pub async fn route_update_album(
 		db_album.entity.key = updated_album.key;
 		db_album.entity.key_hash = updated_album.key_hash;
 
-		db_album.update().await.map_err(|error| ErrorInternalServerError(error))?;
+		db_album.update().await.map_err(ErrorInternalServerError)?;
 		Ok(create_ok_response())
 	}
 }
@@ -79,16 +79,16 @@ pub async fn route_update_album(
 pub async fn route_delete_album(session: Session, req: HttpRequest) -> Result<HttpResponse> {
 	let album_id = req.match_info().get("album_id").unwrap();
 
-	let user_id = session.user_id.clone().ok_or(ErrorUnauthorized(HttpError::Unauthorized))?;
+	let user_id = session.user_id.clone().ok_or_else(|| ErrorUnauthorized(HttpError::Unauthorized))?;
 	let db_album = DbAlbum::get_for_user(album_id, user_id.to_string())
 		.await
 		.map_err(|_| ErrorUnauthorized(HttpError::Unauthorized))?
-		.ok_or(ErrorNotFound(HttpError::NotFound))?;
+		.ok_or_else(|| ErrorNotFound(HttpError::NotFound))?;
 
 	if !db_album.can_delete(&Some(session)) {
 		Err(ErrorUnauthorized(HttpError::Unauthorized))
 	} else {
-		db_album.delete().await.map_err(|error| ErrorInternalServerError(error))?;
+		db_album.delete().await.map_err(ErrorInternalServerError)?;
 		Ok(create_ok_response())
 	}
 }

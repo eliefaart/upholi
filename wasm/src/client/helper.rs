@@ -153,7 +153,7 @@ impl UpholiClientHelper {
 			// No error, but no need to upload.
 			Ok(PhotoUploadResult {
 				skipped: true,
-				photo_id: exists_result.found_id.unwrap_or(String::new()),
+				photo_id: exists_result.found_id.unwrap_or_default(),
 			})
 		} else {
 			// Decrypt photo key
@@ -179,10 +179,7 @@ impl UpholiClientHelper {
 				)
 				.await?;
 
-			Ok(PhotoUploadResult {
-				skipped: false,
-				photo_id: photo_id,
-			})
+			Ok(PhotoUploadResult { skipped: false, photo_id })
 		}
 	}
 
@@ -343,7 +340,7 @@ impl UpholiClientHelper {
 					let photo = photos
 						.into_iter()
 						.find(|photo| photo.id == thumbnail_photo_id)
-						.ok_or(format!("Photo not found for thumbnail of album {}", &album.id))?;
+						.ok_or_else(|| format!("Photo not found for thumbnail of album {}", &album.id))?;
 					Some(JsAlbumPhoto {
 						id: photo.id,
 						width: photo.width,
@@ -613,7 +610,7 @@ impl UpholiClientHelper {
 							.iter()
 							.cloned()
 							.find(|photo| photo.id == thumbnail_photo_id)
-							.ok_or(format!("Photo not found for thumbnail of album {}", album.get_id()))?;
+							.ok_or_else(|| format!("Photo not found for thumbnail of album {}", album.get_id()))?;
 						Some(JsAlbumPhoto {
 							id: photo.id.clone(),
 							width: photo.width,
