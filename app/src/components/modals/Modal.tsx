@@ -5,6 +5,7 @@ import { IconClose } from "../misc/Icons";
 import ModalPropsBase from "../../models/ModalPropsBase";
 
 interface Props extends ModalPropsBase {
+	children?: React.ReactNode,
 	title: string,
 	okButtonText?: string | null,
 	headerActions?: JSX.Element,

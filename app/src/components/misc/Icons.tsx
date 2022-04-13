@@ -1,7 +1,9 @@
 import * as React from "react";
 import { FC } from "react";
 
-interface IconProps { }
+interface IconProps {
+	children?: React.ReactNode
+}
 
 export const Icon: FC<IconProps> = (props) => {
 	return (<svg {...props} viewBox="0 0 24 24">
