@@ -11,7 +11,7 @@ import { IconChevronRight } from "../misc/Icons";
 
 const LoginPage: FC = () => {
 	useTitle("Login");
-	const [_, resetAuthenticationStatus] = useAuthenticationStatus();
+	const [, resetAuthenticationStatus] = useAuthenticationStatus();
 	const context = React.useContext(appStateContext);
 	const usernameInput = React.createRef<HTMLInputElement>();
 	const passwordInput = React.createRef<HTMLInputElement>();
