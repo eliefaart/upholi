@@ -1,8 +1,11 @@
+const path = require('path');
+
 module.exports = {
 	watch: false,
 	entry: "./src/index.tsx",
 	output: {
-		filename: "../wwwroot/dist/main.js"
+		//filename: "../wwwroot/dist/main.js",
+		path: path.resolve(__dirname, "wwwroot/dist")
 	},
 	resolve: {
 		extensions: [".js", ".ts", ".tsx"]
@@ -29,7 +32,8 @@ module.exports = {
 			{
 				test: /\.js$/,
 				use: ["@open-wc/webpack-import-meta-loader"],
-			}
+			},
+
 		]
 	}
 };
