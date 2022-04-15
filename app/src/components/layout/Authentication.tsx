@@ -4,6 +4,7 @@ import appStateContext from "../../contexts/AppStateContext";
 import useAuthenticationStatus, { AuthenticationStatus } from "../../hooks/useAuthenticationStatus";
 
 interface Props {
+	children?: React.ReactNode,
 	requiresAuthentication: boolean
 }
 
