@@ -7,6 +7,7 @@ pub type Result<T, E = Box<dyn Error>> = std::result::Result<T, E>;
 /// Errors related to registering new users
 #[derive(Debug)]
 pub enum RegisterError {
+	UsernameExists,
 	UsernameEmpty,
 	PasswordTooShort,
 }
@@ -54,6 +55,7 @@ impl Display for RegisterError {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		let message = {
 			match self {
+				RegisterError::UsernameExists => "Username already exists".to_string(),
 				RegisterError::UsernameEmpty => "Username cannot be empty".to_string(),
 				RegisterError::PasswordTooShort => {
 					format!("Password must be at least {} characters", crate::SETTINGS.users.password_min_length)

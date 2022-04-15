@@ -19,7 +19,11 @@ use upholi_lib::http::{
 pub async fn route_register_user(info: web::Json<Register>) -> Result<HttpResponse> {
 	let info = info.into_inner();
 
-	if info.username.is_empty() {
+	let username_exists = User::get_by_username(&info.username).await?.is_some();
+
+	if username_exists {
+		Err(ErrorInternalServerError(RegisterError::UsernameExists))
+	} else if info.username.is_empty() {
 		Err(ErrorInternalServerError(RegisterError::UsernameEmpty))
 	} else if info.password.len() < crate::SETTINGS.users.password_min_length {
 		Err(ErrorBadRequest(RegisterError::PasswordTooShort))

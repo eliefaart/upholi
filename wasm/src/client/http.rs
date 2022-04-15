@@ -29,8 +29,8 @@ impl HttpClient {
 		if response.status() == StatusCode::OK {
 			Ok(())
 		} else {
-			let error: ErrorResult = response.json().await?;
-			Err(Box::from(error.message))
+			let error_message = response.text().await?;
+			Err(Box::from(error_message))
 		}
 	}
 
