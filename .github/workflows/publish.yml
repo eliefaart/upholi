@@ -2,6 +2,9 @@ name: publish
 
 on:
   push:
+    branches:
+      - master
+      - dev
     paths:
       - '.github/workflows/publish.yml'
       - Dockerfile
@@ -64,16 +67,13 @@ jobs:
         npm run build-prd
 
     - name: Authenticate to githib registry
-      #if: ${{ github.ref == 'refs/heads/master' }}
       run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
 
     - name: Build docker
-      #if: ${{ github.ref == 'refs/heads/master' }}
       run: |
         docker build . --file Dockerfile --tag $IMAGE_NAME
 
     - name: Publish docker
-      #if: ${{ github.ref == 'refs/heads/master' }}
       run: |
         IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/$IMAGE_NAME
 
