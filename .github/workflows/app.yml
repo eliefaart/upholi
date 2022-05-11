@@ -18,6 +18,14 @@ jobs:
       with:
         node-version: 14.x
 
+    - name: Build WASM
+      run: |
+        cd ./wasm
+        cargo install wasm-pack
+        wasm-pack build --target web
+        mkdir --parents ../app/wwwroot/dist/
+        mv ./pkg/wasm_bg.wasm ../app/wwwroot/dist/wasm.wasm
+
     - name: Install packages
       run: |
         cd ./app
