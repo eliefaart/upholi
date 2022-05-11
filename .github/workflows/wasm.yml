@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/wasm.yml'
       - 'wasm/**'
+      - 'lib/**'
 
 jobs:
   main:

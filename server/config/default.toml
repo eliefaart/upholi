@@ -1,6 +1,9 @@
 [server]
 # Address to bind to
 address = "0.0.0.0:8000"
+# Path of directory containing the website files.
+# Can also by set using env var UPHOLI_SERVER_WWWROOT_PATH
+wwwroot_path = "../app/wwwroot"
 
 [database]
 # Connection string to database
