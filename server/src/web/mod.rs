@@ -51,9 +51,3 @@ pub async fn run_server() -> std::io::Result<()> {
 	.run()
 	.await
 }
-
-// pub async fn route_index(req: HttpRequest) -> Result<NamedFile> {
-// 	let path: PathBuf = req.match_info().query("filename").parse().unwrap();
-// 	println!("{path:?}");
-// 	Ok(NamedFile::open(path)?)
-// }
