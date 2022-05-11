@@ -31,7 +31,11 @@ The following information is not encrypted, and/or can be determined by someone 
 - How often and when a user has logged in
 
 ## Docker
-Docker images for the server and frontend app are available. A docker compose file is provided to run both images, but you will still need to set up a MongoDB database server yourself.
+A docker image is available.
+
+```docker pull ghcr.io/eliefaart/upholi/upholi:latest```
+
+A docker compose file is included in the repo to run the image, but you will still need to set up a MongoDB database server yourself.
 
 ## Server configuration
 Default configuration is inside ```/server/config/default.toml```. Each setting can also be set using environment variables. Environment variables overwrite the settings from the default config file.

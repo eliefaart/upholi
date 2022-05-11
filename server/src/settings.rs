@@ -5,6 +5,7 @@ use std::collections::HashMap;
 use std::env::var;
 
 const ENV_VAR_SERVER_ADDRESS: &str = "UPHOLI_SERVER_ADDRESS";
+const ENV_VAR_SERVER_WWWROOT_PATH: &str = "UPHOLI_SERVER_WWWROOT_PATH";
 const ENV_VAR_DATABASE_CONNECTIONSTRING: &str = "UPHOLI_DATABASE_CONNECTIONSTRING";
 const ENV_VAR_STORAGE_PROVIDER: &str = "UPHOLI_STORAGE_PROVIDER";
 const ENV_VAR_STORAGE_DIRECTORYPHOTOS: &str = "UPHOLI_STORAGE_DIRECTORYPHOTOS";
@@ -29,6 +30,7 @@ pub struct Settings {
 #[derive(Debug, Deserialize)]
 pub struct Server {
 	pub address: String,
+	pub wwwroot_path: String,
 }
 
 /// Database settings
@@ -82,6 +84,7 @@ impl Settings {
 		// Set/overwrite certain settings from environment variables
 		let overwritable_settings: HashMap<&str, &str> = [
 			("server.address", ENV_VAR_SERVER_ADDRESS),
+			("server.wwwroot_path", ENV_VAR_SERVER_WWWROOT_PATH),
 			("database.connection_string", ENV_VAR_DATABASE_CONNECTIONSTRING),
 			("storage.provider", ENV_VAR_STORAGE_PROVIDER),
 			("storage.directory_photos", ENV_VAR_STORAGE_DIRECTORYPHOTOS),
