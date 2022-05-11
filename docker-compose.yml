@@ -3,20 +3,13 @@ version: '3'
 volumes:
   photos: null
 services:
-  app:
-    image: docker.pkg.github.com/eliefaart/upholi/upholi-app:latest
+  upholi:
+    image: docker.pkg.github.com/eliefaart/upholi/upholi:latest
     restart: always
     ports:
-      - "29701:80"
-    environment:
-      API_URI: "http://server:8000"
-  server:
-    image: docker.pkg.github.com/eliefaart/upholi/upholi-server:latest
-    restart: always
+      - "29701:8000"
     environment:
       UPHOLI_DATABASE_CONNECTIONSTRING: "XXX"
       UPHOLI_STORAGE_PROVIDER: "Azure"
       UPHOLI_STORAGE_AZURESTORAGEACCOUNTNAME: "XXX"
       UPHOLI_STORAGE_AZURESTORAGEACCOUNTKEY: "XXX"
-    ports:
-      - "29702:8000"

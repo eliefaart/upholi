@@ -7,9 +7,6 @@ on:
       - 'server/**'
       - 'lib/**'
 
-env:
-  IMAGE_NAME: upholi-server
-
 jobs:
   main:
     runs-on: ubuntu-latest
@@ -20,43 +17,9 @@ jobs:
     - name: Build
       run: |
         cd ./server
-        cargo build --release --verbose
+        cargo build --verbose
 
     - name: Test
       run: |
         cd ./server
-        cargo test --release --verbose
-
-    - name: Authenticate to githib registry
-      if: ${{ github.ref == 'refs/heads/master' }}
-      run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
-
-    - name: Build docker
-      if: ${{ github.ref == 'refs/heads/master' }}
-      run: |
-        cd ./server
-        docker build . --file Dockerfile --tag $IMAGE_NAME
-
-    - name: Publish docker
-      if: ${{ github.ref == 'refs/heads/master' }}
-      run: |
-        cd ./server
-        IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/$IMAGE_NAME
-
-        # Change all uppercase to lowercase
-        IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
-
-        # Strip git ref prefix from version
-        VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
-
-        # Strip "v" prefix from tag name
-        [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
-
-        # Use Docker `latest` tag convention
-        [ "$VERSION" == "master" ] && VERSION=latest
-
-        echo IMAGE_ID=$IMAGE_ID
-        echo VERSION=$VERSION
-
-        docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
-        docker push $IMAGE_ID:$VERSION
+        cargo test --verbose
