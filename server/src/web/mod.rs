@@ -1,5 +1,7 @@
+use actix_files::NamedFile;
+use actix_web::dev::{fn_service, ServiceRequest, ServiceResponse};
 use actix_web::web::{delete, get, post, put};
-use actix_web::{App, HttpServer};
+use actix_web::{App, HttpResponse, HttpServer};
 use handlers::{albums::*, photos::*, shares::*, users::*};
 
 mod cookies;
@@ -44,10 +46,35 @@ pub async fn run_server() -> std::io::Result<()> {
 					.route("/share/{share_id}", delete().to(route_delete_share)),
 			)
 			// Static files
-			.service(actix_files::Files::new("/", wwwroot_path).index_file("index.html"))
+			.service(
+				actix_files::Files::new("/", wwwroot_path)
+					.index_file("index.html")
+					.default_handler(fn_service(|request: ServiceRequest| async {
+						// Check if path matches one of the application's virtual pages
+						// If so, return the index file for these requests.
+						let (request, _) = request.into_parts();
+						let path = request.uri().path();
+
+						let virtual_page_names: [&str; 6] = ["/login", "/register", "/albums", "/album/", "/shared", "/s/"];
+						let is_virtual_page = virtual_page_names.iter().any(|virtual_page| path.starts_with(virtual_page));
+
+						let response = if is_virtual_page {
+							let index_file_path = format!("{}/index.html", &crate::SETTINGS.server.wwwroot_path);
+							NamedFile::open_async(index_file_path).await?.into_response(&request)
+						} else {
+							HttpResponse::NotFound().finish()
+						};
+
+						Ok(ServiceResponse::new(request, response))
+					})),
+			)
 	})
 	.bind(address)
 	.unwrap_or_else(|_| panic!("Failed to bind to address, perhaps the port is in use?"))
 	.run()
 	.await
 }
+
+// pub fn redirect_to_index() -> actix_web::Result<actix_web::HttpResponse> {
+// 	Ok(HttpResponse::TemporaryRedirect().finish())
+// }
