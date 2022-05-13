@@ -74,7 +74,3 @@ pub async fn run_server() -> std::io::Result<()> {
 	.run()
 	.await
 }
-
-// pub fn redirect_to_index() -> actix_web::Result<actix_web::HttpResponse> {
-// 	Ok(HttpResponse::TemporaryRedirect().finish())
-// }
