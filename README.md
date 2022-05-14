@@ -19,7 +19,7 @@ This project is a work in progress. It's basically feature-complete for the init
 It is primarily a hobby project for personal use, and wouldn't recommend using it in production.
 
 ## Encryption
-All files and data is end-to-end encrypted, with a few small exceptions. All encryption is done with AES using a 128-bit key.
+All files and data are end-to-end encrypted, with a few small exceptions. All encryption is done with AES using a 128-bit key.
 
 ### What is not encrypted?
 The following information is not encrypted, and/or can be determined by someone with full access to the database and storage.
