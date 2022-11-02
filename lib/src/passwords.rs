@@ -1,40 +1,24 @@
-use crate::result::Result;
+use anyhow::{anyhow, Result};
 use pbkdf2::{
-	password_hash::{Ident, PasswordHash, PasswordHasher, PasswordVerifier, Salt},
-	Params, Pbkdf2,
+	password_hash::{PasswordHash, PasswordHasher, PasswordVerifier},
+	Pbkdf2,
 };
 
-pub const PASSWORD_HASH_ITERATIONS: u32 = 4096;
-pub const PASSWORD_HASH_LENGTH: usize = 64;
-
-/// Hashes using algorithm pbkdf2-sha512
-/// Returns the full PHC hash string
-pub fn hash_password(password: &str, salt: &str) -> Result<String> {
-	hash_password_with_length(password, salt, PASSWORD_HASH_LENGTH)
+/// Hashes password using algorithm pbkdf2-sha512
+/// Returns the full PHC hash string.
+pub fn hash_password(password: &str) -> Result<String> {
+	let salt = pbkdf2::password_hash::SaltString::generate(&mut pbkdf2::password_hash::rand_core::OsRng);
+	hash_password_with_salt(password, salt.as_str())
 }
 
-/// Hashes using algorithm pbkdf2-sha512
+/// Hashes password using algorithm pbkdf2-sha512 and using given salt
 /// Returns the full PHC hash string.
-///
-/// # Arguments
-///
-/// * `length` - max length of hash.
-pub fn hash_password_with_length(password: &str, salt: &str, length: usize) -> Result<String> {
-	match Salt::new(salt) {
-		Ok(salt) => {
-			let params = Params {
-				rounds: PASSWORD_HASH_ITERATIONS,
-				output_length: length,
-			};
-			let algorithm = Ident::new("pbkdf2-sha512");
-
-			match Pbkdf2.hash_password_customized(password.as_bytes(), Some(algorithm), None, params, salt) {
-				Ok(phc) => Ok(phc.to_string()),
-				Err(error) => Err(Box::from(error.to_string())),
-			}
-		}
-		Err(error) => Err(Box::from(error.to_string())),
-	}
+pub fn hash_password_with_salt(password: &str, salt: &str) -> Result<String> {
+	let salt = pbkdf2::password_hash::SaltString::b64_encode(salt.as_bytes()).map_err(|error| anyhow!("{error:?}"))?;
+	let phc = Pbkdf2
+		.hash_password(password.as_bytes(), &salt)
+		.map_err(|error| anyhow!("{error:?}"))?;
+	Ok(phc.to_string())
 }
 
 /// Verify password against a PHC hash string
@@ -47,14 +31,10 @@ pub fn verify_password_hash(password: &str, phc_string: &str) -> bool {
 
 /// Get the hash string of a full PHC string
 pub fn get_hash_from_phc(phc_string: &str) -> Result<Vec<u8>> {
-	match PasswordHash::new(phc_string) {
-		Ok(phc) => {
-			let hash = phc.hash.ok_or("PHC string missing hash")?;
-			let hash = hash.as_bytes().to_vec();
-			Ok(hash)
-		}
-		Err(error) => Err(Box::from(error.to_string())),
-	}
+	let phc = PasswordHash::new(phc_string).map_err(|error| anyhow!("{error:?}"))?;
+	let hash = phc.hash.ok_or_else(|| anyhow!("PHC string missing hash"))?;
+	let hash = hash.as_bytes().to_vec();
+	Ok(hash)
 }
 
 #[cfg(test)]
@@ -64,23 +44,21 @@ mod tests {
 	#[test]
 	fn hash_verify_password() {
 		let password = "password";
-		let salt = "salt";
 
-		let phc = hash_password(password, salt).unwrap();
+		let phc = hash_password(password).unwrap();
 		let valid = verify_password_hash(password, &phc);
 
 		assert_eq!(valid, true);
 	}
 
 	#[test]
-	fn password_hash_length() {
+	fn hash_verify_password_custom_salt() {
 		let password = "password";
-		let salt = "salt";
-		let hash_length = 16;
+		let salt = "custom-salt";
 
-		let phc = hash_password_with_length(password, salt, hash_length).unwrap();
-		let hash = get_hash_from_phc(&phc).unwrap();
+		let phc = hash_password_with_salt(password, salt).unwrap();
+		let valid = verify_password_hash(password, &phc);
 
-		assert_eq!(hash.len(), hash_length);
+		assert_eq!(valid, true);
 	}
 }

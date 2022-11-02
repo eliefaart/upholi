@@ -1,7 +1,7 @@
+use anyhow::{anyhow, Result};
 use chrono::prelude::*;
 use rexif::{ExifTag, TagValue};
 use serde::{Deserialize, Serialize};
-use upholi_lib::result::Result;
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -64,7 +64,7 @@ impl Exif {
 					rexif::ExifError::JpegWithoutExif(_) => Ok(None),
 					rexif::ExifError::FileTypeUnknown => Ok(None),
 					rexif::ExifError::UnsupportedNamespace => Ok(None),
-					_ => Err(Box::from(format!("{:?}", error))),
+					_ => Err(anyhow!("{error:?}")),
 				}
 			}
 		}

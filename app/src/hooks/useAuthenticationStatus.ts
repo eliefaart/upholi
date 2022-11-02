@@ -1,6 +1,5 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { User } from "../models/User";
 
 type resetAuthenticationStatus = () => void;
 
@@ -24,7 +23,7 @@ export default function useAuthenticationStatus(): [AuthenticationStatus, resetA
 
 	const refresh = () => {
 		setState(AuthenticationStatus.Refreshing);
-		axios.get<User>("/api/user/info")
+		axios.get("/user")
 			.then(() => setState(AuthenticationStatus.Authenticated))
 			.catch(() => setState(AuthenticationStatus.Unauthenticad));
 	};

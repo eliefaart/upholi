@@ -1,29 +1,8 @@
-use upholi_lib::EncryptedData;
-
 mod aes128;
 
 pub struct EncryptionResult {
 	pub nonce: String,
 	pub bytes: Vec<u8>,
-}
-
-impl From<EncryptedData> for EncryptionResult {
-	fn from(source: EncryptedData) -> Self {
-		Self {
-			nonce: source.nonce.clone(),
-			bytes: base64::decode_config(&source.base64, base64::STANDARD).unwrap_or_default(),
-		}
-	}
-}
-
-impl From<EncryptionResult> for EncryptedData {
-	fn from(source: EncryptionResult) -> Self {
-		Self {
-			nonce: source.nonce.clone(),
-			base64: base64::encode_config(&source.bytes, base64::STANDARD),
-			format_version: 1,
-		}
-	}
 }
 
 fn generate_string(bytes: usize) -> Vec<u8> {
@@ -33,7 +12,7 @@ fn generate_string(bytes: usize) -> Vec<u8> {
 
 pub mod symmetric {
 	use super::{aes128, EncryptionResult};
-	use upholi_lib::{result::Result, EncryptedData};
+	use anyhow::Result;
 
 	pub fn generate_key() -> Vec<u8> {
 		aes128::generate_key()
@@ -63,19 +42,6 @@ pub mod symmetric {
 		})
 	}
 
-	/// Decrypt an EncryptedData instance
-	pub fn decrypt_data(key: &[u8], data: &EncryptionResult) -> Result<Vec<u8>> {
-		let nonce = data.nonce.as_bytes();
-		let decypted_bytes = aes128::decrypt(key, nonce, &data.bytes)?;
-
-		Ok(decypted_bytes)
-	}
-
-	/// Decrypt an EncryptedData instance
-	pub fn decrypt_data_base64(key: &[u8], data: &EncryptedData) -> Result<Vec<u8>> {
-		decrypt_data(key, &data.to_owned().into())
-	}
-
 	/// Decrypt bytes
 	pub fn decrypt_slice(key: &[u8], nonce: &[u8], data: &[u8]) -> Result<Vec<u8>> {
 		let decypted_bytes = aes128::decrypt(key, nonce, data)?;
@@ -103,7 +69,7 @@ pub mod symmetric {
 			let key = &generate_key();
 
 			let encrypted_data = encrypt_slice(key, bytes).unwrap();
-			let decrypted_data = decrypt_data(key, &encrypted_data).unwrap();
+			let decrypted_data = decrypt_slice(key, &encrypted_data.nonce.as_bytes(), &encrypted_data.bytes).unwrap();
 
 			assert_eq!(decrypted_data, bytes);
 		}

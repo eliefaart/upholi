@@ -1,12 +1,10 @@
-use crate::hashing;
+use anyhow::{anyhow, Result};
 use image::{DynamicImage, GenericImageView, ImageFormat};
-use upholi_lib::result::Result;
 
-const DIMENSIONS_THUMB: u32 = 350;
+const DIMENSIONS_THUMB: u32 = 300;
 const DIMENSIONS_PREVIEW: u32 = 1600;
 
 pub struct Image {
-	pub hash: String,
 	pub width: u32,
 	pub height: u32,
 	pub bytes_original: Vec<u8>,
@@ -48,7 +46,6 @@ impl Image {
 		}
 
 		Ok(Self {
-			hash: hashing::compute_sha256_hash(bytes)?,
 			width,
 			height,
 			bytes_original: bytes.to_vec(),
@@ -109,7 +106,7 @@ impl Image {
 	fn get_image_from_bytes(image_bytes: &[u8]) -> Result<DynamicImage> {
 		match image::load_from_memory(&image_bytes[0..]) {
 			Ok(image) => Ok(image),
-			Err(error) => Err(Box::from(error)),
+			Err(error) => Err(anyhow!("{error:?}")),
 		}
 	}
 

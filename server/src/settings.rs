@@ -1,4 +1,3 @@
-use crate::error::*;
 use config::{Config, File};
 use serde::Deserialize;
 use std::collections::HashMap;
@@ -23,7 +22,6 @@ pub struct Settings {
 	pub server: Server,
 	pub database: Database,
 	pub storage: Storage,
-	pub users: Users,
 }
 
 /// Web server settings
@@ -48,12 +46,6 @@ pub struct Storage {
 	pub azure_storage_account_key: String,
 }
 
-/// User settings
-#[derive(Debug, Deserialize)]
-pub struct Users {
-	pub password_min_length: usize,
-}
-
 impl Default for Settings {
 	fn default() -> Self {
 		Self::new()
@@ -73,13 +65,6 @@ impl Settings {
 		config
 			.merge(File::with_name("config/default"))
 			.expect("Default config file not found");
-
-		// TODO: How does this work with field names containing underscores?
-		// I would prefer to use this method instead of the solution below,
-		// but not sure how to get around underscores issue.
-		// Setting 'rename' or 'alias' via serde's attributes doesn't work.
-		// config.merge(Environment::with_prefix("UPHOLI"))
-		// 	.expect("Failed to set settings from env variables");
 
 		// Set/overwrite certain settings from environment variables
 		let overwritable_settings: HashMap<&str, &str> = [
@@ -107,7 +92,7 @@ impl Settings {
 
 	// Write the value of an env var to configuration if the env var exists
 	// This overwrites any existing value in configuration at given path.
-	fn set_from_env_var(config: &mut Config, path: &str, env_var: &str) -> Result<()> {
+	fn set_from_env_var(config: &mut Config, path: &str, env_var: &str) -> anyhow::Result<()> {
 		if let Some(env_var_value) = Self::get_env_var(env_var) {
 			config.set(path, env_var_value)?;
 		};

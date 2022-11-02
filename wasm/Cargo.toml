@@ -14,7 +14,7 @@ lazy_static = "1.4.0"
 wasm-bindgen = { version = "0.2.78", features = ["serde-serialize"] }
 wasm-bindgen-futures = "0.4.28"
 js-sys = "0.3.55"
-web-sys = { version = "0.3.55", features = ["Window", "Location"] }
+web-sys = { version = "0.3.55", features = ["Window", "Location", "Storage"] }
 aes-gcm-siv = "0.10.3"
 uuid = { version = "0.8.1", features = ["v4", "wasm-bindgen"] }
 image = { version = "0.23.12", default-features = false, features = ["gif", "jpeg", "ico", "png", "pnm", "tga", "tiff", "webp", "bmp", "hdr", "dxt", "dds", "farbfeld"] }
@@ -25,3 +25,6 @@ rexif = "0.7.3"
 base64 = "0.13.0"
 reqwest = { version = "0.11.9", features = ["json", "multipart"] }
 sha2 = "0.9.8"
+anyhow = "1.0.65"
+async-trait = "0.1.57"
+serde-wasm-bindgen = "0.4.5"

@@ -17,31 +17,36 @@ interface Props extends PageProps {
 	};
 }
 
+enum AuthorizedState {
+	Undetermined,
+	Authorized,
+	Unauthorized,
+}
+
 const SharedAlbumPage: FC<Props> = (props: Props) => {
-	const [authorized, setAuthorized] = useState(true);
+	const [authorized, setAuthorized] = useState(AuthorizedState.Undetermined);
 	const [lastPasswordIncorrect, setLastPasswordIncorrect] = useState(false);
 	const [album, setAlbum] = useState<Album | null>(null);
-	const token = props.match.params.token;
+	const shareId = props.match.params.token;
 
 	useTitle(album?.title ?? "");
 
-	const onReceiveAlbum = (album: Album) => {
-		setAuthorized(true);
-		setLastPasswordIncorrect(false);
-		setAlbum(album);
+	const setAuthorizedFromBoolean = (authorized: boolean) => setAuthorized(authorized ? AuthorizedState.Authorized : AuthorizedState.Unauthorized);
+
+	const getAlbum = () => {
+		upholiService.getShareAlbum(shareId)
+			.then(setAlbum)
+			.catch(console.error);
 	};
 
-	const tryUnlockShare = (password: string): void => {
+	const tryauthorizeShare = (password: string): void => {
 		if (password) {
-			upholiService.getAlbumFromShare(token, password)
-				.then(onReceiveAlbum)
-				.catch(error => {
-					if (error) {
-						console.log(error);
-					}
-
-					setLastPasswordIncorrect(true);
-				});
+			upholiService.authorizeShare(shareId, password)
+				.then(authorized => {
+					setAuthorizedFromBoolean(authorized);
+					setLastPasswordIncorrect(!authorized);
+				})
+				.catch(console.error);
 		}
 		else {
 			setLastPasswordIncorrect(false);
@@ -49,20 +54,24 @@ const SharedAlbumPage: FC<Props> = (props: Props) => {
 	};
 
 	React.useEffect(() => {
-		// Attempt to open share without password,
-		// If this fails the share is password protected and we'll render a password input.
-		upholiService.getAlbumFromShare(token, "")
-			.then(onReceiveAlbum)
-			.catch(() => setAuthorized(false));
+		upholiService.isAuthorizedForShare(shareId)
+			.then(setAuthorizedFromBoolean)
+			.catch(console.error);
 	}, []);
+
+	React.useEffect(() => {
+		if (authorized == AuthorizedState.Authorized) {
+			getAlbum();
+		}
+	}, [authorized]);
 
 	return (
 		<Content>
 			{/* Password input box */}
-			{!authorized && <InputPassword
+			{authorized == AuthorizedState.Unauthorized && <InputPassword
 				className="padding-top-50px"
 				prompt="You need to provide a password to access this share."
-				onSubmitPassword={(password) => tryUnlockShare(password)}
+				onSubmitPassword={(password) => tryauthorizeShare(password)}
 				lastPasswordIncorrect={lastPasswordIncorrect} />}
 
 			{!!album && <AlbumView album={album} />}

@@ -1,3 +1,5 @@
+.cargo
+
 *.exe
 *.pdb
 web.config

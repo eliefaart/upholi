@@ -1,4 +1,4 @@
-use crate::error::Result;
+use anyhow::{anyhow, Result};
 use azure_core::HttpClient;
 use azure_storage::clients::{AsStorageClient, StorageAccountClient, StorageClient};
 use azure_storage_blobs::prelude::{
@@ -30,26 +30,23 @@ impl AzureStorageProvider {
 		let file_bytes: Vec<u8> = bytes.iter().map(|byte| byte.to_owned()).collect();
 
 		let blob = self.get_blob_client(container, name);
-		match blob.put_block_blob(file_bytes).execute().await {
-			Ok(_) => Ok(()),
-			Err(err) => Err(err),
-		}
+		blob.put_block_blob(file_bytes)
+			.execute()
+			.await
+			.map_err(|error| anyhow!("{error:?}"))?;
+		Ok(())
 	}
 
 	pub async fn get_file(&self, container: &str, name: &str) -> Result<Option<Vec<u8>>> {
 		let blob = self.get_blob_client(container, name);
-		match blob.get().execute().await {
-			Ok(result) => Ok(Some(result.data.to_vec())),
-			Err(err) => Err(err),
-		}
+		let result = blob.get().execute().await.map_err(|error| anyhow!("{error:?}"))?;
+		Ok(Some(result.data.to_vec()))
 	}
 
 	pub async fn delete_file(&self, container: &str, name: &str) -> Result<()> {
 		let blob = self.get_blob_client(container, name);
-		match blob.delete().execute().await {
-			Ok(_) => Ok(()),
-			Err(err) => Err(err),
-		}
+		blob.delete().execute().await.map_err(|error| anyhow!("{error:?}"))?;
+		Ok(())
 	}
 
 	fn get_blob_client(&self, container_name: &str, blob_name: &str) -> Arc<BlobClient> {
@@ -62,23 +59,23 @@ impl AzureStorageProvider {
 
 	/// Create container with given name, if it doesn't already exist.
 	pub async fn create_container_if_not_exists(&self, container_name: &str) -> Result<()> {
-		match self.blob_client.list_containers().prefix(container_name).execute().await {
-			Ok(containers) => {
-				let container_exists = containers
-					.incomplete_vector
-					.iter()
-					.any(|container| container.name == container_name);
-				if !container_exists {
-					let container_client = self.get_container_client(container_name);
-					match container_client.create().execute().await {
-						Ok(_) => Ok(()),
-						Err(err) => Err(err),
-					}
-				} else {
-					Ok(())
-				}
-			}
-			Err(err) => Err(err),
+		let containers = self
+			.blob_client
+			.list_containers()
+			.prefix(container_name)
+			.execute()
+			.await
+			.map_err(|error| anyhow!("{error:?}"))?;
+		let container_exists = containers
+			.incomplete_vector
+			.iter()
+			.any(|container| container.name == container_name);
+		if !container_exists {
+			let container_client = self.get_container_client(container_name);
+			container_client.create().execute().await.map_err(|error| anyhow!("{error:?}"))?;
+			Ok(())
+		} else {
+			Ok(())
 		}
 	}
 }

@@ -1,4 +1,4 @@
-use crate::error::Result;
+use anyhow::{anyhow, Result};
 use std::path::Path;
 use std::{fs::File, io::prelude::*};
 
@@ -42,7 +42,7 @@ impl LocalDiskStorageProvider {
 		let path = Path::new(base_path);
 		let path = path.join(photo_relative_path);
 
-		Ok(path.to_str().ok_or("Empty directory path")?.to_string())
+		Ok(path.to_str().ok_or_else(|| anyhow!("Empty directory path"))?.to_string())
 	}
 
 	/// Returns the absolute path to photo storage base directory
@@ -50,18 +50,15 @@ impl LocalDiskStorageProvider {
 	fn get_photos_base_path<'a>() -> Result<&'a str> {
 		let path_info = Path::new(&crate::SETTINGS.storage.directory_photos);
 		if !path_info.exists() {
-			return Err(Box::from(format!(
-				"Path {} does not exist",
-				&crate::SETTINGS.storage.directory_photos
-			)));
+			return Err(anyhow!("Path {} does not exist", &crate::SETTINGS.storage.directory_photos));
 		}
 
-		let photos_path = path_info.to_str().ok_or("Empty directory path")?;
+		let photos_path = path_info.to_str().ok_or_else(|| anyhow!("Empty directory path"))?;
 
 		if !path_info.exists() {
 			let result = std::fs::create_dir(&path_info);
 			if result.is_err() {
-				return Err(Box::from(format!("Failed to create directory {}", photos_path)));
+				return Err(anyhow!("Failed to create directory {photos_path}",));
 			}
 		}
 

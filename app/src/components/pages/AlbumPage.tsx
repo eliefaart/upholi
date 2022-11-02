@@ -15,7 +15,7 @@ import { SharingOptions } from "../../models/SharingOptions";
 import AlbumView from "../AlbumView";
 import { useTitle } from "../../hooks/useTitle";
 import useAlbum from "../../hooks/useAlbum";
-import useFoundAlbumShare from "../../hooks/useFoundAlbumShare";
+import useAlbumShare from "../../hooks/useAlbumShare";
 import { PageProps } from "../../models/PageProps";
 import DefaultHeaderContent from "../headers/DefaultHeaderContent";
 import ItemsSelectedHeaderContent from "../headers/ItemsSelectedHeaderContent";
@@ -33,7 +33,7 @@ interface Props extends PageProps {
 const AlbumPage: FC<Props> = (props: Props) => {
 	const albumId = props.match.params.albumId;
 	const [album, refreshAlbum] = useAlbum(albumId);
-	const [share, refreshShare] = useFoundAlbumShare(albumId);
+	const [share, refreshShare] = useAlbumShare(albumId);
 	const [selectedPhotoIds, setSelectedPhotoIds] = React.useState<string[]>([]);
 	const [editAlbumOpen, setEditAlbumOpen] = React.useState<boolean>(false);
 	const [sharingOptionsOpen, setSharingOptionsOpen] = React.useState<boolean>(false);
