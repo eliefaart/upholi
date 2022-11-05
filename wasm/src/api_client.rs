@@ -108,17 +108,6 @@ impl ApiClient {
 		}
 	}
 
-	pub async fn get_text_multiple(&self, key_prefix: &str) -> Result<Vec<TextItem>> {
-		let url = format!("{}/texts/{key_prefix}", self.base_url).to_owned();
-		let response = self.client.get(&url).send().await?;
-
-		if response.status() == StatusCode::OK {
-			Ok(response.json().await?)
-		} else {
-			Err(anyhow!("Failed to get text"))
-		}
-	}
-
 	pub async fn set_text(&self, key: &str, body: &TextItem) -> Result<()> {
 		let url = format!("{}/text/{key}", self.base_url).to_owned();
 		let response = self.client.post(&url).json(&body).send().await?;

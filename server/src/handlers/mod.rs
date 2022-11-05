@@ -5,11 +5,6 @@ use anyhow::Result;
 use tower_cookies::Cookies;
 use upholi_lib::ids::id;
 
-// pub use files::*;
-// pub use items::*;
-// pub use shares::*;
-// pub use user::*;
-
 pub mod files;
 pub mod items;
 pub mod shares;

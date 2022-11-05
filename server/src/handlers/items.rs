@@ -21,13 +21,6 @@ pub async fn get_text(session: Session, Path(key): Path<String>) -> Result<Json<
 	}
 }
 
-pub async fn get_text_multiple(UserId(user_id): UserId, Path(key_prefix): Path<String>) -> Result<Json<Vec<TextItem>>, StatusCode> {
-	match get_items_with_prefix::<TextItemData>(&key_prefix, &user_id).await {
-		Ok(items) => Ok(Json(items)),
-		Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
-	}
-}
-
 pub async fn set_text(
 	UserId(user_id): UserId,
 	Path(key): Path<String>,

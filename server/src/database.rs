@@ -1,4 +1,4 @@
-use crate::model::{DbItem, FileItemData, Item, Session, Share, TextItemData, User};
+use crate::model::{DbItem, FileItemData, Session, Share, TextItemData, User};
 use anyhow::Result;
 use async_once::AsyncOnce;
 use bson::{doc, Document};
@@ -222,29 +222,6 @@ pub async fn get_item<T: DbItem>(key: &str, session: &Session) -> Result<Option<
 		Some(item_container) => Ok(Some(item_container.data)),
 		None => Ok(None),
 	}
-}
-
-pub async fn get_items_with_prefix<T: DbItem>(key_prefix: &str, user_id: &str) -> Result<Vec<Item<T>>> {
-	let collection = DB.get().await.collection::<ItemContainer<T>>(T::collection_name());
-	let mut cursor = collection
-		.find(
-			doc! {
-				"key": { "$regex": format!("^{key_prefix}") },
-				"user_id": user_id,
-			},
-			None,
-		)
-		.await?;
-
-	let mut items = vec![];
-	while cursor.advance().await? {
-		let container: ItemContainer<T> = cursor.deserialize_current()?;
-		items.push(Item {
-			key: container.key,
-			data: container.data,
-		});
-	}
-	Ok(items)
 }
 
 pub async fn upsert_item<T: DbItem>(key: &str, item: T, user_id: &str) -> Result<()> {
