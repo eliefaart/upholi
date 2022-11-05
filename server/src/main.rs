@@ -10,7 +10,7 @@ use axum::{
 	Router,
 };
 use cookie::time::{Duration, OffsetDateTime};
-use handlers::*;
+use handlers::{files::*, items::*, shares::*, user::*};
 use lazy_static::lazy_static;
 use model::Session;
 use std::net::SocketAddr;

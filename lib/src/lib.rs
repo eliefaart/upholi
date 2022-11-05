@@ -1,4 +1,3 @@
-use serde::{Deserialize, Serialize};
 use std::fmt;
 
 pub mod http;
@@ -30,19 +29,5 @@ impl From<PhotoVariant> for String {
 impl From<&PhotoVariant> for String {
 	fn from(photo_variant: &PhotoVariant) -> String {
 		photo_variant.to_string()
-	}
-}
-
-#[derive(Deserialize, Serialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub enum ShareType {
-	Album,
-}
-
-impl Clone for ShareType {
-	fn clone(&self) -> Self {
-		match *self {
-			Self::Album => Self::Album,
-		}
 	}
 }

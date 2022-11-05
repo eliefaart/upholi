@@ -15,7 +15,7 @@ use anyhow::{anyhow, Result};
 use serde::Serialize;
 use upholi_lib::http::request::{CreateUserRequest, UpsertShareRequest};
 use upholi_lib::ids::id;
-use upholi_lib::{PhotoVariant, ShareType};
+use upholi_lib::PhotoVariant;
 use wasm_bindgen::UnwrapThrowExt;
 
 pub const KEY_MASTER_KEY: &str = "master-key";
@@ -420,7 +420,7 @@ impl WasmClient {
 	/// Creates or updates a share.
 	///
 	/// * `item_id` - ID of the item (e.g. an album) to create a share for.
-	pub async fn upsert_share(&self, _share_type: ShareType, item_id: &str, password: &str) -> anyhow::Result<String> {
+	pub async fn upsert_share(&self, item_id: &str, password: &str) -> anyhow::Result<String> {
 		let library = self.get_library().await?;
 		let existing_share = library.shares.iter().find(|s| s.album_id == item_id);
 

@@ -2,7 +2,7 @@ use crate::{api_client::ApiClient, wasm_client::WasmClient};
 use js_sys::{Array, JsString, Promise};
 use lazy_static::lazy_static;
 use serde::Serialize;
-use upholi_lib::{PhotoVariant, ShareType};
+use upholi_lib::PhotoVariant;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::future_to_promise;
 
@@ -254,10 +254,7 @@ impl UpholiClient {
 	#[wasm_bindgen(js_name = upsertAlbumShare)]
 	pub fn upsert_album_share(&self, album_id: String, password: String) -> Promise {
 		future_to_promise(async move {
-			let share_id = WASM_CLIENT
-				.upsert_share(ShareType::Album, &album_id, &password)
-				.await
-				.unwrap_throw();
+			let share_id = WASM_CLIENT.upsert_share(&album_id, &password).await.unwrap_throw();
 			Ok(JsValue::from_str(&share_id))
 		})
 	}
