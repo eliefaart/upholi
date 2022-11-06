@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 
-type resetAuthenticationStatus = () => void;
+type resetAuthenticationStatus = (redetermine: boolean) => void;
 
 export enum AuthenticationStatus {
 	// Status hasn't been determined yet.
@@ -19,7 +19,13 @@ let lastStatus: AuthenticationStatus = AuthenticationStatus.Unknown;
 export default function useAuthenticationStatus(): [AuthenticationStatus, resetAuthenticationStatus] {
 	const [state, setState] = useState<AuthenticationStatus>(lastStatus);
 
-	const resetStatus = () => setState(AuthenticationStatus.Unknown);
+	const resetStatus = (redetermine: boolean) => {
+		setState(AuthenticationStatus.Unknown);
+
+		if (redetermine) {
+			refresh();
+		}
+	};
 
 	const refresh = () => {
 		setState(AuthenticationStatus.Refreshing);

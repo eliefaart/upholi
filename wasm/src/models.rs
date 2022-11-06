@@ -34,6 +34,7 @@ impl TextItem {
 pub struct Library {
 	pub item_keys: Vec<ItemKey>,
 	pub photos: Vec<LibraryPhoto>,
+	pub albums: Vec<LibraryAlbum>,
 	pub shares: Vec<LibraryShare>,
 }
 
@@ -44,7 +45,6 @@ pub struct ItemKey {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
 pub struct LibraryPhoto {
 	pub id: String,
 	pub hash: String,
@@ -53,7 +53,11 @@ pub struct LibraryPhoto {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
+pub struct LibraryAlbum {
+	pub id: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct LibraryShare {
 	pub id: String,
 	pub password: String,

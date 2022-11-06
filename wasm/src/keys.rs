@@ -28,8 +28,8 @@ pub fn get_master_key() -> Vec<u8> {
 }
 
 /// Set user's master encryption key
-pub fn set_master_key(key: Vec<u8>) {
-	let key_str = &base64::encode_config(&key, base64::STANDARD);
+pub fn set_master_key(key: &Vec<u8>) {
+	let key_str = &base64::encode_config(key, base64::STANDARD);
 	let mut master_key = MASTER_KEY.write().unwrap_throw();
 	*master_key = key.clone();
 

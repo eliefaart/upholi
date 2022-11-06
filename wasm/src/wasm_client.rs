@@ -4,8 +4,8 @@ use crate::exif::Exif;
 use crate::images::Image;
 use crate::keys::{get_key_from_user_credentials, get_master_key, get_share_key, set_master_key, set_share_key};
 use crate::models::{
-	Album, AlbumExpanded, AlbumPhoto, AlbumShareData, AlbumShareDataPhoto, Library, LibraryPhoto, LibraryShare, Share, ShareData,
-	TextItem,
+	Album, AlbumExpanded, AlbumPhoto, AlbumShareData, AlbumShareDataPhoto, Library, LibraryAlbum, LibraryPhoto, LibraryShare, Share,
+	ShareData, TextItem,
 };
 use crate::models::{ItemKey, Photo};
 use crate::repository::ItemVariant;
@@ -75,6 +75,7 @@ impl WasmClient {
 		};
 
 		self.api_client.register(&body).await?;
+		set_master_key(&master_key);
 		repository::set(KEY_MASTER_KEY, &password_derived_key, ItemVariant::MasterKey(master_key.clone())).await?;
 		repository::set(KEY_LIBRARY, &master_key, ItemVariant::Library(Library::default())).await?;
 
@@ -91,8 +92,13 @@ impl WasmClient {
 			.ok_or_else(|| anyhow!("Master key missing"))?
 			.try_into()?;
 
-		set_master_key(master_key);
+		set_master_key(&master_key);
 		Ok(())
+	}
+
+	pub async fn get_library_photos(&self) -> Result<Vec<LibraryPhoto>> {
+		let library = self.get_library().await?;
+		Ok(library.photos)
 	}
 
 	pub async fn get_photo(&self, id: &str, key: Option<Vec<u8>>) -> Result<Photo> {
@@ -105,11 +111,8 @@ impl WasmClient {
 	}
 
 	pub async fn get_albums(&self) -> Result<Vec<Album>> {
-		let item_keys = self.api_client.list_text_keys().await?;
-		let album_ids = item_keys
-			.iter()
-			.filter(|key| key.starts_with("album-"))
-			.map(|key| key.replace("album-", ""));
+		let library = self.get_library().await?;
+		let album_ids = library.albums.into_iter().map(|album| album.id);
 
 		let mut albums = vec![];
 		for album_id in album_ids {
@@ -129,8 +132,7 @@ impl WasmClient {
 	}
 
 	async fn get_album_using_key(&self, id: &str, album_encryption_key: &[u8]) -> Result<Option<Album>> {
-		let item_key = format!("album-{id}");
-		let item = repository::get(&item_key, &album_encryption_key).await?;
+		let item = repository::get(id, &album_encryption_key).await?;
 		match item {
 			Some(item) => Ok(Some(item.try_into()?)),
 			None => Ok(None),
@@ -140,7 +142,6 @@ impl WasmClient {
 	pub async fn create_album(&self, title: &str, initial_photo_ids: Vec<String>) -> Result<String> {
 		let album_id = id();
 		let album_key = generate_key();
-		let album_item_key = format!("album-{album_id}");
 
 		let album = Album {
 			id: album_id.clone(),
@@ -156,18 +157,14 @@ impl WasmClient {
 				item_id: album_id.clone(),
 				key: album_key.to_vec(),
 			});
+			library.albums.push(LibraryAlbum { id: album_id.clone() });
 			Ok(())
 		})
 		.await?;
 
-		repository::set(&album_item_key, &album_key, album.into()).await?;
+		repository::set(&album_id, &album_key, album.into()).await?;
 
 		Ok(album_id)
-	}
-
-	pub async fn get_library_photos(&self) -> Result<Vec<LibraryPhoto>> {
-		let library = self.get_library().await?;
-		Ok(library.photos)
 	}
 
 	pub async fn get_album_full(&self, id: &str) -> Result<AlbumExpanded> {
@@ -175,6 +172,20 @@ impl WasmClient {
 		let photos = self.get_library_photos().await?;
 
 		self.inflate_album(album, photos.into_iter().map(|p| p.into()).collect())
+	}
+
+	pub async fn delete_album(&self, id: &str) -> Result<()> {
+		// TODO: Delete shares for this album
+		repository::delete(id).await?;
+
+		self.update_library(&mut |library: &mut Library| {
+			library.item_keys.retain(|ik| ik.item_id != id);
+			library.albums.retain(|ik| ik.id != id);
+			Ok(())
+		})
+		.await?;
+
+		Ok(())
 	}
 
 	fn inflate_album(&self, album: Album, photos: Vec<AlbumPhoto>) -> Result<AlbumExpanded> {
@@ -316,20 +327,6 @@ impl WasmClient {
 		}
 	}
 
-	pub async fn delete_album(&self, id: &str) -> Result<()> {
-		// TODO: Delete shares for this album
-		let album_item_key = &format!("album-{id}");
-		repository::delete(album_item_key).await?;
-
-		self.update_library(&mut |library: &mut Library| {
-			library.item_keys.retain(|ik| ik.item_id != id);
-			Ok(())
-		})
-		.await?;
-
-		Ok(())
-	}
-
 	pub async fn delete_photos(&self, ids: &[String]) -> Result<()> {
 		let library = self.get_library().await?;
 		let albums = self.get_albums().await?;
@@ -344,8 +341,7 @@ impl WasmClient {
 			}
 
 			let album_key = self.get_item_encryption_key(&library, &album.id)?;
-			let album_item_key = format!("album-{}", album.id);
-			repository::set(&album_item_key, &album_key, album.into()).await?;
+			repository::set(&album.id.clone(), &album_key, album.into()).await?;
 		}
 
 		self.update_library(&mut |library: &mut Library| {
@@ -462,7 +458,7 @@ impl WasmClient {
 			}),
 		};
 
-		let mut share_item_ids = vec![format!("album-{}", album.id)];
+		let mut share_item_ids = vec![album.id.clone()];
 		share_item_ids.extend(album.photos.iter().flat_map(|id| {
 			vec![
 				format!("photo-{id}"),
@@ -618,8 +614,7 @@ impl WasmClient {
 		modify_album(&mut album);
 
 		let album_key = self.get_item_encryption_key(&library, &album.id)?;
-		let album_item_key = format!("album-{}", id);
-		repository::set(&album_item_key, &album_key, album.into()).await?;
+		repository::set(id, &album_key, album.into()).await?;
 
 		Ok(())
 	}

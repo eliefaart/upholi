@@ -9,7 +9,10 @@ use axum::{
 	routing::{get, get_service, post},
 	Router,
 };
-use cookie::time::{Duration, OffsetDateTime};
+use cookie::{
+	time::{Duration, OffsetDateTime},
+	SameSite,
+};
 use handlers::{files::*, items::*, shares::*, user::*};
 use lazy_static::lazy_static;
 use model::Session;
@@ -169,5 +172,6 @@ pub fn create_sesson_cookie<'a>(session_id: String) -> Cookie<'a> {
 		.http_only(true)
 		.secure(AUTH_COOKIE_SECURE)
 		.expires(expires_on)
+		.same_site(SameSite::Strict)
 		.finish()
 }

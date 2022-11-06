@@ -31,7 +31,7 @@ pub async fn create_user(
 	Ok((StatusCode::CREATED, Json(result)))
 }
 
-pub async fn handler_create_user(user_info: &CreateUserRequest) -> Result<CreatedResult> {
+async fn handler_create_user(user_info: &CreateUserRequest) -> Result<CreatedResult> {
 	if get_user_by_username(&user_info.username).await?.is_some() {
 		Err(anyhow!("A user with this username already exists."))
 	} else {
