@@ -52,19 +52,3 @@ impl DbItem for File {
 		"files"
 	}
 }
-
-#[derive(Serialize)]
-pub struct Item<TItemData> {
-	pub id: String,
-	#[serde(flatten)]
-	pub data: TItemData,
-}
-
-// TODO: Do I need this? (in other words.. Do I need 'id' of Item<T>?)
-pub type EncryptedItem = Item<EncryptedData>;
-
-impl EncryptedItem {
-	pub fn from_data(key: String, data: EncryptedData) -> Self {
-		Self { id: key, data }
-	}
-}

@@ -4,7 +4,6 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct EncryptedItem {
-	pub id: String,
 	pub base64: String,
 	pub nonce: String,
 }
@@ -16,7 +15,6 @@ impl EncryptedItem {
 		let encrypt_result = crate::encryption::symmetric::encrypt_slice(key, bytes)?;
 		let base64 = base64::encode_config(encrypt_result.bytes, base64::STANDARD);
 		Ok(Self {
-			id: String::new(),
 			base64,
 			nonce: encrypt_result.nonce,
 		})

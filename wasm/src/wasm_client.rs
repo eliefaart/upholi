@@ -500,7 +500,6 @@ impl WasmClient {
 		let text_item = EncryptedItem {
 			base64: share.base64,
 			nonce: share.nonce,
-			id: String::new(),
 		};
 		let share: Share = text_item.decrypt(share_key)?;
 		let ShareData::Album(album_data) = share.data;

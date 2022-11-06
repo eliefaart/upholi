@@ -1,5 +1,5 @@
 use crate::database;
-use crate::model::{EncryptedData, EncryptedItem, Session};
+use crate::model::{EncryptedData, Session};
 use crate::UserId;
 use anyhow::Result;
 use axum::{extract::Path, http::StatusCode, Json};
@@ -11,10 +11,10 @@ pub async fn get_item_ids(UserId(user_id): UserId) -> Result<Json<Vec<String>>, 
 	}
 }
 
-pub async fn get_item(session: Session, Path(id): Path<String>) -> Result<Json<EncryptedItem>, StatusCode> {
+pub async fn get_item(session: Session, Path(id): Path<String>) -> Result<Json<EncryptedData>, StatusCode> {
 	match database::get_item(&id, &session).await {
 		Ok(option) => match option {
-			Some(value) => Ok(Json(EncryptedItem::from_data(id, value))),
+			Some(value) => Ok(Json(value)),
 			None => Err(StatusCode::NOT_FOUND),
 		},
 		Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
