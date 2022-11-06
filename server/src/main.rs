@@ -141,7 +141,7 @@ async fn extend_session_cookie<B>(req: axum::http::Request<B>, next: Next<B>) ->
 
 	if !response.headers().contains_key(axum::http::header::COOKIE) {
 		if let Some(session_id) = request_session_id {
-			let response_cookie = create_sesson_cookie(session_id.into());
+			let response_cookie = create_sesson_cookie(session_id);
 			response.headers_mut().insert(
 				axum::http::header::SET_COOKIE,
 				HeaderValue::from_str(&response_cookie.to_string()).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?,
@@ -167,7 +167,7 @@ fn get_session_id_from_headers(headers: &HeaderMap) -> Result<Option<String>> {
 pub fn create_sesson_cookie<'a>(session_id: String) -> Cookie<'a> {
 	let mut expires_on = OffsetDateTime::now_utc();
 	expires_on += Duration::days(AUTH_COOKIE_EXPIRATION_TIME_DAYS);
-	Cookie::build(AUTH_COOKIE_NAME, session_id.to_owned())
+	Cookie::build(AUTH_COOKIE_NAME, session_id)
 		.path("/")
 		.http_only(true)
 		.secure(AUTH_COOKIE_SECURE)

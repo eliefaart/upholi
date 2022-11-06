@@ -42,7 +42,7 @@ fn get_or_create_session(existing_session: Option<Session>) -> Session {
 	existing_session.unwrap_or_else(|| {
 		let session_id = id();
 		Session {
-			id: session_id.clone(),
+			id: session_id,
 			user_id: None,
 			shares: vec![],
 		}
