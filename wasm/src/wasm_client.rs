@@ -103,8 +103,7 @@ impl WasmClient {
 
 	pub async fn get_photo(&self, id: &str, key: Option<Vec<u8>>) -> Result<Photo> {
 		let photo_encryption_key = self.determine_photo_key(id, key).await?;
-		let photo_item_key = format!("photo-{id}");
-		let photo_item = repository::get(&photo_item_key, &photo_encryption_key).await?;
+		let photo_item = repository::get(id, &photo_encryption_key).await?;
 		let photo = photo_item.ok_or_else(|| anyhow!("Photo '{id}' not found"))?.try_into()?;
 
 		Ok(photo)
@@ -243,7 +242,6 @@ impl WasmClient {
 			let upload_info = PhotoUploadInfo::try_from_slice(bytes).unwrap_throw();
 			let photo_key = generate_key();
 			let photo_id = id();
-			let photo_item_key = &format!("photo-{photo_id}");
 
 			// Compute the timestamp to store for this photo
 			let now = chrono::Utc::now().timestamp();
@@ -272,20 +270,20 @@ impl WasmClient {
 
 			let files: Vec<File> = vec![
 				File {
-					key: format!("{photo_item_key}-thumbnail"),
+					key: format!("{photo_id}-thumbnail"),
 					bytes: thumbnail_encrypted.bytes,
 				},
 				File {
-					key: format!("{photo_item_key}-preview"),
+					key: format!("{photo_id}-preview"),
 					bytes: preview_encrypted.bytes,
 				},
 				File {
-					key: format!("{photo_item_key}-original"),
+					key: format!("{photo_id}-original"),
 					bytes: original_encrypted.bytes,
 				},
 			];
 			self.api_client.set_files(&files).await?;
-			repository::set(photo_item_key, &photo_key, ItemVariant::Photo(photo.to_owned())).await?;
+			repository::set(&photo_id, &photo_key, ItemVariant::Photo(photo.to_owned())).await?;
 
 			self.update_library(&mut |library: &mut Library| {
 				library.item_keys.push(ItemKey {
@@ -313,7 +311,7 @@ impl WasmClient {
 				PhotoVariant::Original => photo.nonce_original,
 			};
 
-			let file_key = format!("photo-{id}-{photo_variant}");
+			let file_key = format!("{id}-{photo_variant}");
 			let encrypted_bytes = self
 				.api_client
 				.get_file(&file_key)
@@ -352,17 +350,11 @@ impl WasmClient {
 		.await?;
 
 		for id in ids {
-			repository::delete(&format!("photo-{id}")).await?;
+			repository::delete(id).await?;
 
-			self.api_client
-				.delete_file(&format!("photo-{id}-{}", PhotoVariant::Thumbnail))
-				.await?;
-			self.api_client
-				.delete_file(&format!("photo-{id}-{}", PhotoVariant::Preview))
-				.await?;
-			self.api_client
-				.delete_file(&format!("photo-{id}-{}", PhotoVariant::Original))
-				.await?;
+			self.api_client.delete_file(&format!("{id}-{}", PhotoVariant::Thumbnail)).await?;
+			self.api_client.delete_file(&format!("{id}-{}", PhotoVariant::Preview)).await?;
+			self.api_client.delete_file(&format!("{id}-{}", PhotoVariant::Original)).await?;
 		}
 
 		Ok(())
@@ -461,10 +453,10 @@ impl WasmClient {
 		let mut share_item_ids = vec![album.id.clone()];
 		share_item_ids.extend(album.photos.iter().flat_map(|id| {
 			vec![
-				format!("photo-{id}"),
-				format!("photo-{id}-{}", PhotoVariant::Thumbnail),
-				format!("photo-{id}-{}", PhotoVariant::Preview),
-				format!("photo-{id}-{}", PhotoVariant::Original),
+				format!("{id}"),
+				format!("{id}-{}", PhotoVariant::Thumbnail),
+				format!("{id}-{}", PhotoVariant::Preview),
+				format!("{id}-{}", PhotoVariant::Original),
 			]
 		}));
 
