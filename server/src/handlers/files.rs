@@ -1,4 +1,4 @@
-use crate::model::{FileItemData, Session};
+use crate::model::{File, Session};
 use crate::storage::store_file;
 use crate::UserId;
 use crate::{database::*, storage};
@@ -8,22 +8,22 @@ use axum::{extract::Path, http::StatusCode, Json};
 use upholi_lib::ids::id;
 
 struct MultipartEntry {
-	pub key: String,
+	pub name: String,
 	pub bytes: Vec<u8>,
 }
 
-pub async fn get_file_keys(UserId(user_id): UserId) -> Result<Json<Vec<String>>, StatusCode> {
-	match get_item_keys::<FileItemData>(&user_id).await {
-		Ok(keys) => Ok(Json(keys)),
+pub async fn get_file_ids(UserId(user_id): UserId) -> Result<Json<Vec<String>>, StatusCode> {
+	match get_item_ids::<File>(&user_id).await {
+		Ok(ids) => Ok(Json(ids)),
 		Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
 	}
 }
 
-pub async fn get_file(session: Session, Path(key): Path<String>) -> Result<Vec<u8>, StatusCode> {
-	match get_item::<FileItemData>(&key, &session).await {
+pub async fn get_file(session: Session, Path(id): Path<String>) -> Result<Vec<u8>, StatusCode> {
+	match get_item::<File>(&id, &session).await {
 		Ok(option) => match option {
 			Some(file) => {
-				let file = crate::storage::get_file(&key, &file.container)
+				let file = crate::storage::get_file(&id, &file.container)
 					.await
 					.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
 					.ok_or(StatusCode::NOT_FOUND)?;
@@ -42,16 +42,16 @@ pub async fn set_files(UserId(user_id): UserId, multipart: Multipart) -> Result<
 
 	for entry in multipart_entries {
 		let file_id = id();
-		let file = FileItemData {
+		let file = File {
 			file_id: file_id.clone(),
 			container: user_id.clone(),
 		};
 
-		store_file(&entry.key, &user_id, &entry.bytes)
+		store_file(&entry.name, &user_id, &entry.bytes)
 			.await
 			.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-		upsert_item(&entry.key, file, &user_id)
+		upsert_item(&entry.name, file, &user_id)
 			.await
 			.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 	}
@@ -59,9 +59,9 @@ pub async fn set_files(UserId(user_id): UserId, multipart: Multipart) -> Result<
 	Ok(StatusCode::OK)
 }
 
-pub async fn delete_file(UserId(user_id): UserId, Path(key): Path<String>) -> Result<StatusCode, StatusCode> {
-	match delete_item::<FileItemData>(&key, &user_id).await {
-		Ok(_) => match storage::delete_file(&key, &user_id).await {
+pub async fn delete_file(UserId(user_id): UserId, Path(id): Path<String>) -> Result<StatusCode, StatusCode> {
+	match delete_item::<File>(&id, &user_id).await {
+		Ok(_) => match storage::delete_file(&id, &user_id).await {
 			Ok(()) => Ok(StatusCode::OK),
 			Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
 		},
@@ -73,11 +73,11 @@ async fn get_multipart_entries(mut multipart: Multipart) -> Result<Vec<Multipart
 	let mut entries: Vec<MultipartEntry> = vec![];
 
 	while let Some(field) = multipart.next_field().await? {
-		let key = field.name().unwrap().to_string();
+		let name = field.name().unwrap().to_string();
 		let bytes = field.bytes().await.unwrap();
 
 		entries.push(MultipartEntry {
-			key,
+			name,
 			bytes: bytes.to_vec(),
 		});
 	}

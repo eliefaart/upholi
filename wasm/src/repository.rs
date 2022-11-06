@@ -88,13 +88,13 @@ impl From<Album> for ItemVariant {
 	}
 }
 
-pub async fn get(item_id: &str, encryption_key: &[u8]) -> Result<Option<ItemVariant>> {
+pub async fn get(item_id: &str, key: &[u8]) -> Result<Option<ItemVariant>> {
 	let is_cached = CACHE.read().unwrap().contains_key(item_id);
 
 	// Try to fetch it from API if it is not in the cache
 	if !is_cached {
-		if let Some(item) = API_CLIENT.get_text(item_id).await? {
-			let item = item.decrypt(encryption_key)?;
+		if let Some(item) = API_CLIENT.get_item(item_id).await? {
+			let item = item.decrypt(key)?;
 			let mut cache = CACHE.write().unwrap();
 			cache.insert(item_id.to_string(), item);
 		}
@@ -109,14 +109,14 @@ pub async fn get(item_id: &str, encryption_key: &[u8]) -> Result<Option<ItemVari
 	}
 }
 
-pub async fn get_or(item_id: &str, encryption_key: &[u8], create: &dyn Fn() -> ItemVariant) -> Result<ItemVariant> {
-	let item = get(item_id, encryption_key).await?;
+pub async fn get_or(item_id: &str, key: &[u8], create: &dyn Fn() -> ItemVariant) -> Result<ItemVariant> {
+	let item = get(item_id, key).await?;
 
 	let item = match item {
 		Some(item) => item,
 		None => {
 			let item = create();
-			set(item_id, encryption_key, item.clone()).await?;
+			set(item_id, key, item.clone()).await?;
 			item
 		}
 	};
@@ -124,9 +124,9 @@ pub async fn get_or(item_id: &str, encryption_key: &[u8], create: &dyn Fn() -> I
 	Ok(item)
 }
 
-pub async fn set(item_id: &str, encryption_key: &[u8], item: ItemVariant) -> Result<()> {
-	let text_item = TextItem::from(encryption_key, &item)?;
-	API_CLIENT.set_text(item_id, &text_item).await?;
+pub async fn set(item_id: &str, key: &[u8], item: ItemVariant) -> Result<()> {
+	let text_item = EncryptedItem::from(key, &item)?;
+	API_CLIENT.set_item(item_id, &text_item).await?;
 
 	let mut cache = CACHE.write().unwrap();
 	cache.insert(item_id.to_string(), item);
@@ -137,7 +137,7 @@ pub async fn set(item_id: &str, encryption_key: &[u8], item: ItemVariant) -> Res
 pub async fn delete(item_id: &str) -> Result<()> {
 	let item_exists = CACHE.write().unwrap().remove(item_id).is_some();
 	if item_exists {
-		API_CLIENT.delete_text(item_id).await?;
+		API_CLIENT.delete_item(item_id).await?;
 	}
 
 	Ok(())

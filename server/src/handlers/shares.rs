@@ -1,6 +1,6 @@
 use super::auth_share_for_session;
 use crate::database::{self, *};
-use crate::model::{Session, Share, TextItemData};
+use crate::model::{EncryptedData, Session, Share};
 use crate::{OptionalSession, UserId};
 use anyhow::Result;
 use axum::{extract::Path, http::StatusCode, Json};
@@ -64,7 +64,7 @@ pub async fn create_share(UserId(user_id): UserId, Json(share): Json<UpsertShare
 		id: share.id.clone(),
 		user_id,
 		password_phc,
-		data: TextItemData {
+		data: EncryptedData {
 			base64: share.base64,
 			nonce: share.nonce,
 		},

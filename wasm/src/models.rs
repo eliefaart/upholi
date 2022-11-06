@@ -3,20 +3,20 @@ use anyhow::Result;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct TextItem {
-	pub key: String,
+pub struct EncryptedItem {
+	pub id: String,
 	pub base64: String,
 	pub nonce: String,
 }
 
-impl TextItem {
+impl EncryptedItem {
 	pub fn from<T: Serialize>(key: &[u8], item: &T) -> Result<Self> {
 		let json = serde_json::to_string(item)?;
 		let bytes = json.as_bytes();
 		let encrypt_result = crate::encryption::symmetric::encrypt_slice(key, bytes)?;
 		let base64 = base64::encode_config(encrypt_result.bytes, base64::STANDARD);
 		Ok(Self {
-			key: String::new(),
+			id: String::new(),
 			base64,
 			nonce: encrypt_result.nonce,
 		})
@@ -32,7 +32,6 @@ impl TextItem {
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct Library {
-	//pub item_keys: Vec<ItemKey>,
 	pub photos: Vec<LibraryPhoto>,
 	pub albums: Vec<LibraryAlbum>,
 	pub shares: Vec<LibraryShare>,
@@ -195,7 +194,7 @@ impl From<AlbumShareDataPhoto> for AlbumPhoto {
 mod tests {
 	use crate::{
 		encryption::symmetric::generate_key,
-		models::{Library, TextItem},
+		models::{EncryptedItem, Library},
 	};
 
 	use super::{LibraryAlbum, LibraryPhoto, LibraryShare};
@@ -203,7 +202,7 @@ mod tests {
 	#[test]
 	fn encrypt_decrypt_text_item_bytes() {
 		let key = generate_key();
-		let item = TextItem::from(&key, &key).unwrap();
+		let item = EncryptedItem::from(&key, &key).unwrap();
 		let decrypted: Vec<u8> = item.decrypt(&key).unwrap();
 
 		assert_eq!(key, decrypted);
@@ -213,7 +212,7 @@ mod tests {
 	fn encrypt_decrypt_text_item_instance() {
 		let key = generate_key();
 		let library = Library::default();
-		let item = TextItem::from(&key, &library).unwrap();
+		let item = EncryptedItem::from(&key, &library).unwrap();
 		let decrypted: Library = item.decrypt(&key).unwrap();
 
 		assert_eq!(library.photos.len(), decrypted.photos.len());

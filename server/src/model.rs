@@ -25,29 +25,29 @@ pub struct Share {
 	pub user_id: String,
 	pub password_phc: String,
 	#[serde(flatten)]
-	pub data: TextItemData,
+	pub data: EncryptedData,
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct TextItemData {
+pub struct EncryptedData {
 	pub base64: String,
 	pub nonce: String,
 }
 
-impl DbItem for TextItemData {
+impl DbItem for EncryptedData {
 	fn collection_name() -> &'static str {
-		"text"
+		"items"
 	}
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct FileItemData {
+pub struct File {
 	pub file_id: String,
 	/// Path, container ID/name, something that indicates where this file is stores.
 	pub container: String,
 }
 
-impl DbItem for FileItemData {
+impl DbItem for File {
 	fn collection_name() -> &'static str {
 		"files"
 	}
@@ -55,15 +55,16 @@ impl DbItem for FileItemData {
 
 #[derive(Serialize)]
 pub struct Item<TItemData> {
-	pub key: String,
+	pub id: String,
 	#[serde(flatten)]
 	pub data: TItemData,
 }
 
-pub type TextItem = Item<TextItemData>;
+// TODO: Do I need this? (in other words.. Do I need 'id' of Item<T>?)
+pub type EncryptedItem = Item<EncryptedData>;
 
-impl TextItem {
-	pub fn from_data(key: String, data: TextItemData) -> Self {
-		Self { key, data }
+impl EncryptedItem {
+	pub fn from_data(key: String, data: EncryptedData) -> Self {
+		Self { id: key, data }
 	}
 }

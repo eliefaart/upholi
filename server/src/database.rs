@@ -1,4 +1,4 @@
-use crate::model::{DbItem, FileItemData, Session, Share, TextItemData, User};
+use crate::model::{DbItem, EncryptedData, File, Session, Share, User};
 use anyhow::Result;
 use async_once::AsyncOnce;
 use bson::{doc, Document};
@@ -15,7 +15,7 @@ const COLLECTION_NAME_SHARES: &str = "shares";
 
 #[derive(Serialize, Deserialize)]
 struct ItemContainer<TData> {
-	pub key: String,
+	pub id: String,
 	pub user_id: String,
 	pub shares: Vec<String>,
 	#[serde(flatten)]
@@ -103,14 +103,14 @@ pub async fn delete_share(user_id: &str, id: &str) -> Result<()> {
 pub async fn set_items_for_share(share_id: &str, item_ids: &[String]) -> Result<()> {
 	remove_items_from_share(share_id).await?;
 
-	let collection_names = vec![TextItemData::collection_name(), FileItemData::collection_name()];
+	let collection_names = vec![EncryptedData::collection_name(), File::collection_name()];
 	for collection_name in collection_names {
 		DB.get()
 			.await
 			.collection::<Document>(collection_name)
 			.update_many(
 				doc! {
-					"key": {
+					"id": {
 						"$in": item_ids
 					},
 				},
@@ -128,7 +128,7 @@ pub async fn set_items_for_share(share_id: &str, item_ids: &[String]) -> Result<
 }
 
 pub async fn remove_items_from_share(share_id: &str) -> Result<()> {
-	let collection_names = vec![TextItemData::collection_name(), FileItemData::collection_name()];
+	let collection_names = vec![EncryptedData::collection_name(), File::collection_name()];
 	for collection_name in collection_names {
 		DB.get()
 			.await
@@ -169,8 +169,8 @@ pub async fn remove_authorizations_for_share(share_id: &str) -> Result<()> {
 	Ok(())
 }
 
-/// Get all keys of type.
-pub async fn get_item_keys<T: DbItem>(user_id: &str) -> Result<Vec<String>> {
+/// Get all IDs of type.
+pub async fn get_item_ids<T: DbItem>(user_id: &str) -> Result<Vec<String>> {
 	let collection_name = T::collection_name();
 	let collection = DB.get().await.collection::<T>(collection_name);
 	let query = collection.aggregate(
@@ -183,7 +183,7 @@ pub async fn get_item_keys<T: DbItem>(user_id: &str) -> Result<Vec<String>> {
 			doc! {
 				"$project": {
 					"_id": -1,
-					"key": 1
+					"id": 1
 				}
 			},
 		],
@@ -192,23 +192,23 @@ pub async fn get_item_keys<T: DbItem>(user_id: &str) -> Result<Vec<String>> {
 
 	let mut cursor = query.await?;
 
-	let mut keys: Vec<String> = vec![];
+	let mut ids: Vec<String> = vec![];
 	while cursor.advance().await? {
 		let current = cursor.current();
-		let key = current.get_str("key")?;
-		keys.push(key.to_string());
+		let id = current.get_str("id")?;
+		ids.push(id.to_string());
 	}
 
-	Ok(keys)
+	Ok(ids)
 }
 
-pub async fn get_item<T: DbItem>(key: &str, session: &Session) -> Result<Option<T>> {
+pub async fn get_item<T: DbItem>(id: &str, session: &Session) -> Result<Option<T>> {
 	if session.user_id.is_none() && session.shares.is_empty() {
 		return Ok(None);
 	}
 
 	let collection = DB.get().await.collection::<ItemContainer<T>>(T::collection_name());
-	let mut filter = doc! { "key": key };
+	let mut filter = doc! { "id": id };
 
 	if let Some(user_id) = &session.user_id {
 		filter.extend(doc! {"user_id": user_id});
@@ -224,9 +224,9 @@ pub async fn get_item<T: DbItem>(key: &str, session: &Session) -> Result<Option<
 	}
 }
 
-pub async fn upsert_item<T: DbItem>(key: &str, item: T, user_id: &str) -> Result<()> {
+pub async fn upsert_item<T: DbItem>(id: &str, item: T, user_id: &str) -> Result<()> {
 	let item = ItemContainer {
-		key: String::from(key),
+		id: String::from(id),
 		user_id: user_id.to_string(),
 		data: item,
 		shares: vec![],
@@ -235,7 +235,7 @@ pub async fn upsert_item<T: DbItem>(key: &str, item: T, user_id: &str) -> Result
 	collection
 		.replace_one(
 			doc! {
-				"key": key,
+				"id": id,
 				"user_id": user_id,
 			},
 			item,
@@ -246,12 +246,12 @@ pub async fn upsert_item<T: DbItem>(key: &str, item: T, user_id: &str) -> Result
 	Ok(())
 }
 
-pub async fn delete_item<T: DbItem>(key: &str, user_id: &str) -> Result<()> {
+pub async fn delete_item<T: DbItem>(id: &str, user_id: &str) -> Result<()> {
 	let collection = DB.get().await.collection::<T>(T::collection_name());
 	collection
 		.delete_one(
 			doc! {
-				"key": key,
+				"id": id,
 				"user_id": user_id,
 			},
 			None,

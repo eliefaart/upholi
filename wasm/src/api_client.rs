@@ -1,10 +1,11 @@
-use crate::models::TextItem;
 use anyhow::{anyhow, Result};
 use reqwest::StatusCode;
 use upholi_lib::http::{
 	request::{AuthenticateUserRequest, AuthorizeShareRequest, CreateUserRequest, UpsertShareRequest},
 	response::GetShareResult,
 };
+
+use crate::models::EncryptedItem;
 
 /// Client for all HTTP calls to the API.
 pub struct ApiClient {
@@ -13,7 +14,7 @@ pub struct ApiClient {
 }
 
 pub struct File {
-	pub key: String,
+	pub id: String,
 	pub bytes: Vec<u8>,
 }
 
@@ -84,19 +85,19 @@ impl ApiClient {
 		}
 	}
 
-	pub async fn list_text_keys(&self) -> Result<Vec<String>> {
-		let url = format!("{}/text", self.base_url).to_owned();
+	pub async fn list_item_ids(&self) -> Result<Vec<String>> {
+		let url = format!("{}/item", self.base_url).to_owned();
 		let response = self.client.get(&url).send().await?;
 
 		if response.status() == StatusCode::OK {
 			Ok(response.json().await?)
 		} else {
-			Err(anyhow!("Failed to get text keys"))
+			Err(anyhow!("Failed to get item IDs"))
 		}
 	}
 
-	pub async fn get_text(&self, key: &str) -> Result<Option<TextItem>> {
-		let url = format!("{}/text/{key}", self.base_url).to_owned();
+	pub async fn get_item(&self, id: &str) -> Result<Option<EncryptedItem>> {
+		let url = format!("{}/item/{id}", self.base_url).to_owned();
 		let response = self.client.get(&url).send().await?;
 
 		if response.status() == StatusCode::OK {
@@ -104,23 +105,23 @@ impl ApiClient {
 		} else if response.status() == StatusCode::NOT_FOUND {
 			Ok(None)
 		} else {
-			Err(anyhow!("Failed to get text"))
+			Err(anyhow!("Failed to get item"))
 		}
 	}
 
-	pub async fn set_text(&self, key: &str, body: &TextItem) -> Result<()> {
-		let url = format!("{}/text/{key}", self.base_url).to_owned();
+	pub async fn set_item(&self, id: &str, body: &EncryptedItem) -> Result<()> {
+		let url = format!("{}/item/{id}", self.base_url).to_owned();
 		let response = self.client.post(&url).json(&body).send().await?;
 
 		if response.status() == StatusCode::OK {
 			Ok(())
 		} else {
-			Err(anyhow!("Failed to set text"))
+			Err(anyhow!("Failed to set item"))
 		}
 	}
 
-	pub async fn get_file(&self, key: &str) -> Result<Option<Vec<u8>>> {
-		let url = format!("{}/file/{key}", self.base_url).to_owned();
+	pub async fn get_file(&self, id: &str) -> Result<Option<Vec<u8>>> {
+		let url = format!("{}/file/{id}", self.base_url).to_owned();
 		let response = self.client.get(&url).send().await?;
 
 		if response.status() == StatusCode::OK {
@@ -138,7 +139,7 @@ impl ApiClient {
 		// Prepare request body
 		let mut multipart_builder = crate::multipart::MultipartBuilder::new();
 		for file in files {
-			multipart_builder = multipart_builder.add_bytes(&file.key, &file.bytes);
+			multipart_builder = multipart_builder.add_bytes(&file.id, &file.bytes);
 		}
 		let multipart = multipart_builder.build();
 
@@ -154,24 +155,24 @@ impl ApiClient {
 		if response.status() == StatusCode::OK {
 			Ok(())
 		} else {
-			Err(anyhow!("Failed to set text"))
+			Err(anyhow!("Failed to set item"))
 		}
 	}
 
-	pub async fn delete_text(&self, key: &str) -> Result<()> {
-		let url = format!("{}/text/{key}", self.base_url).to_owned();
+	pub async fn delete_item(&self, id: &str) -> Result<()> {
+		let url = format!("{}/item/{id}", self.base_url).to_owned();
 		let response = self.client.delete(&url).send().await?;
 
 		let status_code = response.status();
 		if status_code == StatusCode::OK {
 			Ok(())
 		} else {
-			Err(anyhow!("Failed to delete text: {status_code}"))
+			Err(anyhow!("Failed to delete item: {status_code}"))
 		}
 	}
 
-	pub async fn delete_file(&self, key: &str) -> Result<()> {
-		let url = format!("{}/file/{key}", self.base_url).to_owned();
+	pub async fn delete_file(&self, id: &str) -> Result<()> {
+		let url = format!("{}/file/{id}", self.base_url).to_owned();
 		let response = self.client.delete(&url).send().await?;
 
 		let status_code = response.status();

@@ -3,11 +3,11 @@ use crate::encryption::symmetric::{decrypt_slice, derive_key_from_string, genera
 use crate::exif::Exif;
 use crate::images::Image;
 use crate::keys::{get_key_from_user_credentials, get_master_key, get_share_key, set_master_key, set_share_key};
-use crate::models::Photo;
 use crate::models::{
 	Album, AlbumExpanded, AlbumPhoto, AlbumShareData, AlbumShareDataPhoto, Library, LibraryAlbum, LibraryPhoto, LibraryShare, Share,
-	ShareData, TextItem,
+	ShareData,
 };
+use crate::models::{EncryptedItem, Photo};
 use crate::repository::ItemVariant;
 use crate::{encryption, hashing};
 use crate::{repository, API_CLIENT};
@@ -101,10 +101,9 @@ impl WasmClient {
 		Ok(library.photos)
 	}
 
-	pub async fn get_photo(&self, id: &str, key: Option<&Vec<u8>>) -> Result<Photo> {
-		let library = self.get_library().await?;
-		let photo_encryption_key = self.determine_photo_key(&library, id, key).await?;
-		let photo_item = repository::get(id, photo_encryption_key).await?;
+	pub async fn get_photo(&self, id: &str, key: Option<Vec<u8>>) -> Result<Photo> {
+		let photo_encryption_key = self.determine_photo_key(id, key).await?;
+		let photo_item = repository::get(id, &photo_encryption_key).await?;
 		let photo = photo_item.ok_or_else(|| anyhow!("Photo '{id}' not found"))?.try_into()?;
 
 		Ok(photo)
@@ -269,15 +268,15 @@ impl WasmClient {
 
 			let files: Vec<File> = vec![
 				File {
-					key: format!("{photo_id}-thumbnail"),
+					id: format!("{photo_id}-thumbnail"),
 					bytes: thumbnail_encrypted.bytes,
 				},
 				File {
-					key: format!("{photo_id}-preview"),
+					id: format!("{photo_id}-preview"),
 					bytes: preview_encrypted.bytes,
 				},
 				File {
-					key: format!("{photo_id}-original"),
+					id: format!("{photo_id}-original"),
 					bytes: original_encrypted.bytes,
 				},
 			];
@@ -294,26 +293,25 @@ impl WasmClient {
 		}
 	}
 
-	pub async fn get_photo_image_src(&self, id: &str, photo_variant: PhotoVariant, key: Option<&Vec<u8>>) -> Result<String> {
+	pub async fn get_photo_image_src(&self, id: &str, photo_variant: PhotoVariant, key: Option<Vec<u8>>) -> Result<String> {
 		if id.is_empty() {
 			Ok(String::new())
 		} else {
-			let library = self.get_library().await?;
-			let encryption_key = self.determine_photo_key(&library, id, key).await?;
-			let photo = self.get_photo(id, Some(encryption_key)).await?;
+			let photo = self.get_photo(id, key.clone()).await?;
 			let nonce = match photo_variant {
 				PhotoVariant::Thumbnail => photo.nonce_thumbnail,
 				PhotoVariant::Preview => photo.nonce_preview,
 				PhotoVariant::Original => photo.nonce_original,
 			};
 
-			let file_key = format!("{id}-{photo_variant}");
+			let file_id = format!("{id}-{photo_variant}");
 			let encrypted_bytes = self
 				.api_client
-				.get_file(&file_key)
+				.get_file(&file_id)
 				.await?
-				.ok_or_else(|| anyhow!("File '{file_key}' not found"))?;
-			let photo_bytes = decrypt_slice(encryption_key, nonce.as_bytes(), &encrypted_bytes)?;
+				.ok_or_else(|| anyhow!("File '{file_id}' not found"))?;
+			let encryption_key = self.determine_photo_key(id, key).await?;
+			let photo_bytes = decrypt_slice(&encryption_key, nonce.as_bytes(), &encrypted_bytes)?;
 			let photo_base64 = base64::encode_config(photo_bytes, base64::STANDARD);
 
 			let src = format!("data:{};base64,{}", photo.content_type, photo_base64);
@@ -450,7 +448,7 @@ impl WasmClient {
 			]
 		}));
 
-		let encrypted = TextItem::from(&share_key, &share)?;
+		let encrypted = EncryptedItem::from(&share_key, &share)?;
 		self.api_client
 			.upsert_share(UpsertShareRequest {
 				id: share_id.clone(),
@@ -499,10 +497,10 @@ impl WasmClient {
 			.get_share(share_id)
 			.await?
 			.ok_or_else(|| anyhow!("Share '{share_id}' not found."))?;
-		let text_item = TextItem {
+		let text_item = EncryptedItem {
 			base64: share.base64,
 			nonce: share.nonce,
-			key: String::new(),
+			id: String::new(),
 		};
 		let share: Share = text_item.decrypt(share_key)?;
 		let ShareData::Album(album_data) = share.data;
@@ -553,10 +551,13 @@ impl WasmClient {
 	///
 	/// * `photo_id` - ID of photo to determine encryption key for.
 	/// * `key` - Option with photo's encryption key.
-	async fn determine_photo_key<'a>(&'a self, library: &'a Library, photo_id: &str, key: Option<&'a Vec<u8>>) -> Result<&'a Vec<u8>> {
+	async fn determine_photo_key(&self, photo_id: &str, key: Option<Vec<u8>>) -> Result<Vec<u8>> {
 		match key {
-			Some(photo_key) => Ok(photo_key),
-			None => self.get_item_encryption_key(library, photo_id),
+			Some(photo_key) => Ok(photo_key.clone()),
+			None => {
+				let lib = &self.get_library().await?;
+				Ok(self.get_item_encryption_key(lib, photo_id)?.clone())
+			}
 		}
 	}
 
