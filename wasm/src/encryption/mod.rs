@@ -1,3 +1,5 @@
+use upholi_lib::ids::id_with_length;
+
 mod aes128;
 
 pub struct EncryptionResult {
@@ -5,9 +7,9 @@ pub struct EncryptionResult {
 	pub bytes: Vec<u8>,
 }
 
-fn generate_string(bytes: usize) -> Vec<u8> {
+fn generate_string(length: usize) -> Vec<u8> {
 	// TODO: proper random bytes generation
-	uuid::Uuid::new_v4().to_simple().to_string()[0..bytes].as_bytes().to_vec()
+	id_with_length(length).as_bytes().to_vec()
 }
 
 pub mod symmetric {

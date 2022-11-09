@@ -1,6 +1,6 @@
 use crate::{api_client::ApiClient, wasm_client::WasmClient};
 use js_sys::{Array, JsString, Promise};
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use serde::Serialize;
 use upholi_lib::PhotoVariant;
 use wasm_bindgen::prelude::*;
@@ -27,15 +27,13 @@ mod multipart;
 mod repository;
 mod wasm_client;
 
-lazy_static! {
-	pub static ref ORIGIN: String = {
-		let window = web_sys::window().expect_throw("Could not find global 'window'.");
-		let location = window.location();
-		location.origin().expect_throw("could not determine 'origin'.")
-	};
-	pub static ref WASM_CLIENT: WasmClient = WasmClient::new(&ORIGIN);
-	pub static ref API_CLIENT: ApiClient = ApiClient::new(&ORIGIN);
-}
+static ORIGIN: Lazy<String> = Lazy::new(|| {
+	let window = web_sys::window().expect_throw("Could not find global 'window'.");
+	let location = window.location();
+	location.origin().expect_throw("could not determine 'origin'.")
+});
+static WASM_CLIENT: Lazy<WasmClient> = Lazy::new(|| WasmClient::new(&ORIGIN));
+static API_CLIENT: Lazy<ApiClient> = Lazy::new(|| ApiClient::new(&ORIGIN));
 
 #[wasm_bindgen]
 extern "C" {

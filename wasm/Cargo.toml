@@ -10,13 +10,12 @@ crate-type = ["cdylib"]
 
 [dependencies]
 upholi_lib = { path = "../lib" }
-lazy_static = "1.4.0"
 wasm-bindgen = { version = "0.2.78", features = ["serde-serialize"] }
 wasm-bindgen-futures = "0.4.28"
 js-sys = "0.3.55"
 web-sys = { version = "0.3.55", features = ["Window", "Location", "Storage"] }
 aes-gcm-siv = "0.10.3"
-uuid = { version = "0.8.1", features = ["v4", "wasm-bindgen"] }
+uuid = { version = "0.8.1", features = ["wasm-bindgen"] }
 image = { version = "0.23.12", default-features = false, features = ["gif", "jpeg", "ico", "png", "pnm", "tga", "tiff", "webp", "bmp", "hdr", "dxt", "dds", "farbfeld"] }
 serde = { version = "1.0", features = ["derive" ] }
 serde_json = "1.0.64"
@@ -28,3 +27,4 @@ sha2 = "0.9.8"
 anyhow = "1.0.65"
 async-trait = "0.1.57"
 serde-wasm-bindgen = "0.4.5"
+once_cell = "1.16.0"

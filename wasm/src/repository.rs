@@ -1,12 +1,10 @@
 use crate::{models::*, API_CLIENT};
 use anyhow::{anyhow, Result};
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, sync::RwLock};
 
-lazy_static! {
-	static ref CACHE: RwLock<HashMap<String, ItemVariant>> = RwLock::new(HashMap::new());
-}
+static CACHE: Lazy<RwLock<HashMap<String, ItemVariant>>> = Lazy::new(|| RwLock::new(HashMap::new()));
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum ItemVariant {
