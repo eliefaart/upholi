@@ -11,12 +11,16 @@ pub fn id() -> String {
 	nanoid!(NANOID_LENGTH, &NANOID_ALPHABET)
 }
 
+pub fn id_with_length(length: usize) -> String {
+	nanoid!(length, &NANOID_ALPHABET)
+}
+
 #[cfg(test)]
 mod tests {
 	use super::*;
 
 	#[test]
-	fn generates_correct_length() {
+	fn id_generates_correct_length() {
 		for _ in 0..100 {
 			let id = id();
 			assert_eq!(id.len(), NANOID_LENGTH);
@@ -24,7 +28,7 @@ mod tests {
 	}
 
 	#[test]
-	fn generates_correct_characters() {
+	fn id_generates_correct_characters() {
 		for _ in 0..100 {
 			let id = id();
 			assert!(id.chars().all(|ch| NANOID_ALPHABET.contains(&ch)));
@@ -32,12 +36,20 @@ mod tests {
 	}
 
 	#[test]
-	fn no_repeats() {
+	fn id_no_repeats() {
 		let mut prev_id = String::new();
 		for _ in 0..10_000 {
 			let id = id();
 			assert_ne!(id, prev_id);
 			prev_id = id;
+		}
+	}
+
+	#[test]
+	fn id_with_length_generates_correct_length() {
+		for i in 1..100 {
+			let id = id_with_length(i);
+			assert_eq!(id.len(), i);
 		}
 	}
 }
