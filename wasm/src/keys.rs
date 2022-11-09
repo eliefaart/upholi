@@ -1,5 +1,5 @@
 use anyhow::{anyhow, Result};
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use std::sync::RwLock;
 use wasm_bindgen::UnwrapThrowExt;
 use web_sys::Storage;
@@ -9,18 +9,16 @@ use crate::{encryption, hashing};
 const LOCAL_STORAGE_KEY_MASTER_KEY: &str = "master-key";
 const LOCAL_STORAGE_KEY_SHARE_KEY_PREFIX: &str = "share-key";
 
-lazy_static! {
-	static ref MASTER_KEY: RwLock<Vec<u8>> = {
-		let storage = get_local_storage();
-		let stored_key = storage.get_item(LOCAL_STORAGE_KEY_MASTER_KEY).unwrap_throw();
-		let key = match stored_key {
-			Some(key) => base64::decode_config(&key, base64::STANDARD).unwrap_throw(),
-			None => vec![],
-		};
-
-		RwLock::new(key)
+static MASTER_KEY: Lazy<RwLock<Vec<u8>>> = Lazy::new(|| {
+	let storage = get_local_storage();
+	let stored_key = storage.get_item(LOCAL_STORAGE_KEY_MASTER_KEY).unwrap_throw();
+	let key = match stored_key {
+		Some(key) => base64::decode_config(&key, base64::STANDARD).unwrap_throw(),
+		None => vec![],
 	};
-}
+
+	RwLock::new(key)
+});
 
 /// Get user's master encryption key
 pub fn get_master_key() -> Vec<u8> {

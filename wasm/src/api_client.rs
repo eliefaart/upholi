@@ -85,17 +85,6 @@ impl ApiClient {
 		}
 	}
 
-	pub async fn list_item_ids(&self) -> Result<Vec<String>> {
-		let url = format!("{}/item", self.base_url).to_owned();
-		let response = self.client.get(&url).send().await?;
-
-		if response.status() == StatusCode::OK {
-			Ok(response.json().await?)
-		} else {
-			Err(anyhow!("Failed to get item IDs"))
-		}
-	}
-
 	pub async fn get_item(&self, id: &str) -> Result<Option<EncryptedItem>> {
 		let url = format!("{}/item/{id}", self.base_url).to_owned();
 		let response = self.client.get(&url).send().await?;
