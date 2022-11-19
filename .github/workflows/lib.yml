@@ -22,3 +22,13 @@ jobs:
       run: |
         cd ./lib
         cargo test --verbose
+
+    - name: Clippy
+      run: |
+        cd ./lib
+        cargo clippy --all -- -D warnings
+
+    - name: Format
+      run: |
+        cd ./lib
+        cargo fmt --all -- --check

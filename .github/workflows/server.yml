@@ -23,3 +23,13 @@ jobs:
       run: |
         cd ./server
         cargo test --verbose
+
+    - name: Clippy
+      run: |
+        cd ./server
+        cargo clippy --all -- -D warnings
+
+    - name: Format
+      run: |
+        cd ./server
+        cargo fmt --all -- --check

@@ -11,8 +11,9 @@ pub fn id() -> String {
 	nanoid!(NANOID_LENGTH, &NANOID_ALPHABET)
 }
 
-pub fn id_with_length(length: usize) -> String {
-	nanoid!(length, &NANOID_ALPHABET)
+pub fn id_with_length(length: usize) -> String
+{
+		nanoid!(length, &NANOID_ALPHABET)
 }
 
 #[cfg(test)]
