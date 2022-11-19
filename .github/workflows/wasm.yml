@@ -23,3 +23,13 @@ jobs:
       run: |
         cd ./wasm
         cargo test --verbose
+
+    - name: Clippy
+      run: |
+        cd ./wasm
+        cargo clippy --all -- -D warnings
+
+    - name: Format
+      run: |
+        cd ./wasm
+        cargo fmt --all -- --check

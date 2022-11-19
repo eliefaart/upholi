@@ -552,7 +552,7 @@ impl WasmClient {
 	/// * `key` - Option with photo's encryption key.
 	async fn determine_photo_key(&self, photo_id: &str, key: Option<Vec<u8>>) -> Result<Vec<u8>> {
 		match key {
-			Some(photo_key) => Ok(photo_key.clone()),
+			Some(photo_key) => Ok(photo_key),
 			None => {
 				let lib = &self.get_library().await?;
 				Ok(self.get_item_encryption_key(lib, photo_id)?.clone())
