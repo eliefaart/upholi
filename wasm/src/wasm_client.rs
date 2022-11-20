@@ -173,7 +173,12 @@ impl WasmClient {
     }
 
     pub async fn delete_album(&self, id: &str) -> Result<()> {
-        // TODO: Delete shares for this album
+        let shares = self.get_shares().await?;
+        let shares_for_album = shares.iter().filter(|share| share.album_id == id);
+        for share in shares_for_album {
+            self.delete_share(&share.id).await?;
+        }
+
         repository::delete(id).await?;
 
         self.update_library(&mut |library: &mut Library| {
