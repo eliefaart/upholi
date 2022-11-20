@@ -13,12 +13,14 @@ use cookie::{
 	time::{Duration, OffsetDateTime},
 	SameSite,
 };
+use database::upsert_session;
 use handlers::{files::*, items::*, shares::*, user::*};
 use lazy_static::lazy_static;
 use model::Session;
 use std::net::SocketAddr;
 use tower_cookies::{Cookie, CookieManagerLayer};
 use tower_http::services::ServeDir;
+use upholi_lib::ids::id;
 
 mod database;
 mod handlers;
@@ -32,12 +34,10 @@ lazy_static! {
 	pub static ref SETTINGS: Settings = Settings::new();
 }
 
-const AUTH_COOKIE_NAME: &str = "session";
-const AUTH_COOKIE_EXPIRATION_TIME_DAYS: i64 = 1;
-const AUTH_COOKIE_SECURE: bool = false;
+const SESSION_COOKIE_NAME: &str = "session";
+const SESSION_COOKIE_EXPIRATION_TIME_DAYS: i64 = 30;
 
 pub struct UserId(String);
-pub struct OptionalSession(Option<Session>);
 
 #[tokio::main]
 async fn main() {
@@ -68,7 +68,7 @@ async fn main() {
 		.merge(index_file_router)
 		.fallback(get_service(ServeDir::new(&SETTINGS.server.wwwroot_path)).handle_error(on_io_error))
 		.layer(CookieManagerLayer::new())
-		.layer(axum::middleware::from_fn(extend_session_cookie));
+		.layer(axum::middleware::from_fn(session_cookie_layer));
 
 	// run it
 	let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
@@ -76,18 +76,8 @@ async fn main() {
 	axum::Server::bind(&addr).serve(app.into_make_service()).await.unwrap();
 }
 
-#[async_trait]
-impl<B> FromRequest<B> for UserId
-where
-	B: Send,
-{
-	type Rejection = StatusCode;
-
-	async fn from_request(req: &mut RequestParts<B>) -> Result<Self, Self::Rejection> {
-		let session = get_session_from_request(req).await?;
-		let user_id = session.ok_or(StatusCode::UNAUTHORIZED)?.user_id.ok_or(StatusCode::UNAUTHORIZED)?;
-		Ok(UserId(user_id))
-	}
+async fn on_io_error(_err: std::io::Error) -> impl IntoResponse {
+	StatusCode::INTERNAL_SERVER_ERROR
 }
 
 #[async_trait]
@@ -98,56 +88,59 @@ where
 	type Rejection = StatusCode;
 
 	async fn from_request(req: &mut RequestParts<B>) -> Result<Self, Self::Rejection> {
-		let session = get_session_from_request(req).await?.ok_or(StatusCode::UNAUTHORIZED)?;
-		Ok(session)
+		let session_id = get_session_id_from_headers(req.headers())
+			.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
+			.ok_or(StatusCode::UNAUTHORIZED)?;
+
+		database::get_session(&session_id)
+			.await
+			.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
+			.ok_or(StatusCode::UNAUTHORIZED)
 	}
 }
 
 #[async_trait]
-impl<B> FromRequest<B> for OptionalSession
+impl<B> FromRequest<B> for UserId
 where
 	B: Send,
 {
 	type Rejection = StatusCode;
 
 	async fn from_request(req: &mut RequestParts<B>) -> Result<Self, Self::Rejection> {
-		let session = get_session_from_request(req).await?;
-		Ok(OptionalSession(session))
+		let session = Session::from_request(req).await?;
+		let user_id = session.user_id.ok_or(StatusCode::UNAUTHORIZED)?;
+		Ok(UserId(user_id))
 	}
 }
 
-async fn get_session_from_request<B: Send>(req: &mut RequestParts<B>) -> Result<Option<Session>, StatusCode> {
-	let request_session_id = get_session_id_from_headers(req.headers()).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-	match request_session_id {
-		Some(session_id) => {
-			let session = database::get_session(&session_id)
-				.await
-				.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+/// Middleware that ensures a session exists, and extends its duration if a session was already present in the request.
+async fn session_cookie_layer<B>(mut req: axum::http::Request<B>, next: Next<B>) -> Result<Response, StatusCode> {
+	let session_id = get_session_id_from_headers(req.headers()).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+	let request_contains_session = session_id.is_some();
 
-			Ok(session)
-		}
-		None => Ok(None),
+	// Create a new session if request did not contain one
+	let session_id = match session_id {
+		Some(session_id) => session_id,
+		None => create_new_session().await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?,
+	};
+
+	let request_is_secure = req.uri().scheme_str().unwrap_or("") == "https";
+	let session_cookie = create_sesson_cookie(session_id, request_is_secure);
+
+	// Add the newly created session to the request
+	if !request_contains_session {
+		let header_value = HeaderValue::from_str(&session_cookie.to_string()).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+		req.headers_mut().append(axum::http::header::COOKIE, header_value);
 	}
-}
 
-async fn on_io_error(_err: std::io::Error) -> impl IntoResponse {
-	StatusCode::INTERNAL_SERVER_ERROR
-}
-
-/// Middleware that extends the cookie duration by including it in the response headers if it is not present yet
-async fn extend_session_cookie<B>(req: axum::http::Request<B>, next: Next<B>) -> Result<Response, StatusCode> {
-	let request_session_id = get_session_id_from_headers(req.headers()).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+	// Handle request
 	let mut response = next.run(req).await;
 
-	if !response.headers().contains_key(axum::http::header::COOKIE) {
-		if let Some(session_id) = request_session_id {
-			let response_cookie = create_sesson_cookie(session_id);
-			response.headers_mut().insert(
-				axum::http::header::SET_COOKIE,
-				HeaderValue::from_str(&response_cookie.to_string()).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?,
-			);
-		}
-	}
+	// Write the cookie to the response
+	response.headers_mut().insert(
+		axum::http::header::SET_COOKIE,
+		HeaderValue::from_str(&session_cookie.to_string()).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?,
+	);
 
 	Ok(response)
 }
@@ -164,13 +157,23 @@ fn get_session_id_from_headers(headers: &HeaderMap) -> Result<Option<String>> {
 	}
 }
 
-pub fn create_sesson_cookie<'a>(session_id: String) -> Cookie<'a> {
+async fn create_new_session() -> Result<String> {
+	let session = Session {
+		id: id(),
+		user_id: None,
+		shares: vec![],
+	};
+	upsert_session(&session).await?;
+	Ok(session.id)
+}
+
+fn create_sesson_cookie<'a>(session_id: String, secure: bool) -> Cookie<'a> {
 	let mut expires_on = OffsetDateTime::now_utc();
-	expires_on += Duration::days(AUTH_COOKIE_EXPIRATION_TIME_DAYS);
-	Cookie::build(AUTH_COOKIE_NAME, session_id)
+	expires_on += Duration::days(SESSION_COOKIE_EXPIRATION_TIME_DAYS);
+	Cookie::build(SESSION_COOKIE_NAME, session_id)
 		.path("/")
 		.http_only(true)
-		.secure(AUTH_COOKIE_SECURE)
+		.secure(secure)
 		.expires(expires_on)
 		.same_site(SameSite::Strict)
 		.finish()

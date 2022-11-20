@@ -1,10 +1,9 @@
 use super::auth_share_for_session;
 use crate::database::{self, *};
 use crate::model::{EncryptedData, Session, Share};
-use crate::{OptionalSession, UserId};
+use crate::UserId;
 use anyhow::Result;
 use axum::{extract::Path, http::StatusCode, Json};
-use tower_cookies::Cookies;
 use upholi_lib::http::{request::*, response::*};
 use upholi_lib::passwords::{hash_password, verify_password_hash};
 
@@ -16,13 +15,11 @@ pub async fn is_authorized_for_share(Path(id): Path<String>, session: Session) -
 }
 
 pub async fn authorize_share(
-	cookies: Cookies,
-	session: OptionalSession,
+	session: Session,
 	Path(id): Path<String>,
 	Json(credentials): Json<AuthorizeShareRequest>,
 ) -> Result<StatusCode, StatusCode> {
-	let session = session.0;
-	let already_authorized = session.is_some() && session.as_ref().unwrap().shares.contains(&id);
+	let already_authorized = session.shares.contains(&id);
 
 	if already_authorized {
 		// This session is already authorized to this share; we won't verify the provided password.
@@ -35,7 +32,7 @@ pub async fn authorize_share(
 
 		let password_correct = verify_password_hash(&credentials.password, &share.password_phc);
 		if password_correct {
-			auth_share_for_session(session, cookies, &share.id)
+			auth_share_for_session(session, &share.id)
 				.await
 				.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 			Ok(StatusCode::OK)
