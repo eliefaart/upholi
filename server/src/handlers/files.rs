@@ -5,6 +5,7 @@ use crate::{database::*, storage};
 use anyhow::Result;
 use axum::extract::Multipart;
 use axum::{extract::Path, http::StatusCode, Json};
+use upholi_lib::http::request::DeleteManyRequest;
 use upholi_lib::ids::id;
 
 struct MultipartEntry {
@@ -67,6 +68,13 @@ pub async fn delete_file(UserId(user_id): UserId, Path(id): Path<String>) -> Res
         },
         Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
     }
+}
+
+pub async fn delete_files(UserId(user_id): UserId, Json(request): Json<DeleteManyRequest>) -> Result<StatusCode, StatusCode> {
+    for id in request.ids {
+        delete_file(UserId(user_id.clone()), Path(id)).await?;
+    }
+    Ok(StatusCode::OK)
 }
 
 async fn get_multipart_entries(mut multipart: Multipart) -> Result<Vec<MultipartEntry>> {

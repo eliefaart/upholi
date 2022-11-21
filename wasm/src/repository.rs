@@ -140,3 +140,16 @@ pub async fn delete(item_id: &str) -> Result<()> {
 
     Ok(())
 }
+
+pub async fn delete_many(item_ids: &[String]) -> Result<()> {
+    let cache = CACHE.write().unwrap();
+    let existing_items: Vec<String> = item_ids
+        .iter()
+        .filter(|&id| cache.contains_key(id))
+        .map(|id| id.to_owned())
+        .collect();
+
+    API_CLIENT.delete_items(existing_items).await?;
+
+    Ok(())
+}

@@ -28,6 +28,11 @@ pub mod request {
         /// List of item ID that this share includes
         pub items: Vec<String>,
     }
+
+    #[derive(Serialize, Deserialize)]
+    pub struct DeleteManyRequest {
+        pub ids: Vec<String>,
+    }
 }
 
 /// API HTTP response models

@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Result};
 use reqwest::StatusCode;
 use upholi_lib::http::{
-    request::{AuthenticateUserRequest, AuthorizeShareRequest, CreateUserRequest, UpsertShareRequest},
+    request::{AuthenticateUserRequest, AuthorizeShareRequest, CreateUserRequest, DeleteManyRequest, UpsertShareRequest},
     response::GetShareResult,
 };
 
@@ -160,15 +160,29 @@ impl ApiClient {
         }
     }
 
-    pub async fn delete_file(&self, id: &str) -> Result<()> {
-        let url = format!("{}/file/{id}", self.base_url).to_owned();
-        let response = self.client.delete(&url).send().await?;
+    pub async fn delete_items(&self, ids: Vec<String>) -> Result<()> {
+        let url = format!("{}/item", self.base_url).to_owned();
+        let data = DeleteManyRequest { ids: ids.to_vec() };
+        let response = self.client.delete(&url).json(&data).send().await?;
 
         let status_code = response.status();
         if status_code == StatusCode::OK {
             Ok(())
         } else {
-            Err(anyhow!("Failed to delete file: {status_code}"))
+            Err(anyhow!("Failed to delete items: {status_code}"))
+        }
+    }
+
+    pub async fn delete_files(&self, ids: Vec<String>) -> Result<()> {
+        let url = format!("{}/file", self.base_url).to_owned();
+        let data = DeleteManyRequest { ids: ids.to_vec() };
+        let response = self.client.delete(&url).json(&data).send().await?;
+
+        let status_code = response.status();
+        if status_code == StatusCode::OK {
+            Ok(())
+        } else {
+            Err(anyhow!("Failed to delete files: {status_code}"))
         }
     }
 

@@ -229,9 +229,6 @@ impl WasmClient {
     }
 
     pub async fn upload_photo(&self, bytes: &[u8]) -> Result<PhotoUploadResult> {
-        // TODO: Horribly optimized, too many server calls.
-        // Need to consolidate them into a single request somehow.
-
         let photo_hash = hashing::compute_sha256_hash(bytes)?;
         let library = self.get_library().await?;
         let existing_photo = library.photos.iter().find(|photo| photo.hash == photo_hash);
@@ -347,13 +344,19 @@ impl WasmClient {
         })
         .await?;
 
-        for id in ids {
-            repository::delete(id).await?;
+        let file_ids = ids
+            .iter()
+            .flat_map(|id| {
+                vec![
+                    format!("{id}-{}", PhotoVariant::Thumbnail),
+                    format!("{id}-{}", PhotoVariant::Preview),
+                    format!("{id}-{}", PhotoVariant::Original),
+                ]
+            })
+            .collect();
 
-            self.api_client.delete_file(&format!("{id}-{}", PhotoVariant::Thumbnail)).await?;
-            self.api_client.delete_file(&format!("{id}-{}", PhotoVariant::Preview)).await?;
-            self.api_client.delete_file(&format!("{id}-{}", PhotoVariant::Original)).await?;
-        }
+        repository::delete_many(ids).await?;
+        self.api_client.delete_files(file_ids).await?;
 
         Ok(())
     }
