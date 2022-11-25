@@ -247,7 +247,7 @@ pub async fn upsert_item<T: DbItem>(id: &str, item: T, user_id: &str) -> Result<
 }
 
 pub async fn delete_item<T: DbItem>(id: &str, user_id: &str) -> Result<()> {
-    delete_items::<T>(&vec![id.to_string()], user_id).await
+    delete_items::<T>(&[id.to_string()], user_id).await
 }
 
 pub async fn delete_items<T: DbItem>(ids: &[String], user_id: &str) -> Result<()> {

@@ -19,7 +19,7 @@ enum StorageProvider {
 
 /// Get storage provider
 fn get_provider<'a>() -> &'a StorageProvider {
-    &*STORAGE_PROVIDER
+    &STORAGE_PROVIDER
 }
 
 /// Initialize storage for user, e.g. preparing directories.

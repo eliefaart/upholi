@@ -142,14 +142,18 @@ pub async fn delete(item_id: &str) -> Result<()> {
 }
 
 pub async fn delete_many(item_ids: &[String]) -> Result<()> {
-    let cache = CACHE.write().unwrap();
-    let existing_items: Vec<String> = item_ids
-        .iter()
-        .filter(|&id| cache.contains_key(id))
-        .map(|id| id.to_owned())
-        .collect();
-
+    let existing_items = get_existing_items(item_ids);
     API_CLIENT.delete_items(existing_items).await?;
 
     Ok(())
+}
+
+/// Filter given list of item IDs and return the ones that exist.
+fn get_existing_items(item_ids: &[String]) -> Vec<String> {
+    let cache = CACHE.write().unwrap();
+    item_ids
+        .iter()
+        .filter(|&id| cache.contains_key(id))
+        .map(|id| id.to_owned())
+        .collect()
 }

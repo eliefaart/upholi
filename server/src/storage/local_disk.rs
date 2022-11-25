@@ -56,7 +56,7 @@ impl LocalDiskStorageProvider {
         let photos_path = path_info.to_str().ok_or_else(|| anyhow!("Empty directory path"))?;
 
         if !path_info.exists() {
-            let result = std::fs::create_dir(&path_info);
+            let result = std::fs::create_dir(path_info);
             if result.is_err() {
                 return Err(anyhow!("Failed to create directory {photos_path}",));
             }
