@@ -13,7 +13,7 @@ static MASTER_KEY: Lazy<RwLock<Vec<u8>>> = Lazy::new(|| {
     let storage = get_local_storage();
     let stored_key = storage.get_item(LOCAL_STORAGE_KEY_MASTER_KEY).unwrap_throw();
     let key = match stored_key {
-        Some(key) => base64::decode_config(&key, base64::STANDARD).unwrap_throw(),
+        Some(key) => base64::decode_config(key, base64::STANDARD).unwrap_throw(),
         None => vec![],
     };
 
@@ -41,7 +41,7 @@ pub fn get_share_key(share_id: &str) -> Result<Option<Vec<u8>>> {
     let storage_key = get_storage_key_for_share(share_id);
     match storage.get_item(&storage_key).unwrap_throw() {
         Some(share_key) => {
-            let share_key = base64::decode_config(&share_key, base64::STANDARD)?;
+            let share_key = base64::decode_config(share_key, base64::STANDARD)?;
             Ok(Some(share_key))
         }
         None => Ok(None),

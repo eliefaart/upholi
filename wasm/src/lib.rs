@@ -164,7 +164,7 @@ impl UpholiClient {
     /// Get a string of a photo variant that can be used within an HTML image element's src attribute
     fn get_photo_image_src(&self, id: String, photo_variant: PhotoVariant, key: Option<String>) -> Promise {
         future_to_promise(async move {
-            let key = key.map(|key_str| base64::decode_config(&key_str, base64::STANDARD).unwrap_throw());
+            let key = key.map(|key_str| base64::decode_config(key_str, base64::STANDARD).unwrap_throw());
             let base64 = WASM_CLIENT.get_photo_image_src(&id, photo_variant, key).await.unwrap_throw();
             Ok(JsValue::from(base64))
         })
