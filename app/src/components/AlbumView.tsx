@@ -39,7 +39,6 @@ const AlbumView: FC<Props> = (props: Props) => {
 			width: photo.width,
 			height: photo.height,
 			mayLoad: true,
-			key: photo.key ?? undefined
 		};
 	});
 
@@ -62,7 +61,6 @@ const AlbumView: FC<Props> = (props: Props) => {
 		{openedPhotoId && <ModalPhotoDetail
 			isOpen={!!openedPhotoId}
 			photoId={openedPhotoId}
-			photoKey={props.album.photos.find(p => p.id === openedPhotoId)?.key ?? undefined}
 			onRequestClose={() => context.history.push(document.location.pathname + "?" + UrlHelper.removeQueryStringParam(document.location.search, queryStringParamNamePhotoId))}
 		/>}
 	</div>;

@@ -3,8 +3,8 @@ import upholiService from "../services/UpholiService";
 /**
  * Copies the content of given HTML element to clipboard
  */
-export function downloadPhoto(photoId: string, photoKey?: string): void {
-	upholiService.getPhotoOriginalImageSrc(photoId, photoKey)
+export function downloadPhoto(photoId: string): void {
+	upholiService.getPhotoOriginalImageSrc(photoId)
 		.then((src) => {
 			const imageSrc = src;
 			const aElement = document.createElement("a");

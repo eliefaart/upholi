@@ -12,6 +12,7 @@ pub enum ItemVariant {
     Library(Library),
     Photo(Photo),
     Album(Album),
+    Share(Share),
 }
 
 impl TryFrom<ItemVariant> for Vec<u8> {
@@ -62,6 +63,18 @@ impl TryFrom<ItemVariant> for Album {
     }
 }
 
+impl TryFrom<ItemVariant> for Share {
+    type Error = anyhow::Error;
+
+    fn try_from(value: ItemVariant) -> Result<Self, Self::Error> {
+        if let ItemVariant::Share(share) = value {
+            Ok(share)
+        } else {
+            Err(anyhow!("ItemVariant is not a share"))
+        }
+    }
+}
+
 impl From<Vec<u8>> for ItemVariant {
     fn from(value: Vec<u8>) -> Self {
         ItemVariant::MasterKey(value)
@@ -83,6 +96,12 @@ impl From<Photo> for ItemVariant {
 impl From<Album> for ItemVariant {
     fn from(value: Album) -> Self {
         ItemVariant::Album(value)
+    }
+}
+
+impl From<Share> for ItemVariant {
+    fn from(value: Share) -> Self {
+        ItemVariant::Share(value)
     }
 }
 
@@ -146,6 +165,19 @@ pub async fn delete_many(item_ids: &[String]) -> Result<()> {
     API_CLIENT.delete_items(existing_items).await?;
 
     Ok(())
+}
+
+pub fn get_cached_shares() -> Result<Vec<Share>> {
+    let cache = CACHE.read().unwrap();
+    let shares = cache
+        .iter()
+        .filter(|(_, item)| matches!(item, ItemVariant::Share(_)))
+        .map(|(_, item)| match item {
+            ItemVariant::Share(share) => share.to_owned(),
+            _ => todo!(),
+        })
+        .collect();
+    Ok(shares)
 }
 
 /// Filter given list of item IDs and return the ones that exist.

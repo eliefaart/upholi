@@ -42,28 +42,20 @@ class UpholiService {
 		return this.client.getPhotos();
 	}
 
-	async getPhoto(id: string, key?: string): Promise<Photo> {
-		return key === undefined
-			? this.client.getPhoto(id)
-			: this.client.getPhotoWithProof(id, key);
+	async getPhoto(id: string): Promise<Photo> {
+		return this.client.getPhoto(id);
 	}
 
-	async getPhotoThumbnailImageSrc(id: string, key?: string): Promise<string> {
-		return key === undefined
-			? this.client.getPhotoThumbnailImageSrc(id)
-			: this.client.getPhotoThumbnailImageSrcWithProof(id, key);
+	async getPhotoThumbnailImageSrc(id: string): Promise<string> {
+		return this.client.getPhotoThumbnailImageSrc(id);
 	}
 
-	async getPhotoPreviewImageSrc(id: string, key?: string): Promise<string> {
-		return key === undefined
-			? await this.client.getPhotoPreviewImageSrc(id)
-			: await this.client.getPhotoPreviewImageSrcWithProof(id, key);
+	async getPhotoPreviewImageSrc(id: string): Promise<string> {
+		return await this.client.getPhotoPreviewImageSrc(id);
 	}
 
-	async getPhotoOriginalImageSrc(id: string, key?: string): Promise<string> {
-		return key === undefined
-			? await this.client.getPhotoOriginalImageSrc(id)
-			: await this.client.getPhotoOriginalImageSrcWithProof(id, key);
+	async getPhotoOriginalImageSrc(id: string): Promise<string> {
+		return await this.client.getPhotoOriginalImageSrc(id);
 	}
 
 	async deletePhotos(ids: string[]): Promise<void> {

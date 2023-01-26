@@ -1,8 +1,7 @@
 use anyhow::{anyhow, Result};
 use reqwest::StatusCode;
-use upholi_lib::http::{
-    request::{AuthenticateUserRequest, AuthorizeShareRequest, CreateUserRequest, DeleteManyRequest, UpsertShareRequest},
-    response::GetShareResult,
+use upholi_lib::http::request::{
+    AuthenticateUserRequest, AuthorizeShareRequest, CreateUserRequest, DeleteManyRequest, UpsertShareRequest,
 };
 
 use crate::models::EncryptedItem;
@@ -69,19 +68,6 @@ impl ApiClient {
             Ok(false)
         } else {
             Err(anyhow!("Authentication failed"))
-        }
-    }
-
-    pub async fn get_share(&self, id: &str) -> Result<Option<GetShareResult>> {
-        let url = format!("{}/share/{id}", self.base_url).to_owned();
-        let response = self.client.get(&url).send().await?;
-
-        if response.status() == StatusCode::OK {
-            Ok(Some(response.json().await?))
-        } else if response.status() == StatusCode::NOT_FOUND {
-            Ok(None)
-        } else {
-            Err(anyhow!("Failed to get share"))
         }
     }
 

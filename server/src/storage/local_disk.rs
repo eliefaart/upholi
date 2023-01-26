@@ -22,7 +22,7 @@ impl LocalDiskStorageProvider {
     pub fn get_file(&self, file_id: &str) -> Result<Option<Vec<u8>>> {
         let photo_relative_path = file_id;
         let photo_absolute_path = Self::get_absolute_photo_path(photo_relative_path)?;
-        let mut file = File::open(&photo_absolute_path)?;
+        let mut file = File::open(photo_absolute_path)?;
 
         let mut file_bytes: Vec<u8> = Vec::new();
         file.read_to_end(&mut file_bytes)?;

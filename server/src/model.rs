@@ -24,8 +24,6 @@ pub struct Share {
     pub id: String,
     pub user_id: String,
     pub password_phc: String,
-    #[serde(flatten)]
-    pub data: EncryptedData,
 }
 
 #[derive(Serialize, Deserialize)]

@@ -1,17 +1,13 @@
 import { PhotoMinimal } from "./Photo";
 
-export interface AlbumPhoto extends PhotoMinimal {
-	key?: string
-}
-
 /**
  * Album info, contains basic information of the photos it contains.
  */
 export interface Album {
 	id: string,
 	title: string,
-	thumbPhoto: AlbumPhoto | null,
-	photos: AlbumPhoto[],
+	thumbPhoto: PhotoMinimal | null,
+	photos: PhotoMinimal[],
 	tags: string[]
 }
 

@@ -23,8 +23,6 @@ pub mod request {
     pub struct UpsertShareRequest {
         pub id: String,
         pub password: String,
-        pub base64: String,
-        pub nonce: String,
         /// List of item ID that this share includes
         pub items: Vec<String>,
     }
@@ -42,11 +40,5 @@ pub mod response {
     #[derive(Serialize, Deserialize)]
     pub struct CreatedResult {
         pub id: String,
-    }
-
-    #[derive(Serialize, Deserialize)]
-    pub struct GetShareResult {
-        pub base64: String,
-        pub nonce: String,
     }
 }

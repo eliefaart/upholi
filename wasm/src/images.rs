@@ -116,7 +116,7 @@ impl Image {
         let write_result = image.write_to(&mut buffer, ImageFormat::Jpeg);
         match write_result {
             Ok(_x) => (),
-            Err(e) => println!("{}", e),
+            Err(e) => println!("{e}"),
         }
         buffer
     }

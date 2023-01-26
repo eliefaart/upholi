@@ -3,11 +3,11 @@ use crate::encryption::symmetric::{decrypt_slice, derive_key_from_string, genera
 use crate::exif::Exif;
 use crate::images::Image;
 use crate::keys::{get_key_from_user_credentials, get_master_key, get_share_key, set_master_key, set_share_key};
+use crate::models::Photo;
 use crate::models::{
     Album, AlbumExpanded, AlbumPhoto, AlbumShareData, AlbumShareDataPhoto, Library, LibraryAlbum, LibraryPhoto, LibraryShare, Share,
     ShareData,
 };
-use crate::models::{EncryptedItem, Photo};
 use crate::repository::ItemVariant;
 use crate::{encryption, hashing};
 use crate::{repository, API_CLIENT};
@@ -101,8 +101,8 @@ impl WasmClient {
         Ok(library.photos)
     }
 
-    pub async fn get_photo(&self, id: &str, key: Option<Vec<u8>>) -> Result<Photo> {
-        let photo_encryption_key = self.determine_photo_key(id, key).await?;
+    pub async fn get_photo(&self, id: &str) -> Result<Photo> {
+        let photo_encryption_key = self.determine_photo_key(id).await?;
         let photo_item = repository::get(id, &photo_encryption_key).await?;
         let photo = photo_item.ok_or_else(|| anyhow!("Photo '{id}' not found"))?.try_into()?;
 
@@ -168,8 +168,8 @@ impl WasmClient {
     pub async fn get_album_full(&self, id: &str) -> Result<AlbumExpanded> {
         let album = self.get_album(id).await?.ok_or_else(|| anyhow!("Album '{id}' not found"))?;
         let photos = self.get_library_photos().await?;
-
-        self.inflate_album(album, photos.into_iter().map(|p| p.into()).collect())
+        let album_photos = photos.into_iter().map(|p| p.into()).collect();
+        self.inflate_album(album, album_photos)
     }
 
     pub async fn delete_album(&self, id: &str) -> Result<()> {
@@ -194,12 +194,7 @@ impl WasmClient {
         let mut photos_in_album: Vec<AlbumPhoto> = vec![];
         for photo in &photos {
             if album.photos.contains(&photo.id) {
-                photos_in_album.push(AlbumPhoto {
-                    id: photo.id.clone(),
-                    width: photo.width,
-                    height: photo.height,
-                    key: photo.key.clone(),
-                });
+                photos_in_album.push(photo.clone());
             }
         }
 
@@ -214,12 +209,7 @@ impl WasmClient {
                         .into_iter()
                         .find(|photo| photo.id == thumbnail_photo_id)
                         .ok_or_else(|| anyhow!("Photo not found for thumbnail of album {}", &album.id))?;
-                    Some(AlbumPhoto {
-                        id: photo.id,
-                        width: photo.width,
-                        height: photo.height,
-                        key: photo.key,
-                    })
+                    Some(photo)
                 }
                 None => None,
             },
@@ -295,24 +285,24 @@ impl WasmClient {
         }
     }
 
-    pub async fn get_photo_image_src(&self, id: &str, photo_variant: PhotoVariant, key: Option<Vec<u8>>) -> Result<String> {
-        if id.is_empty() {
+    pub async fn get_photo_image_src(&self, photo_id: &str, photo_variant: PhotoVariant) -> Result<String> {
+        if photo_id.is_empty() {
             Ok(String::new())
         } else {
-            let photo = self.get_photo(id, key.clone()).await?;
+            let encryption_key = self.determine_photo_key(photo_id).await?;
+            let photo = self.get_photo(photo_id).await?;
             let nonce = match photo_variant {
                 PhotoVariant::Thumbnail => photo.nonce_thumbnail,
                 PhotoVariant::Preview => photo.nonce_preview,
                 PhotoVariant::Original => photo.nonce_original,
             };
 
-            let file_id = format!("{id}-{photo_variant}");
+            let file_id = format!("{photo_id}-{photo_variant}");
             let encrypted_bytes = self
                 .api_client
                 .get_file(&file_id)
                 .await?
                 .ok_or_else(|| anyhow!("File '{file_id}' not found"))?;
-            let encryption_key = self.determine_photo_key(id, key).await?;
             let photo_bytes = decrypt_slice(&encryption_key, nonce.as_bytes(), &encrypted_bytes)?;
             let photo_base64 = base64::encode_config(photo_bytes, base64::STANDARD);
 
@@ -456,13 +446,12 @@ impl WasmClient {
             ]
         }));
 
-        let encrypted = EncryptedItem::from(&share_key, &share)?;
+        repository::set(&share_id, &share_key, ItemVariant::Share(share)).await?;
+
         self.api_client
             .upsert_share(UpsertShareRequest {
                 id: share_id.clone(),
                 password: password.into(),
-                base64: encrypted.base64,
-                nonce: encrypted.nonce,
                 items: share_item_ids,
             })
             .await?;
@@ -471,7 +460,7 @@ impl WasmClient {
             library.shares.retain(|s| s.id != share_id);
             library.shares.push(LibraryShare {
                 id: share_id.clone(),
-                // Do I need to store this ItemKey? I could always reconstruct it from password?
+                // TODO: Do I need to store this ItemKey? I could always reconstruct it from password?
                 key: share_key.clone(),
                 password: password.into(),
                 album_id: album.id.clone(),
@@ -490,7 +479,7 @@ impl WasmClient {
     }
 
     /// Get the share that belongs to given album_id, if any share exists for that album
-    pub async fn get_album_share(&self, album_id: &str) -> Result<Option<LibraryShare>> {
+    pub async fn get_share_for_album(&self, album_id: &str) -> Result<Option<LibraryShare>> {
         let library = self.get_library().await?;
         match library.shares.iter().find(|share| share.album_id == album_id) {
             Some(album) => Ok(Some(album.to_owned())),
@@ -501,15 +490,11 @@ impl WasmClient {
     /// Get the album for given share_id.
     pub async fn get_share_album(&self, share_id: &str) -> Result<AlbumExpanded> {
         let share_key = &get_share_key(share_id)?.ok_or_else(|| anyhow!("No key found for share '{share_id}'."))?;
-        let share = API_CLIENT
-            .get_share(share_id)
+        let share: Share = repository::get(share_id, share_key)
             .await?
-            .ok_or_else(|| anyhow!("Share '{share_id}' not found."))?;
-        let text_item = EncryptedItem {
-            base64: share.base64,
-            nonce: share.nonce,
-        };
-        let share: Share = text_item.decrypt(share_key)?;
+            .ok_or_else(|| anyhow!("Share '{share_id}' not found."))?
+            .try_into()?;
+
         let ShareData::Album(album_data) = share.data;
         let album_id = album_data.album_id;
         let album = self
@@ -554,16 +539,27 @@ impl WasmClient {
 
     /// Determine encryption key to use for given photo ID.
     ///
-    /// If argument `key` is Some, its value is returned. If 'key' is None, then the encryption key is retreived from current user's library data.
-    ///
     /// * `photo_id` - ID of photo to determine encryption key for.
-    /// * `key` - Option with photo's encryption key.
-    async fn determine_photo_key(&self, photo_id: &str, key: Option<Vec<u8>>) -> Result<Vec<u8>> {
-        match key {
-            Some(photo_key) => Ok(photo_key),
-            None => {
-                let lib = &self.get_library().await?;
-                Ok(self.get_item_encryption_key(lib, photo_id)?.clone())
+    async fn determine_photo_key(&self, photo_id: &str) -> Result<Vec<u8>> {
+        // TODO: properly determine if we need to check library or shares,
+        //  not it relies on an error.
+
+        match &self.get_library().await {
+            Ok(library) => Ok(self.get_item_encryption_key(library, photo_id)?.clone()),
+            Err(_) => {
+                let shares = repository::get_cached_shares()?;
+                let photos: Vec<AlbumShareDataPhoto> = shares
+                    .into_iter()
+                    .map(|s| match s.data {
+                        ShareData::Album(share) => share,
+                    })
+                    .flat_map(|f| f.photos)
+                    .collect();
+                let photo = photos
+                    .iter()
+                    .find(|photo| photo.id == photo_id)
+                    .ok_or_else(|| anyhow!("Photo '{photo_id}' not available in any of the cached shares."))?;
+                Ok(photo.key.clone())
             }
         }
     }

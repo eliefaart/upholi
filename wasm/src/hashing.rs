@@ -11,7 +11,7 @@ pub fn compute_sha256_hash(bytes: &[u8]) -> Result<String> {
     let hash = hash.as_slice();
     let mut hash_hex = String::with_capacity(2 * hash.len());
     for byte in hash {
-        write!(hash_hex, "{:02x}", byte)?;
+        write!(hash_hex, "{byte:02x}")?;
     }
 
     Ok(hash_hex)

@@ -1,6 +1,5 @@
-use serde::{Deserialize, Serialize};
-
 use super::{AlbumShareDataPhoto, LibraryPhoto};
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -30,18 +29,6 @@ pub struct AlbumPhoto {
     pub id: String,
     pub width: u32,
     pub height: u32,
-    pub key: Option<String>,
-}
-
-impl From<LibraryPhoto> for AlbumPhoto {
-    fn from(source: LibraryPhoto) -> Self {
-        Self {
-            id: source.id,
-            width: source.width,
-            height: source.height,
-            key: None,
-        }
-    }
 }
 
 impl From<AlbumShareDataPhoto> for AlbumPhoto {
@@ -50,7 +37,16 @@ impl From<AlbumShareDataPhoto> for AlbumPhoto {
             id: source.id,
             width: source.width,
             height: source.height,
-            key: Some(base64::encode_config(source.key, base64::STANDARD)),
+        }
+    }
+}
+
+impl From<LibraryPhoto> for AlbumPhoto {
+    fn from(source: LibraryPhoto) -> Self {
+        Self {
+            id: source.id,
+            width: source.width,
+            height: source.height,
         }
     }
 }

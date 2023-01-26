@@ -11,7 +11,6 @@ import Button from "../misc/Button";
 
 interface Props extends ModalPropsBase {
 	photoId: string,
-	photoKey?: string,
 }
 
 const ModalPhotoDetail: FC<Props> = (props) => {
@@ -20,11 +19,11 @@ const ModalPhotoDetail: FC<Props> = (props) => {
 	const [showExif, setShowExif] = React.useState(false);
 
 	React.useEffect(() => {
-		upholiService.getPhoto(props.photoId, props.photoKey)
+		upholiService.getPhoto(props.photoId)
 			.then(setPhoto)
 			.catch(console.error);
 
-		upholiService.getPhotoPreviewImageSrc(props.photoId, props.photoKey)
+		upholiService.getPhotoPreviewImageSrc(props.photoId)
 			.then(setPhotoSrc)
 			.catch(console.error);
 	}, [props.photoId]);
@@ -34,7 +33,7 @@ const ModalPhotoDetail: FC<Props> = (props) => {
 			label="Info"
 			icon={<IconInfo />}
 		/>}
-		<Button onClick={() => downloadPhoto(props.photoId, props.photoKey)}
+		<Button onClick={() => downloadPhoto(props.photoId)}
 			label="Download"
 			icon={<IconDownload />}
 		/>

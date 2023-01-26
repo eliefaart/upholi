@@ -101,17 +101,7 @@ impl UpholiClient {
     #[wasm_bindgen(js_name = getPhoto)]
     pub fn get_photo(&self, id: String) -> Promise {
         future_to_promise(async move {
-            let photo = WASM_CLIENT.get_photo(&id, None).await.unwrap_throw();
-            Ok(serde_wasm_bindgen::to_value(&photo).unwrap_throw())
-        })
-    }
-
-    /// Get photo data
-    #[wasm_bindgen(js_name = getPhotoWithProof)]
-    pub fn get_photo_with_proof(&self, id: String, key: String) -> Promise {
-        future_to_promise(async move {
-            let key = base64::decode_config(key, base64::STANDARD).unwrap_throw();
-            let photo = WASM_CLIENT.get_photo(&id, Some(key)).await.unwrap_throw();
+            let photo = WASM_CLIENT.get_photo(&id).await.unwrap_throw();
             Ok(serde_wasm_bindgen::to_value(&photo).unwrap_throw())
         })
     }
@@ -128,44 +118,26 @@ impl UpholiClient {
     /// Get a base64 string of a photo's thumbnail image
     #[wasm_bindgen(js_name = getPhotoThumbnailImageSrc)]
     pub fn get_photo_thumbnail_image_src(&self, id: String) -> Promise {
-        Self::get_photo_image_src(self, id, PhotoVariant::Thumbnail, None)
+        Self::get_photo_image_src(self, id, PhotoVariant::Thumbnail)
     }
 
     /// Get a base64 string of a photo's preview image
     #[wasm_bindgen(js_name = getPhotoPreviewImageSrc)]
     pub fn get_photo_preview_image_src(&self, id: String) -> Promise {
-        Self::get_photo_image_src(self, id, PhotoVariant::Preview, None)
+        Self::get_photo_image_src(self, id, PhotoVariant::Preview)
     }
 
     /// Get a base64 string of photo's original file
     #[wasm_bindgen(js_name = getPhotoOriginalImageSrc)]
     pub fn get_photo_original_image_src(&self, id: String) -> Promise {
-        Self::get_photo_image_src(self, id, PhotoVariant::Original, None)
-    }
-
-    /// Get a base64 string of a photo's thumbnail image
-    #[wasm_bindgen(js_name = getPhotoThumbnailImageSrcWithProof)]
-    pub fn get_photo_thumbnail_image_src_with_proof(&self, id: String, key: String) -> Promise {
-        Self::get_photo_image_src(self, id, PhotoVariant::Thumbnail, Some(key))
-    }
-
-    /// Get a base64 string of a photo's preview image
-    #[wasm_bindgen(js_name = getPhotoPreviewImageSrcWithProof)]
-    pub fn get_photo_preview_image_src_with_proof(&self, id: String, key: String) -> Promise {
-        Self::get_photo_image_src(self, id, PhotoVariant::Preview, Some(key))
-    }
-
-    /// Get a base64 string of photo's original file
-    #[wasm_bindgen(js_name = getPhotoOriginalImageSrcWithProof)]
-    pub fn get_photo_original_image_src_with_proof(&self, id: String, key: String) -> Promise {
-        Self::get_photo_image_src(self, id, PhotoVariant::Original, Some(key))
+        Self::get_photo_image_src(self, id, PhotoVariant::Original)
     }
 
     /// Get a string of a photo variant that can be used within an HTML image element's src attribute
-    fn get_photo_image_src(&self, id: String, photo_variant: PhotoVariant, key: Option<String>) -> Promise {
+    fn get_photo_image_src(&self, id: String, photo_variant: PhotoVariant) -> Promise {
         future_to_promise(async move {
-            let key = key.map(|key_str| base64::decode_config(key_str, base64::STANDARD).unwrap_throw());
-            let base64 = WASM_CLIENT.get_photo_image_src(&id, photo_variant, key).await.unwrap_throw();
+            // let key = key.map(|key_str| base64::decode_config(key_str, base64::STANDARD).unwrap_throw());
+            let base64 = WASM_CLIENT.get_photo_image_src(&id, photo_variant).await.unwrap_throw();
             Ok(JsValue::from(base64))
         })
     }
@@ -270,7 +242,7 @@ impl UpholiClient {
     #[wasm_bindgen(js_name = getAlbumShare)]
     pub fn get_album_share(&self, id: String) -> Promise {
         future_to_promise(async move {
-            let share = WASM_CLIENT.get_album_share(&id).await.unwrap_throw();
+            let share = WASM_CLIENT.get_share_for_album(&id).await.unwrap_throw();
             Ok(serde_wasm_bindgen::to_value(&share).unwrap_throw())
         })
     }

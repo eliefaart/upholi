@@ -6,7 +6,7 @@ use axum::{
     http::{HeaderMap, HeaderValue, StatusCode},
     middleware::Next,
     response::{IntoResponse, Response},
-    routing::{get, get_service, post},
+    routing::{delete, get, get_service, post},
     Router,
 };
 use cookie::{
@@ -59,7 +59,7 @@ async fn main() {
         .route("/user", get(get_user).post(create_user))
         .route("/user/auth", post(authenticate_user))
         .route("/share", post(create_share))
-        .route("/share/:id", get(get_share).delete(delete_share))
+        .route("/share/:id", delete(delete_share))
         .route("/share/:id/auth", get(is_authorized_for_share).post(authorize_share))
         .route("/item", get(get_item_ids).delete(delete_items))
         .route("/item/:id", get(get_item).post(set_item).delete(delete_item))
@@ -72,7 +72,7 @@ async fn main() {
 
     // run it
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
-    println!("listening on {}", addr);
+    println!("listening on {addr}");
     axum::Server::bind(&addr).serve(app.into_make_service()).await.unwrap();
 }
 

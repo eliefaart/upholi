@@ -1,10 +1,10 @@
 use super::auth_share_for_session;
 use crate::database::{self, *};
-use crate::model::{EncryptedData, Session, Share};
+use crate::model::{Session, Share};
 use crate::UserId;
 use anyhow::Result;
 use axum::{extract::Path, http::StatusCode, Json};
-use upholi_lib::http::{request::*, response::*};
+use upholi_lib::http::request::*;
 use upholi_lib::passwords::{hash_password, verify_password_hash};
 
 pub async fn is_authorized_for_share(Path(id): Path<String>, session: Session) -> StatusCode {
@@ -42,32 +42,18 @@ pub async fn authorize_share(
     }
 }
 
-pub async fn get_share(Path(id): Path<String>) -> Result<Json<GetShareResult>, StatusCode> {
-    let share = database::get_share(&id)
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
-        .ok_or(StatusCode::NOT_FOUND)?;
-
-    Ok(Json(GetShareResult {
-        base64: share.data.base64,
-        nonce: share.data.nonce,
-    }))
-}
-
 pub async fn create_share(UserId(user_id): UserId, Json(share): Json<UpsertShareRequest>) -> Result<StatusCode, StatusCode> {
     let password_phc = hash_password(&share.password).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-    let item_ids_for_share = share.items;
+    let item_ids_for_share = [vec![share.id.clone()], share.items].concat();
+
     let share = Share {
         id: share.id.clone(),
-        user_id,
+        user_id: user_id.clone(),
         password_phc,
-        data: EncryptedData {
-            base64: share.base64,
-            nonce: share.nonce,
-        },
     };
 
     upsert_share(&share).await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
     set_items_for_share(&share.id, &item_ids_for_share)
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
