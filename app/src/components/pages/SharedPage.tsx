@@ -32,7 +32,7 @@ const SharedPage: FC<PageProps> = (props: PageProps) => {
 	};
 
 	return (
-		<Content paddingTop={true} className="shares">
+		<Content className="shares">
 			{shares.map(share => {
 				const shareUrl = document.location.origin + "/s/" + share.id;
 				const shareAlbum = albums.find(album => album.id === share.albumId);

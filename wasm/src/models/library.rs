@@ -20,12 +20,6 @@ impl Library {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ItemKey {
-    pub item_id: String,
-    pub key: Vec<u8>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct LibraryPhoto {
     pub id: String,

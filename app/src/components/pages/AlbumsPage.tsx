@@ -68,7 +68,7 @@ const AlbumsPage: FC<PageProps> = (props: PageProps) => {
 	});
 
 	return (
-		<Content paddingTop={false}>
+		<Content>
 			<TagGroupedAlbums
 				albums={sortedAlbums}
 				onAlbumClick={album => context.history.push("/album/" + album.id)} />

@@ -4,7 +4,6 @@ import { FC } from "react";
 interface Props {
 	children?: React.ReactNode,
 	className?: string,
-	paddingTop?: boolean,
 	onDrop?: (event: React.DragEvent<HTMLElement>) => void,
 	onDragOver?: (event: React.DragEvent<HTMLElement>) => void,
 }
@@ -15,10 +14,6 @@ interface Props {
  */
 const Content: FC<Props> = (props) => {
 	let className: string | undefined = props.className || "";
-
-	if (props.paddingTop === true) {
-		className += " padding-top";
-	}
 
 	if (className.trim() === "") {
 		className = undefined;

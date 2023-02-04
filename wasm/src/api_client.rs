@@ -95,6 +95,31 @@ impl ApiClient {
         }
     }
 
+    pub async fn delete_item(&self, id: &str) -> Result<()> {
+        let url = format!("{}/item/{id}", self.base_url).to_owned();
+        let response = self.client.delete(&url).send().await?;
+
+        let status_code = response.status();
+        if status_code == StatusCode::OK {
+            Ok(())
+        } else {
+            Err(anyhow!("Failed to delete item: {status_code}"))
+        }
+    }
+
+    pub async fn delete_items(&self, ids: Vec<String>) -> Result<()> {
+        let url = format!("{}/item", self.base_url).to_owned();
+        let data = DeleteManyRequest { ids: ids.to_vec() };
+        let response = self.client.delete(&url).json(&data).send().await?;
+
+        let status_code = response.status();
+        if status_code == StatusCode::OK {
+            Ok(())
+        } else {
+            Err(anyhow!("Failed to delete items: {status_code}"))
+        }
+    }
+
     pub async fn get_file(&self, id: &str) -> Result<Option<Vec<u8>>> {
         let url = format!("{}/file/{id}", self.base_url).to_owned();
         let response = self.client.get(&url).send().await?;
@@ -131,31 +156,6 @@ impl ApiClient {
             Ok(())
         } else {
             Err(anyhow!("Failed to set item"))
-        }
-    }
-
-    pub async fn delete_item(&self, id: &str) -> Result<()> {
-        let url = format!("{}/item/{id}", self.base_url).to_owned();
-        let response = self.client.delete(&url).send().await?;
-
-        let status_code = response.status();
-        if status_code == StatusCode::OK {
-            Ok(())
-        } else {
-            Err(anyhow!("Failed to delete item: {status_code}"))
-        }
-    }
-
-    pub async fn delete_items(&self, ids: Vec<String>) -> Result<()> {
-        let url = format!("{}/item", self.base_url).to_owned();
-        let data = DeleteManyRequest { ids: ids.to_vec() };
-        let response = self.client.delete(&url).json(&data).send().await?;
-
-        let status_code = response.status();
-        if status_code == StatusCode::OK {
-            Ok(())
-        } else {
-            Err(anyhow!("Failed to delete items: {status_code}"))
         }
     }
 

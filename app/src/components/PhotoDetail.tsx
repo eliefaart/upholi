@@ -205,10 +205,12 @@ class PhotoDetail extends React.Component<PhotoDetailProps, PhotoDetailState> {
 	// Move/pan the image by given number of units.
 	movePhoto(imgElement: HTMLElement, deltaX: number, deltaY: number): void {
 		if (imgElement.parentElement) {
-			const imgWidth = imgElement.getBoundingClientRect().width;
-			const imgHeight = imgElement.getBoundingClientRect().height;
-			const containerWidth = imgElement.parentElement.getBoundingClientRect().width;
-			const containerHeight = imgElement.parentElement.getBoundingClientRect().height;
+			const imgRect = imgElement.getBoundingClientRect();
+			const imgWidth = imgRect.width;
+			const imgHeight = imgRect.height;
+			const containerRect = imgElement.parentElement.getBoundingClientRect();
+			const containerWidth = containerRect.width;
+			const containerHeight = containerRect.height;
 
 			const imgFitsInContainerX = imgWidth <= containerWidth;
 			const imgFitsInContainerY = imgHeight <= containerHeight;
@@ -219,14 +221,14 @@ class PhotoDetail extends React.Component<PhotoDetailProps, PhotoDetailState> {
 				const movingLeft = !movingRight;
 
 				if (movingRight) {
-					const availablePixels = -(imgElement.getBoundingClientRect().right - imgElement.parentElement.getBoundingClientRect().width);
+					const availablePixels = -(imgRect.right - containerRect.width) + containerRect.x;
 
 					if (deltaX > availablePixels) {
 						deltaX = availablePixels;
 					}
 				}
 				if (movingLeft) {
-					const availablePixels = imgElement.getBoundingClientRect().left;
+					const availablePixels = imgRect.left - containerRect.x;
 
 					if (-deltaX > availablePixels) {
 						deltaX = -availablePixels;
@@ -240,14 +242,14 @@ class PhotoDetail extends React.Component<PhotoDetailProps, PhotoDetailState> {
 				const movingUp = !movingDown;
 
 				if (movingDown) {
-					const availablePixels = -(imgElement.getBoundingClientRect().bottom - imgElement.parentElement.getBoundingClientRect().height);
+					const availablePixels = -(imgRect.bottom - containerRect.height) + containerRect.y;
 
 					if (deltaY > availablePixels) {
 						deltaY = availablePixels;
 					}
 				}
 				if (movingUp) {
-					const availablePixels = imgElement.getBoundingClientRect().top;
+					const availablePixels = imgRect.top - containerRect.y;
 
 					if (-deltaY > availablePixels) {
 						deltaY = -availablePixels;
@@ -261,14 +263,14 @@ class PhotoDetail extends React.Component<PhotoDetailProps, PhotoDetailState> {
 				const movingLeft = !movingRight;
 
 				if (movingRight) {
-					const availablePixels = -imgElement.getBoundingClientRect().left;
+					const availablePixels = -imgRect.left + containerRect.x;
 
 					if (deltaX > availablePixels) {
 						deltaX = availablePixels;
 					}
 				}
 				if (movingLeft) {
-					const availablePixels = -(imgElement.parentElement.getBoundingClientRect().width - imgElement.getBoundingClientRect().right);
+					const availablePixels = -(containerRect.width - imgRect.right) - containerRect.x;
 
 					if (-deltaX > availablePixels) {
 						deltaX = -availablePixels;
@@ -282,14 +284,14 @@ class PhotoDetail extends React.Component<PhotoDetailProps, PhotoDetailState> {
 				const movingUp = !movingDown;
 
 				if (movingDown) {
-					const availablePixels = -imgElement.getBoundingClientRect().top;
+					const availablePixels = -imgRect.top + containerRect.y;
 
 					if (deltaY > availablePixels) {
 						deltaY = availablePixels;
 					}
 				}
 				if (movingUp) {
-					const availablePixels = -(imgElement.parentElement.getBoundingClientRect().height - imgElement.getBoundingClientRect().bottom);
+					const availablePixels = -(containerRect.height - imgRect.bottom) - containerRect.y;
 
 					if (-deltaY > availablePixels) {
 						deltaY = -availablePixels;
