@@ -117,6 +117,7 @@ const LibraryPage: FC<PageProps> = (props: PageProps) => {
 	const uploadFilesList = (fileList: FileList): void => {
 		const fnOnUploadFinished = () => {
 			refreshPhotos();
+			_.delay(loadVisiblePhotos, 100);
 			toast.info("Upload finished.");
 		};
 
