@@ -152,10 +152,8 @@ pub async fn set(item_id: &str, key: &[u8], item: ItemVariant) -> Result<()> {
 }
 
 pub async fn delete(item_id: &str) -> Result<()> {
-    let item_exists = CACHE.write().unwrap().remove(item_id).is_some();
-    if item_exists {
-        API_CLIENT.delete_item(item_id).await?;
-    }
+    CACHE.write().unwrap().remove(item_id);
+    API_CLIENT.delete_item(item_id).await?;
 
     Ok(())
 }

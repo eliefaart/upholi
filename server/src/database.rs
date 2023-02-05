@@ -127,6 +127,7 @@ pub async fn set_items_for_share(share_id: &str, item_ids: &[String]) -> Result<
     Ok(())
 }
 
+/// Update items and files to no longer be associated to given share_id.
 pub async fn remove_items_from_share(share_id: &str) -> Result<()> {
     let collection_names = vec![EncryptedData::collection_name(), File::collection_name()];
     for collection_name in collection_names {

@@ -32,8 +32,8 @@ static ORIGIN: Lazy<String> = Lazy::new(|| {
     let location = window.location();
     location.origin().expect_throw("could not determine 'origin'.")
 });
-static WASM_CLIENT: Lazy<WasmClient> = Lazy::new(|| WasmClient::new(&ORIGIN));
 static API_CLIENT: Lazy<ApiClient> = Lazy::new(|| ApiClient::new(&ORIGIN));
+static WASM_CLIENT: Lazy<WasmClient> = Lazy::new(|| WasmClient::new(&API_CLIENT));
 
 #[wasm_bindgen]
 extern "C" {

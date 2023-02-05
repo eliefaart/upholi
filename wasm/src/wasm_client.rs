@@ -8,9 +8,9 @@ use crate::models::{
     Album, AlbumExpanded, AlbumPhoto, AlbumShareData, AlbumShareDataPhoto, Library, LibraryAlbum, LibraryPhoto, LibraryShare, Share,
     ShareData,
 };
+use crate::repository;
 use crate::repository::ItemVariant;
 use crate::{encryption, hashing};
-use crate::{repository, API_CLIENT};
 use anyhow::{anyhow, Result};
 use serde::Serialize;
 use upholi_lib::http::request::{CreateUserRequest, UpsertShareRequest};
@@ -50,15 +50,13 @@ impl PhotoUploadInfo {
 
 /// Helper functions for UpholiClient, which essentially wraps this object.
 /// This object itself is not exposed outside the wasm.
-pub struct WasmClient {
-    api_client: ApiClient,
+pub struct WasmClient<'a> {
+    api_client: &'a ApiClient,
 }
 
-impl WasmClient {
-    pub fn new(base_url: &str) -> Self {
-        Self {
-            api_client: ApiClient::new(base_url),
-        }
+impl<'a> WasmClient<'a> {
+    pub fn new(api_client: &'a ApiClient) -> Self {
+        Self { api_client }
     }
 
     pub async fn register(&self, username: &str, password: &str) -> Result<()> {
@@ -446,16 +444,6 @@ impl WasmClient {
             ]
         }));
 
-        repository::set(&share_id, &share_key, ItemVariant::Share(share)).await?;
-
-        self.api_client
-            .upsert_share(UpsertShareRequest {
-                id: share_id.clone(),
-                password: password.into(),
-                items: share_item_ids,
-            })
-            .await?;
-
         self.update_library(&mut |library: &mut Library| {
             library.shares.retain(|s| s.id != share_id);
             library.shares.push(LibraryShare {
@@ -468,6 +456,16 @@ impl WasmClient {
             Ok(())
         })
         .await?;
+
+        repository::set(&share_id, &share_key, ItemVariant::Share(share)).await?;
+
+        self.api_client
+            .upsert_share(UpsertShareRequest {
+                id: share_id.clone(),
+                password: password.into(),
+                items: share_item_ids,
+            })
+            .await?;
 
         Ok(share_id)
     }
@@ -506,7 +504,9 @@ impl WasmClient {
     }
 
     pub async fn delete_share(&self, id: &str) -> Result<()> {
-        API_CLIENT.delete_share(id).await?;
+        self.api_client.delete_share(id).await?;
+
+        repository::delete(&id).await?;
 
         self.update_library(&mut |library: &mut Library| {
             library.shares.retain(|share| share.id != id);
@@ -516,7 +516,7 @@ impl WasmClient {
     }
 
     pub async fn is_authorized_for_share(&self, id: &str) -> Result<bool> {
-        let already_authorized = API_CLIENT.is_authorized_for_share(id).await?;
+        let already_authorized = self.api_client.is_authorized_for_share(id).await?;
 
         if already_authorized {
             Ok(true)
@@ -527,7 +527,7 @@ impl WasmClient {
     }
 
     pub async fn authorize_share(&self, id: &str, password: &str) -> Result<bool> {
-        let authorized = API_CLIENT.authorize_share(id, password).await?;
+        let authorized = self.api_client.authorize_share(id, password).await?;
 
         if authorized {
             let share_key = derive_key_from_string(password, id)?;
@@ -593,7 +593,7 @@ impl WasmClient {
         Ok(())
     }
 
-    fn get_item_encryption_key<'a>(&'a self, library: &'a Library, item_id: &str) -> Result<&'a Vec<u8>> {
+    fn get_item_encryption_key<'s>(&'s self, library: &'s Library, item_id: &str) -> Result<&'s Vec<u8>> {
         library
             .find_encryption_key(item_id)
             .ok_or_else(|| anyhow!("No key found for item '{}'", item_id))
