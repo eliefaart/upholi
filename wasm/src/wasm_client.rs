@@ -506,7 +506,7 @@ impl<'a> WasmClient<'a> {
     pub async fn delete_share(&self, id: &str) -> Result<()> {
         self.api_client.delete_share(id).await?;
 
-        repository::delete(&id).await?;
+        repository::delete(id).await?;
 
         self.update_library(&mut |library: &mut Library| {
             library.shares.retain(|share| share.id != id);
