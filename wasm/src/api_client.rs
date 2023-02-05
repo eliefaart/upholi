@@ -173,7 +173,7 @@ impl ApiClient {
     }
 
     pub async fn upsert_share(&self, share: UpsertShareRequest) -> Result<()> {
-        let url = format!("{}/share/", self.base_url).to_owned();
+        let url = format!("{}/share", self.base_url).to_owned();
         let response = self.client.post(&url).json(&share).send().await?;
 
         if response.status() == StatusCode::OK {

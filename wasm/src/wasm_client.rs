@@ -144,7 +144,7 @@ impl<'a> WasmClient<'a> {
             id: album_id.clone(),
             key: album_key.clone(),
             title: title.into(),
-            thumbnail_photo_id: None,
+            thumbnail_photo_id: initial_photo_ids.first().map(|s| s.to_owned()),
             tags: vec![],
             photos: initial_photo_ids,
         };
@@ -589,6 +589,14 @@ impl<'a> WasmClient<'a> {
 
         let album_key = self.get_item_encryption_key(&library, &album.id)?;
         repository::set(id, album_key, album.into()).await?;
+
+        // If a share exists for this album, then update it.
+        let share_for_album = self.get_share_for_album(id).await?;
+        if let Some(share) = share_for_album {
+            // TODO: This can be optimized. This only needs to update the item representing the share,
+            // not the share.holding the authentication info.
+            self.upsert_share(id, &share.password).await?;
+        }
 
         Ok(())
     }
