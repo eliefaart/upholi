@@ -2,10 +2,9 @@
 	position: fixed;
 	right: $spacing;
 	bottom: $spacing;
-	width: 450px;
+	width: 350px;
 	max-height: 300px;
-	background: var(--colorBackground);
-	box-shadow: 0 0 5px var(--colorBackgroundShadow, 40);
+	background: var(--colorBackgroundAlt);
 	border-radius: $borderRadius;
 	padding: $spacing;
 	display: flex;
@@ -15,11 +14,23 @@
 
 	.header {
 		display: flex;
-		justify-content: flex-end;
+		height: $buttonHeight;
+
+		.title {
+			flex: 1;
+			line-height: $buttonHeight;
+		}
+
+		.actions {
+			justify-self: flex-end;
+		}
 	}
 
 	.files {
 		overflow: auto;
+		display: flex;
+		flex-direction: column;
+		gap: $spacing;
 
 		.file {
 			display: flex;
@@ -31,14 +42,18 @@
 				flex: 0 0 $headerHeight;
 				height: $headerHeight;
 				max-width: $headerHeight;
+				object-fit: cover;
 			}
 
 			.title {
 				flex: 0 1 100%;
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
 			}
 
 			>span {
-				margin: 0 0 0 $spacing;
+				margin: 0 $spacing;
 			}
 		}
 	}
