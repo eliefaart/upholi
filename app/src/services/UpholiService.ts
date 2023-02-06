@@ -1,5 +1,5 @@
 import * as wasm from "wasm";
-import { Album, AlbumPlain } from "../models/Album";
+import { AlbumHydrated, Album } from "../models/Album";
 import { Photo, PhotoMinimal } from "../models/Photo";
 import { LibraryShare } from "../models/Share";
 
@@ -62,12 +62,12 @@ class UpholiService {
 		await this.client.deletePhotos(ids);
 	}
 
-	async getAlbums(): Promise<AlbumPlain[]> {
+	async getAlbums(): Promise<Album[]> {
 		return this.client.getAlbums();
 	}
 
-	async getAlbum(id: string): Promise<Album> {
-		const album: Album = await this.client.getAlbum(id);
+	async getAlbum(id: string): Promise<AlbumHydrated> {
+		const album: AlbumHydrated = await this.client.getAlbum(id);
 		return album;
 	}
 
@@ -116,7 +116,7 @@ class UpholiService {
 		return this.client.getAlbumShare(id);
 	}
 
-	async getShareAlbum(id: string): Promise<Album> {
+	async getShareAlbum(id: string): Promise<AlbumHydrated> {
 		return this.client.getShareAlbum(id);
 	}
 

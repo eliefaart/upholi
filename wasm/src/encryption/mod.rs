@@ -8,7 +8,6 @@ pub struct EncryptionResult {
 }
 
 fn generate_string(length: usize) -> Vec<u8> {
-    // TODO: proper random bytes generation
     id_with_length(length).as_bytes().to_vec()
 }
 

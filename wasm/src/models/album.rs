@@ -12,10 +12,10 @@ pub struct Album {
     pub photos: Vec<String>,
 }
 
-/// Album, but with enriched photo data
+/// Album, but with hydrated photo data
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct AlbumExpanded {
+pub struct AlbumHydrated {
     pub id: String,
     pub title: String,
     pub tags: Vec<String>,

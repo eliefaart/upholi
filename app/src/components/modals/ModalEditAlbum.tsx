@@ -2,11 +2,11 @@ import * as React from "react";
 import { FC } from "react";
 import Modal from "./Modal";
 import ModalPropsBase from "../../models/ModalPropsBase";
-import { Album } from "../../models/Album";
+import { AlbumHydrated } from "../../models/Album";
 import upholiService from "../../services/UpholiService";
 
 interface Props extends ModalPropsBase {
-	album: Album
+	album: AlbumHydrated
 }
 
 const ModalEditAlbum: FC<Props> = (props) => {

@@ -1,11 +1,11 @@
 import * as React from "react";
 import { FC } from "react";
-import { AlbumPlain } from "../../models/Album";
+import { Album } from "../../models/Album";
 import AlbumTag from "./AlbumTag";
 
 interface Props {
-	albums: AlbumPlain[],
-	onAlbumClick: (album: AlbumPlain) => void,
+	albums: Album[],
+	onAlbumClick: (album: Album) => void,
 }
 
 /**
@@ -13,7 +13,7 @@ interface Props {
  */
 const TagGroupedAlbums: FC<Props> = (props: Props) => {
 	const tags = props.albums.flatMap(a => a.tags)
-		.filter((tag ,index, array) => array.indexOf(tag) === index)
+		.filter((tag, index, array) => array.indexOf(tag) === index)
 		.sort();
 	const albumsWithoutTag = props.albums.filter(album => album.tags.length === 0);
 
@@ -27,14 +27,14 @@ const TagGroupedAlbums: FC<Props> = (props: Props) => {
 				key={tag}
 				tag={tag}
 				albums={albumsWithTag}
-				onAlbumClick={props.onAlbumClick}/>;
+				onAlbumClick={props.onAlbumClick} />;
 		})}
 
 		{/* Also render all albums that do not have any tags */}
 		{albumsWithoutTag.length > 0 && <AlbumTag
 			tag="no-tag"
 			albums={albumsWithoutTag}
-			onAlbumClick={props.onAlbumClick}/>}
+			onAlbumClick={props.onAlbumClick} />}
 	</>;
 };
 

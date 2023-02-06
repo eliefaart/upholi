@@ -5,7 +5,7 @@ use crate::images::Image;
 use crate::keys::{get_key_from_user_credentials, get_master_key, get_share_key, set_master_key, set_share_key};
 use crate::models::Photo;
 use crate::models::{
-    Album, AlbumExpanded, AlbumPhoto, AlbumShareData, AlbumShareDataPhoto, Library, LibraryAlbum, LibraryPhoto, LibraryShare, Share,
+    Album, AlbumHydrated, AlbumPhoto, AlbumShareData, AlbumShareDataPhoto, Library, LibraryAlbum, LibraryPhoto, LibraryShare, Share,
     ShareData,
 };
 use crate::repository;
@@ -163,7 +163,7 @@ impl<'a> WasmClient<'a> {
         Ok(album_id)
     }
 
-    pub async fn get_album_full(&self, id: &str) -> Result<AlbumExpanded> {
+    pub async fn get_album_full(&self, id: &str) -> Result<AlbumHydrated> {
         let album = self.get_album(id).await?.ok_or_else(|| anyhow!("Album '{id}' not found"))?;
         let photos = self.get_library_photos().await?;
         let album_photos = photos.into_iter().map(|p| p.into()).collect();
@@ -188,7 +188,7 @@ impl<'a> WasmClient<'a> {
         Ok(())
     }
 
-    fn inflate_album(&self, album: Album, photos: Vec<AlbumPhoto>) -> Result<AlbumExpanded> {
+    fn inflate_album(&self, album: Album, photos: Vec<AlbumPhoto>) -> Result<AlbumHydrated> {
         let mut photos_in_album: Vec<AlbumPhoto> = vec![];
         for photo in &photos {
             if album.photos.contains(&photo.id) {
@@ -196,7 +196,7 @@ impl<'a> WasmClient<'a> {
             }
         }
 
-        let album = AlbumExpanded {
+        let album = AlbumHydrated {
             id: album.id.clone(),
             title: album.title.clone(),
             tags: album.tags.clone(),
@@ -448,7 +448,6 @@ impl<'a> WasmClient<'a> {
             library.shares.retain(|s| s.id != share_id);
             library.shares.push(LibraryShare {
                 id: share_id.clone(),
-                // TODO: Do I need to store this ItemKey? I could always reconstruct it from password?
                 key: share_key.clone(),
                 password: password.into(),
                 album_id: album.id.clone(),
@@ -486,7 +485,7 @@ impl<'a> WasmClient<'a> {
     }
 
     /// Get the album for given share_id.
-    pub async fn get_share_album(&self, share_id: &str) -> Result<AlbumExpanded> {
+    pub async fn get_share_album(&self, share_id: &str) -> Result<AlbumHydrated> {
         let share_key = &get_share_key(share_id)?.ok_or_else(|| anyhow!("No key found for share '{share_id}'."))?;
         let share: Share = repository::get(share_id, share_key)
             .await?

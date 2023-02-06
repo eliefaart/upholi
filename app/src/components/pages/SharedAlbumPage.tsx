@@ -1,7 +1,7 @@
 import * as React from "react";
 import { FC, useState } from "react";
 import Content from "../layout/Content";
-import { Album } from "../../models/Album";
+import { AlbumHydrated } from "../../models/Album";
 import InputPassword from "../misc/InputPassword";
 import upholiService from "../../services/UpholiService";
 import AlbumView from "../AlbumView";
@@ -26,7 +26,7 @@ enum AuthorizedState {
 const SharedAlbumPage: FC<Props> = (props: Props) => {
 	const [authorized, setAuthorized] = useState(AuthorizedState.Undetermined);
 	const [lastPasswordIncorrect, setLastPasswordIncorrect] = useState(false);
-	const [album, setAlbum] = useState<Album | null>(null);
+	const [album, setAlbum] = useState<AlbumHydrated | null>(null);
 	const shareId = props.match.params.token;
 
 	useTitle(album?.title ?? "");
