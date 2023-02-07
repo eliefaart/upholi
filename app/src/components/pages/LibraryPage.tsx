@@ -24,6 +24,7 @@ import GalleryPhoto from "../../models/GalleryPhoto";
 import Button from "../misc/Button";
 
 const queryStringParamNamePhotoId = "photoId";
+const nPhotosToLoadInitially = 25;
 
 const LibraryPage: FC<PageProps> = (props: PageProps) => {
 	const context = React.useContext(appStateContext);
@@ -116,6 +117,7 @@ const LibraryPage: FC<PageProps> = (props: PageProps) => {
 	const uploadFilesList = (fileList: FileList): void => {
 		const fnOnUploadFinished = () => {
 			refreshPhotos();
+			_.delay(loadVisiblePhotos, 100);
 			toast.info("Upload finished.");
 		};
 
@@ -137,11 +139,12 @@ const LibraryPage: FC<PageProps> = (props: PageProps) => {
 	// Load the initial batch of image thumbnails as soon as the first photos are available,
 	// and when new photos have been uploaded.
 	React.useEffect(() => {
-		if (photosRef.current.length > 0) {
-			loadVisiblePhotos();
+		if (photosRef.current.length > 0 && photosThatHaveBeenInView.length == 0) {
+			// Load a certain amount of photos regardless of wether they are within the viewport
+			setPhotosThatHaveBeenInView(photos.slice(0, nPhotosToLoadInitially).map(p => p.id));
 
-			// Workaround; call that function again after some time.
-			// This is because the Gallery component still seems to move and re-fit the photos a bit after its render function has completed,
+			// Try to load additional photos visible within the viewport, after some delay.
+			// The delay is because the Gallery component still seems to move and re-fit the photos a bit after its render function has completed,
 			// and I don't see any event for when it has fully finished rendering.
 			setTimeout(loadVisiblePhotos, 500);
 		}

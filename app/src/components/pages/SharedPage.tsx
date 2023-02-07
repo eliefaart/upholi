@@ -3,7 +3,6 @@ import { FC } from "react";
 import Content from "../layout/Content";
 import appStateContext from "../../contexts/AppStateContext";
 import upholiService from "../../services/UpholiService";
-import { Share } from "../../models/Share";
 import CopyUrl from "../misc/CopyUrl";
 import { useTitle } from "../../hooks/useTitle";
 import useAlbums from "../../hooks/useAlbums";
@@ -23,8 +22,8 @@ const SharedPage: FC<PageProps> = (props: PageProps) => {
 		});
 	}, []);
 
-	const deleteShare = (share: Share): void => {
-		upholiService.deleteShare(share.id)
+	const deleteShare = (id: string): void => {
+		upholiService.deleteShare(id)
 			.then(() => {
 				// update shares hook somehow?
 				refreshShares();
@@ -33,10 +32,10 @@ const SharedPage: FC<PageProps> = (props: PageProps) => {
 	};
 
 	return (
-		<Content paddingTop={true} className="shares">
+		<Content className="shares">
 			{shares.map(share => {
 				const shareUrl = document.location.origin + "/s/" + share.id;
-				const shareAlbum = albums.find(album => album.id === share.data.album.albumId);
+				const shareAlbum = albums.find(album => album.id === share.albumId);
 
 				return <div key={share.id} className="share">
 					<div className="head">
@@ -47,7 +46,7 @@ const SharedPage: FC<PageProps> = (props: PageProps) => {
 					<div className="body">
 						<CopyUrl shareUrl={shareUrl} />
 						<div className="actions">
-							<button onClick={() => deleteShare(share)}>
+							<button onClick={() => deleteShare(share.id)}>
 								Delete
 							</button>
 						</div>

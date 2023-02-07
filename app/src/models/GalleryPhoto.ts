@@ -6,7 +6,6 @@ interface GalleryPhoto {
 	 * Indicate wether this photo is allowed to load its thumbnail.
 	 */
 	mayLoad: boolean;
-	key?: string;
 }
 
 export default GalleryPhoto;

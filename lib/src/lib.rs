@@ -1,74 +1,33 @@
 use std::fmt;
 
-use serde::{Deserialize, Serialize};
-
 pub mod http;
 pub mod ids;
-pub mod models;
 pub mod passwords;
-pub mod result;
-
-/// Encrypted data, including metadata
-#[derive(Deserialize, Serialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct EncryptedData {
-	/// Nonce used to encrypt this data
-	pub nonce: String,
-	/// Base64 representation of encrypted bytes
-	pub base64: String,
-	/// Version of format of data that was encrypted.
-	/// For future use.
-	pub format_version: i32,
-}
-
-impl Clone for EncryptedData {
-	fn clone(&self) -> Self {
-		Self {
-			base64: self.base64.clone(),
-			nonce: self.nonce.clone(),
-			format_version: self.format_version,
-		}
-	}
-}
 
 pub enum PhotoVariant {
-	Original,
-	Preview,
-	Thumbnail,
+    Original,
+    Preview,
+    Thumbnail,
 }
 
 impl fmt::Display for PhotoVariant {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		match self {
-			PhotoVariant::Thumbnail => write!(f, "thumbnail"),
-			PhotoVariant::Preview => write!(f, "preview"),
-			PhotoVariant::Original => write!(f, "original"),
-		}
-	}
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            PhotoVariant::Thumbnail => write!(f, "thumbnail"),
+            PhotoVariant::Preview => write!(f, "preview"),
+            PhotoVariant::Original => write!(f, "original"),
+        }
+    }
 }
 
 impl From<PhotoVariant> for String {
-	fn from(photo_variant: PhotoVariant) -> String {
-		photo_variant.to_string()
-	}
+    fn from(photo_variant: PhotoVariant) -> String {
+        photo_variant.to_string()
+    }
 }
 
 impl From<&PhotoVariant> for String {
-	fn from(photo_variant: &PhotoVariant) -> String {
-		photo_variant.to_string()
-	}
-}
-
-#[derive(Deserialize, Serialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub enum ShareType {
-	Album,
-}
-
-impl Clone for ShareType {
-	fn clone(&self) -> Self {
-		match *self {
-			Self::Album => Self::Album,
-		}
-	}
+    fn from(photo_variant: &PhotoVariant) -> String {
+        photo_variant.to_string()
+    }
 }

@@ -27,7 +27,7 @@ const LoginPage: FC = () => {
 			const password = passwordInput.current.value;
 
 			if (username && password) {
-				resetAuthenticationStatus();
+				resetAuthenticationStatus(false);
 				upholiService.login(username, password)
 					.then(() => {
 						context.history.push("/");

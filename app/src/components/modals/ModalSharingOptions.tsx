@@ -2,12 +2,12 @@ import * as React from "react";
 import { FC } from "react";
 import Modal from "./Modal";
 import { SharingOptions } from "../../models/SharingOptions";
-import { Share } from "../../models/Share";
+import { LibraryShare } from "../../models/Share";
 import CopyUrl from "../misc/CopyUrl";
 import Switch from "../misc/Switch";
 
 interface Props {
-	share?: Share,
+	share?: LibraryShare,
 	isOpen: boolean,
 	onRequestClose?: () => void,
 	onOkButtonClick: (password: string) => void,

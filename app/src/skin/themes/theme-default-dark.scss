@@ -8,6 +8,6 @@
 	--colorText: #eee;
 	--colorTextContrast: #161f21;
 	--colorDisabled: gray;
-	--colorHeaderBackground: transparent;
+	--colorHeaderBackground: var(--colorBackgroundAlt);
 	--colorError: #d74646;
 }

@@ -1,10 +1,10 @@
 #header {
 	display: flex;
-	height: $headerHeight;
 	background: var(--colorHeaderBackground);
+	border-radius: $borderRadius;
 	width: 100%;
 	z-index: 1;
-	padding-left: $spacing;
+	margin-bottom: $spacingLarge;
 
 	.left {
 		display: flex;

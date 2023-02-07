@@ -10,3 +10,9 @@ interface AlbumShareData {
 		albumId: string
 	}
 }
+
+export interface LibraryShare {
+	id: string,
+	password: string,
+	albumId: string,
+}

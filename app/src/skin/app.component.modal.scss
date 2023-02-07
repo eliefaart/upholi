@@ -25,12 +25,13 @@ $modalHeaderHeight: $buttonHeight;
 
 	.modal-header {
 		display: flex;
-		padding: $spacing 0px;
 		z-index: 1;
 		background: var(--colorBackground);
+		padding: $spacing;
 
 		.title {
 			display: flex;
+			height: $headerHeight;
 			flex: 0 1 100%;
 			line-height: $modalHeaderHeight;
 			font-weight: bold;
@@ -80,13 +81,20 @@ $modalHeaderHeight: $buttonHeight;
 		width: 100vw;
 		margin: unset;
 		border: none;
+		padding: $spacing;
+
+		.modal-body {
+			padding: $spacing 0 0 0;
+		}
 
 		.modal-header {
 			height: $headerHeight;
-			padding: 0 $spacing;
+			background: var(--colorHeaderBackground);
+			border-radius: $borderRadius;
 			display: flex;
 			justify-content: right;
 			align-items: center;
+			padding: 0;
 		}
 	}
 

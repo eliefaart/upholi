@@ -17,7 +17,7 @@ interface Props {
 
 const GalleryPhoto: FC<Props> = (props: Props) => {
 	const photoId = props.photo.id ?? "";
-	const src = usePhotoThumbnailSource(props.photo.mayLoad ? photoId : "", props.photo.key);
+	const src = usePhotoThumbnailSource(props.photo.mayLoad ? photoId : "");
 
 	if (!photoId) {
 		return <></>;

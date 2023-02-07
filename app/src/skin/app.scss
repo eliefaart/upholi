@@ -35,16 +35,13 @@ html {
 
 		#appRoot {
 			display: flex;
-			flex-direction: column;
 			height: 100vh;
+			flex-direction: column;
+			padding: $spacing;
 
 			#content {
 				height: 100%;
 				overflow: auto;
-
-				&.padding-top {
-					padding-top: calc($headerHeight / 2);
-				}
 			}
 		}
 	}

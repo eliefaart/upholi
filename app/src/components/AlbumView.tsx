@@ -1,7 +1,7 @@
 import * as React from "react";
 import appStateContext from "../contexts/AppStateContext";
 import UrlHelper from "../helpers/UrlHelper";
-import { Album } from "../models/Album";
+import { AlbumHydrated } from "../models/Album";
 import GalleryPhoto from "../models/GalleryPhoto";
 import ModalPhotoDetail from "./modals/ModalPhotoDetail";
 import PhotoGallery from "./gallery/PhotoGallery";
@@ -10,7 +10,7 @@ import { FC, useContext, useState } from "react";
 const queryStringParamNamePhotoId = "photoId";
 
 interface Props {
-	album: Album,
+	album: AlbumHydrated,
 	/** IDs of photos currently selected. */
 	selectedPhotos?: string[],
 	/** Called when selection changes. */
@@ -39,7 +39,6 @@ const AlbumView: FC<Props> = (props: Props) => {
 			width: photo.width,
 			height: photo.height,
 			mayLoad: true,
-			key: photo.key ?? undefined
 		};
 	});
 
@@ -62,7 +61,6 @@ const AlbumView: FC<Props> = (props: Props) => {
 		{openedPhotoId && <ModalPhotoDetail
 			isOpen={!!openedPhotoId}
 			photoId={openedPhotoId}
-			photoKey={props.album.photos.find(p => p.id === openedPhotoId)?.key ?? undefined}
 			onRequestClose={() => context.history.push(document.location.pathname + "?" + UrlHelper.removeQueryStringParam(document.location.search, queryStringParamNamePhotoId))}
 		/>}
 	</div>;

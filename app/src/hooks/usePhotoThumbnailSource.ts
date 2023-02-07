@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import upholiService from "../services/UpholiService";
 
-export default function usePhotoThumbnailSource(photoId: string, key?: string): string {
+export default function usePhotoThumbnailSource(photoId: string): string {
 	const [source, setSource] = useState<string>("");
 
 	useEffect(() => {
 		if (photoId) {
-			upholiService.getPhotoThumbnailImageSrc(photoId, key)
+			upholiService.getPhotoThumbnailImageSrc(photoId)
 				.then(setSource);
 		}
 		else {
