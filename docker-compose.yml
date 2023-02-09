@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 volumes:
   photos: null
@@ -7,7 +7,7 @@ services:
     image: ghcr.io/eliefaart/upholi/upholi:latest
     restart: always
     ports:
-      - "29701:8000"
+      - "29701:3000"
     volumes:
       - photos:/var/upholi
     environment:

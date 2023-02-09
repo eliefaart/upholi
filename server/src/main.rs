@@ -71,7 +71,11 @@ async fn main() {
         .layer(axum::middleware::from_fn(session_cookie_layer));
 
     // run it
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+    let addr = SETTINGS
+        .server
+        .address
+        .parse()
+        .expect(&format!("Invalid server address: {}", SETTINGS.server.address));
     println!("listening on {addr}");
     axum::Server::bind(&addr).serve(app.into_make_service()).await.unwrap();
 }
