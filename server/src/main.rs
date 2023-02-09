@@ -17,7 +17,6 @@ use database::upsert_session;
 use handlers::{files::*, items::*, shares::*, user::*};
 use lazy_static::lazy_static;
 use model::Session;
-use std::net::SocketAddr;
 use tower_cookies::{Cookie, CookieManagerLayer};
 use tower_http::services::ServeDir;
 use upholi_lib::ids::id;
@@ -75,7 +74,7 @@ async fn main() {
         .server
         .address
         .parse()
-        .expect(&format!("Invalid server address: {}", SETTINGS.server.address));
+        .unwrap_or_else(|_| panic!("Invalid server address: {}", SETTINGS.server.address));
     println!("listening on {addr}");
     axum::Server::bind(&addr).serve(app.into_make_service()).await.unwrap();
 }
