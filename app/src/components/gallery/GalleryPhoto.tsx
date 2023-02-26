@@ -25,7 +25,7 @@ const GalleryPhoto: FC<Props> = (props: Props) => {
     const cssClass =
       "photo" + (props.selected ? " selected" : "") + (props.anySiblingPhotoSelected ? " any-other-selected" : "");
     const imgStyle: React.CSSProperties = {
-      backgroundImage: 'url("' + src + '")',
+      backgroundImage: `url("${src}")`,
       margin: props.margin,
       width: props.photo.width,
       height: props.photo.height,
