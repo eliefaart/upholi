@@ -1,125 +1,124 @@
 #header {
-	display: flex;
-	background: var(--colorHeaderBackground);
-	border-radius: $borderRadius;
-	width: 100%;
-	z-index: 1;
-	margin-bottom: $spacingLarge;
+  display: flex;
+  background: var(--colorHeaderBackground);
+  border-radius: $borderRadius;
+  width: 100%;
+  z-index: 1;
+  margin-bottom: $spacingLarge;
 
-	.left {
-		display: flex;
-		flex: 1 1 auto;
-	}
+  .left {
+    display: flex;
+    flex: 1 1 auto;
+  }
 
-	.right {
-		display: flex;
-		justify-content: right;
-		align-items: center;
-	}
+  .right {
+    display: flex;
+    justify-content: right;
+    align-items: center;
+  }
 
-	nav {
-		display: flex;
-		user-select: none;
+  nav {
+    display: flex;
+    user-select: none;
 
-		span {
-			cursor: pointer;
-			font-size: $fontSize * 1.2;
-			line-height: $headerHeight;
-			height: $headerHeight;
-			padding-left: $spacing;
-			padding-right: $spacing;
+    span {
+      cursor: pointer;
+      font-size: $fontSize * 1.2;
+      line-height: $headerHeight;
+      height: $headerHeight;
+      padding-left: $spacing;
+      padding-right: $spacing;
 
-			&:hover {
-				filter: brightness(1.2);
-				color: var(--colorAccent);
-			}
+      &:hover {
+        filter: brightness(1.2);
+        color: var(--colorAccent);
+      }
 
-			&.active {
-				color: var(--colorAccent);
-			}
-		}
-	}
+      &.active {
+        color: var(--colorAccent);
+      }
+    }
+  }
 
-	button,
-	.as-button {
-		line-height: $headerHeight;
-		height: $headerHeight;
+  button,
+  .as-button {
+    line-height: $headerHeight;
+    height: $headerHeight;
 
-		span {
-			color: var(--colorText);
-		}
-	}
+    span {
+      color: var(--colorText);
+    }
+  }
 
-	.buffer {
-		flex: 1 1 auto;
-		padding-left: $spacingLarge;
-	}
+  .buffer {
+    flex: 1 1 auto;
+    padding-left: $spacingLarge;
+  }
 
-	.actions {
-		span {
-			white-space: nowrap;
-		}
+  .actions {
+    span {
+      white-space: nowrap;
+    }
 
-		&,
-		&>div {
-			display: flex;
-			justify-content: right;
-			align-items: center;
-		}
-	}
+    &,
+    & > div {
+      display: flex;
+      justify-content: right;
+      align-items: center;
+    }
+  }
 
-	.context-menu-toggle {
-		height: $headerHeight;
-		width: $headerHeight;
-		min-width: $headerHeight;
-		background-color: transparent;
-		color: var(--colorText);
-		margin: 0;
-	}
+  .context-menu-toggle {
+    height: $headerHeight;
+    width: $headerHeight;
+    min-width: $headerHeight;
+    background-color: transparent;
+    color: var(--colorText);
+    margin: 0;
+  }
 
-	.context-menu {
-		position: fixed;
-		width: 100%;
-		height: 100%;
-		background: rgba(0, 0, 0, 0);
-		cursor: pointer;
+  .context-menu {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0);
+    cursor: pointer;
 
-		.items {
-			display: flex;
-			flex-direction: column;
-			justify-content: right;
-			align-items: center;
-			background-color: var(--colorBackgroundAlt);
-			min-width: 150px;
+    .items {
+      display: flex;
+      flex-direction: column;
+      justify-content: right;
+      align-items: center;
+      background-color: var(--colorBackgroundAlt);
+      min-width: 150px;
 
-			position: fixed;
-			top: $headerHeight;
-			right: 0;
+      position: fixed;
+      top: $headerHeight;
+      right: 0;
 
-			span {
-				line-height: $headerHeight;
-				white-space: nowrap;
-			}
+      span {
+        line-height: $headerHeight;
+        white-space: nowrap;
+      }
 
-			button {
-				border-radius: unset;
-				padding: 0 $spacing;
-				color: var(--colorText);
-				background-color: var(--colorBackgroundAlt);
-				width: 100%;
-				margin: 0;
-				justify-content: left;
-				text-transform: unset;
+      button {
+        border-radius: unset;
+        padding: 0 $spacing;
+        color: var(--colorText);
+        background-color: var(--colorBackgroundAlt);
+        width: 100%;
+        margin: 0;
+        justify-content: left;
+        text-transform: unset;
 
-				&:hover {
-
-					&,
-					* {
-						background-color: var(--colorAccent);
-						color: var(--colorTextContrast);
-					}
-				}
-			}
-		}
-	}
+        &:hover {
+          &,
+          * {
+            background-color: var(--colorAccent);
+            color: var(--colorTextContrast);
+          }
+        }
+      }
+    }
+  }
 }

@@ -7,18 +7,18 @@
   "author": "Eric Liefaart",
   "license": "AGPL-3.0-only",
   "scripts": {
+    "dev": "webpack --watch --mode development",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "webpack-dev-server --open --mode development",
-    "build": "webpack --watch --mode development",
-    "build-prd": "webpack --mode production",
-    "lint": "./node_modules/.bin/eslint src"
+    "lint": "./node_modules/.bin/eslint src",
+    "format": "prettier . --write",
+    "build": "webpack --mode production"
   },
   "dependencies": {
     "axios": "^0.26.1",
     "query-string": "^7.1.1",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
-    "react-modal": "^3.14.4",
+    "react-modal": "^3.16.1",
     "react-photo-gallery": "^8.0.0",
     "react-router-dom": "^5.3.0",
     "react-switch": "^6.0.0",
@@ -43,6 +43,7 @@
     "css-loader": "^6.7.1",
     "eslint": "^8.13.0",
     "eslint-plugin-react": "^7.29.4",
+    "prettier": "^2.8.4",
     "sass": "^1.50.0",
     "sass-loader": "^12.6.0",
     "style-loader": "^3.3.1",

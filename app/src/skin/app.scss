@@ -13,38 +13,38 @@ $breakpointMobile: 525px;
 @import "themes/theme-default-dark";
 
 html {
-	touch-action: manipulation;
+  touch-action: manipulation;
 
-	* {
-		box-sizing: border-box;
-		outline: none;
-		transition-property: none;
-		transition-duration: $transitionSpeed;
-		scrollbar-width: thin;
-		scrollbar-color: var(--colorAccent) var(--colorBackground);
-	}
+  * {
+    box-sizing: border-box;
+    outline: none;
+    transition-property: none;
+    transition-duration: $transitionSpeed;
+    scrollbar-width: thin;
+    scrollbar-color: var(--colorAccent) var(--colorBackground);
+  }
 
-	body {
-		overscroll-behavior: contain;
-		font-family: OpenSans;
-		font-size: $fontSize;
-		font-weight: normal;
+  body {
+    overscroll-behavior: contain;
+    font-family: OpenSans;
+    font-size: $fontSize;
+    font-weight: normal;
 
-		background: var(--colorBackground);
-		color: var(--colorText);
+    background: var(--colorBackground);
+    color: var(--colorText);
 
-		#appRoot {
-			display: flex;
-			height: 100vh;
-			flex-direction: column;
-			padding: $spacing;
+    #appRoot {
+      display: flex;
+      height: 100vh;
+      flex-direction: column;
+      padding: $spacing;
 
-			#content {
-				height: 100%;
-				overflow: auto;
-			}
-		}
-	}
+      #content {
+        height: 100%;
+        overflow: auto;
+      }
+    }
+  }
 }
 
 // Imports
@@ -67,154 +67,153 @@ html {
 @import "app.page.login";
 
 label {
-	width: 100%;
+  width: 100%;
 }
 
 input,
 select,
 button,
 .as-button {
-	margin: 10px 0px;
-	height: $buttonHeight;
-	line-height: $buttonHeight;
-	border-radius: $borderRadius;
+  margin: 10px 0px;
+  height: $buttonHeight;
+  line-height: $buttonHeight;
+  border-radius: $borderRadius;
 
-	&[type=text],
-	&[type=password] {
-		width: 100%;
-	}
+  &[type="text"],
+  &[type="password"] {
+    width: 100%;
+  }
 
-	&[type=file] {
-		display: none;
-	}
+  &[type="file"] {
+    display: none;
+  }
 
-	&[type=checkbox] {
-		visibility: hidden;
-	}
+  &[type="checkbox"] {
+    visibility: hidden;
+  }
 
-	&::-moz-focus-inner {
-		border: 0;
-	}
+  &::-moz-focus-inner {
+    border: 0;
+  }
 }
 
 a[href]:not(.as-button) {
+  &:link,
+  &:visited,
+  &:hover,
+  &:active {
+    text-decoration: none;
+    color: unset;
+  }
 
-	&:link,
-	&:visited,
-	&:hover,
-	&:active {
-		text-decoration: none;
-		color: unset;
-	}
-
-	&:hover {
-		text-decoration: underline;
-	}
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 input,
 select {
-	background-color: var(--colorBackgroundAlt);
-	color: var(--colorText);
-	border: 2px solid var(--colorBackgroundShadow);
-	text-indent: $spacing;
+  background-color: var(--colorBackgroundAlt);
+  color: var(--colorText);
+  border: 2px solid var(--colorBackgroundShadow);
+  text-indent: $spacing;
 
-	&:focus {
-		border-color: var(--colorSecondaryAccent);
-	}
+  &:focus {
+    border-color: var(--colorSecondaryAccent);
+  }
 }
 
 .selectFiles {
-	background: var(--colorSecondaryAccent);
-	cursor: pointer;
-	height: $buttonHeight;
-	line-height: $buttonHeight;
-	display: inline-block;
-	padding: 0 $buttonHeight;
+  background: var(--colorSecondaryAccent);
+  cursor: pointer;
+  height: $buttonHeight;
+  line-height: $buttonHeight;
+  display: inline-block;
+  padding: 0 $buttonHeight;
 }
 
 button,
 .as-button {
-	color: var(--colorAccent);
-	background-color: transparent;
-	border: none;
-	cursor: pointer;
-	width: auto;
-	text-decoration: none;
-	padding: 0;
-	margin: 0 $spacing;
-	display: inline-block;
-	text-align: center;
-	display: flex;
-	justify-content: center;
-	white-space: nowrap;
+  color: var(--colorAccent);
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  width: auto;
+  text-decoration: none;
+  padding: 0;
+  margin: 0 $spacing;
+  display: inline-block;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  white-space: nowrap;
 
-	&.primary {
-		color: var(--colorBackgroundAlt);
-		background-color: var(--colorAccent);
-	}
+  &.primary {
+    color: var(--colorBackgroundAlt);
+    background-color: var(--colorAccent);
+  }
 
-	&.with-icon {
-		&.icon-right {
-			svg {
-				margin-left: calc($spacing / 2);
-			}
-		}
+  &.with-icon {
+    &.icon-right {
+      svg {
+        margin-left: calc($spacing / 2);
+      }
+    }
 
-		&.icon-left {
-			svg {
-				margin-right: calc($spacing / 2);
-			}
-		}
-	}
+    &.icon-left {
+      svg {
+        margin-right: calc($spacing / 2);
+      }
+    }
+  }
 
-	&:hover,
-	&:active {
-		filter: brightness(1.2);
-	}
+  &:hover,
+  &:active {
+    filter: brightness(1.2);
+  }
 
-	&:disabled {
-		color: var(--colorDisabled)
-	}
+  &:disabled {
+    color: var(--colorDisabled);
+  }
 
-	&:not(.with-icon) {
-		min-width: $buttonHeight * 1.5;
-	}
+  &:not(.with-icon) {
+    min-width: $buttonHeight * 1.5;
+  }
 
-	svg {
-		display: block;
-		width: 55%;
-		height: 55%;
-		margin: auto;
-	}
+  svg {
+    display: block;
+    width: 55%;
+    height: 55%;
+    margin: auto;
+  }
 }
 
 svg {
-	// = Icons
-	min-width: 24px;
-	max-width: 24px;
+  // = Icons
+  min-width: 24px;
+  max-width: 24px;
 }
 
 h1 {
-	font-size: $fontSize * 1.75;
+  font-size: $fontSize * 1.75;
 }
 
 h2 {
-	font-size: $fontSize * 1.45;
+  font-size: $fontSize * 1.45;
 }
 
 h1,
 h2 {
-	margin: 0;
-	font-weight: bold;
+  margin: 0;
+  font-weight: bold;
 }
 
 hr {
-	color: var(--colorBackgroundShadow);
+  color: var(--colorBackgroundShadow);
 }
 
 @media only screen and (max-width: $breakpointMobile) {
-	.with-icon {
-		font-size: 0;
-	}
+  .with-icon {
+    font-size: 0;
+  }
 }

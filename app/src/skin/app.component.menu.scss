@@ -1,56 +1,57 @@
 .menu {
-	position: relative;
-	display: flex;
-	flex-direction: column;
-	height: 100vh;
-	max-height: 100vh;
-	border-left: 3px solid var(--colorBackgroundAlt);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  max-height: 100vh;
+  border-left: 3px solid var(--colorBackgroundAlt);
 
-	transition-property: width;
+  transition-property: width;
 
-	&.closed {
-		width: 0px;
-	}
-	&.opened {
-		width: 350px;
-	}
+  &.closed {
+    width: 0px;
+  }
+  &.opened {
+    width: 350px;
+  }
 
-	.toggle {
-		display: flex;
-		position: absolute;
-		top: 0px;
-		right: 0px;
-		height: $headerHeight;
-		line-height: $headerHeight;
-		cursor: pointer;
+  .toggle {
+    display: flex;
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    height: $headerHeight;
+    line-height: $headerHeight;
+    cursor: pointer;
 
-		svg {
-			min-width: $buttonHeight;
-			margin-right: $spacingLarge;
-		}
-	}
+    svg {
+      min-width: $buttonHeight;
+      margin-right: $spacingLarge;
+    }
+  }
 
-	menu {
-		display: flex;
-		flex-direction: column;
-		max-width: 350px;
-		margin-top: $headerHeight;
-		padding: 0;
-		overflow: auto;
+  menu {
+    display: flex;
+    flex-direction: column;
+    max-width: 350px;
+    margin-top: $headerHeight;
+    padding: 0;
+    overflow: auto;
 
-		span {
-			flex: 0 0 auto;
-			height: $buttonHeight;
-			line-height: $buttonHeight;
-			cursor: pointer;
-			padding: 0px $spacing;
-			overflow-x: hidden;
-			white-space: nowrap;
-			text-overflow: ellipsis;
+    span {
+      flex: 0 0 auto;
+      height: $buttonHeight;
+      line-height: $buttonHeight;
+      cursor: pointer;
+      padding: 0px $spacing;
+      overflow-x: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
 
-			&:hover, &.active {
-				color: var(--colorAccent);
-			}
-		}
-	}
+      &:hover,
+      &.active {
+        color: var(--colorAccent);
+      }
+    }
+  }
 }

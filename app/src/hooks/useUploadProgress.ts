@@ -3,13 +3,13 @@ import { FileUploadProgress } from "../models/File";
 import uploadHelper from "../helpers/UploadHelper";
 
 export default function useUploadProgress(): FileUploadProgress[] {
-	const [progress, setUploadProgress] = useState<FileUploadProgress[]>([]);
+  const [progress, setUploadProgress] = useState<FileUploadProgress[]>([]);
 
-	useEffect(() => {
-		uploadHelper.subscribe({
-			update: setUploadProgress
-		});
-	}, []);
+  useEffect(() => {
+    uploadHelper.subscribe({
+      update: setUploadProgress,
+    });
+  }, []);
 
-	return progress;
+  return progress;
 }

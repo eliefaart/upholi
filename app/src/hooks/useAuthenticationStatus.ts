@@ -4,46 +4,47 @@ import { useEffect, useState } from "react";
 type resetAuthenticationStatus = (redetermine: boolean) => void;
 
 export enum AuthenticationStatus {
-	// Status hasn't been determined yet.
-	Unknown,
-	// Status is currently being fetched from server.
-	Refreshing,
-	// Client is an authenticated user.
-	Authenticated,
-	// Client is not an authenticated user, anonymous client.
-	Unauthenticad,
+  // Status hasn't been determined yet.
+  Unknown,
+  // Status is currently being fetched from server.
+  Refreshing,
+  // Client is an authenticated user.
+  Authenticated,
+  // Client is not an authenticated user, anonymous client.
+  Unauthenticad,
 }
 
 let lastStatus: AuthenticationStatus = AuthenticationStatus.Unknown;
 
 export default function useAuthenticationStatus(): [AuthenticationStatus, resetAuthenticationStatus] {
-	const [state, setState] = useState<AuthenticationStatus>(lastStatus);
+  const [state, setState] = useState<AuthenticationStatus>(lastStatus);
 
-	const resetStatus = (redetermine: boolean) => {
-		setState(AuthenticationStatus.Unknown);
+  const resetStatus = (redetermine: boolean) => {
+    setState(AuthenticationStatus.Unknown);
 
-		if (redetermine) {
-			refresh();
-		}
-	};
+    if (redetermine) {
+      refresh();
+    }
+  };
 
-	const refresh = () => {
-		setState(AuthenticationStatus.Refreshing);
-		axios.get("/user")
-			.then(() => setState(AuthenticationStatus.Authenticated))
-			.catch(() => setState(AuthenticationStatus.Unauthenticad));
-	};
+  const refresh = () => {
+    setState(AuthenticationStatus.Refreshing);
+    axios
+      .get("/user")
+      .then(() => setState(AuthenticationStatus.Authenticated))
+      .catch(() => setState(AuthenticationStatus.Unauthenticad));
+  };
 
-	useEffect(() => {
-		if (state === AuthenticationStatus.Unknown) {
-			refresh();
-		}
-	}, []);
+  useEffect(() => {
+    if (state === AuthenticationStatus.Unknown) {
+      refresh();
+    }
+  }, []);
 
-	// Keep track of last known status, so we don't need to redetermine if client navigates to another page
-	useEffect(() => {
-		lastStatus = state;
-	}, [state]);
+  // Keep track of last known status, so we don't need to redetermine if client navigates to another page
+  useEffect(() => {
+    lastStatus = state;
+  }, [state]);
 
-	return [state, resetStatus];
+  return [state, resetStatus];
 }

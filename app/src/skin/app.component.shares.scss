@@ -1,32 +1,32 @@
 .shares {
-	display: flex;
-	flex-direction: column;
-	gap: $spacingLarge;
+  display: flex;
+  flex-direction: column;
+  gap: $spacingLarge;
 
-	.share {
-		background-color: var(--colorBackgroundAlt);
-		border-radius: $borderRadius;
-		padding: $spacing;
+  .share {
+    background-color: var(--colorBackgroundAlt);
+    border-radius: $borderRadius;
+    padding: $spacing;
 
-		.head {
-			display: flex;
-			line-height: $buttonHeight;
+    .head {
+      display: flex;
+      line-height: $buttonHeight;
 
-			h2 {
-				flex: 1;
-				cursor: pointer;
-			}
-		}
+      h2 {
+        flex: 1;
+        cursor: pointer;
+      }
+    }
 
-		.body {
-			.copy-url {
-				flex: 1;
-			}
+    .body {
+      .copy-url {
+        flex: 1;
+      }
 
-			.actions {
-				display: flex;
-				justify-content: flex-end;
-			}
-		}
-	}
+      .actions {
+        display: flex;
+        justify-content: flex-end;
+      }
+    }
+  }
 }

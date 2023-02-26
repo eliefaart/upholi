@@ -27,163 +27,184 @@ const queryStringParamNamePhotoId = "photoId";
 const nPhotosToLoadInitially = 25;
 
 const LibraryPage: FC<PageProps> = (props: PageProps) => {
-	const context = React.useContext(appStateContext);
-	const [photosThatHaveBeenInView, setPhotosThatHaveBeenInView] = useState<string[]>([]);
-	const [photos, refreshPhotos] = usePhotos();
-	const [selectedPhotoIds, setSelectedPhotoIds] = useState<string[]>([]);
-	const [openedPhotoId, setOpenedPhotoId] = useState<string>("");
-	const [confirmDeletePhotosOpen, setConfirmDeletePhotosOpen] = useState<boolean>(false);
+  const context = React.useContext(appStateContext);
+  const [photosThatHaveBeenInView, setPhotosThatHaveBeenInView] = useState<string[]>([]);
+  const [photos, refreshPhotos] = usePhotos();
+  const [selectedPhotoIds, setSelectedPhotoIds] = useState<string[]>([]);
+  const [openedPhotoId, setOpenedPhotoId] = useState<string>("");
+  const [confirmDeletePhotosOpen, setConfirmDeletePhotosOpen] = useState<boolean>(false);
 
-	const photosRef = React.useRef<PhotoMinimal[]>([]);
-	photosRef.current = photos;
+  const photosRef = React.useRef<PhotoMinimal[]>([]);
+  photosRef.current = photos;
 
-	useTitle("Library");
-	React.useEffect(() => {
-		props.setHeader({
-			headerContentElement: selectedPhotoIds.length === 0
-				? <DefaultHeaderContent
-					actions={<>
-						{selectedPhotoIds.length === 0 && <Button onClick={() => {
-							const element = document.getElementById("select-photos");
-							if (element) {
-								element.click();
-							}
-						}}
-							label="Upload"
-							icon={<IconUpload />} />}
-					</>}
-					contextMenu={null} />
-				: <ItemsSelectedHeaderContent
-					selectedItems={selectedPhotoIds}
-					onSelectionCleared={() => setSelectedPhotoIds([])}
-					actions={<>
-						<AddPhotosToAlbumButton
-							selectedPhotoIds={selectedPhotoIds}
-							onSelectionAddedToAlbum={() => setSelectedPhotoIds([])} />
-						<Button onClick={() => setConfirmDeletePhotosOpen(true)}
-							label="Delete"
-							icon={<IconDelete />} />
-					</>} />,
-		});
-	}, [selectedPhotoIds.length]);
+  useTitle("Library");
+  React.useEffect(() => {
+    props.setHeader({
+      headerContentElement:
+        selectedPhotoIds.length === 0 ? (
+          <DefaultHeaderContent
+            actions={
+              <>
+                {selectedPhotoIds.length === 0 && (
+                  <Button
+                    onClick={() => {
+                      const element = document.getElementById("select-photos");
+                      if (element) {
+                        element.click();
+                      }
+                    }}
+                    label="Upload"
+                    icon={<IconUpload />}
+                  />
+                )}
+              </>
+            }
+            contextMenu={null}
+          />
+        ) : (
+          <ItemsSelectedHeaderContent
+            selectedItems={selectedPhotoIds}
+            onSelectionCleared={() => setSelectedPhotoIds([])}
+            actions={
+              <>
+                <AddPhotosToAlbumButton
+                  selectedPhotoIds={selectedPhotoIds}
+                  onSelectionAddedToAlbum={() => setSelectedPhotoIds([])}
+                />
+                <Button onClick={() => setConfirmDeletePhotosOpen(true)} label="Delete" icon={<IconDelete />} />
+              </>
+            }
+          />
+        ),
+    });
+  }, [selectedPhotoIds.length]);
 
-	// Open photo, if indicated as such by query string
-	const queryStringPhotoId = UrlHelper.getQueryStringParamValue(location.search, queryStringParamNamePhotoId);
-	if (openedPhotoId !== queryStringPhotoId) {
-		setOpenedPhotoId(queryStringPhotoId);
-	}
+  // Open photo, if indicated as such by query string
+  const queryStringPhotoId = UrlHelper.getQueryStringParamValue(location.search, queryStringParamNamePhotoId);
+  if (openedPhotoId !== queryStringPhotoId) {
+    setOpenedPhotoId(queryStringPhotoId);
+  }
 
-	const loadVisiblePhotos = (): void => {
-		// Find photo IDs currently in viewport
-		const photoIdsInViewport = photosRef.current
-			.filter(photo => {
-				const photoElement = document.getElementById(photo.id);
-				return photoElement && elementIsInViewport(photoElement);
-			})
-			.map(photo => photo.id);
+  const loadVisiblePhotos = (): void => {
+    // Find photo IDs currently in viewport
+    const photoIdsInViewport = photosRef.current
+      .filter((photo) => {
+        const photoElement = document.getElementById(photo.id);
+        return photoElement && elementIsInViewport(photoElement);
+      })
+      .map((photo) => photo.id);
 
-		// Update state; merge photos currently in viewport with the ones that have been before.
-		setPhotosThatHaveBeenInView((currentPhotoIds) => {
-			const combined = currentPhotoIds.concat(photoIdsInViewport);
-			const unique = [...new Set(combined)];
+    // Update state; merge photos currently in viewport with the ones that have been before.
+    setPhotosThatHaveBeenInView((currentPhotoIds) => {
+      const combined = currentPhotoIds.concat(photoIdsInViewport);
+      const unique = [...new Set(combined)];
 
-			return unique;
-		});
-	};
+      return unique;
+    });
+  };
 
-	const deleteSelectedPhotos = (): void => {
-		upholiService.deletePhotos(selectedPhotoIds)
-			.then(() => {
-				setConfirmDeletePhotosOpen(false);
-				setSelectedPhotoIds([]);
-				refreshPhotos();
-			});
-	};
+  const deleteSelectedPhotos = (): void => {
+    upholiService.deletePhotos(selectedPhotoIds).then(() => {
+      setConfirmDeletePhotosOpen(false);
+      setSelectedPhotoIds([]);
+      refreshPhotos();
+    });
+  };
 
-	const onPhotoClicked = (photoId: string): void => {
-		if (photoId) {
-			context.history.push(document.location.pathname + "?photoId=" + photoId);
-		}
-	};
+  const onPhotoClicked = (photoId: string): void => {
+    if (photoId) {
+      context.history.push(document.location.pathname + "?photoId=" + photoId);
+    }
+  };
 
-	const onFilesDropped = (event: React.DragEvent<HTMLElement>): void => {
-		event.preventDefault();
-		if (!event.dataTransfer.files || event.dataTransfer.files.length === 0)
-			return; // no files
+  const onFilesDropped = (event: React.DragEvent<HTMLElement>): void => {
+    event.preventDefault();
+    if (!event.dataTransfer.files || event.dataTransfer.files.length === 0) return; // no files
 
-		uploadFilesList(event.dataTransfer.files);
-	};
+    uploadFilesList(event.dataTransfer.files);
+  };
 
-	const uploadFilesList = (fileList: FileList): void => {
-		const fnOnUploadFinished = () => {
-			refreshPhotos();
-			_.delay(loadVisiblePhotos, 100);
-			toast.info("Upload finished.");
-		};
+  const uploadFilesList = (fileList: FileList): void => {
+    const fnOnUploadFinished = () => {
+      refreshPhotos();
+      _.delay(loadVisiblePhotos, 100);
+      toast.info("Upload finished.");
+    };
 
-		uploadHelper.uploadPhotos(fileList).then(() => {
-			fnOnUploadFinished();
-		});
-	};
+    uploadHelper.uploadPhotos(fileList).then(() => {
+      fnOnUploadFinished();
+    });
+  };
 
-	const onScrollThrottled = _.throttle(loadVisiblePhotos, 100);
+  const onScrollThrottled = _.throttle(loadVisiblePhotos, 100);
 
-	// Bind onscroll event handler
-	React.useEffect(() => {
-		const contentElement = document.getElementById("content");
-		if (contentElement) {
-			contentElement.addEventListener("scroll", onScrollThrottled);
-		}
-	}, []);
+  // Bind onscroll event handler
+  React.useEffect(() => {
+    const contentElement = document.getElementById("content");
+    if (contentElement) {
+      contentElement.addEventListener("scroll", onScrollThrottled);
+    }
+  }, []);
 
-	// Load the initial batch of image thumbnails as soon as the first photos are available,
-	// and when new photos have been uploaded.
-	React.useEffect(() => {
-		if (photosRef.current.length > 0 && photosThatHaveBeenInView.length == 0) {
-			// Load a certain amount of photos regardless of wether they are within the viewport
-			setPhotosThatHaveBeenInView(photos.slice(0, nPhotosToLoadInitially).map(p => p.id));
+  // Load the initial batch of image thumbnails as soon as the first photos are available,
+  // and when new photos have been uploaded.
+  React.useEffect(() => {
+    if (photosRef.current.length > 0 && photosThatHaveBeenInView.length == 0) {
+      // Load a certain amount of photos regardless of wether they are within the viewport
+      setPhotosThatHaveBeenInView(photos.slice(0, nPhotosToLoadInitially).map((p) => p.id));
 
-			// Try to load additional photos visible within the viewport, after some delay.
-			// The delay is because the Gallery component still seems to move and re-fit the photos a bit after its render function has completed,
-			// and I don't see any event for when it has fully finished rendering.
-			setTimeout(loadVisiblePhotos, 500);
-		}
-	}, [photos]);
+      // Try to load additional photos visible within the viewport, after some delay.
+      // The delay is because the Gallery component still seems to move and re-fit the photos a bit after its render function has completed,
+      // and I don't see any event for when it has fully finished rendering.
+      setTimeout(loadVisiblePhotos, 500);
+    }
+  }, [photos]);
 
-	const galleryPhotos: GalleryPhoto[] = photos.map(photo => {
-		return {
-			id: photo.id,
-			width: photo.width,
-			height: photo.height,
-			mayLoad: photosThatHaveBeenInView.some(p => p === photo.id)
-		};
-	});
+  const galleryPhotos: GalleryPhoto[] = photos.map((photo) => {
+    return {
+      id: photo.id,
+      width: photo.width,
+      height: photo.height,
+      mayLoad: photosThatHaveBeenInView.some((p) => p === photo.id),
+    };
+  });
 
-	return <Content onDrop={onFilesDropped}>
-		<PhotoGallery photos={galleryPhotos}
-			onClick={onPhotoClicked}
-			selectedItems={selectedPhotoIds}
-			onPhotoSelectionChanged={setSelectedPhotoIds}
-		/>
+  return (
+    <Content onDrop={onFilesDropped}>
+      <PhotoGallery
+        photos={galleryPhotos}
+        onClick={onPhotoClicked}
+        selectedItems={selectedPhotoIds}
+        onPhotoSelectionChanged={setSelectedPhotoIds}
+      />
 
-		{openedPhotoId && <ModalPhotoDetail
-			isOpen={!!openedPhotoId}
-			photoId={openedPhotoId}
-			onRequestClose={() => context.history.push(document.location.pathname + "?" + UrlHelper.removeQueryStringParam(document.location.search, queryStringParamNamePhotoId))}
-		/>}
+      {openedPhotoId && (
+        <ModalPhotoDetail
+          isOpen={!!openedPhotoId}
+          photoId={openedPhotoId}
+          onRequestClose={() =>
+            context.history.push(
+              document.location.pathname +
+                "?" +
+                UrlHelper.removeQueryStringParam(document.location.search, queryStringParamNamePhotoId)
+            )
+          }
+        />
+      )}
 
-		<ModalConfirmation
-			title="Delete photos"
-			isOpen={confirmDeletePhotosOpen}
-			onRequestClose={() => setConfirmDeletePhotosOpen(false)}
-			onOkButtonClick={() => deleteSelectedPhotos()}
-			okButtonText="Delete"
-			confirmationText={selectedPhotoIds.length + " photos will be deleted."}
-		/>
+      <ModalConfirmation
+        title="Delete photos"
+        isOpen={confirmDeletePhotosOpen}
+        onRequestClose={() => setConfirmDeletePhotosOpen(false)}
+        onOkButtonClick={() => deleteSelectedPhotos()}
+        okButtonText="Delete"
+        confirmationText={selectedPhotoIds.length + " photos will be deleted."}
+      />
 
-		{/* Hidden upload button triggered by the button in action bar. This allows me to write simpler CSS to style the action buttons. */}
-		<UploadButton className="hidden" onSubmit={uploadFilesList} />
-	</Content>;
+      {/* Hidden upload button triggered by the button in action bar. This allows me to write simpler CSS to style the action buttons. */}
+      <UploadButton className="hidden" onSubmit={uploadFilesList} />
+    </Content>
+  );
 };
 
 export default LibraryPage;

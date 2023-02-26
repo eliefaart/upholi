@@ -9,74 +9,74 @@ import { useTitle } from "../../hooks/useTitle";
 import { PageProps } from "../../models/PageProps";
 
 interface Props extends PageProps {
-	// Note; this field represents the object set by react router
-	match: {
-		params: {
-			token: string
-		}
-	};
+  // Note; this field represents the object set by react router
+  match: {
+    params: {
+      token: string;
+    };
+  };
 }
 
 enum AuthorizedState {
-	Undetermined,
-	Authorized,
-	Unauthorized,
+  Undetermined,
+  Authorized,
+  Unauthorized,
 }
 
 const SharedAlbumPage: FC<Props> = (props: Props) => {
-	const [authorized, setAuthorized] = useState(AuthorizedState.Undetermined);
-	const [lastPasswordIncorrect, setLastPasswordIncorrect] = useState(false);
-	const [album, setAlbum] = useState<AlbumHydrated | null>(null);
-	const shareId = props.match.params.token;
+  const [authorized, setAuthorized] = useState(AuthorizedState.Undetermined);
+  const [lastPasswordIncorrect, setLastPasswordIncorrect] = useState(false);
+  const [album, setAlbum] = useState<AlbumHydrated | null>(null);
+  const shareId = props.match.params.token;
 
-	useTitle(album?.title ?? "");
+  useTitle(album?.title ?? "");
 
-	const setAuthorizedFromBoolean = (authorized: boolean) => setAuthorized(authorized ? AuthorizedState.Authorized : AuthorizedState.Unauthorized);
+  const setAuthorizedFromBoolean = (authorized: boolean) =>
+    setAuthorized(authorized ? AuthorizedState.Authorized : AuthorizedState.Unauthorized);
 
-	const getAlbum = () => {
-		upholiService.getShareAlbum(shareId)
-			.then(setAlbum)
-			.catch(console.error);
-	};
+  const getAlbum = () => {
+    upholiService.getShareAlbum(shareId).then(setAlbum).catch(console.error);
+  };
 
-	const tryauthorizeShare = (password: string): void => {
-		if (password) {
-			upholiService.authorizeShare(shareId, password)
-				.then(authorized => {
-					setAuthorizedFromBoolean(authorized);
-					setLastPasswordIncorrect(!authorized);
-				})
-				.catch(console.error);
-		}
-		else {
-			setLastPasswordIncorrect(false);
-		}
-	};
+  const tryauthorizeShare = (password: string): void => {
+    if (password) {
+      upholiService
+        .authorizeShare(shareId, password)
+        .then((authorized) => {
+          setAuthorizedFromBoolean(authorized);
+          setLastPasswordIncorrect(!authorized);
+        })
+        .catch(console.error);
+    } else {
+      setLastPasswordIncorrect(false);
+    }
+  };
 
-	React.useEffect(() => {
-		upholiService.isAuthorizedForShare(shareId)
-			.then(setAuthorizedFromBoolean)
-			.catch(console.error);
-	}, []);
+  React.useEffect(() => {
+    upholiService.isAuthorizedForShare(shareId).then(setAuthorizedFromBoolean).catch(console.error);
+  }, []);
 
-	React.useEffect(() => {
-		if (authorized == AuthorizedState.Authorized) {
-			getAlbum();
-		}
-	}, [authorized]);
+  React.useEffect(() => {
+    if (authorized == AuthorizedState.Authorized) {
+      getAlbum();
+    }
+  }, [authorized]);
 
-	return (
-		<Content>
-			{/* Password input box */}
-			{authorized == AuthorizedState.Unauthorized && <InputPassword
-				className="padding-top-50px"
-				prompt="You need to provide a password to access this share."
-				onSubmitPassword={(password) => tryauthorizeShare(password)}
-				lastPasswordIncorrect={lastPasswordIncorrect} />}
+  return (
+    <Content>
+      {/* Password input box */}
+      {authorized == AuthorizedState.Unauthorized && (
+        <InputPassword
+          className="padding-top-50px"
+          prompt="You need to provide a password to access this share."
+          onSubmitPassword={(password) => tryauthorizeShare(password)}
+          lastPasswordIncorrect={lastPasswordIncorrect}
+        />
+      )}
 
-			{!!album && <AlbumView album={album} />}
-		</Content>
-	);
+      {!!album && <AlbumView album={album} />}
+    </Content>
+  );
 };
 
 export default SharedAlbumPage;

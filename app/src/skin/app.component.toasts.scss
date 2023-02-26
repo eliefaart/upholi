@@ -1,19 +1,18 @@
 .Toastify__toast-container {
+  .Toastify__toast {
+    background: var(--colorBackgroundAlt);
+    color: var(--colorText);
+    border-bottom: $borderRadius solid var(--colorAccent);
+    border-radius: $borderRadius;
+    min-height: $buttonHeight;
+    font-family: unset;
 
-	.Toastify__toast {
-		background: var(--colorBackgroundAlt);
-		color: var(--colorText);
-		border-bottom: $borderRadius solid var(--colorAccent);
-		border-radius: $borderRadius;
-		min-height: $buttonHeight;
-		font-family: unset;
+    .Toastify__close-button {
+      all: unset;
 
-		.Toastify__close-button {
-			all: unset;
-
-			svg {
-				fill: var(--colorAccent);
-			}
-		}
-	}
+      svg {
+        fill: var(--colorAccent);
+      }
+    }
+  }
 }

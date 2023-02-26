@@ -3,40 +3,40 @@ name: app
 on:
   push:
     paths:
-      - '.github/workflows/app.yml'
-      - 'app/**'
+      - ".github/workflows/app.yml"
+      - "app/**"
 
 jobs:
   main:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Setup node.js
-      uses: actions/setup-node@v1
-      with:
-        node-version: 14.x
+      - name: Setup node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
 
-    - name: Build WASM
-      run: |
-        cd ./wasm
-        cargo install wasm-pack
-        wasm-pack build --target web
-        mkdir --parents ../app/wwwroot/dist/
-        mv ./pkg/wasm_bg.wasm ../app/wwwroot/dist/wasm.wasm
+      - name: Build WASM
+        run: |
+          cd ./wasm
+          cargo install wasm-pack
+          wasm-pack build --target web
+          mkdir --parents ../app/wwwroot/dist/
+          mv ./pkg/wasm_bg.wasm ../app/wwwroot/dist/wasm.wasm
 
-    - name: Install packages
-      run: |
-        cd ./app
-        npm install
+      - name: Install packages
+        run: |
+          cd ./app
+          npm install
 
-    - name: Lint
-      run: |
-        cd ./app
-        npm run lint
+      - name: Lint
+        run: |
+          cd ./app
+          npm run lint
 
-    - name: Build
-      run: |
-        cd ./app
-        npm run build-prd
+      - name: Build
+        run: |
+          cd ./app
+          npm run build

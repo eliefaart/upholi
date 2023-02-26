@@ -1,27 +1,27 @@
 .exif {
-	min-width: 150px;
-	position: absolute;
-	z-index: 2;
-	background: var(--colorBackgroundAlt);
-	border-radius: $borderRadius;
-	padding: 0 $spacing;
-	top: $headerHeight + $spacing;
-	right: $spacing;
+  min-width: 150px;
+  position: absolute;
+  z-index: 2;
+  background: var(--colorBackgroundAlt);
+  border-radius: $borderRadius;
+  padding: 0 $spacing;
+  top: $headerHeight + $spacing;
+  right: $spacing;
 
-	&:empty {
-		display: none;
-	}
+  &:empty {
+    display: none;
+  }
 
-	.property {
-		margin: $spacing 0;
+  .property {
+    margin: $spacing 0;
 
-		span {
-			display: block;
-			white-space: nowrap;
-		}
+    span {
+      display: block;
+      white-space: nowrap;
+    }
 
-		.name {
-			font-weight: bold;
-		}
-	}
+    .name {
+      font-weight: bold;
+    }
+  }
 }
