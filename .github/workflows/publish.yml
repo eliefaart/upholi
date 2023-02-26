@@ -6,12 +6,12 @@ on:
       - master
       - dev
     paths:
-      - ".github/workflows/publish.yml"
+      - .github/workflows/publish.yml
       - Dockerfile
-      - "app/**"
-      - "wasm/**"
-      - "server/**"
-      - "lib/**"
+      - app/**
+      - wasm/**
+      - server/**
+      - lib/**
 
 env:
   IMAGE_NAME: upholi

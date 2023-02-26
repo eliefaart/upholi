@@ -3,8 +3,8 @@ name: app
 on:
   push:
     paths:
-      - ".github/workflows/app.yml"
-      - "app/**"
+      - .github/workflows/app.yml
+      - app/**
 
 jobs:
   main:
