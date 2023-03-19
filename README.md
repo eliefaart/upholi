@@ -23,7 +23,7 @@ All files and data are end-to-end encrypted, with a few small exceptions. All en
 
 ### What is not encrypted?
 The following information is not encrypted, and/or can be determined by someone with full access to the database and storage.
-- Dimensions (width and height) and timestamp (taken or uploaded on) of each photo
+- Dimensions (width and height) and timestamp (uploaded on) of each photo
 - File size in bytes of each photo
 - Number of photos, albums and shares of a user
 - Usernames
