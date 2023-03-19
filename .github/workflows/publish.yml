@@ -3,7 +3,7 @@ name: publish
 on:
   push:
     branches:
-      - master
+      - main
       - dev
     paths:
       - .github/workflows/publish.yml
@@ -87,7 +87,7 @@ jobs:
           [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
 
           # Use Docker `latest` tag convention
-          [ "$VERSION" == "master" ] && VERSION=latest
+          [ "$VERSION" == "main" ] && VERSION=latest
 
           echo IMAGE_ID=$IMAGE_ID
           echo VERSION=$VERSION
