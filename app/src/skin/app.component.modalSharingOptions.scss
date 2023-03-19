@@ -1,8 +1,7 @@
 .modal-sharing-options {
-
-	.modal-body {
-		>*:not(button) {
-			width: 100%;
-		}
-	}
+  .modal-body {
+    > *:not(button) {
+      width: 100%;
+    }
+  }
 }

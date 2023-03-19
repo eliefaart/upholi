@@ -3,22 +3,32 @@ name: lib
 on:
   push:
     paths:
-      - '.github/workflows/lib.yml'
-      - 'lib/**'
+      - .github/workflows/lib.yml
+      - lib/**
 
 jobs:
   main:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Build
-      run: |
-        cd ./lib
-        cargo build --verbose
+      - name: Build
+        run: |
+          cd ./lib
+          cargo build --verbose
 
-    - name: Test
-      run: |
-        cd ./lib
-        cargo test --verbose
+      - name: Test
+        run: |
+          cd ./lib
+          cargo test --verbose
+
+      - name: Clippy
+        run: |
+          cd ./lib
+          cargo clippy --all -- -D warnings
+
+      - name: Format
+        run: |
+          cd ./lib
+          cargo fmt --all -- --check

@@ -1,73 +1,73 @@
 .center-text {
-	display: inline-block;
-	width: 100%;
-	text-align: center;
+  display: inline-block;
+  width: 100%;
+  text-align: center;
 }
 
 .error-text {
-	color: var(--colorError);
+  color: var(--colorError);
 }
 
 .flex {
-	display: flex;
+  display: flex;
 }
 
 .flex-grow {
-	flex-grow: 1;
+  flex-grow: 1;
 }
 
 .flex-justify-content-right {
-	justify-content: right;
+  justify-content: right;
 }
 
 .hidden {
-	width: 0px;
-	height: 0px;
-	overflow: hidden;
-	visibility: hidden;
+  width: 0px;
+  height: 0px;
+  overflow: hidden;
+  visibility: hidden;
 }
 
 .padding-top-50px {
-	padding-top: 50px;
+  padding-top: 50px;
 }
 
 .top-bar {
-	display: flex;
-	flex-shrink: 0;
-	padding: $spacingLarge;
-	min-height: $buttonHeight;
+  display: flex;
+  flex-shrink: 0;
+  padding: $spacingLarge;
+  min-height: $buttonHeight;
 
-	>*:not(:last-child) {
-		margin-right: $spacing;
-	}
+  > *:not(:last-child) {
+    margin-right: $spacing;
+  }
 }
 
 .copy-url {
-	display: flex;
+  display: flex;
 
-	>* {
-		margin: $spacing 0;
+  > * {
+    margin: $spacing 0;
 
-		&:not(:last-child) {
-			margin-right: $spacing;
-		}
-	}
+    &:not(:last-child) {
+      margin-right: $spacing;
+    }
+  }
 }
 
 .form-small {
-	width: 500px;
-	margin: $spacing * 5 auto;
+  width: 500px;
+  margin: $spacing * 5 auto;
 }
 
 .button-bar {
-	display: flex;
-	flex-direction: row;
+  display: flex;
+  flex-direction: row;
 
-	.left {
-		flex: 1 1 auto;
-	}
+  .left {
+    flex: 1 1 auto;
+  }
 
-	.right {
-		flex: 0 0 auto;
-	}
+  .right {
+    flex: 0 0 auto;
+  }
 }

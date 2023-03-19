@@ -6,91 +6,91 @@ on:
       - master
       - dev
     paths:
-      - '.github/workflows/publish.yml'
+      - .github/workflows/publish.yml
       - Dockerfile
-      - 'app/**'
-      - 'wasm/**'
-      - 'server/**'
-      - 'lib/**'
+      - app/**
+      - wasm/**
+      - server/**
+      - lib/**
 
 env:
   IMAGE_NAME: upholi
 
 jobs:
   main:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Setup node.js
-      uses: actions/setup-node@v1
-      with:
-        node-version: 14.x
+      - name: Setup node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
 
-    - name: Build WASM
-      run: |
-        cd ./wasm
-        cargo install wasm-pack
-        wasm-pack build --target web
-        mkdir --parents ../app/wwwroot/dist/
-        mv ./pkg/wasm_bg.wasm ../app/wwwroot/dist/wasm.wasm
+      - name: Build WASM
+        run: |
+          cd ./wasm
+          cargo install wasm-pack
+          wasm-pack build --target web
+          mkdir --parents ../app/wwwroot/dist/
+          mv ./pkg/wasm_bg.wasm ../app/wwwroot/dist/wasm.wasm
 
-    - name: Test WASM
-      run: |
-        cd ./wasm
-        cargo build --release --verbose
+      - name: Test WASM
+        run: |
+          cd ./wasm
+          cargo build --release --verbose
 
-    - name: Build server
-      run: |
-        cd ./server
-        cargo build --release --verbose
+      - name: Build server
+        run: |
+          cd ./server
+          cargo build --release --verbose
 
-    - name: Test server
-      run: |
-        cd ./server
-        cargo test --release --verbose
+      - name: Test server
+        run: |
+          cd ./server
+          cargo test --release --verbose
 
-    - name: Install packages
-      run: |
-        cd ./app
-        npm install
+      - name: Install packages
+        run: |
+          cd ./app
+          npm install
 
-    - name: Lint
-      run: |
-        cd ./app
-        npm run lint
+      - name: Lint
+        run: |
+          cd ./app
+          npm run lint
 
-    - name: Build
-      run: |
-        cd ./app
-        npm run build-prd
+      - name: Build
+        run: |
+          cd ./app
+          npm run build
 
-    - name: Authenticate to githib registry
-      run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Authenticate to githib registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-    - name: Build docker
-      run: |
-        docker build . --file Dockerfile --tag $IMAGE_NAME
+      - name: Build docker
+        run: |
+          docker build . --file Dockerfile --tag $IMAGE_NAME
 
-    - name: Publish docker
-      run: |
-        IMAGE_ID=ghcr.io/${{ github.repository }}/$IMAGE_NAME
+      - name: Publish docker
+        run: |
+          IMAGE_ID=ghcr.io/${{ github.repository }}/$IMAGE_NAME
 
-        # Change all uppercase to lowercase
-        IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+          # Change all uppercase to lowercase
+          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
 
-        # Strip git ref prefix from version
-        VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+          # Strip git ref prefix from version
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
 
-        # Strip "v" prefix from tag name
-        [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+          # Strip "v" prefix from tag name
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
 
-        # Use Docker `latest` tag convention
-        [ "$VERSION" == "master" ] && VERSION=latest
+          # Use Docker `latest` tag convention
+          [ "$VERSION" == "master" ] && VERSION=latest
 
-        echo IMAGE_ID=$IMAGE_ID
-        echo VERSION=$VERSION
+          echo IMAGE_ID=$IMAGE_ID
+          echo VERSION=$VERSION
 
-        docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
-        docker push $IMAGE_ID:$VERSION
+          docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
+          docker push $IMAGE_ID:$VERSION

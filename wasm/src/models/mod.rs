@@ -1,39 +1,67 @@
-use self::{photo::Photo, share::ShareData};
-use serde::{Deserialize, Serialize};
-use upholi_lib::result::Result;
+use anyhow::Result;
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
-pub mod album;
-pub mod photo;
-pub mod share;
+pub use album::*;
+pub use library::*;
+pub use photo::*;
+pub use share::*;
 
-pub trait Entity {
-	type TEncrypted;
-	type TData;
-	type TJavaScript;
+mod album;
+mod library;
+mod photo;
+mod share;
 
-	/// Init from encrypted data using the entity's key.
-	fn from_encrypted(source: Self::TEncrypted, key: &[u8]) -> Result<Self>
-	where
-		Self: std::marker::Sized;
-	/// Init from encrypted data using the entity's owner's private key.
-	fn from_encrypted_with_owner_key(source: Self::TEncrypted, key: &[u8]) -> Result<Self>
-	where
-		Self: std::marker::Sized;
-	fn get_key(&self) -> &[u8];
-	fn get_id(&self) -> &str;
-	fn get_data(&self) -> &Self::TData;
-	fn get_data_mut(&mut self) -> &mut Self::TData;
-	fn get_encrypted(&self) -> &Self::TEncrypted;
-	fn as_js_value(&self) -> &Self::TJavaScript;
+#[derive(Serialize, Deserialize, Debug)]
+pub struct EncryptedItem {
+    pub base64: String,
+    pub nonce: String,
 }
 
-pub trait Shareable {
-	fn create_share_data(&self, key: &[u8], photos: &[Photo]) -> Result<ShareData>;
+impl EncryptedItem {
+    pub fn from<T: Serialize>(key: &[u8], item: &T) -> Result<Self> {
+        let json = serde_json::to_string(item)?;
+        let bytes = json.as_bytes();
+        let encrypt_result = crate::encryption::symmetric::encrypt_slice(key, bytes)?;
+        let base64 = base64::encode_config(encrypt_result.bytes, base64::STANDARD);
+        Ok(Self {
+            base64,
+            nonce: encrypt_result.nonce,
+        })
+    }
+
+    pub fn decrypt<TDecrypted: DeserializeOwned>(&self, key: &[u8]) -> Result<TDecrypted> {
+        let nonce = self.nonce.as_bytes();
+        let bytes = base64::decode_config(&self.base64, base64::STANDARD)?;
+        let bytes = crate::encryption::symmetric::decrypt_slice(key, nonce, &bytes)?;
+        Ok(serde_json::from_slice(&bytes)?)
+    }
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct EntityKey {
-	pub id: String,
-	pub key: String,
+#[cfg(test)]
+mod tests {
+    use crate::{
+        encryption::symmetric::generate_key,
+        models::{EncryptedItem, Library},
+    };
+
+    #[test]
+    fn encrypt_decrypt_text_item_bytes() {
+        let key = generate_key();
+        let item = EncryptedItem::from(&key, &key).unwrap();
+        let decrypted: Vec<u8> = item.decrypt(&key).unwrap();
+
+        assert_eq!(key, decrypted);
+    }
+
+    #[test]
+    fn encrypt_decrypt_text_item_instance() {
+        let key = generate_key();
+        let library = Library::default();
+        let item = EncryptedItem::from(&key, &library).unwrap();
+        let decrypted: Library = item.decrypt(&key).unwrap();
+
+        assert_eq!(library.photos.len(), decrypted.photos.len());
+        assert_eq!(library.albums.len(), decrypted.albums.len());
+        assert_eq!(library.shares.len(), decrypted.shares.len());
+    }
 }

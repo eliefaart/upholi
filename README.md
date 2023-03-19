@@ -23,7 +23,7 @@ All files and data are end-to-end encrypted, with a few small exceptions. All en
 
 ### What is not encrypted?
 The following information is not encrypted, and/or can be determined by someone with full access to the database and storage.
-- Dimensions (width and height) and timestamp (taken or uploaded on) of each photo
+- Dimensions (width and height) and timestamp (uploaded on) of each photo
 - File size in bytes of each photo
 - Number of photos, albums and shares of a user
 - Usernames
@@ -43,6 +43,7 @@ Default configuration is inside ```/server/config/default.toml```. Each setting 
 | Environment variable                     | Description                                                                                 |
 | :--------------------------------------- | :------------------------------------------------------------------------------------------ |
 | `UPHOLI_SERVER_ADDRESS`                  | Address to bind to.                                                                         |
+| `UPHOLI_SERVER_WWWROOT_PATH`             | Path to the app's `wwwroot` directory.                                                      |
 | `UPHOLI_DATABASE_CONNECTIONSTRING`       | Connection string to database server.                                                       |
 | `UPHOLI_STORAGE_PROVIDER`                | ```Disk``` \| ```Azure```. Storage provider.                                                |
 | `UPHOLI_STORAGE_DIRECTORYPHOTOS`         | Only when storage provider is ```Disk```. Path to directory in which photos will be stored. |

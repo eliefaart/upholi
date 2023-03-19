@@ -15,199 +15,197 @@ import { SharingOptions } from "../../models/SharingOptions";
 import AlbumView from "../AlbumView";
 import { useTitle } from "../../hooks/useTitle";
 import useAlbum from "../../hooks/useAlbum";
-import useFoundAlbumShare from "../../hooks/useFoundAlbumShare";
+import useAlbumShare from "../../hooks/useAlbumShare";
 import { PageProps } from "../../models/PageProps";
 import DefaultHeaderContent from "../headers/DefaultHeaderContent";
 import ItemsSelectedHeaderContent from "../headers/ItemsSelectedHeaderContent";
 import Button from "../misc/Button";
 
 interface Props extends PageProps {
-	// Note; this field represents the object set by react router
-	match: {
-		params: {
-			albumId: string
-		}
-	};
+  // Note; this field represents the object set by react router
+  match: {
+    params: {
+      albumId: string;
+    };
+  };
 }
 
 const AlbumPage: FC<Props> = (props: Props) => {
-	const albumId = props.match.params.albumId;
-	const [album, refreshAlbum] = useAlbum(albumId);
-	const [share, refreshShare] = useFoundAlbumShare(albumId);
-	const [selectedPhotoIds, setSelectedPhotoIds] = React.useState<string[]>([]);
-	const [editAlbumOpen, setEditAlbumOpen] = React.useState<boolean>(false);
-	const [sharingOptionsOpen, setSharingOptionsOpen] = React.useState<boolean>(false);
-	const [confirmDeleteAlbumOpen, setConfirmDeleteAlbumOpen] = React.useState<boolean>(false);
-	const [confirmRemovePhotosOpen, setConfirmRemovePhotosOpen] = React.useState<boolean>(false);
-	const context = React.useContext(appStateContext);
+  const albumId = props.match.params.albumId;
+  const [album, refreshAlbum] = useAlbum(albumId);
+  const [share, refreshShare] = useAlbumShare(albumId);
+  const [selectedPhotoIds, setSelectedPhotoIds] = React.useState<string[]>([]);
+  const [editAlbumOpen, setEditAlbumOpen] = React.useState<boolean>(false);
+  const [sharingOptionsOpen, setSharingOptionsOpen] = React.useState<boolean>(false);
+  const [confirmDeleteAlbumOpen, setConfirmDeleteAlbumOpen] = React.useState<boolean>(false);
+  const [confirmRemovePhotosOpen, setConfirmRemovePhotosOpen] = React.useState<boolean>(false);
+  const context = React.useContext(appStateContext);
 
-	const deleteAlbum = (): void => {
-		const albumTitle = album?.title;
+  const deleteAlbum = (): void => {
+    const albumTitle = album?.title;
 
-		upholiService.deleteAlbum(albumId)
-			.then(() => {
-				toast.info("Album '" + albumTitle + "' deleted.");
-				context.history.push("/albums");
-			})
-			.catch(console.error);
-	};
+    upholiService
+      .deleteAlbum(albumId)
+      .then(() => {
+        toast.info("Album '" + albumTitle + "' deleted.");
+        context.history.push("/albums");
+      })
+      .catch(console.error);
+  };
 
-	const setSelectedPhotoAsAlbumCover = (): void => {
-		const photoId = selectedPhotoIds[0];
+  const setSelectedPhotoAsAlbumCover = (): void => {
+    const photoId = selectedPhotoIds[0];
 
-		upholiService.updateAlbumCover(albumId, photoId)
-			.then(() => {
-				toast.info("Album cover updated.");
-				setSelectedPhotoIds([]);
-			})
-			.catch(console.error);
-	};
+    upholiService
+      .updateAlbumCover(albumId, photoId)
+      .then(() => {
+        toast.info("Album cover updated.");
+        setSelectedPhotoIds([]);
+      })
+      .catch(console.error);
+  };
 
-	const removeSelectedPhotosFromAlbum = (photoIds: string[]): void => {
-		upholiService.removePhotosFromAlbum(albumId, photoIds)
-			.then(() => {
-				toast.info("Photos removed.");
-				setConfirmRemovePhotosOpen(false);
-				setSelectedPhotoIds([]);
-				refreshAlbum();
-			})
-			.catch(console.error);
-	};
+  const removeSelectedPhotosFromAlbum = (photoIds: string[]): void => {
+    upholiService
+      .removePhotosFromAlbum(albumId, photoIds)
+      .then(() => {
+        toast.info("Photos removed.");
+        setConfirmRemovePhotosOpen(false);
+        setSelectedPhotoIds([]);
+        refreshAlbum();
+      })
+      .catch(console.error);
+  };
 
-	const onFilesDropped = (event: React.DragEvent<HTMLElement>): void => {
-		event.preventDefault();
-		if (!event.dataTransfer.files || event.dataTransfer.files.length === 0)
-			return; // no files
+  const onFilesDropped = (event: React.DragEvent<HTMLElement>): void => {
+    event.preventDefault();
+    if (!event.dataTransfer.files || event.dataTransfer.files.length === 0) return; // no files
 
-		uploadFilesList(event.dataTransfer.files);
-	};
+    uploadFilesList(event.dataTransfer.files);
+  };
 
-	const uploadFilesList = (fileList: FileList): void => {
-		const fnOnUploadFinished = () => {
-			toast.info("Upload finished.");
-			refreshAlbum();
-		};
+  const uploadFilesList = (fileList: FileList): void => {
+    const fnOnUploadFinished = () => {
+      toast.info("Upload finished.");
+      refreshAlbum();
+    };
 
-		uploadHelper.uploadPhotos(fileList).then((queue) => {
-			if (album) {
-				const photoIds = queue
-					.map(file => file.uploadedPhotoId || "")
-					.filter(id => !!id);
+    uploadHelper.uploadPhotos(fileList).then((queue) => {
+      if (album) {
+        const photoIds = queue.map((file) => file.uploadedPhotoId || "").filter((id) => !!id);
 
-				upholiService.addPhotosToAlbum(album.id, photoIds)
-					.finally(fnOnUploadFinished);
-			}
-		});
-	};
+        upholiService.addPhotosToAlbum(album.id, photoIds).finally(fnOnUploadFinished);
+      }
+    });
+  };
 
-	const updateSharingOptions = (options: SharingOptions): void => {
-		const onShareUpdated = () => {
-			refreshShare();
-			toast.info("Sharing options updated");
-		};
+  const updateSharingOptions = (options: SharingOptions): void => {
+    const onShareUpdated = () => {
+      refreshShare();
+      toast.info("Sharing options updated");
+    };
 
-		if (options.shared) {
-			upholiService.upsertAlbumShare(albumId, options.password)
-				.then(onShareUpdated)
-				.catch(console.error);
-		}
-		else {
-			if (share) {
-				upholiService.deleteShare(share.id)
-					.then(onShareUpdated)
-					.catch(console.error);
-			}
-		}
-	};
+    if (options.shared) {
+      upholiService.upsertAlbumShare(albumId, options.password).then(onShareUpdated).catch(console.error);
+    } else {
+      if (share) {
+        upholiService.deleteShare(share.id).then(onShareUpdated).catch(console.error);
+      }
+    }
+  };
 
-	useTitle("Album - " + album?.title);
-	React.useEffect(() => {
-		props.setHeader({
-			headerContentElement: selectedPhotoIds.length === 0
-				? <DefaultHeaderContent
-					actions={<>
-						<Button onClick={() => setSharingOptionsOpen(true)}
-							label="Share"
-							icon={<IconShare />} />
-						<Button onClick={() => {
-							const selectPhotosElement = document.getElementById("select-photos");
-							if (selectPhotosElement) {
-								selectPhotosElement.click();
-							}
-						}}
-							label="Upload"
-							icon={<IconUpload />} />
-					</>}
-					contextMenu={<>
-						{<button onClick={() => setEditAlbumOpen(true)}>Edit album</button>}
-						{<button onClick={() => setConfirmDeleteAlbumOpen(true)}>Delete album</button>}
-					</>} />
-				: <ItemsSelectedHeaderContent
-					selectedItems={selectedPhotoIds}
-					onSelectionCleared={() => setSelectedPhotoIds([])}
-					actions={<>
-						<Button onClick={setSelectedPhotoAsAlbumCover}
-							label="Set album cover"
-							icon={<IconImage />} />
-						<AddPhotosToAlbumButton
-							selectedPhotoIds={selectedPhotoIds}
-							onSelectionAddedToAlbum={() => setSelectedPhotoIds([])} />
-						<Button onClick={() => setConfirmRemovePhotosOpen(true)}
-							label="Remove"
-							icon={<IconRemove />}
-							iconPosition="left" />
-					</>} />,
-		});
-	}, [selectedPhotoIds.length]);
+  useTitle("Album - " + album?.title);
+  React.useEffect(() => {
+    props.setHeader({
+      headerContentElement:
+        selectedPhotoIds.length === 0 ? (
+          <DefaultHeaderContent
+            actions={
+              <>
+                <Button onClick={() => setSharingOptionsOpen(true)} label="Share" icon={<IconShare />} />
+                <Button
+                  onClick={() => {
+                    const selectPhotosElement = document.getElementById("select-photos");
+                    if (selectPhotosElement) {
+                      selectPhotosElement.click();
+                    }
+                  }}
+                  label="Upload"
+                  icon={<IconUpload />}
+                />
+              </>
+            }
+            contextMenu={
+              <>
+                {<button onClick={() => setEditAlbumOpen(true)}>Edit album</button>}
+                {<button onClick={() => setConfirmDeleteAlbumOpen(true)}>Delete album</button>}
+              </>
+            }
+          />
+        ) : (
+          <ItemsSelectedHeaderContent
+            selectedItems={selectedPhotoIds}
+            onSelectionCleared={() => setSelectedPhotoIds([])}
+            actions={
+              <>
+                <Button onClick={setSelectedPhotoAsAlbumCover} label="Set album cover" icon={<IconImage />} />
+                <AddPhotosToAlbumButton
+                  selectedPhotoIds={selectedPhotoIds}
+                  onSelectionAddedToAlbum={() => setSelectedPhotoIds([])}
+                />
+                <Button
+                  onClick={() => setConfirmRemovePhotosOpen(true)}
+                  label="Remove"
+                  icon={<IconRemove />}
+                  iconPosition="left"
+                />
+              </>
+            }
+          />
+        ),
+    });
+  }, [selectedPhotoIds.length]);
 
-	if (!album) {
-		return null;
-	}
-	else {
-		return (
-			<Content onDrop={(event) => onFilesDropped(event)}>
-				<AlbumView
-					album={album}
-					selectedPhotos={selectedPhotoIds}
-					onSelectionChanged={setSelectedPhotoIds}
-				/>
+  if (!album) {
+    return null;
+  } else {
+    return (
+      <Content onDrop={(event) => onFilesDropped(event)}>
+        <AlbumView album={album} selectedPhotos={selectedPhotoIds} onSelectionChanged={setSelectedPhotoIds} />
 
-				<ModalSharingOptions
-					share={share}
-					isOpen={sharingOptionsOpen}
-					onOkButtonClick={() => null}
-					onRequestClose={() => setSharingOptionsOpen(false)}
-					onSharingOptionsUpdated={updateSharingOptions}
-				/>
+        <ModalSharingOptions
+          share={share}
+          isOpen={sharingOptionsOpen}
+          onOkButtonClick={() => null}
+          onRequestClose={() => setSharingOptionsOpen(false)}
+          onSharingOptionsUpdated={updateSharingOptions}
+        />
 
-				<ModalEditAlbum
-					isOpen={editAlbumOpen}
-					onRequestClose={() => setEditAlbumOpen(false)}
-					album={album} />
+        <ModalEditAlbum isOpen={editAlbumOpen} onRequestClose={() => setEditAlbumOpen(false)} album={album} />
 
-				<ModalConfirmation
-					title="Delete album"
-					isOpen={confirmDeleteAlbumOpen}
-					onRequestClose={() => setConfirmDeleteAlbumOpen(false)}
-					onOkButtonClick={() => deleteAlbum()}
-					okButtonText="Delete"
-					confirmationText={"Album '" + album.title + "' will be deleted."}
-				/>
+        <ModalConfirmation
+          title="Delete album"
+          isOpen={confirmDeleteAlbumOpen}
+          onRequestClose={() => setConfirmDeleteAlbumOpen(false)}
+          onOkButtonClick={() => deleteAlbum()}
+          okButtonText="Delete"
+          confirmationText={"Album '" + album.title + "' will be deleted."}
+        />
 
-				<ModalConfirmation
-					title="Remove photos"
-					isOpen={confirmRemovePhotosOpen}
-					onRequestClose={() => setConfirmRemovePhotosOpen(false)}
-					onOkButtonClick={() => removeSelectedPhotosFromAlbum(selectedPhotoIds)}
-					okButtonText="Remove"
-					confirmationText={selectedPhotoIds.length + " photos will be removed from album '" + album.title + "'."}
-				/>
+        <ModalConfirmation
+          title="Remove photos"
+          isOpen={confirmRemovePhotosOpen}
+          onRequestClose={() => setConfirmRemovePhotosOpen(false)}
+          onOkButtonClick={() => removeSelectedPhotosFromAlbum(selectedPhotoIds)}
+          okButtonText="Remove"
+          confirmationText={selectedPhotoIds.length + " photos will be removed from album '" + album.title + "'."}
+        />
 
-				{/* Hidden upload button triggered by the button in action bar. This allos me to write simpler CSS to style the action buttons. */}
-				<UploadButton className="hidden" onSubmit={uploadFilesList} />
-			</Content>
-		);
-	}
+        {/* Hidden upload button triggered by the button in action bar. This allos me to write simpler CSS to style the action buttons. */}
+        <UploadButton className="hidden" onSubmit={uploadFilesList} />
+      </Content>
+    );
+  }
 };
 
 export default AlbumPage;

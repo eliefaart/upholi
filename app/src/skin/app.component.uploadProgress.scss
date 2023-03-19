@@ -1,45 +1,60 @@
 .upload-progress {
-	position: fixed;
-	right: $spacing;
-	bottom: $spacing;
-	width: 450px;
-	max-height: 300px;
-	background: var(--colorBackground);
-	box-shadow: 0 0 5px var(--colorBackgroundShadow, 40);
-	border-radius: $borderRadius;
-	padding: $spacing;
-	display: flex;
-	flex-direction: column;
-	gap: $spacing;
-	z-index: 2;
+  position: fixed;
+  right: $spacing;
+  bottom: $spacing;
+  width: 350px;
+  max-height: 300px;
+  background: var(--colorBackgroundAlt);
+  border-radius: $borderRadius;
+  padding: $spacing;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing;
+  z-index: 2;
 
-	.header {
-		display: flex;
-		justify-content: flex-end;
-	}
+  .header {
+    display: flex;
+    height: $buttonHeight;
 
-	.files {
-		overflow: auto;
+    .title {
+      flex: 1;
+      line-height: $buttonHeight;
+    }
 
-		.file {
-			display: flex;
-			width: 100%;
-			height: $headerHeight;
-			align-items: center;
+    .actions {
+      justify-self: flex-end;
+    }
+  }
 
-			.thumb {
-				flex: 0 0 $headerHeight;
-				height: $headerHeight;
-				max-width: $headerHeight;
-			}
+  .files {
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing;
 
-			.title {
-				flex: 0 1 100%;
-			}
+    .file {
+      display: flex;
+      width: 100%;
+      height: $headerHeight;
+      align-items: center;
 
-			>span {
-				margin: 0 0 0 $spacing;
-			}
-		}
-	}
+      .thumb {
+        flex: 0 0 $headerHeight;
+        height: $headerHeight;
+        max-width: $headerHeight;
+        object-fit: cover;
+      }
+
+      .title {
+        flex: 0 1 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      > span {
+        margin: 0 $spacing;
+      }
+    }
+  }
 }

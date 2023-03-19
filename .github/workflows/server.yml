@@ -3,23 +3,33 @@ name: server
 on:
   push:
     paths:
-      - '.github/workflows/server.yml'
-      - 'server/**'
-      - 'lib/**'
+      - .github/workflows/server.yml
+      - server/**
+      - lib/**
 
 jobs:
   main:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Build
-      run: |
-        cd ./server
-        cargo build --verbose
+      - name: Build
+        run: |
+          cd ./server
+          cargo build --verbose
 
-    - name: Test
-      run: |
-        cd ./server
-        cargo test --verbose
+      - name: Test
+        run: |
+          cd ./server
+          cargo test --verbose
+
+      - name: Clippy
+        run: |
+          cd ./server
+          cargo clippy --all -- -D warnings
+
+      - name: Format
+        run: |
+          cd ./server
+          cargo fmt --all -- --check

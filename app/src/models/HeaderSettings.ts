@@ -1,3 +1,3 @@
 export interface HeaderSettings {
-	headerContentElement?: JSX.Element | null,
+  headerContentElement?: JSX.Element | null;
 }

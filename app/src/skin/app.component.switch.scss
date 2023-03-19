@@ -1,31 +1,32 @@
 .switch {
-	display: flex;
+  display: flex;
 
-	span {
-		align-self: center;
-		padding: 0 $spacing;
-		white-space: nowrap;
-	}
+  span {
+    align-self: center;
+    padding: 0 $spacing;
+    white-space: nowrap;
+  }
 
-	>div {
-		// This div represents the switch itself
-		align-self: center;
-		border-radius: 30px;
-	}
+  > div {
+    // This div represents the switch itself
+    align-self: center;
+    border-radius: 30px;
+  }
 
-	.icon-checked, .icon-unchecked {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		height: 100%;
-	}
+  .icon-checked,
+  .icon-unchecked {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+  }
 
-	.icon-checked {
-		padding-left: $spacingLarge;
-		color: var(--colorText)Contrast;
-	}
-	.icon-unchecked {
-		padding-right: $spacing;
-		color: var(--colorText);
-	}
+  .icon-checked {
+    padding-left: $spacingLarge;
+    color: var(--colorText) Contrast;
+  }
+  .icon-unchecked {
+    padding-right: $spacing;
+    color: var(--colorText);
+  }
 }
