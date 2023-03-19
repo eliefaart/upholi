@@ -96,7 +96,7 @@ impl<'a> WasmClient<'a> {
 
     pub async fn get_library_photos(&self) -> Result<Vec<LibraryPhoto>> {
         let library = self.get_library().await?;
-        Ok(library.photos)
+        Ok(library.photos.into_iter().rev().collect())
     }
 
     pub async fn get_photo(&self, id: &str) -> Result<Photo> {
