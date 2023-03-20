@@ -18,6 +18,7 @@ use handlers::{files::*, items::*, shares::*, user::*};
 use lazy_static::lazy_static;
 use model::Session;
 use tower_cookies::{Cookie, CookieManagerLayer};
+use tower_http::cors::{Any, CorsLayer};
 use tower_http::services::ServeDir;
 use upholi_lib::ids::id;
 
@@ -54,7 +55,12 @@ async fn main() {
         );
     }
 
-    let app = Router::new()
+    let cors = CorsLayer::new()
+        .allow_methods(Any)
+        .allow_headers(Any)
+        .allow_origin("http://127.0.0.1:8080".parse::<HeaderValue>().unwrap());
+
+    let api_routes = Router::new()
         .route("/user", get(get_user).post(create_user))
         .route("/user/auth", post(authenticate_user))
         .route("/share", post(create_share))
@@ -63,9 +69,12 @@ async fn main() {
         .route("/item", get(get_item_ids).delete(delete_items))
         .route("/item/:id", get(get_item).post(set_item).delete(delete_item))
         .route("/file", get(get_file_ids).post(set_files).delete(delete_files))
-        .route("/file/:id", get(get_file).delete(delete_file))
+        .route("/file/:id", get(get_file).delete(delete_file));
+    let app = Router::new()
+        .nest("/api", api_routes)
         .merge(index_file_router)
         .fallback(get_service(ServeDir::new(&SETTINGS.server.wwwroot_path)).handle_error(on_io_error))
+        .layer(cors)
         .layer(CookieManagerLayer::new())
         .layer(axum::middleware::from_fn(session_cookie_layer));
 

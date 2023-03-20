@@ -83,7 +83,6 @@ impl<'a> WasmClient<'a> {
     /// Returns the user's master encryption key when login was succesful
     pub async fn login(&self, username: &str, password: &str) -> Result<()> {
         self.api_client.login(username, password).await?;
-
         let password_derived_key = get_key_from_user_credentials(username, password)?;
         let master_key = repository::get(KEY_MASTER_KEY, &password_derived_key)
             .await?
