@@ -10,7 +10,7 @@ $headerHeight: 55px;
 $buttonHeight: 32px;
 $breakpointMobile: 525px;
 
-@import "themes/theme-default-dark";
+@import "themes/theme-default-dark.scss";
 
 html {
   touch-action: manipulation;
@@ -46,6 +46,9 @@ html {
     }
   }
 }
+
+@import "pages/albums.scss";
+@import "components/album-thumb.scss";
 
 .gallery {
   display: flex;

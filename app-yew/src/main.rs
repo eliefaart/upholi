@@ -1,5 +1,6 @@
 use api_client::ApiClient;
 use once_cell::sync::Lazy;
+use pages::album::AlbumPage;
 use pages::login::LoginPage;
 use pages::shared::SharedPage;
 use pages::{albums::AlbumsPage, home::HomePage, not_found::NotFoundPage, photo::PhotoPage};
@@ -16,6 +17,7 @@ mod components;
 mod encryption;
 mod exif;
 mod hashing;
+mod hooks;
 mod images;
 mod keys;
 mod models;
@@ -38,6 +40,8 @@ pub enum Route {
     Home,
     #[at("/albums")]
     Albums,
+    #[at("/album/:id")]
+    Album { id: String },
     #[at("/photo/:id")]
     Photo { id: String },
     #[at("/shared")]
@@ -53,6 +57,7 @@ fn switch(routes: Route) -> Html {
     match routes {
         Route::Home => html! { <HomePage/> },
         Route::Albums => html! { <AlbumsPage/> },
+        Route::Album { id } => html! { <AlbumPage id={id}/> },
         Route::Photo { id } => html! { <PhotoPage id={id} /> },
         Route::Shared => html! { <SharedPage/> },
         Route::Login => html! { <LoginPage/> },

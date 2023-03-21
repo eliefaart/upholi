@@ -19,9 +19,11 @@ pub fn home_page() -> Html {
         );
     }
 
+    let photo_ids = (*photos).clone().into_iter().map(|photo| photo.id).collect::<Vec<String>>();
+
     html! {
         <>
-            <Gallery photos={(*photos).clone()}/>
+            <Gallery photo_ids={photo_ids}/>
         </>
     }
 }

@@ -1,3 +1,4 @@
+pub mod album;
 pub mod albums;
 pub mod home;
 pub mod login;

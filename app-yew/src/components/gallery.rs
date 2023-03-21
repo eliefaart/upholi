@@ -1,10 +1,10 @@
-use crate::{components::photo::Photo, models::LibraryPhoto, Route};
+use crate::{components::photo::Photo, Route};
 use yew::prelude::*;
 use yew_router::prelude::*;
 
 #[derive(Properties, PartialEq)]
 pub struct GalleryProps {
-    pub photos: Vec<LibraryPhoto>,
+    pub photo_ids: Vec<String>,
 }
 
 #[function_component(Gallery)]
@@ -26,21 +26,16 @@ pub fn gallery(props: &GalleryProps) -> Html {
         })
     };
 
-    // let photos = vec![
-    //     String::from("https://wallpapercave.com/wp/wp9114799.jpg"),
-    //     String::from("https://wallpapercave.com/wp/wp1913437.jpg"),
-    //     String::from("https://wallpapercave.com/wp/wp12100030.jpg"),
-    // ];
     let photos = props
-        .photos
+        .photo_ids
         .clone()
         .into_iter()
-        .map(|photo| {
-            let selected = selected_photos.contains(&photo.id);
+        .map(|photo_id| {
+            let selected = selected_photos.contains(&photo_id);
             let class = selected.then(|| format!("selected"));
 
             let on_click_navigator = navigator.clone();
-            let on_click_photo_id = photo.id.clone();
+            let on_click_photo_id = photo_id.clone();
             let on_click = Callback::from(move |_| {
                 on_click_navigator.push(&Route::Photo {
                     id: on_click_photo_id.clone(),
@@ -48,7 +43,7 @@ pub fn gallery(props: &GalleryProps) -> Html {
             });
 
             let on_context_menu_on_photo_clicked = on_photo_clicked.clone();
-            let on_context_menu_photo_id = photo.id.clone();
+            let on_context_menu_photo_id = photo_id.clone();
             let on_context_menu = Callback::from(move |event: MouseEvent| {
                 event.prevent_default();
                 on_context_menu_on_photo_clicked.emit(on_context_menu_photo_id.clone());
@@ -56,7 +51,7 @@ pub fn gallery(props: &GalleryProps) -> Html {
 
             html! {
                 <div onclick={on_click} oncontextmenu={on_context_menu}>
-                    <Photo class={class} photo_id={photo.id}/>
+                    <Photo class={class} photo_id={photo_id}/>
                 </div>
             }
         })

@@ -1,7 +1,7 @@
 use super::{AlbumShareDataPhoto, LibraryPhoto};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Album {
     pub id: String,
@@ -13,7 +13,7 @@ pub struct Album {
 }
 
 /// Album, but with hydrated photo data
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct AlbumHydrated {
     pub id: String,
