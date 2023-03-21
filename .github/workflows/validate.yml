@@ -1,0 +1,84 @@
+name: publish
+
+on:
+  push:
+    branches-ignore:
+      - main
+    paths:
+      - .github/workflows/validate.yml
+      - app/**
+      - server/**
+      - lib/**
+
+env:
+  IMAGE_NAME: upholi
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      # Lib
+      - name: lib - build
+        run: |
+          cd ./lib
+          cargo build --verbose
+
+      - name: lib - test
+        run: |
+          cd ./lib
+          cargo test --verbose
+
+      - name: lib - clippy
+        run: |
+          cd ./lib
+          cargo clippy --all -- -D warnings
+
+      - name: lib - format
+        run: |
+          cd ./lib
+          cargo fmt --all -- --check
+
+      # Server
+      - name: server - build
+        run: |
+          cd ./server
+          cargo build --verbose
+
+      - name: server - test
+        run: |
+          cd ./server
+          cargo test --verbose
+
+      - name: server - clippy
+        run: |
+          cd ./server
+          cargo clippy --all -- -D warnings
+
+      - name: server - format
+        run: |
+          cd ./server
+          cargo fmt --all -- --check
+
+      # App
+      - name: app - build
+        run: |
+          cd ./app-yew
+          cargo build --verbose
+
+      - name: app - test
+        run: |
+          cd ./app-yew
+          cargo test --verbose
+
+      - name: app - clippy
+        run: |
+          cd ./app-yew
+          cargo clippy --all -- -D warnings
+
+      - name: app - format
+        run: |
+          cd ./app-yew
+          cargo fmt --all -- --check

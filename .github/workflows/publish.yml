@@ -9,7 +9,6 @@ on:
       - .github/workflows/publish.yml
       - Dockerfile
       - app/**
-      - wasm/**
       - server/**
       - lib/**
 
