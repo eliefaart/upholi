@@ -10,17 +10,13 @@ on:
       - server/**
       - lib/**
 
-env:
-  IMAGE_NAME: upholi
-
 jobs:
-  main:
+  validate-lib:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
 
-      # Lib
       - name: lib - build
         run: |
           cd ./lib
@@ -41,28 +37,12 @@ jobs:
           cd ./lib
           cargo fmt --all -- --check
 
-      # Server
-      - name: server - build
-        run: |
-          cd ./server
-          cargo build --verbose
+  validate-app:
+    runs-on: ubuntu-latest
 
-      - name: server - test
-        run: |
-          cd ./server
-          cargo test --verbose
+    steps:
+      - uses: actions/checkout@v2
 
-      - name: server - clippy
-        run: |
-          cd ./server
-          cargo clippy --all -- -D warnings
-
-      - name: server - format
-        run: |
-          cd ./server
-          cargo fmt --all -- --check
-
-      # App
       - name: app - build
         run: |
           cd ./app-yew
@@ -81,4 +61,30 @@ jobs:
       - name: app - format
         run: |
           cd ./app-yew
+          cargo fmt --all -- --check
+
+  validate-server:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: server - build
+        run: |
+          cd ./server
+          cargo build --verbose
+
+      - name: server - test
+        run: |
+          cd ./server
+          cargo test --verbose
+
+      - name: server - clippy
+        run: |
+          cd ./server
+          cargo clippy --all -- -D warnings
+
+      - name: server - format
+        run: |
+          cd ./server
           cargo fmt --all -- --check
