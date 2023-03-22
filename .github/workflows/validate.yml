@@ -45,22 +45,22 @@ jobs:
 
       - name: app - build
         run: |
-          cd ./app-yew
+          cd ./app
           cargo build --verbose
 
       - name: app - test
         run: |
-          cd ./app-yew
+          cd ./app
           cargo test --verbose
 
       - name: app - clippy
         run: |
-          cd ./app-yew
+          cd ./app
           cargo clippy --all -- -D warnings
 
       - name: app - format
         run: |
-          cd ./app-yew
+          cd ./app
           cargo fmt --all -- --check
 
   validate-server:

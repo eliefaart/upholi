@@ -1,0 +1,117 @@
+@import "_cssreset";
+@import "_fonts";
+
+$fontSize: 0.85em;
+$spacing: 10px;
+$spacingLarge: 20px;
+$transitionSpeed: 0.2s;
+$borderRadius: 3px;
+$headerHeight: 55px;
+$buttonHeight: 32px;
+$breakpointMobile: 525px;
+
+@import "themes/theme-default-dark.scss";
+
+html {
+  touch-action: manipulation;
+
+  * {
+    box-sizing: border-box;
+    outline: none;
+    transition-property: none;
+    transition-duration: $transitionSpeed;
+    scrollbar-width: thin;
+    scrollbar-color: var(--colorAccent) var(--colorBackground);
+  }
+
+  body {
+    overscroll-behavior: contain;
+    font-family: OpenSans;
+    font-size: $fontSize;
+    font-weight: normal;
+
+    background: var(--colorBackground);
+    color: var(--colorText);
+
+    display: flex;
+    height: 100vh;
+    flex-direction: column;
+    padding: $spacing;
+    gap: $spacing;
+
+    main {
+      height: 100%;
+      width: 100%;
+      overflow: auto;
+    }
+  }
+}
+
+@import "pages/albums.scss";
+@import "components/album-thumb.scss";
+
+.gallery {
+  display: flex;
+  gap: calc($spacing / 2);
+  flex-wrap: wrap;
+}
+
+.photo {
+  min-width: 250px;
+  min-height: 175px;
+  border: 2px solid transparent;
+  border-radius: $borderRadius;
+  background-color: var(--colorBackgroundAlt);
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+
+  &.selected {
+    border: 2px solid greenyellow;
+  }
+
+  &:hover {
+    cursor: pointer;
+  }
+}
+
+header {
+  background-color: var(--colorHeaderBackground);
+  border-radius: $borderRadius;
+  padding: $spacingLarge;
+
+  nav {
+    display: flex;
+    gap: $spacingLarge;
+
+    a {
+      color: var(--colorText);
+      text-decoration: none;
+
+      &:hover {
+        color: var(--colorAccent);
+      }
+    }
+  }
+}
+
+.dialog-overlay {
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  padding: 50px;
+  display: flex;
+  justify-content: center;
+  background-color: rgba(0.7, 0.7, 0.7, 0.85);
+}
+
+.dialog {
+  position: absolute;
+  background-color: #222;
+  border-radius: 5px;
+  width: 400px;
+  height: 300px;
+}
