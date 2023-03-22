@@ -1,0 +1,5 @@
+.gallery {
+  display: flex;
+  gap: calc($spacing / 2);
+  flex-wrap: wrap;
+}

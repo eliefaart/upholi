@@ -1,4 +1,7 @@
-use crate::{components::album_thumb::AlbumThumb, Route, WASM_CLIENT};
+use crate::{
+    components::{album_thumb::AlbumThumb, layouts::PageLayout},
+    Route, WASM_CLIENT,
+};
 use yew::prelude::*;
 use yew_router::prelude::*;
 
@@ -40,12 +43,24 @@ pub fn albums_page() -> Html {
         })
         .collect::<Html>();
 
-    html! {
+    let on_click_create_album = |_| {
+        wasm_bindgen_futures::spawn_local(async {
+            WASM_CLIENT.create_album("Test", vec![]).await.unwrap();
+            // TODO: Make use_albums hook and let it return some callback to refresh
+        });
+    };
+    let header_actions = html! {
         <>
+            <button onclick={on_click_create_album.clone()}>{"Create album"}</button>
+        </>
+    };
+
+    html! {
+        <PageLayout header_actions={header_actions}>
             <h1>{ "Albums" }</h1>
             <div class={"albums"}>
                 {albums}
             </div>
-        </>
+        </PageLayout>
     }
 }

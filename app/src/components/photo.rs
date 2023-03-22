@@ -15,7 +15,7 @@ pub fn photo(props: &PhotoProps) -> Html {
     let src = use_photo_src(props.photo_id.clone(), PhotoVariant::Thumbnail);
     let class = props.class.clone().unwrap_or_default();
 
-    let mut style = format!("background-image: url({}); ", (*src).clone());
+    let mut style = format!("background-image: url({}); ", &(*src));
     if let Some(width) = props.width {
         style.push_str(&format!("width: {width}px; "));
     }

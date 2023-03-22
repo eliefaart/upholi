@@ -8,6 +8,7 @@ const MIN_HEIGHT: f32 = 175.;
 #[derive(Properties, PartialEq)]
 pub struct GalleryProps {
     pub photos: Vec<AlbumPhoto>,
+    pub on_selection_changed: Option<Callback<Vec<String>>>,
 }
 
 #[function_component(Gallery)]
@@ -28,6 +29,18 @@ pub fn gallery(props: &GalleryProps) -> Html {
             selected_photos.set(temp);
         })
     };
+
+    let use_effect_selected_photos = selected_photos.clone();
+    let use_effect_on_selection_changed = props.on_selection_changed.clone();
+    use_effect_with_deps(
+        move |_| {
+            if let Some(on_selection_changed) = use_effect_on_selection_changed {
+                let selected_photos = (*use_effect_selected_photos).clone();
+                on_selection_changed.emit(selected_photos);
+            }
+        },
+        selected_photos.clone(),
+    );
 
     let photos = props
         .photos

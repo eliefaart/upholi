@@ -7,10 +7,7 @@ use pages::{albums::AlbumsPage, home::HomePage, not_found::NotFoundPage, photo::
 use wasm_bindgen::UnwrapThrowExt;
 use wasm_client::WasmClient;
 use yew::prelude::*;
-use yew_router::prelude::*;
 use yew_router::{BrowserRouter, Routable, Switch};
-
-use crate::components::dialog::Dialog;
 
 mod api_client;
 mod components;
@@ -69,20 +66,7 @@ fn switch(routes: Route) -> Html {
 fn app() -> Html {
     html! {
         <BrowserRouter>
-            <header>
-                <nav>
-                    <Link<Route> to={Route::Home}>{ "Library" }</Link<Route>>
-                    <Link<Route> to={Route::Albums}>{ "Albums" }</Link<Route>>
-                    <Link<Route> to={Route::Shared}>{ "Shared" }</Link<Route>>
-                </nav>
-            </header>
-            <main>
-                <Switch<Route> render={switch} /> // <- must be child of <BrowserRouter>
-            </main>
-
-            <Dialog visible={false} title="Dialog title">
-                <span>{"Dialog body"}</span>
-            </Dialog>
+            <Switch<Route> render={switch} />
         </BrowserRouter>
     }
 }

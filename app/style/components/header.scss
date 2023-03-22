@@ -1,0 +1,29 @@
+header {
+  background-color: var(--colorHeaderBackground);
+  border-radius: $borderRadius;
+  padding: $spacingLarge;
+  display: flex;
+  flex-direction: row;
+
+  nav {
+    display: flex;
+    gap: $spacingLarge;
+
+    a {
+      color: var(--colorText);
+      text-decoration: none;
+
+      &:hover {
+        color: var(--colorAccent);
+      }
+    }
+  }
+
+  .space {
+    flex: 1 1 auto;
+  }
+
+  .actions {
+    justify-content: flex-end;
+  }
+}

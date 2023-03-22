@@ -15,8 +15,8 @@ pub fn album_thumb(props: &AlbumThumbProps) -> Html {
         <div class={"album-thumb"}>
             <div
                 class={"img"}
-                style={format!("background-image: url({})", (*src).clone())}/>
-            <span class={"title"}>{props.album.title.clone()}</span>
+                style={format!("background-image: url({})", &(*src))}/>
+            <span class={"title"}>{&props.album.title}</span>
         </div>
     }
 }

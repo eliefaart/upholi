@@ -1,4 +1,4 @@
-use crate::hooks::use_shares::use_shares;
+use crate::{components::layouts::PageLayout, hooks::use_shares::use_shares};
 use yew::prelude::*;
 
 #[function_component(SharedPage)]
@@ -16,9 +16,9 @@ pub fn shared_page() -> Html {
         .collect::<Html>();
 
     html! {
-        <>
+        <PageLayout>
             <h1>{"Shared"}</h1>
             {shares}
-        </>
+        </PageLayout>
     }
 }
