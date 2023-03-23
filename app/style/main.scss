@@ -49,7 +49,18 @@ html {
 
 @import "pages/albums.scss";
 @import "components/album-thumb.scss";
-@import "components/header.scss";
 @import "components/gallery.scss";
 @import "components/photo.scss";
 @import "components/dialog.scss";
+@import "components/icons.scss";
+@import "misc/header.scss";
+@import "misc/buttons.scss";
+
+a {
+  color: var(--colorText);
+  text-decoration: none;
+
+  &:hover {
+    color: var(--colorAccent);
+  }
+}

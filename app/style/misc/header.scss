@@ -1,22 +1,19 @@
 header {
   background-color: var(--colorHeaderBackground);
   border-radius: $borderRadius;
-  padding: $spacingLarge;
+  padding: 0 $spacing;
   display: flex;
   flex-direction: row;
+
+  button,
+  a {
+    height: $headerHeight;
+    line-height: $headerHeight;
+  }
 
   nav {
     display: flex;
     gap: $spacingLarge;
-
-    a {
-      color: var(--colorText);
-      text-decoration: none;
-
-      &:hover {
-        color: var(--colorAccent);
-      }
-    }
   }
 
   .space {
@@ -25,5 +22,7 @@ header {
 
   .actions {
     justify-content: flex-end;
+    display: flex;
+    flex-direction: row;
   }
 }

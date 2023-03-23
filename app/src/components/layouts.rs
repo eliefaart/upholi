@@ -6,27 +6,45 @@ use yew_router::prelude::*;
 pub struct PageLayoutProps {
     #[prop_or_default]
     pub children: Children,
-    #[prop_or_default]
-    pub header_actions: Children,
+    pub header_actions_left: Option<Children>,
+    pub header_actions_right: Option<Children>,
 }
 
 #[function_component(PageLayout)]
 pub fn page_layout(props: &PageLayoutProps) -> Html {
+    let header = html! {
+        <nav>
+            <Link<Route> to={Route::Home}>{ "Library" }</Link<Route>>
+            <Link<Route> to={Route::Albums}>{ "Albums" }</Link<Route>>
+            <Link<Route> to={Route::Shared}>{ "Shared" }</Link<Route>>
+        </nav>
+    };
+
+    let header_left = html! {
+        if let Some(header_actions_left) = props.header_actions_left.clone() {
+            <div class="actions">
+                {header_actions_left}
+            </div>
+        } else {
+            {header}
+        }
+    };
+
+    let header_right = html! {
+        if let Some(header_actions_right) = props.header_actions_right.clone() {
+            <div class="actions">
+                {header_actions_right}
+            </div>
+        }
+    };
+
     html! {
         <>
         <header>
-            <nav>
-                <Link<Route> to={Route::Home}>{ "Library" }</Link<Route>>
-                <Link<Route> to={Route::Albums}>{ "Albums" }</Link<Route>>
-                <Link<Route> to={Route::Shared}>{ "Shared" }</Link<Route>>
-            </nav>
+            {header_left}
             <div class="space"/>
-            <div class="actions">
-                {props.header_actions.clone()}
-            </div>
+            {header_right}
         </header>
-
-
 
         <main>
             {props.children.clone()}

@@ -1,5 +1,5 @@
 use crate::{
-    components::{album_thumb::AlbumThumb, layouts::PageLayout},
+    components::{album_thumb::AlbumThumb, button::Button, icons::IconCreate, layouts::PageLayout},
     Route, WASM_CLIENT,
 };
 use yew::prelude::*;
@@ -51,12 +51,14 @@ pub fn albums_page() -> Html {
     };
     let header_actions = html! {
         <>
-            <button onclick={on_click_create_album.clone()}>{"Create album"}</button>
+            <Button label={"Create album"} on_click={on_click_create_album.clone()}>
+                <IconCreate/>
+            </Button>
         </>
     };
 
     html! {
-        <PageLayout header_actions={header_actions}>
+        <PageLayout header_actions_right={header_actions}>
             <h1>{ "Albums" }</h1>
             <div class={"albums"}>
                 {albums}

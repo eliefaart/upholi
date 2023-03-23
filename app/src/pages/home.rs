@@ -1,5 +1,10 @@
 use crate::{
-    components::{gallery::Gallery, layouts::PageLayout},
+    components::{
+        button::{Button, IconPosition},
+        gallery::Gallery,
+        icons::{IconAddToAlbum, IconClose, IconDelete},
+        layouts::PageLayout,
+    },
     models::AlbumPhoto,
     WASM_CLIENT,
 };
@@ -31,19 +36,32 @@ pub fn home_page() -> Html {
     };
 
     let n_photos_selected = (*selected_photos).len();
-    let header_actions = match n_photos_selected {
-        0 => html! {},
-        _ => html! {
+    let header_actions_left = match n_photos_selected {
+        0 => None,
+        _ => Some(html! {
             <>
-                <button>{"Add to album"}</button>
-                <button>{"Delete"}</button>
-                <button>{n_photos_selected} {"selected X"}</button>
+                <Button label={"Add to album"} on_click={|_|{}}>
+                    <IconAddToAlbum/>
+                </Button>
+                <Button label={"Delete"} on_click={|_|{}}>
+                    <IconDelete/>
+                </Button>
             </>
-        },
+        }),
+    };
+    let header_actions_right = match n_photos_selected {
+        0 => None,
+        _ => Some(html! {
+            <>
+                <Button label={format!("{n_photos_selected} selected")} on_click={|_|{}} icon_position={IconPosition::Right}>
+                    <IconClose/>
+                </Button>
+            </>
+        }),
     };
 
     html! {
-        <PageLayout header_actions={header_actions}>
+        <PageLayout header_actions_left={header_actions_left} header_actions_right={header_actions_right}>
             <Gallery photos={photos} on_selection_changed={on_selection_changed}/>
         </PageLayout>
     }
