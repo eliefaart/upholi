@@ -313,16 +313,20 @@ impl<'a> WasmClient<'a> {
         let albums = self.get_albums().await?;
 
         for mut album in albums {
+            let n_before = album.photos.len();
             album.photos.retain(|photo_id| !ids.contains(photo_id));
+            let n_removed = n_before - album.photos.len();
 
-            if let Some(id) = &album.thumbnail_photo_id {
-                if ids.contains(id) {
-                    album.thumbnail_photo_id = None;
+            if n_removed > 0 {
+                if let Some(id) = &album.thumbnail_photo_id {
+                    if ids.contains(id) {
+                        album.thumbnail_photo_id = None;
+                    }
                 }
-            }
 
-            let album_key = self.get_item_encryption_key(&library, &album.id)?;
-            repository::set(&album.id.clone(), album_key, album.into()).await?;
+                let album_key = self.get_item_encryption_key(&library, &album.id)?;
+                repository::set(&album.id.clone(), album_key, album.into()).await?;
+            }
         }
 
         self.update_library(&mut |library: &mut Library| {

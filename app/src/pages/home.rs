@@ -5,6 +5,7 @@ use crate::{
         icons::{IconAddToAlbum, IconClose, IconDelete},
         layouts::PageLayout,
     },
+    hooks::use_library_photos::use_library_photos,
     models::AlbumPhoto,
     WASM_CLIENT,
 };
@@ -12,22 +13,8 @@ use yew::prelude::*;
 
 #[function_component(HomePage)]
 pub fn home_page() -> Html {
-    let photos = use_state(|| vec![]);
+    let (photos, refresh_photos) = use_library_photos();
     let selected_photos = use_state(|| Vec::<String>::new());
-
-    {
-        let photos = photos.clone();
-        use_effect_with_deps(
-            move |_| {
-                let photos = photos.clone();
-                wasm_bindgen_futures::spawn_local(async move {
-                    let library_photos = WASM_CLIENT.get_library_photos().await.unwrap();
-                    photos.set(library_photos);
-                });
-            },
-            (),
-        );
-    }
 
     let photos: Vec<AlbumPhoto> = (*photos).clone().into_iter().map(|photo| photo.into()).collect();
     let on_selection_changed_selected_photos = selected_photos.clone();
@@ -35,6 +22,16 @@ pub fn home_page() -> Html {
         on_selection_changed_selected_photos.set(ids.clone());
     };
 
+    let on_click_delete_photos = (*selected_photos).clone();
+    let on_click_delete_refresh_photos = refresh_photos.clone();
+    let on_click_delete = move |_| {
+        let on_click_delete_photos = on_click_delete_photos.clone();
+        let on_click_delete_refresh_photos = on_click_delete_refresh_photos.clone();
+        wasm_bindgen_futures::spawn_local(async move {
+            WASM_CLIENT.delete_photos(&on_click_delete_photos).await.unwrap();
+            on_click_delete_refresh_photos.emit(());
+        });
+    };
     let n_photos_selected = (*selected_photos).len();
     let header_actions_left = match n_photos_selected {
         0 => None,
@@ -43,7 +40,7 @@ pub fn home_page() -> Html {
                 <Button label={"Add to album"} on_click={|_|{}}>
                     <IconAddToAlbum/>
                 </Button>
-                <Button label={"Delete"} on_click={|_|{}}>
+                <Button label={"Delete"} on_click={on_click_delete.clone()}>
                     <IconDelete/>
                 </Button>
             </>
