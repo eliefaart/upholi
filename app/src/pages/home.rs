@@ -1,6 +1,7 @@
 use crate::{
     components::{
         button::{Button, IconPosition},
+        drop_upload::{DropUpload, FileUploadProgress, FileUploadStatus},
         gallery::Gallery,
         icons::{IconAddToAlbum, IconClose, IconDelete},
         layouts::PageLayout,
@@ -57,9 +58,16 @@ pub fn home_page() -> Html {
         }),
     };
 
+    let upload_progress_refresh_photos = refresh_photos.clone();
+
     html! {
         <PageLayout header_actions_left={header_actions_left} header_actions_right={header_actions_right}>
-            <Gallery photos={photos} on_selection_changed={on_selection_changed}/>
+            <DropUpload on_upload_status_changed={move |progress: FileUploadProgress| {
+                if progress.status == FileUploadStatus::Done {
+                    upload_progress_refresh_photos.emit(());
+                }}}>
+                <Gallery photos={photos} on_selection_changed={on_selection_changed}/>
+            </DropUpload>
         </PageLayout>
     }
 }

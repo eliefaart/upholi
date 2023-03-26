@@ -30,8 +30,8 @@ pub struct PhotoUploadInfo {
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PhotoUploadResult {
-    skipped: bool,
-    photo_id: String,
+    pub skipped: bool,
+    pub photo_id: String,
 }
 
 impl PhotoUploadInfo {
