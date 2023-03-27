@@ -79,8 +79,6 @@ pub fn drop_upload(props: &DropUploadProps) -> Html {
                             }
                         }
                     }
-
-                    console_log!("Upload done");
                 });
             }
         }

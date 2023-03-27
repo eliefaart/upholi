@@ -1,14 +1,13 @@
 use crate::{
     components::{
-        button::{Button, IconPosition},
+        button::{Button, DeletePhotosButton, IconPosition},
         drop_upload::{DropUpload, FileUploadProgress, FileUploadStatus},
         gallery::Gallery,
-        icons::{IconAddToAlbum, IconClose, IconDelete},
+        icons::{IconAddToAlbum, IconClose},
         layouts::PageLayout,
     },
     hooks::use_library_photos::use_library_photos,
     models::AlbumPhoto,
-    WASM_CLIENT,
 };
 use yew::prelude::*;
 
@@ -25,14 +24,7 @@ pub fn home_page() -> Html {
 
     let on_click_delete_photos = (*selected_photos).clone();
     let on_click_delete_refresh_photos = refresh_photos.clone();
-    let on_click_delete = move |_| {
-        let on_click_delete_photos = on_click_delete_photos.clone();
-        let on_click_delete_refresh_photos = on_click_delete_refresh_photos.clone();
-        wasm_bindgen_futures::spawn_local(async move {
-            WASM_CLIENT.delete_photos(&on_click_delete_photos).await.unwrap();
-            on_click_delete_refresh_photos.emit(());
-        });
-    };
+
     let n_photos_selected = (*selected_photos).len();
     let header_actions_left = match n_photos_selected {
         0 => None,
@@ -41,9 +33,10 @@ pub fn home_page() -> Html {
                 <Button label={"Add to album"} on_click={|_|{}}>
                     <IconAddToAlbum/>
                 </Button>
-                <Button label={"Delete"} on_click={on_click_delete.clone()}>
-                    <IconDelete/>
-                </Button>
+                <DeletePhotosButton
+                    selected_photos={on_click_delete_photos}
+                    on_deleted={move|_| on_click_delete_refresh_photos.emit(())}/>
+
             </>
         }),
     };
