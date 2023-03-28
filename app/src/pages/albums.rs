@@ -1,5 +1,5 @@
 use crate::{
-    components::{album_thumb::AlbumThumb, button::Button, icons::IconCreate, layouts::PageLayout},
+    components::{album_thumb::AlbumThumb, buttons::Button, icons::IconCreate, layouts::PageLayout},
     Route, WASM_CLIENT,
 };
 use yew::prelude::*;

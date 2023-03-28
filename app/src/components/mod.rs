@@ -1,5 +1,5 @@
 pub mod album_thumb;
-pub mod button;
+pub mod buttons;
 pub mod dialog;
 pub mod drop_upload;
 pub mod gallery;

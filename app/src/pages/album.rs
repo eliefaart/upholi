@@ -1,9 +1,8 @@
 use crate::{
     components::{
-        button::Button,
+        buttons::DeleteAlbumButton,
         drop_upload::{DropUpload, FileUploadProgress},
         gallery::Gallery,
-        icons::IconDelete,
         layouts::PageLayout,
     },
     hooks::use_album::use_album,
@@ -36,21 +35,14 @@ pub fn album_page(props: &AlbumPageProps) -> Html {
         }
     };
 
-    let on_click_delete_album_id = props.id.clone();
-    let on_click_delete_album_navigator = navigator.clone();
-    let on_click_delete_album = move |_| {
-        let on_click_delete_album_id = on_click_delete_album_id.clone();
-        let on_click_delete_album_navigator = on_click_delete_album_navigator.clone();
-        wasm_bindgen_futures::spawn_local(async move {
-            WASM_CLIENT.delete_album(&on_click_delete_album_id).await.unwrap();
-            on_click_delete_album_navigator.replace(&Route::Albums);
-        });
+    let album_id = props.id.clone();
+    let on_deleted = move |_| {
+        navigator.replace(&Route::Albums);
     };
     let header_actions = html! {
         <>
-            <Button label={"Delete album"} on_click={on_click_delete_album.clone()}>
-                <IconDelete/>
-            </Button>
+            <DeleteAlbumButton album_id={album_id} on_deleted={on_deleted.clone()}/>
+
         </>
     };
 

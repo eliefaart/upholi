@@ -67,6 +67,7 @@ fn app() -> Html {
     html! {
         <BrowserRouter>
             <Switch<Route> render={switch} />
+            <div id="modal-host"/>
         </BrowserRouter>
     }
 }

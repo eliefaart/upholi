@@ -1,6 +1,5 @@
+use crate::components::{buttons::Button, icons::IconClose};
 use yew::prelude::*;
-
-use crate::components::{button::Button, icons::IconClose};
 
 #[derive(Properties, PartialEq)]
 pub struct DialogProps {
@@ -17,9 +16,15 @@ pub struct DialogProps {
 pub fn dialog(props: &DialogProps) -> Html {
     let on_request_close = props.on_request_close.clone();
 
-    html! {
+    let modal_host = web_sys::window()
+        .expect("No window")
+        .document()
+        .expect("No document")
+        .get_element_by_id("modal-host")
+        .expect("No modal host element");
+
+    let dialog = html! {
         if props.visible {
-            <div>
             <div class="dialog-overlay">
                 <div class="dialog">
                     <div class="header">
@@ -38,9 +43,10 @@ pub fn dialog(props: &DialogProps) -> Html {
                     </div>
                 </div>
             </div>
-        </div>
         }
-    }
+    };
+
+    create_portal(dialog, modal_host.into())
 }
 
 #[derive(Properties, PartialEq)]
@@ -49,6 +55,8 @@ pub struct ConfirmDialogProps {
     pub title: String,
     pub confirm_action: Callback<()>,
     pub cancel_action: Callback<()>,
+    #[prop_or_default]
+    pub children: Children,
 }
 
 #[function_component(ConfirmDialog)]
@@ -69,7 +77,7 @@ pub fn confirm_dialog(props: &ConfirmDialogProps) -> Html {
                         <Button label="Ok" on_click={move |_| confirm_action.emit(())} />
                     </>
                 }}>
-                {html! {}}
+                {props.children.clone()}
             </Dialog>
         }
     }

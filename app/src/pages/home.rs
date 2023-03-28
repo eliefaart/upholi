@@ -1,6 +1,6 @@
 use crate::{
     components::{
-        button::{Button, DeletePhotosButton, IconPosition},
+        buttons::{Button, DeletePhotosButton, IconPosition},
         drop_upload::{DropUpload, FileUploadProgress, FileUploadStatus},
         gallery::Gallery,
         icons::{IconAddToAlbum, IconClose},
