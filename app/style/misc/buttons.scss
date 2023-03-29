@@ -34,13 +34,13 @@ button {
 
   &.icon-right {
     .label {
-      margin-right: $spacing / 2;
+      margin-right: calc($spacing / 2);
     }
   }
 
   &.icon-left {
     .label {
-      margin-left: $spacing / 2;
+      margin-left: calc($spacing / 2);
     }
   }
 

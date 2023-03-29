@@ -6,6 +6,7 @@ use pages::shared::SharedPage;
 use pages::{albums::AlbumsPage, home::HomePage, not_found::NotFoundPage, photo::PhotoPage};
 use wasm_bindgen::UnwrapThrowExt;
 use wasm_client::WasmClient;
+use web_sys::Document;
 use yew::prelude::*;
 use yew_router::{BrowserRouter, Routable, Switch};
 
@@ -30,6 +31,13 @@ static ORIGIN: Lazy<String> = Lazy::new(|| {
 });
 static API_CLIENT: Lazy<ApiClient> = Lazy::new(|| ApiClient::new(&format!("{}/api", ORIGIN.as_str())));
 static WASM_CLIENT: Lazy<WasmClient> = Lazy::new(|| WasmClient::new(&API_CLIENT));
+
+pub fn get_document() -> Document {
+    web_sys::window()
+        .expect("Could not find global 'window'.")
+        .document()
+        .expect("No document")
+}
 
 #[derive(Clone, Routable, PartialEq)]
 pub enum Route {
