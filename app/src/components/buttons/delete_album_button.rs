@@ -42,13 +42,15 @@ pub fn delete_album_button(props: &DeleteAlbumButtonProps) -> Html {
     let dialog_visible = *dialog_visible_state;
 
     html! {
-        <Button label={"Delete album"} on_click={show_dialog}>
-            <IconDelete/>
+        <>
+            <Button label={"Delete album"} on_click={show_dialog}>
+                <IconDelete/>
+            </Button>
             <ConfirmDialog
                 visible={dialog_visible}
                 title="Delete album?"
                 confirm_action={delete_album}
                 cancel_action={hide_dialog}/>
-        </Button>
+        </>
     }
 }

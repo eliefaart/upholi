@@ -1,5 +1,5 @@
 use crate::{
-    components::{dialog::ConfirmDialog, icons::IconDelete, buttons::Button},
+    components::{buttons::Button, dialog::ConfirmDialog, icons::IconDelete},
     WASM_CLIENT,
 };
 use yew::prelude::*;
@@ -43,17 +43,19 @@ pub fn delete_photos_button(props: &DeletePhotosButtonProps) -> Html {
     let n_selected_photos = props.selected_photos.len();
 
     html! {
-        <Button label={"Delete"} on_click={show_dialog}>
-            <IconDelete/>
+        <>
+            <Button label={"Delete"} on_click={show_dialog}>
+                <IconDelete/>
+            </Button>
             <ConfirmDialog
-                visible={dialog_visible}
-                title="Delete photos?"
-                confirm_action={delete_photos}
-                cancel_action={hide_dialog}>
-                {html! {
-                    <span>{&format!("{n_selected_photos} photos will be deleted.")}</span>
-                }}
+                    visible={dialog_visible}
+                    title="Delete photos?"
+                    confirm_action={delete_photos}
+                    cancel_action={hide_dialog}>
+                    {html! {
+                        <span>{&format!("{n_selected_photos} photos will be deleted.")}</span>
+                    }}
             </ConfirmDialog>
-        </Button>
+        </>
     }
 }

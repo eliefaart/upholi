@@ -1,5 +1,7 @@
-use crate::{components::photo::Photo, get_document, models::AlbumPhoto, Route};
+use crate::{components::photo::Photo, models::AlbumPhoto, Route};
+use web_sys::Element;
 use yew::prelude::*;
+use yew_hooks::use_interval;
 use yew_router::prelude::*;
 
 const MIN_HEIGHT: f32 = 175.;
@@ -12,8 +14,10 @@ pub struct GalleryProps {
 
 #[function_component(Gallery)]
 pub fn gallery(props: &GalleryProps) -> Html {
+    let node_ref = use_node_ref();
     let navigator = use_navigator().unwrap();
     let selected_photos = use_state(|| Vec::<String>::new());
+    let available_width = use_state(|| None);
 
     let on_photo_clicked = {
         let selected_photos = selected_photos.clone();
@@ -29,78 +33,106 @@ pub fn gallery(props: &GalleryProps) -> Html {
         })
     };
 
-    let use_effect_selected_photos = selected_photos.clone();
-    let use_effect_on_selection_changed = props.on_selection_changed.clone();
-    use_effect_with_deps(
-        move |_| {
-            if let Some(on_selection_changed) = use_effect_on_selection_changed {
-                let selected_photos = (*use_effect_selected_photos).clone();
-                on_selection_changed.emit(selected_photos);
-            }
-        },
-        selected_photos.clone(),
-    );
+    {
+        let use_effect_selected_photos = selected_photos.clone();
+        let use_effect_on_selection_changed = props.on_selection_changed.clone();
+        use_effect_with_deps(
+            move |_| {
+                if let Some(on_selection_changed) = use_effect_on_selection_changed {
+                    let selected_photos = (*use_effect_selected_photos).clone();
+                    on_selection_changed.emit(selected_photos);
+                }
+            },
+            selected_photos.clone(),
+        );
+    }
 
     // TODO: Don't bother with this on first render.
-    // TODO: Update on resize
-    // TODO: Use use_node_ref(), safer, easier
-    let gallery_element = get_document().get_element_by_id("ASDAS");
-    let available_width = if let Some(gallery_element) = gallery_element {
-        (gallery_element.client_width() - 1) as f32
-    } else {
-        1f32
-    };
-    let photos = compute_sizes(props.photos.clone(), available_width, MIN_HEIGHT);
+    if available_width.is_none() {
+        let gallery_element = node_ref.cast::<Element>();
+        if let Some(gallery_element) = gallery_element {
+            let gallery_width = (gallery_element.client_width() - 1) as f32;
+            available_width.set(Some(gallery_width));
+        }
+    }
 
-    // use_memo
-    let photos = photos
-        .into_iter()
-        .map(|ResizedPhoto { photo, width, height }| {
-            let selected = selected_photos.contains(&photo.id);
-            let class = selected.then(|| format!("selected"));
+    {
+        let node_ref = node_ref.clone();
+        let available_width = available_width.clone();
+        use_interval(
+            move || {
+                let gallery_element = node_ref.cast::<Element>();
+                if let Some(gallery_element) = gallery_element {
+                    let gallery_width = (gallery_element.client_width() - 1) as f32;
+                    let current_width = (*available_width).unwrap_or(0f32);
+                    if current_width != gallery_width {
+                        available_width.set(Some(gallery_width));
+                    }
+                }
+            },
+            250,
+        );
+    }
 
-            let on_click_navigator = navigator.clone();
-            let on_click_photo_id = photo.id.clone();
-            let on_click = Callback::from(move |_| {
-                on_click_navigator.push(&Route::Photo {
-                    id: on_click_photo_id.clone(),
-                });
-            });
+    let photos = use_memo(
+        |(available_width, photos, selected_photos)| {
+            if let Some(available_width) = available_width {
+                let photos = compute_sizes(&photos, *available_width, MIN_HEIGHT);
+                photos
+                    .into_iter()
+                    .map(|ResizedPhoto { photo, width, height }| {
+                        let photo_id = photo.id.clone();
+                        let selected = selected_photos.contains(&photo.id);
+                        let class = selected.then(|| format!("selected"));
 
-            let on_context_menu_on_photo_clicked = on_photo_clicked.clone();
-            let on_context_menu_photo_id = photo.id.clone();
-            let on_context_menu = Callback::from(move |event: MouseEvent| {
-                event.prevent_default();
-                on_context_menu_on_photo_clicked.emit(on_context_menu_photo_id.clone());
-            });
+                        let on_click_navigator = navigator.clone();
+                        let on_click_photo_id = photo.id.clone();
+                        let on_click = Callback::from(move |_| {
+                            on_click_navigator.push(&Route::Photo {
+                                id: on_click_photo_id.clone(),
+                            });
+                        });
 
-            html! {
-                <Photo
-                    class={class}
-                    photo_id={photo.id}
-                    width={width}
-                    height={height}
-                    on_click={on_click}
-                    on_context_menu={on_context_menu}/>
+                        let on_context_menu_on_photo_clicked = on_photo_clicked.clone();
+                        let on_context_menu_photo_id = photo.id.clone();
+                        let on_context_menu = Callback::from(move |event: MouseEvent| {
+                            event.prevent_default();
+                            on_context_menu_on_photo_clicked.emit(on_context_menu_photo_id.clone());
+                        });
+
+                        html! {
+                            <Photo
+                                class={class}
+                                photo_id={photo_id}
+                                width={width}
+                                height={height}
+                                on_click={on_click}
+                                on_context_menu={on_context_menu}/>
+                        }
+                    })
+                    .collect::<Html>()
+            } else {
+                html! {}
             }
-        })
-        .collect::<Html>();
+        },
+        (*available_width, props.photos.clone(), (*selected_photos).clone()),
+    );
 
     html! {
-        <div id="ASDAS" class="gallery">
-            {photos}
+        <div class="gallery" ref={node_ref}>
+            {(*photos).clone()}
         </div>
     }
 }
 
 #[derive(Debug, Clone)]
-struct ResizedPhoto {
-    photo: AlbumPhoto,
+struct ResizedPhoto<'a> {
+    photo: &'a AlbumPhoto,
     width: f32,
     height: f32,
 }
 
-fn compute_sizes(photos: Vec<AlbumPhoto>, available_width: f32, min_height: f32) -> Vec<ResizedPhoto> {
+fn compute_sizes<'a>(photos: &'a Vec<AlbumPhoto>, available_width: f32, min_height: f32) -> Vec<ResizedPhoto> {
     let mut rows: Vec<Vec<ResizedPhoto>> = photos
         .into_iter()
         // Normalize all photos to minimum height
