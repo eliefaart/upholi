@@ -14,6 +14,7 @@ const GAP_SIZE: f32 = 5.;
 #[derive(Properties, PartialEq)]
 pub struct GalleryProps {
     pub photos: Vec<AlbumPhoto>,
+    pub selected_photos: UseStateHandle<Vec<String>>,
     pub on_selection_changed: Option<Callback<Vec<String>>>,
 }
 
@@ -21,11 +22,10 @@ pub struct GalleryProps {
 pub fn gallery(props: &GalleryProps) -> Html {
     let node_ref = use_node_ref();
     let navigator = use_navigator().unwrap();
-    let selected_photos = use_state(|| Vec::<String>::new());
     let available_width = use_state(|| None);
 
     let on_photo_clicked = {
-        let selected_photos = selected_photos.clone();
+        let selected_photos = props.selected_photos.clone();
         Callback::from(move |url: String| {
             let mut temp = selected_photos.to_vec();
             if temp.contains(&url) {
@@ -39,7 +39,7 @@ pub fn gallery(props: &GalleryProps) -> Html {
     };
 
     {
-        let use_effect_selected_photos = selected_photos.clone();
+        let use_effect_selected_photos = props.selected_photos.clone();
         let use_effect_on_selection_changed = props.on_selection_changed.clone();
         use_effect_with_deps(
             move |_| {
@@ -48,7 +48,7 @@ pub fn gallery(props: &GalleryProps) -> Html {
                     on_selection_changed.emit(selected_photos);
                 }
             },
-            selected_photos.clone(),
+            props.selected_photos.clone(),
         );
     }
 
@@ -119,7 +119,7 @@ pub fn gallery(props: &GalleryProps) -> Html {
                 html! {}
             }
         },
-        (*available_width, props.photos.clone(), (*selected_photos).clone()),
+        (*available_width, props.photos.clone(), (*props.selected_photos).clone()),
     );
 
     html! {

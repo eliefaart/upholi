@@ -15,15 +15,20 @@ use yew::prelude::*;
 pub fn home_page() -> Html {
     let (photos, refresh_photos) = use_library_photos();
     let selected_photos = use_state(|| Vec::<String>::new());
-
     let photos: Vec<AlbumPhoto> = (*photos).clone().into_iter().map(|photo| photo.into()).collect();
-    let on_selection_changed_selected_photos = selected_photos.clone();
-    let on_selection_changed = move |ids: Vec<String>| {
-        on_selection_changed_selected_photos.set(ids.clone());
-    };
 
     let on_click_delete_photos = (*selected_photos).clone();
     let on_click_delete_refresh_photos = refresh_photos.clone();
+
+    let reset_selection = use_memo(
+        |selected_photos| {
+            let selected_photos = selected_photos.clone();
+            Callback::from(move |_: ()| {
+                selected_photos.set(vec![]);
+            })
+        },
+        selected_photos.clone(),
+    );
 
     let n_photos_selected = (*selected_photos).len();
     let header_actions_left = match n_photos_selected {
@@ -36,7 +41,6 @@ pub fn home_page() -> Html {
                 <DeletePhotosButton
                     selected_photos={on_click_delete_photos}
                     on_deleted={move|_| on_click_delete_refresh_photos.emit(())}/>
-
             </>
         }),
     };
@@ -44,7 +48,9 @@ pub fn home_page() -> Html {
         0 => None,
         _ => Some(html! {
             <>
-                <Button label={format!("{n_photos_selected} selected")} on_click={|_|{}} icon_position={IconPosition::Right}>
+                <Button label={format!("{n_photos_selected} selected")}
+                    on_click={move |_| reset_selection.emit(())}
+                    icon_position={IconPosition::Right}>
                     <IconClose/>
                 </Button>
             </>
@@ -59,7 +65,7 @@ pub fn home_page() -> Html {
                 if progress.status == FileUploadStatus::Done {
                     upload_progress_refresh_photos.emit(());
                 }}}>
-                <Gallery photos={photos} on_selection_changed={on_selection_changed}/>
+                <Gallery photos={photos} selected_photos={selected_photos} />
             </DropUpload>
         </PageLayout>
     }
