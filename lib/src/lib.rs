@@ -4,6 +4,7 @@ pub mod http;
 pub mod ids;
 pub mod passwords;
 
+#[derive(Clone, PartialEq)]
 pub enum PhotoVariant {
     Original,
     Preview,

@@ -1,5 +1,5 @@
+use crate::components::photo::PhotoPreview;
 use yew::prelude::*;
-use crate::components::photo::Photo;
 
 #[derive(Properties, PartialEq)]
 pub struct PhotoPageProps {
@@ -8,11 +8,9 @@ pub struct PhotoPageProps {
 
 #[function_component(PhotoPage)]
 pub fn photo_page(props: &PhotoPageProps) -> Html {
-    let id = props.id.clone();
+    let photo_id = props.id.clone();
 
     html! {
-        <>
-            <Photo photo_id={id}/>
-        </>
+        <PhotoPreview photo_id={photo_id}/>
     }
 }

@@ -9,7 +9,7 @@ pub struct AlbumThumbProps {
 
 #[function_component(AlbumThumb)]
 pub fn album_thumb(props: &AlbumThumbProps) -> Html {
-    let src = use_photo_src(props.album.thumbnail_photo_id.clone().unwrap_or_default(), PhotoVariant::Thumbnail);
+    let src = use_photo_src(&props.album.thumbnail_photo_id.clone().unwrap_or_default(), PhotoVariant::Thumbnail);
 
     html! {
         <div class={"album-thumb"}>

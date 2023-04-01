@@ -16,7 +16,7 @@ pub struct PhotoProps {
 
 #[function_component(Photo)]
 pub fn photo(props: &PhotoProps) -> Html {
-    let src = use_photo_src(props.photo_id.clone(), PhotoVariant::Thumbnail);
+    let src = use_photo_src(&props.photo_id, PhotoVariant::Thumbnail);
     let class = props.class.clone().unwrap_or_default();
 
     let mut style = format!("background-image: url({}); ", &(*src));
@@ -36,5 +36,20 @@ pub fn photo(props: &PhotoProps) -> Html {
             onclick={move |_| on_click.emit(()) }
             oncontextmenu={move |event| on_context_menu.emit(event) }
         />
+    }
+}
+
+#[derive(Properties, PartialEq)]
+pub struct PhotoPreviewProps {
+    pub photo_id: String,
+}
+
+#[function_component(PhotoPreview)]
+pub fn photo_preview(props: &PhotoPreviewProps) -> Html {
+    let src = use_photo_src(&props.photo_id, PhotoVariant::Preview);
+    let src = (*src).clone();
+
+    html! {
+        <img src={src}/>
     }
 }
