@@ -6,3 +6,14 @@ pub mod gallery;
 pub mod icons;
 pub mod layouts;
 pub mod photo;
+pub mod pick_album;
+
+pub use album_thumb::*;
+pub use buttons::*;
+pub use dialog::*;
+pub use drop_upload::*;
+pub use gallery::*;
+pub use icons::*;
+pub use layouts::*;
+pub use photo::*;
+pub use pick_album::*;

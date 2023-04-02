@@ -1,6 +1,5 @@
 use crate::{
-    components::{album_thumb::AlbumThumb, buttons::Button, dialog::ConfirmDialog, icons::IconAddToAlbum},
-    hooks::use_albums,
+    components::{buttons::Button, dialog::ConfirmDialog, icons::IconAddToAlbum, PickAlbum},
     WASM_CLIENT,
 };
 use yew::prelude::*;
@@ -62,48 +61,8 @@ pub fn add_to_album_button(props: &AddToAlbumButtonProps) -> Html {
                     title="Choose album"
                     confirm_action={add_to_album}
                     cancel_action={hide_dialog}>
-                    <PickAlbum selected_album={selected_album.clone()}/>
+                <PickAlbum selected_album={selected_album.clone()}/>
             </ConfirmDialog>
         </>
-    }
-}
-
-#[derive(Properties, PartialEq)]
-pub struct PickAlbumProps {
-    pub selected_album: UseStateHandle<Option<String>>,
-}
-
-#[function_component(PickAlbum)]
-pub fn pick_album(props: &PickAlbumProps) -> Html {
-    let (albums, _) = use_albums();
-
-    let albums_html = (*albums)
-        .iter()
-        .map(|album| {
-            let on_click = {
-                let selected_album = props.selected_album.clone();
-                let album_id = album.id.clone();
-                Callback::from(move |_| selected_album.set(Some(album_id.clone())))
-            };
-
-            let is_selected = match (*props.selected_album).clone() {
-                Some(selected_album_id) => selected_album_id == album.id,
-                None => false,
-            };
-
-            html! {
-                <div
-                    class={classes!("pick-album-entry", { if is_selected {"selected"} else { "" } } )}
-                    onclick={on_click}>
-                    <AlbumThumb album={album.clone()}/>
-                </div>
-            }
-        })
-        .collect::<Html>();
-
-    html! {
-        <div class="pick-album">
-            {albums_html}
-        </div>
     }
 }

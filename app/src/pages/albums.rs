@@ -1,5 +1,6 @@
 use crate::{
-    components::{album_thumb::AlbumThumb, buttons::Button, icons::IconCreate, layouts::PageLayout},
+    components::{album_thumb::AlbumThumb, layouts::PageLayout, CreateAlbumButton},
+    hooks::{use_album, use_albums},
     Route, WASM_CLIENT,
 };
 use yew::prelude::*;
@@ -7,7 +8,7 @@ use yew_router::prelude::*;
 
 #[function_component(AlbumsPage)]
 pub fn albums_page() -> Html {
-    let albums = use_state(|| vec![]);
+    let (albums, refresh_albums) = use_albums();
     let navigator = use_navigator().unwrap();
 
     {
@@ -43,18 +44,12 @@ pub fn albums_page() -> Html {
         })
         .collect::<Html>();
 
-    let on_click_create_album = |_| {
-        wasm_bindgen_futures::spawn_local(async {
-            WASM_CLIENT.create_album("Test", vec![]).await.unwrap();
-            // TODO: Make use_albums hook and let it return some callback to refresh
-        });
-    };
-    let header_actions = html! {
-        <>
-            <Button label={"Create album"} on_click={on_click_create_album.clone()}>
-                <IconCreate/>
-            </Button>
-        </>
+    let header_actions = {
+        let refresh_albums = refresh_albums.clone();
+        let on_created = move |_| refresh_albums.emit(());
+        html! {
+            <CreateAlbumButton on_created={on_created}/>
+        }
     };
 
     html! {
