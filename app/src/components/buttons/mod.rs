@@ -2,10 +2,12 @@ use yew::prelude::*;
 
 pub mod delete_album_button;
 pub mod delete_photos_button;
+pub mod remove_from_album_button;
 pub mod set_album_cover_button;
 
 pub use delete_album_button::*;
 pub use delete_photos_button::*;
+pub use remove_from_album_button::*;
 pub use set_album_cover_button::*;
 
 #[derive(PartialEq)]

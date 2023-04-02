@@ -1,6 +1,6 @@
 use crate::{
     components::{
-        buttons::{Button, DeleteAlbumButton, IconPosition, SetAlbumCoverButton},
+        buttons::{Button, DeleteAlbumButton, IconPosition, RemoveFromAlbumButton, SetAlbumCoverButton},
         drop_upload::{DropUpload, FileUploadProgress},
         gallery::Gallery,
         icons::IconClose,
@@ -59,22 +59,32 @@ pub fn album_page(props: &AlbumPageProps) -> Html {
 
     let header_actions_left = {
         let selected_photos = selected_photos.clone();
+        let on_set_selected_photos = selected_photos.clone();
+        let on_removed_selected_photos = selected_photos.clone();
+        let refresh_album = refresh_album.clone();
+
         match n_photos_selected {
             0 => None,
-            _ => Some(html! {
+            _ => Some(html! { <>
                 {html! {
                     if n_photos_selected == 1 {
                         if let Some(photo_id) = selected_photos.first() {
                             <SetAlbumCoverButton
-                                album_id={left_album_id}
+                                album_id={left_album_id.clone()}
                                 photo_id={photo_id.to_string()}
-                                on_set={|_|{}}/>
+                                on_set={move |_| on_set_selected_photos.set(vec![])}/>
                         }
 
                     }
                 }}
-
-            }),
+                <RemoveFromAlbumButton
+                    album_id={left_album_id}
+                    photo_ids={(*selected_photos).clone()}
+                    on_removed={move |_| {
+                        on_removed_selected_photos.set(vec![]);
+                        refresh_album.emit(());
+                    }}/>
+            </>}),
         }
     };
 
