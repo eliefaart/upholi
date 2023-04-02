@@ -1,17 +1,20 @@
 use crate::{
-    components::{buttons::Button, dialog::ConfirmDialog, IconCreate},
+    components::{buttons::Button, dialog::ConfirmDialog, IconHashTag},
+    hooks::use_album,
     WASM_CLIENT,
 };
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
 
 #[derive(Properties, PartialEq)]
-pub struct CreateAlbumButtonProps {
-    pub on_created: Callback<String>,
+pub struct EditAlbumButtonProps {
+    pub album_id: AttrValue,
+    pub on_submitted: Callback<()>,
 }
 
-#[function_component(CreateAlbumButton)]
-pub fn create_album_button(props: &CreateAlbumButtonProps) -> Html {
+#[function_component(EditAlbumButton)]
+pub fn edit_album_button(props: &EditAlbumButtonProps) -> Html {
+    let (album, refresh_album) = use_album(props.album_id.to_string());
     let dialog_state = use_state(|| false);
     let album_title_ref = use_node_ref();
 
@@ -30,9 +33,11 @@ pub fn create_album_button(props: &CreateAlbumButtonProps) -> Html {
     };
 
     let create_album = {
-        let on_created = props.on_created.clone();
+        let album_id = props.album_id.clone();
+        let on_submitted = props.on_submitted.clone();
         let dialog_state = dialog_state.clone();
         let album_title_ref = album_title_ref.clone();
+        let refresh_album = refresh_album.clone();
 
         move |_| {
             let album_title_input = album_title_ref.cast::<HtmlInputElement>();
@@ -40,33 +45,40 @@ pub fn create_album_button(props: &CreateAlbumButtonProps) -> Html {
             if let Some(album_title_input) = album_title_input {
                 let album_title = album_title_input.value();
                 if !album_title.is_empty() {
-                    let on_created = on_created.clone();
+                    let album_id = album_id.clone();
+                    let on_submitted = on_submitted.clone();
                     let dialog_state = dialog_state.clone();
+                    let refresh_album = refresh_album.clone();
 
                     wasm_bindgen_futures::spawn_local(async move {
-                        let id = WASM_CLIENT.create_album(&album_title, vec![]).await.unwrap();
+                        let id = WASM_CLIENT.update_album_title_tags(&album_id, &album_title, vec![]).await.unwrap();
                         dialog_state.set(false);
-                        on_created.emit(id)
+                        refresh_album.emit(());
+                        on_submitted.emit(id);
                     });
                 }
             }
         }
     };
 
+    let album_title = match (*album).clone() {
+        Some(album) => album.title,
+        None => String::new(),
+    };
     let dialog_visible = *dialog_state;
 
     html! {
         <>
-            <Button label={"Create album"} on_click={show_dialog}>
-                <IconCreate/>
+            <Button label={"Edit album"} on_click={show_dialog}>
+                <IconHashTag/>
             </Button>
             <ConfirmDialog
                     visible={dialog_visible}
-                    title="Create album"
+                    title="Edit album"
                     confirm_action={create_album}
                     cancel_action={hide_dialog}>
                     <label>{"Album title"}
-                        <input ref={album_title_ref} type="text" />
+                        <input ref={album_title_ref} type="text" value={album_title}/>
                     </label>
             </ConfirmDialog>
         </>

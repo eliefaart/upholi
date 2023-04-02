@@ -4,6 +4,7 @@ pub mod add_to_album_button;
 pub mod create_album_button;
 pub mod delete_album_button;
 pub mod delete_photos_button;
+pub mod edit_album_button;
 pub mod remove_from_album_button;
 pub mod set_album_cover_button;
 
@@ -11,6 +12,7 @@ pub use add_to_album_button::*;
 pub use create_album_button::*;
 pub use delete_album_button::*;
 pub use delete_photos_button::*;
+pub use edit_album_button::*;
 pub use remove_from_album_button::*;
 pub use set_album_cover_button::*;
 

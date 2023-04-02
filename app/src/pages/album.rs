@@ -1,6 +1,6 @@
 use crate::{
     components::{
-        buttons::{Button, DeleteAlbumButton, IconPosition, RemoveFromAlbumButton, SetAlbumCoverButton},
+        buttons::{Button, DeleteAlbumButton, EditAlbumButton, IconPosition, RemoveFromAlbumButton, SetAlbumCoverButton},
         drop_upload::{DropUpload, FileUploadProgress},
         gallery::Gallery,
         icons::IconClose,
@@ -51,12 +51,6 @@ pub fn album_page(props: &AlbumPageProps) -> Html {
         }
     };
 
-    let left_album_id = props.id.clone();
-    let right_album_id = props.id.clone();
-    let on_deleted = move |_| {
-        navigator.replace(&Route::Albums);
-    };
-
     let header_actions_left = {
         let selected_photos = selected_photos.clone();
         let on_set_selected_photos = selected_photos.clone();
@@ -70,7 +64,7 @@ pub fn album_page(props: &AlbumPageProps) -> Html {
                     if n_photos_selected == 1 {
                         if let Some(photo_id) = selected_photos.first() {
                             <SetAlbumCoverButton
-                                album_id={left_album_id.clone()}
+                                album_id={props.id.clone()}
                                 photo_id={photo_id.to_string()}
                                 on_set={move |_| on_set_selected_photos.set(vec![])}/>
                         }
@@ -78,7 +72,7 @@ pub fn album_page(props: &AlbumPageProps) -> Html {
                     }
                 }}
                 <RemoveFromAlbumButton
-                    album_id={left_album_id}
+                    album_id={props.id.clone()}
                     photo_ids={(*selected_photos).clone()}
                     on_removed={move |_| {
                         on_removed_selected_photos.set(vec![]);
@@ -88,19 +82,29 @@ pub fn album_page(props: &AlbumPageProps) -> Html {
         }
     };
 
-    let header_actions_right = match n_photos_selected {
-        0 => Some(html! {
-            <DeleteAlbumButton album_id={right_album_id} on_deleted={on_deleted.clone()}/>
-        }),
-        _ => Some(html! {
-            <>
-                <Button label={format!("{n_photos_selected} selected")}
-                    on_click={move |_| reset_selection.emit(())}
-                    icon_position={IconPosition::Right}>
-                    <IconClose/>
-                </Button>
-            </>
-        }),
+    let header_actions_right = {
+        let refresh_album = refresh_album.clone();
+        match n_photos_selected {
+            0 => Some(html! {
+                <>
+                    <EditAlbumButton
+                        album_id={props.id.clone()}
+                        on_submitted={move |_| refresh_album.emit(()) }/>
+                    <DeleteAlbumButton
+                        album_id={props.id.clone()}
+                        on_deleted={move |_| { navigator.replace(&Route::Albums) }}/>
+                </>
+            }),
+            _ => Some(html! {
+                <>
+                    <Button label={format!("{n_photos_selected} selected")}
+                        on_click={move |_| reset_selection.emit(())}
+                        icon_position={IconPosition::Right}>
+                        <IconClose/>
+                    </Button>
+                </>
+            }),
+        }
     };
 
     let on_photos_uploaded_album_id = props.id.clone();

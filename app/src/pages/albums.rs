@@ -1,6 +1,6 @@
 use crate::{
     components::{album_thumb::AlbumThumb, layouts::PageLayout, CreateAlbumButton},
-    hooks::{use_album, use_albums},
+    hooks::use_albums,
     Route, WASM_CLIENT,
 };
 use yew::prelude::*;
