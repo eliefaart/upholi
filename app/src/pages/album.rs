@@ -5,6 +5,7 @@ use crate::{
         gallery::Gallery,
         icons::IconClose,
         layouts::PageLayout,
+        ShareAlbumButton,
     },
     hooks::use_album::use_album,
     Route, WASM_CLIENT,
@@ -83,10 +84,15 @@ pub fn album_page(props: &AlbumPageProps) -> Html {
     };
 
     let header_actions_right = {
+        let refresh_album_share = refresh_album.clone();
         let refresh_album = refresh_album.clone();
+
         match n_photos_selected {
             0 => Some(html! {
                 <>
+                    <ShareAlbumButton
+                        album_id={props.id.clone()}
+                        on_submitted={move |_| refresh_album_share.emit(()) }/>
                     <EditAlbumButton
                         album_id={props.id.clone()}
                         on_submitted={move |_| refresh_album.emit(()) }/>
