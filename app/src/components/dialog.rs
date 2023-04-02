@@ -62,7 +62,6 @@ pub struct ConfirmDialogProps {
 #[function_component(ConfirmDialog)]
 pub fn confirm_dialog(props: &ConfirmDialogProps) -> Html {
     let confirm_action = props.confirm_action.clone();
-    let cancel_action = props.cancel_action.clone();
     let on_request_close = props.cancel_action.clone();
 
     html! {
@@ -72,10 +71,7 @@ pub fn confirm_dialog(props: &ConfirmDialogProps) -> Html {
                 title={props.title.clone()}
                 on_request_close={on_request_close}
                 footer={html! {
-                    <>
-                        <Button label="Cancel" on_click={move |_| cancel_action.emit(())} />
-                        <Button label="Ok" on_click={move |_| confirm_action.emit(())} />
-                    </>
+                    <Button label="Ok" on_click={move |_| confirm_action.emit(())} />
                 }}>
                 {props.children.clone()}
             </Dialog>

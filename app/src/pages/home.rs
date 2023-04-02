@@ -1,9 +1,9 @@
 use crate::{
     components::{
-        buttons::{Button, DeletePhotosButton, IconPosition},
+        buttons::{AddToAlbumButton, Button, DeletePhotosButton, IconPosition},
         drop_upload::{DropUpload, FileUploadProgress, FileUploadStatus},
         gallery::Gallery,
-        icons::{IconAddToAlbum, IconClose},
+        icons::IconClose,
         layouts::PageLayout,
     },
     hooks::use_library_photos::use_library_photos,
@@ -33,15 +33,22 @@ pub fn home_page() -> Html {
     let n_photos_selected = (*selected_photos).len();
     let header_actions_left = match n_photos_selected {
         0 => None,
-        _ => Some(html! {
-            <>
-                <Button label={"Add to album"} on_click={|_|{}}>
-                    <IconAddToAlbum/>
-                </Button>
-                <DeletePhotosButton
-                    selected_photos={on_click_delete_photos}
-                    on_deleted={move|_| on_click_delete_refresh_photos.emit(())}/>
-            </>
+        _ => Some({
+            let on_added_selected_photos = selected_photos.clone();
+
+            html! {
+                <>
+                    <AddToAlbumButton
+                        photo_ids={(*selected_photos).clone()}
+                        on_added={move |_| {
+                            on_added_selected_photos.set(vec![]);
+                        }}
+                    />
+                    <DeletePhotosButton
+                        selected_photos={on_click_delete_photos}
+                        on_deleted={move|_| on_click_delete_refresh_photos.emit(())}/>
+                </>
+            }
         }),
     };
     let header_actions_right = match n_photos_selected {
