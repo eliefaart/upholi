@@ -47,7 +47,7 @@ pub struct LibraryAlbum {
     pub key: Vec<u8>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct LibraryShare {
     pub id: String,
