@@ -2,6 +2,7 @@ use api_client::ApiClient;
 use once_cell::sync::Lazy;
 use pages::album::AlbumPage;
 use pages::login::LoginPage;
+use pages::share::SharePage;
 use pages::shared::SharedPage;
 use pages::{albums::AlbumsPage, home::HomePage, not_found::NotFoundPage, photo::PhotoPage};
 use wasm_bindgen::UnwrapThrowExt;
@@ -51,6 +52,8 @@ pub enum Route {
     Photo { id: String },
     #[at("/shared")]
     Shared,
+    #[at("/share/:id")]
+    Share { id: String },
     #[at("/login")]
     Login,
     #[not_found]
@@ -65,6 +68,7 @@ fn switch(routes: Route) -> Html {
         Route::Album { id } => html! { <AlbumPage id={id}/> },
         Route::Photo { id } => html! { <PhotoPage id={id} /> },
         Route::Shared => html! { <SharedPage/> },
+        Route::Share { id } => html! {<SharePage id={id}/>},
         Route::Login => html! { <LoginPage/> },
         Route::NotFound => html! { <NotFoundPage/> },
     }

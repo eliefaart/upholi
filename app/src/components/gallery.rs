@@ -11,7 +11,7 @@ const MAX_HEIGHT: f32 = 350.;
 // Pixels between each photo, as per CSS.
 const GAP_SIZE: f32 = 5.;
 
-#[derive(Properties, PartialEq)]
+#[derive(PartialEq, Properties)]
 pub struct GalleryProps {
     pub photos: Vec<AlbumPhoto>,
     pub selected_photos: UseStateHandle<Vec<String>>,

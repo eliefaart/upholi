@@ -4,4 +4,5 @@ pub mod home;
 pub mod login;
 pub mod not_found;
 pub mod photo;
+pub mod share;
 pub mod shared;

@@ -1,6 +1,6 @@
 use crate::WASM_CLIENT;
 use js_sys::Uint8Array;
-use weblog::{console_error, console_log};
+use weblog::console_error;
 use yew::prelude::*;
 
 #[derive(Debug, Clone, PartialEq)]
