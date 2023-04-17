@@ -11,7 +11,7 @@ upholi_lib = { path = "../lib" }
 wasm-bindgen = { version = "0.2.78", features = ["serde-serialize"] }
 wasm-bindgen-futures = "0.4.28"
 # js-sys = "0.3.55"
-web-sys = { version = "0.3.55", features = ["Window", "Location", "Storage", "DataTransfer"] }
+web-sys = { version = "0.3.55", features = ["Window", "Location", "Storage", "DataTransfer", "Event", "EventTarget"] }
 aes-gcm-siv = "0.10.3"
 uuid = { version = "0.8.1", features = ["wasm-bindgen"] }
 image = { version = "0.23.12", default-features = false, features = ["gif", "jpeg", "ico", "png", "pnm", "tga", "tiff", "webp", "bmp", "hdr", "dxt", "dds", "farbfeld"] }

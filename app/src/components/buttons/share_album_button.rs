@@ -142,7 +142,7 @@ pub fn share_album_button(props: &ShareAlbumButtonProps) -> Html {
                     <hr/>
                     {html! {
                         if let Some(share) = &(*share) {
-                            {format!("{}/share/{}", "document.location.host", share.id)}
+                            {format!("{}/share/{}", crate::ORIGIN.as_str(), share.id)}
                         }
                     }}
                 </form>

@@ -1,8 +1,10 @@
-use crate::{components::photo::Photo, models::AlbumPhoto, Route};
+use crate::{
+    components::{photo::Photo, GalleryDetail},
+    models::AlbumPhoto,
+};
 use web_sys::Element;
 use yew::prelude::*;
 use yew_hooks::use_interval;
-use yew_router::prelude::*;
 
 // Desired minimum height of a gallery photo.
 const MIN_HEIGHT: f32 = 175.;
@@ -21,7 +23,7 @@ pub struct GalleryProps {
 #[function_component(Gallery)]
 pub fn gallery(props: &GalleryProps) -> Html {
     let node_ref = use_node_ref();
-    let navigator = use_navigator().unwrap();
+    let photo_opened = use_state(|| None);
     let available_width = use_state(|| None);
 
     let on_photo_clicked = {
@@ -89,12 +91,10 @@ pub fn gallery(props: &GalleryProps) -> Html {
                         let selected = selected_photos.contains(&photo.id);
                         let class = selected.then(|| format!("selected"));
 
-                        let on_click_navigator = navigator.clone();
+                        let photo_opened = photo_opened.clone();
                         let on_click_photo_id = photo.id.clone();
                         let on_click = Callback::from(move |_| {
-                            on_click_navigator.push(&Route::Photo {
-                                id: on_click_photo_id.clone(),
-                            });
+                            photo_opened.set(Some(on_click_photo_id.clone()));
                         });
 
                         let on_context_menu_on_photo_clicked = on_photo_clicked.clone();
@@ -125,6 +125,9 @@ pub fn gallery(props: &GalleryProps) -> Html {
     html! {
         <div class="gallery" ref={node_ref}>
             {(*photos).clone()}
+            <GalleryDetail
+                photos={props.photos.clone()}
+                photo_id={photo_opened}/>
         </div>
     }
 }
