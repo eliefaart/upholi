@@ -3,7 +3,7 @@ use chrono::prelude::*;
 use rexif::{ExifTag, TagValue};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+#[derive(PartialEq, Serialize, Deserialize, Debug, Default, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Exif {
     pub manufactorer: Option<String>,

@@ -47,17 +47,18 @@ html {
   }
 }
 
-@import "pages/albums.scss";
 @import "components/album-thumb.scss";
-@import "components/gallery.scss";
-@import "components/gallery-detail.scss";
-@import "components/photo.scss";
 @import "components/dialog.scss";
-@import "components/pick-album.scss";
+@import "components/gallery-detail.scss";
+@import "components/gallery.scss";
 @import "components/icons.scss";
-@import "misc/header.scss";
+@import "components/photo-exif.scss";
+@import "components/photo.scss";
+@import "components/pick-album.scss";
 @import "misc/buttons.scss";
 @import "misc/forms.scss";
+@import "misc/header.scss";
+@import "pages/albums.scss";
 
 a {
   color: var(--colorText);

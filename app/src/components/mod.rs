@@ -7,6 +7,7 @@ pub mod gallery_detail;
 pub mod icons;
 pub mod layouts;
 pub mod photo;
+pub mod photo_exif;
 pub mod pick_album;
 
 pub use album_thumb::*;
@@ -18,4 +19,5 @@ pub use gallery_detail::*;
 pub use icons::*;
 pub use layouts::*;
 pub use photo::*;
+pub use photo_exif::*;
 pub use pick_album::*;

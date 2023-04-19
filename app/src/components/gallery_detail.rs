@@ -1,5 +1,5 @@
 use crate::{
-    components::{Button, DownloadPhotoButton, IconClose, PhotoInfoButton, PhotoPreview},
+    components::{Button, DownloadPhotoButton, IconClose, PhotoExifButton, PhotoPreview},
     models::AlbumPhoto,
 };
 use yew::prelude::*;
@@ -26,7 +26,7 @@ pub fn gallery_detail(props: &GalleryDetailProps) -> Html {
             <div class="gallery-detail-overlay">
                 <div class="gallery-detail">
                     <div class="header">
-                        <PhotoInfoButton photo_id={photo_id.clone()}/>
+                        <PhotoExifButton photo_id={photo_id.clone()}/>
                         <DownloadPhotoButton photo_id={photo_id.clone()}/>
                         <div class="spacing"/>
                         {close_button}
