@@ -71,8 +71,8 @@ pub fn gallery_detail(props: &GalleryDetailProps) -> Html {
             <div class="gallery-detail-overlay">
                 <div class="gallery-detail">
                     <div class="header">
-                        <PhotoExifButton photo_id={photo_id.clone()}/>
                         <DownloadPhotoButton photo_id={photo_id.clone()}/>
+                        <PhotoExifButton photo_id={photo_id.clone()}/>
                         <div class="spacing"/>
 
                         {close_button}

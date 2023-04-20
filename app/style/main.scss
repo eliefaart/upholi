@@ -64,7 +64,8 @@ a {
   color: var(--colorText);
   text-decoration: none;
 
-  &:hover {
+  &:hover,
+  &.active {
     color: var(--colorAccent);
   }
 }

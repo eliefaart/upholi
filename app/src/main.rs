@@ -40,7 +40,7 @@ pub fn get_document() -> Document {
         .expect("No document")
 }
 
-#[derive(Clone, Routable, PartialEq)]
+#[derive(Debug, Clone, Routable, PartialEq)]
 pub enum Route {
     #[at("/")]
     Home,

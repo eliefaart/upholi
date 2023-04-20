@@ -14,9 +14,9 @@ pub struct PageLayoutProps {
 pub fn page_layout(props: &PageLayoutProps) -> Html {
     let header = html! {
         <nav>
-            <Link<Route> to={Route::Home}>{ "Library" }</Link<Route>>
-            <Link<Route> to={Route::Albums}>{ "Albums" }</Link<Route>>
-            <Link<Route> to={Route::Shared}>{ "Shared" }</Link<Route>>
+            <RouteLink route={Route::Home} label="Library"/>
+            <RouteLink route={Route::Albums} label="Albums"/>
+            <RouteLink route={Route::Shared} label="Shared"/>
         </nav>
     };
 
@@ -54,5 +54,24 @@ pub fn page_layout(props: &PageLayoutProps) -> Html {
             <span>{"Dialog body"}</span>
         </Dialog>
         </>
+    }
+}
+
+#[derive(Properties, PartialEq)]
+pub struct RouteLinkProps {
+    pub route: Route,
+    pub label: AttrValue,
+}
+
+#[function_component(RouteLink)]
+pub fn route_link(props: &RouteLinkProps) -> Html {
+    let route = use_route::<Route>().unwrap();
+    let active = route == props.route;
+    let class = if active { "active" } else { "" };
+
+    html! {
+        <Link<Route> to={props.route.clone()} classes={classes!(class)}>
+            { &props.label }
+        </Link<Route>>
     }
 }
