@@ -45,8 +45,13 @@
 
   .body {
     flex-grow: 1;
-    margin: 0 $spacing;
-    min-height: 50px;
+
+    min-height: $spacingLarge;
+
+    &:not(:empty) {
+      margin: $spacing;
+      min-height: 50px;
+    }
   }
 
   .footer {
