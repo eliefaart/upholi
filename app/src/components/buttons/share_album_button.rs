@@ -4,7 +4,9 @@ use crate::{
     WASM_CLIENT,
 };
 use web_sys::HtmlInputElement;
+use weblog::console_log;
 use yew::prelude::*;
+use yew_router::prelude::use_navigator;
 
 #[derive(Clone, Default)]
 pub struct ShareFormData {
@@ -128,21 +130,25 @@ pub fn share_album_button(props: &ShareAlbumButtonProps) -> Html {
                 confirm_action={update_album_share_settings}
                 cancel_action={hide_dialog}>
                 <form>
-                    <label>
+                    <label class="checkbox-input">
                         <input type="checkbox"
                             ref={form_checkbox_share_ref}
                             checked={is_shared}
                             onchange={toggle_form_shared.clone()}/>
-                        {"Share via URL"}
+                        <span>{"Share via URL"}</span>
                     </label>
                     <label style={if !is_shared {format!("display: none;")} else {String::new()}}>
                         {"Password"}
                         <input type="text" ref={form_text_password_ref} value={password}/>
                     </label>
-                    <hr/>
                     {html! {
                         if let Some(share) = &(*share) {
-                            {format!("{}/share/{}", crate::ORIGIN.as_str(), share.id)}
+                            <label style={if !is_shared {format!("display: none;")} else {String::new()}}>
+                                {"URL"}
+                                <input type="text"
+                                    value={format!("{}/share/{}", crate::ORIGIN.as_str(), share.id)}
+                                    readonly={true}/>
+                            </label>
                         }
                     }}
                 </form>

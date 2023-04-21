@@ -77,7 +77,7 @@ pub fn edit_album_button(props: &EditAlbumButtonProps) -> Html {
                 title="Edit album"
                 confirm_action={create_album}
                 cancel_action={hide_dialog}>
-                <label>{"Album title"}
+                <label>{"Title"}
                     <input ref={album_title_ref} type="text" value={album_title}/>
                 </label>
             </ConfirmDialog>

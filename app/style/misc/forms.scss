@@ -1,3 +1,9 @@
+form {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing;
+}
+
 label {
   display: flex;
   flex-direction: column;
@@ -9,9 +15,23 @@ input {
   border-radius: $borderRadius;
   height: $buttonHeight;
   color: var(--colorText);
-  background-color: var(--colorBackground);
+  background-color: var(--colorBackgroundInput);
+  padding-left: $spacing;
 
   &:focus {
     border-color: var(--colorAccent);
+  }
+}
+
+.checkbox-input {
+  display: grid;
+  grid-template-columns: $inputCheckboxHeight auto;
+
+  input {
+    height: $inputCheckboxHeight;
+  }
+
+  span {
+    line-height: $inputCheckboxHeight;
   }
 }

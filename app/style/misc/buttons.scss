@@ -2,7 +2,7 @@ button {
   color: var(--colorAccent);
   background-color: transparent;
   height: $buttonHeight;
-  line-height: $buttonHeight;
+
   min-width: $buttonHeight * 1.5;
   border: none;
   border-radius: $borderRadius;
@@ -16,8 +16,13 @@ button {
   justify-content: center;
   white-space: nowrap;
 
-  .label:empty {
-    display: none;
+  .label {
+    height: $buttonHeight;
+    line-height: $buttonHeight;
+
+    &:empty {
+      display: none;
+    }
   }
 
   &:hover,
@@ -34,14 +39,14 @@ button {
   }
 
   &.icon-right {
-    .label {
-      margin-right: calc($spacing / 2);
+    svg {
+      margin-left: calc($spacing / 2);
     }
   }
 
   &.icon-left {
-    .label {
-      margin-left: calc($spacing / 2);
+    svg {
+      margin-right: calc($spacing / 2);
     }
   }
 

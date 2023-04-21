@@ -65,8 +65,8 @@ pub fn create_album_button(props: &CreateAlbumButtonProps) -> Html {
                 title="Create album"
                 confirm_action={create_album}
                 cancel_action={hide_dialog}>
-                <label>{"Album title"}
-                    <input ref={album_title_ref} type="text" />
+                <label>{"Title"}
+                    <input ref={album_title_ref} type="text"/>
                 </label>
             </ConfirmDialog>
         </>
