@@ -71,7 +71,11 @@ impl Exif {
     }
 
     /// Gets the value of given exif field
-    fn get_exif_data<T>(exif: &rexif::ExifData, tag: ExifTag, convert_value: fn(&rexif::ExifEntry) -> Option<T>) -> Option<T> {
+    fn get_exif_data<T>(
+        exif: &rexif::ExifData,
+        tag: ExifTag,
+        convert_value: fn(&rexif::ExifEntry) -> Option<T>,
+    ) -> Option<T> {
         let result = exif.entries.iter().find(|entry| entry.tag == tag);
         if let Some(entry) = result {
             convert_value(entry)

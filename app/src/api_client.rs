@@ -59,7 +59,9 @@ impl ApiClient {
 
     pub async fn authorize_share(&self, share_id: &str, password: &str) -> Result<bool> {
         let url = format!("{}/share/{share_id}/auth", self.base_url).to_owned();
-        let body = AuthorizeShareRequest { password: password.into() };
+        let body = AuthorizeShareRequest {
+            password: password.into(),
+        };
         let response = self.client.post(&url).json(&body).send().await?;
 
         if response.status() == StatusCode::OK {

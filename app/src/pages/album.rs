@@ -1,6 +1,8 @@
 use crate::{
     components::{
-        buttons::{Button, DeleteAlbumButton, EditAlbumButton, IconPosition, RemoveFromAlbumButton, SetAlbumCoverButton},
+        buttons::{
+            Button, DeleteAlbumButton, EditAlbumButton, IconPosition, RemoveFromAlbumButton, SetAlbumCoverButton,
+        },
         drop_upload::{DropUpload, FileUploadProgress},
         gallery::Gallery,
         icons::IconClose,
@@ -121,7 +123,10 @@ pub fn album_page(props: &AlbumPageProps) -> Html {
             let refresh_album = on_photos_uploaded_refresh_album.clone();
             // TODO: Possible race condition modifying album if uploads finish too fast after each other
             wasm_bindgen_futures::spawn_local(async move {
-                WASM_CLIENT.add_photos_to_album(&album_id, &vec![photo_id]).await.unwrap();
+                WASM_CLIENT
+                    .add_photos_to_album(&album_id, &vec![photo_id])
+                    .await
+                    .unwrap();
                 refresh_album.emit(());
             });
         }

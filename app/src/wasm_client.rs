@@ -5,8 +5,8 @@ use crate::images::Image;
 use crate::keys::{get_key_from_user_credentials, get_master_key, get_share_key, set_master_key, set_share_key};
 use crate::models::Photo;
 use crate::models::{
-    Album, AlbumHydrated, AlbumPhoto, AlbumShareData, AlbumShareDataPhoto, Library, LibraryAlbum, LibraryPhoto, LibraryShare, Share,
-    ShareData,
+    Album, AlbumHydrated, AlbumPhoto, AlbumShareData, AlbumShareDataPhoto, Library, LibraryAlbum, LibraryPhoto,
+    LibraryShare, Share, ShareData,
 };
 use crate::repository;
 use crate::repository::ItemVariant;
@@ -74,7 +74,12 @@ impl<'a> WasmClient<'a> {
 
         self.api_client.register(&body).await?;
         set_master_key(&master_key);
-        repository::set(KEY_MASTER_KEY, &password_derived_key, ItemVariant::MasterKey(master_key.clone())).await?;
+        repository::set(
+            KEY_MASTER_KEY,
+            &password_derived_key,
+            ItemVariant::MasterKey(master_key.clone()),
+        )
+        .await?;
         repository::set(KEY_LIBRARY, &master_key, ItemVariant::Library(Library::default())).await?;
 
         Ok(())
@@ -101,7 +106,9 @@ impl<'a> WasmClient<'a> {
     pub async fn get_photo(&self, id: &str) -> Result<Photo> {
         let photo_encryption_key = self.determine_photo_key(id).await?;
         let photo_item = repository::get(id, &photo_encryption_key).await?;
-        let photo = photo_item.ok_or_else(|| anyhow!("Photo '{id}' not found"))?.try_into()?;
+        let photo = photo_item
+            .ok_or_else(|| anyhow!("Photo '{id}' not found"))?
+            .try_into()?;
 
         Ok(photo)
     }
@@ -163,7 +170,10 @@ impl<'a> WasmClient<'a> {
     }
 
     pub async fn get_album_full(&self, id: &str) -> Result<AlbumHydrated> {
-        let album = self.get_album(id).await?.ok_or_else(|| anyhow!("Album '{id}' not found"))?;
+        let album = self
+            .get_album(id)
+            .await?
+            .ok_or_else(|| anyhow!("Album '{id}' not found"))?;
         let photos = self.get_library_photos().await?;
         let album_photos = photos.into_iter().map(|p| p.into()).collect();
         self.inflate_album(album, album_photos)
@@ -238,9 +248,12 @@ impl<'a> WasmClient<'a> {
                 now
             };
 
-            let thumbnail_encrypted = crate::encryption::symmetric::encrypt_slice(&photo_key, &upload_info.image.bytes_thumbnail)?;
-            let preview_encrypted = crate::encryption::symmetric::encrypt_slice(&photo_key, &upload_info.image.bytes_preview)?;
-            let original_encrypted = crate::encryption::symmetric::encrypt_slice(&photo_key, &upload_info.image.bytes_original)?;
+            let thumbnail_encrypted =
+                crate::encryption::symmetric::encrypt_slice(&photo_key, &upload_info.image.bytes_thumbnail)?;
+            let preview_encrypted =
+                crate::encryption::symmetric::encrypt_slice(&photo_key, &upload_info.image.bytes_preview)?;
+            let original_encrypted =
+                crate::encryption::symmetric::encrypt_slice(&photo_key, &upload_info.image.bytes_original)?;
 
             let photo = &Photo {
                 id: photo_id.clone(),
@@ -278,7 +291,10 @@ impl<'a> WasmClient<'a> {
             })
             .await?;
 
-            Ok(PhotoUploadResult { skipped: false, photo_id })
+            Ok(PhotoUploadResult {
+                skipped: false,
+                photo_id,
+            })
         }
     }
 
@@ -404,7 +420,10 @@ impl<'a> WasmClient<'a> {
         let library = self.get_library().await?;
         let existing_share = library.shares.iter().find(|s| s.album_id == item_id);
 
-        let album = self.get_album(item_id).await?.ok_or_else(|| anyhow!("Album not found"))?;
+        let album = self
+            .get_album(item_id)
+            .await?
+            .ok_or_else(|| anyhow!("Album not found"))?;
         let share_id = match existing_share {
             Some(existing_share) => existing_share.id.clone(),
             None => id(),

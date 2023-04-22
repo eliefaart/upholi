@@ -29,7 +29,10 @@ pub fn photo_exif(props: &PhotoExifProps) -> Html {
 
     let focal_length = {
         let focal_length = props.exif.focal_length.map(|fl| format!("{fl}mm"));
-        let focal_length_35mm_equiv = props.exif.focal_length_35mm_equiv.map(|fl| format!("({fl}mm in 35mm equivalent)"));
+        let focal_length_35mm_equiv = props
+            .exif
+            .focal_length_35mm_equiv
+            .map(|fl| format!("({fl}mm in 35mm equivalent)"));
 
         html! {
             <PhotoExifProperty title="Focal length" values={vec![focal_length, focal_length_35mm_equiv]}/>

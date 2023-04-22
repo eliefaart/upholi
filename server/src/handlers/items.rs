@@ -37,7 +37,10 @@ pub async fn delete_item(UserId(user_id): UserId, Path(id): Path<String>) -> Res
     delete_items(UserId(user_id), Json(DeleteManyRequest { ids: vec![id] })).await
 }
 
-pub async fn delete_items(UserId(user_id): UserId, Json(request): Json<DeleteManyRequest>) -> Result<StatusCode, StatusCode> {
+pub async fn delete_items(
+    UserId(user_id): UserId,
+    Json(request): Json<DeleteManyRequest>,
+) -> Result<StatusCode, StatusCode> {
     match database::delete_items::<EncryptedData>(&request.ids, &user_id).await {
         Ok(_) => Ok(StatusCode::OK),
         Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),

@@ -158,7 +158,9 @@ fn compute_sizes<'a>(
         })
         // Split into rows
         .fold(vec![vec![]], |mut accumulator, photo| {
-            let current_row = accumulator.last_mut().expect("Make sure the accumulator starts with one row");
+            let current_row = accumulator
+                .last_mut()
+                .expect("Make sure the accumulator starts with one row");
 
             let row_width: f32 = current_row.iter().map(|p| p.width + gap_size).sum();
 

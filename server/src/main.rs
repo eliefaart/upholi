@@ -133,7 +133,9 @@ async fn session_cookie_layer<B>(mut req: axum::http::Request<B>, next: Next<B>)
     // Create a new session if request did not contain one
     let session_id = match session_id {
         Some(session_id) => session_id,
-        None => create_new_session().await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?,
+        None => create_new_session()
+            .await
+            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?,
     };
 
     let request_is_secure = req.uri().scheme_str().unwrap_or("") == "https";
@@ -141,7 +143,8 @@ async fn session_cookie_layer<B>(mut req: axum::http::Request<B>, next: Next<B>)
 
     // Add the newly created session to the request
     if !request_contains_session {
-        let header_value = HeaderValue::from_str(&session_cookie.to_string()).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        let header_value =
+            HeaderValue::from_str(&session_cookie.to_string()).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
         req.headers_mut().append(axum::http::header::COOKIE, header_value);
     }
 

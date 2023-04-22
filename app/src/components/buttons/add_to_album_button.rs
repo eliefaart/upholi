@@ -41,7 +41,10 @@ pub fn add_to_album_button(props: &AddToAlbumButtonProps) -> Html {
 
             if let Some(selected_album) = (*selected_album).clone() {
                 wasm_bindgen_futures::spawn_local(async move {
-                    WASM_CLIENT.add_photos_to_album(&selected_album, &photo_ids).await.unwrap();
+                    WASM_CLIENT
+                        .add_photos_to_album(&selected_album, &photo_ids)
+                        .await
+                        .unwrap();
                     dialog_state.set(false);
                     on_added.emit(())
                 });

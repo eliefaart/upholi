@@ -58,10 +58,10 @@ jobs:
       #     cd ./app
       #     cargo clippy --all -- -D warnings
 
-      # - name: app - format
-      #   run: |
-      #     cd ./app
-      #     cargo fmt --all -- --check
+      - name: app - format
+        run: |
+          cd ./app
+          cargo fmt --all -- --check
 
   validate-server:
     runs-on: ubuntu-latest

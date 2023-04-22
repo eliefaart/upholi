@@ -73,7 +73,9 @@ pub fn share_album_button(props: &ShareAlbumButtonProps) -> Html {
             let form_checkbox_share_ref = form_checkbox_share_ref.cast::<HtmlInputElement>();
             let form_text_password_ref = form_text_password_ref.cast::<HtmlInputElement>();
 
-            if let (Some(form_checkbox_share_ref), Some(form_text_password_ref)) = (form_checkbox_share_ref, form_text_password_ref) {
+            if let (Some(form_checkbox_share_ref), Some(form_text_password_ref)) =
+                (form_checkbox_share_ref, form_text_password_ref)
+            {
                 let share = (*share).clone();
                 let album_id = album_id.clone();
                 let on_submitted = on_submitted.clone();

@@ -1,5 +1,7 @@
 use crate::{
-    components::{Button, DownloadPhotoButton, IconChevronLeft, IconChevronRight, IconClose, PhotoExifButton, PhotoPreview},
+    components::{
+        Button, DownloadPhotoButton, IconChevronLeft, IconChevronRight, IconClose, PhotoExifButton, PhotoPreview,
+    },
     models::AlbumPhoto,
 };
 use yew::prelude::*;

@@ -15,7 +15,9 @@ impl Library {
         let find_as_photo = || self.photos.iter().find(|i| i.id == item_id).map(|i| &i.key);
         let find_as_share = || self.shares.iter().find(|i| i.id == item_id).map(|i| &i.key);
 
-        None.or_else(find_as_album).or_else(find_as_photo).or_else(find_as_share)
+        None.or_else(find_as_album)
+            .or_else(find_as_photo)
+            .or_else(find_as_share)
     }
 }
 

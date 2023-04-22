@@ -4,7 +4,9 @@ use crate::{
     WASM_CLIENT,
 };
 use web_sys::HtmlInputElement;
-use yew::{function_component, html, use_effect_with_deps, use_node_ref, use_state, AttrValue, Callback, Html, Properties};
+use yew::{
+    function_component, html, use_effect_with_deps, use_node_ref, use_state, AttrValue, Callback, Html, Properties,
+};
 
 #[derive(Properties, PartialEq)]
 pub struct SharePageProps {

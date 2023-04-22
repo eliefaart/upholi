@@ -44,7 +44,10 @@ pub async fn authorize_share(
 }
 
 /// Create or update a share
-pub async fn create_share(UserId(user_id): UserId, Json(share): Json<UpsertShareRequest>) -> Result<StatusCode, StatusCode> {
+pub async fn create_share(
+    UserId(user_id): UserId,
+    Json(share): Json<UpsertShareRequest>,
+) -> Result<StatusCode, StatusCode> {
     let password_phc = hash_password(&share.password).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
     let item_ids_for_share = [vec![share.id.clone()], share.items].concat();
 
@@ -54,7 +57,9 @@ pub async fn create_share(UserId(user_id): UserId, Json(share): Json<UpsertShare
         password_phc,
     };
 
-    upsert_share(&share).await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    upsert_share(&share)
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
     set_items_for_share(&share.id, &item_ids_for_share)
         .await
@@ -67,7 +72,9 @@ pub async fn create_share(UserId(user_id): UserId, Json(share): Json<UpsertShare
 
 /// Delete a share
 pub async fn delete_share(UserId(user_id): UserId, Path(id): Path<String>) -> Result<StatusCode, StatusCode> {
-    remove_items_from_share(&id).await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    remove_items_from_share(&id)
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
     database::delete_share(&user_id, &id)
         .await

@@ -73,8 +73,14 @@ impl Settings {
             ("database.connection_string", ENV_VAR_DATABASE_CONNECTIONSTRING),
             ("storage.provider", ENV_VAR_STORAGE_PROVIDER),
             ("storage.directory_photos", ENV_VAR_STORAGE_DIRECTORYPHOTOS),
-            ("storage.azure_storage_account_name", ENV_VAR_STORAGE_AZURESTORAGEACCOUNTNAME),
-            ("storage.azure_storage_account_key", ENV_VAR_STORAGE_AZURESTORAGEACCOUNTKEY),
+            (
+                "storage.azure_storage_account_name",
+                ENV_VAR_STORAGE_AZURESTORAGEACCOUNTNAME,
+            ),
+            (
+                "storage.azure_storage_account_key",
+                ENV_VAR_STORAGE_AZURESTORAGEACCOUNTKEY,
+            ),
         ]
         .iter()
         .cloned()

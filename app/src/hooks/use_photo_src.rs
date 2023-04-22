@@ -10,7 +10,10 @@ pub fn use_photo_src(photo_id: &str, variant: upholi_lib::PhotoVariant) -> UseSt
             move |photo_id| {
                 let photo_id = photo_id.to_owned();
                 wasm_bindgen_futures::spawn_local(async move {
-                    let photo_src = crate::WASM_CLIENT.get_photo_image_src(&photo_id, variant).await.unwrap();
+                    let photo_src = crate::WASM_CLIENT
+                        .get_photo_image_src(&photo_id, variant)
+                        .await
+                        .unwrap();
                     src.set(photo_src);
                 });
             },

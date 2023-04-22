@@ -21,7 +21,10 @@ pub fn remove_from_album_button(props: &RemoveFromAlbumButtonProps) -> Html {
         let photo_ids = photo_ids.clone();
         let on_removed = on_removed.clone();
         wasm_bindgen_futures::spawn_local(async move {
-            WASM_CLIENT.remove_photos_from_album(&album_id, &photo_ids).await.unwrap();
+            WASM_CLIENT
+                .remove_photos_from_album(&album_id, &photo_ids)
+                .await
+                .unwrap();
             on_removed.emit(())
         });
     };
