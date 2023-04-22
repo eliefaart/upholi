@@ -64,12 +64,11 @@ pub fn share_page(props: &SharePageProps) -> Html {
             html! {
                 if !authorized {
                     <>
-                        {html! {
-                            if *auth_attempt_made {
-                                <>{"Incorrect password"}</>
-                            }
-                        }}
-                        <UnlockShare share_id={&props.id} on_try_authorize={on_try_authorize}/>
+                        <UnlockShare
+                            share_id={&props.id}
+                            on_try_authorize={on_try_authorize}
+                            auth_attempt_made={*auth_attempt_made}
+                            />
                     </>
                 }
             }
@@ -83,6 +82,7 @@ pub fn share_page(props: &SharePageProps) -> Html {
 pub struct UnlockShareProps {
     pub share_id: AttrValue,
     pub on_try_authorize: Callback<String>,
+    pub auth_attempt_made: bool,
 }
 
 #[function_component(UnlockShare)]
@@ -103,11 +103,21 @@ pub fn unlock_share(props: &UnlockShareProps) -> Html {
     };
 
     html! {
-        <>
+        <div class="unlock-share">
+            <h1>{"Locked"}</h1>
             <label>{"Password"}
                 <input ref={password_ref} type="password"/>
             </label>
-            <Button label={"Ok"} on_click={on_click_unlock}/>
-        </>
+            <div class="footer">
+                <span class="status">
+                    {html! {
+                        if props.auth_attempt_made {
+                            <>{"Incorrect password"}</>
+                        }
+                    }}
+                </span>
+                <Button label={"Submit"} on_click={on_click_unlock}/>
+            </div>
+        </div>
     }
 }

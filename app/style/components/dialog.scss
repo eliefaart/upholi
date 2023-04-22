@@ -1,3 +1,5 @@
+@import "../misc/buttons.scss";
+
 .dialog-overlay {
   position: fixed;
   z-index: 2;
@@ -59,15 +61,6 @@
     justify-content: flex-end;
     margin: $spacing;
 
-    button {
-      background-color: var(--colorBackgroundHeader);
-      border: 1px solid var(--colorBackground);
-      border-radius: $borderRadius;
-
-      &:hover {
-        border-color: var(--colorAccent);
-        filter: brightness(1.2);
-      }
-    }
+    @include button-filled;
   }
 }

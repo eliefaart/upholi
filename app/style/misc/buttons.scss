@@ -55,3 +55,16 @@ button {
     margin: auto;
   }
 }
+
+@mixin button-filled {
+  button {
+    background-color: var(--colorBackgroundHeader);
+    border: 1px solid var(--colorBackground);
+    border-radius: $borderRadius;
+
+    &:hover {
+      border-color: var(--colorAccent);
+      filter: brightness(1.2);
+    }
+  }
+}
