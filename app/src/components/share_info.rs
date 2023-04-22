@@ -1,5 +1,5 @@
 use crate::{
-    components::{Button, IconDelete, ShareUrl},
+    components::{ConfirmButton, IconDelete, ShareUrl},
     hooks::use_album,
     models::LibraryShare,
     WASM_CLIENT,
@@ -31,9 +31,11 @@ pub fn share_info(props: &ShareInfoProps) -> Html {
         html! {
             <div class="share-info">
                 <span>{&album.title}</span>
-                <Button label="" on_click={delete_share}>
+                <ConfirmButton label=""
+                    on_click={delete_share}
+                    confirm_dialog_title="Delete share?">
                     <IconDelete/>
-                </Button>
+                </ConfirmButton>
                 <ShareUrl share_id={props.share.id.clone()}/>
             </div>
         }

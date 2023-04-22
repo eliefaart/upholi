@@ -4,9 +4,7 @@ use crate::{
     WASM_CLIENT,
 };
 use web_sys::HtmlInputElement;
-use weblog::console_log;
 use yew::prelude::*;
-use yew_router::prelude::use_navigator;
 
 #[derive(Clone, Default)]
 pub struct ShareFormData {

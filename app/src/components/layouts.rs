@@ -5,6 +5,8 @@ use yew_router::prelude::*;
 #[derive(Properties, PartialEq)]
 pub struct PageLayoutProps {
     #[prop_or_default]
+    pub title: AttrValue,
+    #[prop_or_default]
     pub children: Children,
     pub header_actions_left: Option<Children>,
     pub header_actions_right: Option<Children>,
@@ -38,6 +40,12 @@ pub fn page_layout(props: &PageLayoutProps) -> Html {
         }
     };
 
+    let title = html! {
+        if !props.title.is_empty() {
+            <h1>{&props.title}</h1>
+        }
+    };
+
     html! {
         <>
         <header>
@@ -47,6 +55,7 @@ pub fn page_layout(props: &PageLayoutProps) -> Html {
         </header>
 
         <main>
+            {title}
             {props.children.clone()}
         </main>
 

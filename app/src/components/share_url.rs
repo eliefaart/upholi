@@ -1,5 +1,3 @@
-use crate::{hooks::use_photo_src::use_photo_src, models::Album};
-use upholi_lib::PhotoVariant;
 use yew::prelude::*;
 
 #[derive(Properties, PartialEq)]

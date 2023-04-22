@@ -53,8 +53,7 @@ pub fn albums_page() -> Html {
     };
 
     html! {
-        <PageLayout header_actions_right={header_actions}>
-            <h1>{ "Albums" }</h1>
+        <PageLayout title="Albums" header_actions_right={header_actions}>
             <div class={"albums"}>
                 {albums}
             </div>

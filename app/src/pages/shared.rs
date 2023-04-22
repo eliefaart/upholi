@@ -19,8 +19,7 @@ pub fn shared_page() -> Html {
         .collect::<Html>();
 
     html! {
-        <PageLayout>
-            <h1>{"Shared"}</h1>
+        <PageLayout title="Shared">
             <div class="shared">
                 {shares}
             </div>

@@ -4,7 +4,7 @@ use yew::prelude::*;
 #[derive(Properties, PartialEq)]
 pub struct DialogProps {
     pub visible: bool,
-    pub title: String,
+    pub title: AttrValue,
     #[prop_or_default]
     pub on_request_close: Callback<()>,
     pub children: Children,
@@ -52,7 +52,7 @@ pub fn dialog(props: &DialogProps) -> Html {
 #[derive(Properties, PartialEq)]
 pub struct ConfirmDialogProps {
     pub visible: bool,
-    pub title: String,
+    pub title: AttrValue,
     pub confirm_action: Callback<()>,
     pub cancel_action: Callback<()>,
     #[prop_or_default]
@@ -68,7 +68,7 @@ pub fn confirm_dialog(props: &ConfirmDialogProps) -> Html {
         if props.visible {
             <Dialog
                 visible={props.visible}
-                title={props.title.clone()}
+                title={&props.title}
                 on_request_close={on_request_close}
                 footer={html! {
                     <Button label="Ok" on_click={move |_| confirm_action.emit(())} />
