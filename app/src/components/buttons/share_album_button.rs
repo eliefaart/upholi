@@ -1,5 +1,5 @@
 use crate::{
-    components::{buttons::Button, dialog::ConfirmDialog, IconShare},
+    components::{buttons::Button, dialog::ConfirmDialog, IconShare, ShareUrl},
     hooks::use_album_share,
     WASM_CLIENT,
 };
@@ -145,9 +145,7 @@ pub fn share_album_button(props: &ShareAlbumButtonProps) -> Html {
                         if let Some(share) = &(*share) {
                             <label style={if !is_shared {format!("display: none;")} else {String::new()}}>
                                 {"URL"}
-                                <input type="text"
-                                    value={format!("{}/share/{}", crate::ORIGIN.as_str(), share.id)}
-                                    readonly={true}/>
+                                <ShareUrl share_id={share.id.clone()}/>
                             </label>
                         }
                     }}

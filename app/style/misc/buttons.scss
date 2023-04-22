@@ -2,8 +2,6 @@ button {
   color: var(--colorAccent);
   background-color: transparent;
   height: $buttonHeight;
-
-  min-width: $buttonHeight * 1.5;
   border: none;
   border-radius: $borderRadius;
   cursor: pointer;

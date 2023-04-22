@@ -51,13 +51,17 @@ pub fn button(props: &ButtonProps) -> Html {
         }
     };
 
-    let class = match props.icon_position {
-        IconPosition::Right => "icon-right",
-        IconPosition::Left => "icon-left",
-    };
+    let mut classes = classes!();
+    if !props.children.is_empty() {
+        classes.push(match props.icon_position {
+            IconPosition::Right => "icon-right",
+            IconPosition::Left => "icon-left",
+        });
+        classes.push("with-icon");
+    }
 
     html! {
-        <button onclick={&props.on_click} class={class}>
+        <button onclick={&props.on_click} class={classes}>
             {icon_left}
             <span class="label">{&props.label}</span>
             {icon_right}
