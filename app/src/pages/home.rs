@@ -35,6 +35,7 @@ pub fn home_page() -> Html {
         0 => None,
         _ => Some({
             let on_added_selected_photos = selected_photos.clone();
+            let on_deleted_selected_photos = selected_photos.clone();
 
             html! {
                 <>
@@ -46,7 +47,10 @@ pub fn home_page() -> Html {
                     />
                     <DeletePhotosButton
                         selected_photos={on_click_delete_photos}
-                        on_deleted={move|_| on_click_delete_refresh_photos.emit(())}/>
+                        on_deleted={move|_| {
+                            on_deleted_selected_photos.set(vec![]);
+                            on_click_delete_refresh_photos.emit(());
+                        }}/>
                 </>
             }
         }),
