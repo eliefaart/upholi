@@ -19,7 +19,7 @@ RUN apt-get update &&\
 	apt-get -y install ca-certificates
 
 # Copy app folder
-COPY ./app/wwwroot /srv/upholi
+COPY ./app/dist /srv/upholi
 
 # Copy serve executable folder
 COPY ./server/target/release/upholi /bin/
