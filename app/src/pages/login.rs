@@ -14,7 +14,6 @@ pub fn login_page() -> Html {
         let username_ref = username_ref.clone();
         let password_ref = password_ref.clone();
         let auth_attempt_made = auth_attempt_made.clone();
-        let navigator = navigator.clone();
 
         Callback::from(move |_| {
             if let (Some(username_input), Some(password_input)) = (
