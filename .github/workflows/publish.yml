@@ -26,6 +26,7 @@ jobs:
       - name: install trunk
         run: |
           cargo install --locked trunk
+          rustup target add wasm32-unknown-unknown
 
       - name: build app
         run: |
