@@ -1,5 +1,5 @@
 [package]
-name = "upholi_server"
+name = "upholi"
 version = "0.2.0"
 authors = ["Eric Liefaart"]
 license = "AGPL-3.0-only"
