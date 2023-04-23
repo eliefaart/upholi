@@ -10,6 +10,7 @@ pub mod layouts;
 pub mod photo;
 pub mod photo_exif;
 pub mod pick_album;
+pub mod require_auth;
 pub mod share_info;
 pub mod share_url;
 
@@ -25,5 +26,6 @@ pub use layouts::*;
 pub use photo::*;
 pub use photo_exif::*;
 pub use pick_album::*;
+pub use require_auth::*;
 pub use share_info::*;
 pub use share_url::*;

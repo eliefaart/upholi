@@ -98,6 +98,10 @@ impl<'a> WasmClient<'a> {
         Ok(())
     }
 
+    pub async fn is_authenticated(&self) -> Result<bool> {
+        self.api_client.get_user().await
+    }
+
     pub async fn get_library_photos(&self) -> Result<Vec<LibraryPhoto>> {
         let library = self.get_library().await?;
         Ok(library.photos.into_iter().rev().collect())

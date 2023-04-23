@@ -51,6 +51,12 @@ impl ApiClient {
         }
     }
 
+    pub async fn get_user(&self) -> Result<bool> {
+        let url = format!("{}/user", self.base_url).to_owned();
+        let response = self.client.get(&url).send().await?;
+        Ok(response.status() == StatusCode::OK)
+    }
+
     pub async fn is_authorized_for_share(&self, share_id: &str) -> Result<bool> {
         let url = format!("{}/share/{share_id}/auth", self.base_url).to_owned();
         let response = self.client.get(&url).send().await?;

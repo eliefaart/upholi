@@ -1,4 +1,7 @@
-use crate::{components::dialog::Dialog, Route};
+use crate::{
+    components::{dialog::Dialog, RequireAuth},
+    Route,
+};
 use yew::prelude::*;
 use yew_router::prelude::*;
 
@@ -47,22 +50,22 @@ pub fn page_layout(props: &PageLayoutProps) -> Html {
     };
 
     html! {
-        <>
-        <header>
-            {header_left}
-            <div class="space"/>
-            {header_right}
-        </header>
+        <RequireAuth>
+            <header>
+                {header_left}
+                <div class="space"/>
+                {header_right}
+            </header>
 
-        <main>
-            {title}
-            {props.children.clone()}
-        </main>
+            <main>
+                {title}
+                {props.children.clone()}
+            </main>
 
-        <Dialog visible={false} title="Dialog title">
-            <span>{"Dialog body"}</span>
-        </Dialog>
-        </>
+            <Dialog visible={false} title="Dialog title">
+                <span>{"Dialog body"}</span>
+            </Dialog>
+        </RequireAuth>
     }
 }
 
