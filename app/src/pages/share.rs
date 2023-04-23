@@ -1,5 +1,5 @@
 use crate::{
-    components::{Button, Gallery},
+    components::{Form, Gallery},
     hooks::{use_is_authorized_for_share, use_share_album},
     WASM_CLIENT,
 };
@@ -102,22 +102,14 @@ pub fn unlock_share(props: &UnlockShareProps) -> Html {
         }
     };
 
+    // if props.auth_attempt_made
     html! {
-        <div class="unlock-share">
-            <h1>{"Locked"}</h1>
+        <Form title="Locked"
+            on_submit={on_click_unlock}
+            status={if props.auth_attempt_made {"Incorrect password"} else {""}}>
             <label>{"Password"}
                 <input ref={password_ref} type="password"/>
             </label>
-            <div class="footer">
-                <span class="status">
-                    {html! {
-                        if props.auth_attempt_made {
-                            <>{"Incorrect password"}</>
-                        }
-                    }}
-                </span>
-                <Button label={"Submit"} on_click={on_click_unlock}/>
-            </div>
-        </div>
+        </Form>
     }
 }

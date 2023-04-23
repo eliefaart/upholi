@@ -33,7 +33,7 @@ pub enum IconPosition {
 #[derive(Properties, PartialEq)]
 pub struct ButtonProps {
     pub label: AttrValue,
-    pub on_click: Callback<MouseEvent>,
+    pub on_click: Callback<()>,
     #[prop_or_default]
     pub children: Children,
     #[prop_or_else(|| IconPosition::Left)]
@@ -62,8 +62,17 @@ pub fn button(props: &ButtonProps) -> Html {
         classes.push("with-icon");
     }
 
+    let on_click = {
+        let on_click = props.on_click.clone();
+
+        move |event: MouseEvent| {
+            event.prevent_default();
+            on_click.emit(())
+        }
+    };
+
     html! {
-        <button onclick={&props.on_click} class={classes}>
+        <button onclick={on_click} class={classes}>
             {icon_left}
             <span class="label">{&props.label}</span>
             {icon_right}

@@ -4,5 +4,16 @@ pub mod home;
 pub mod login;
 pub mod not_found;
 pub mod photo;
+pub mod register;
 pub mod share;
 pub mod shared;
+
+pub use album::*;
+pub use albums::*;
+pub use home::*;
+pub use login::*;
+pub use not_found::*;
+pub use photo::*;
+pub use register::*;
+pub use share::*;
+pub use shared::*;
