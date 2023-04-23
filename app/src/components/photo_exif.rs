@@ -93,11 +93,11 @@ fn photo_exif_property(props: &PhotoExifPropertyProps) -> Html {
     let any_value = props.element.is_some() || props.values.iter().any(|f| f.is_some());
 
     if any_value {
-        let values: Vec<String> = props.values.clone().into_iter().filter_map(|opt| opt).collect();
+        let values: Vec<String> = props.values.clone().into_iter().flatten().collect();
         let value = values.join(" ");
 
         let value_or_element = if let Some(element) = props.element.clone() {
-            html! { <>{element.clone()}</> }
+            html! { <>{element}</> }
         } else {
             html! { {&value} }
         };

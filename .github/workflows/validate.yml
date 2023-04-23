@@ -53,10 +53,10 @@ jobs:
           cd ./app
           cargo test --verbose
 
-      # - name: app - clippy
-      #   run: |
-      #     cd ./app
-      #     cargo clippy --all -- -D warnings
+      - name: app - clippy
+        run: |
+          cd ./app
+          cargo clippy --all -- -D warnings
 
       - name: app - format
         run: |

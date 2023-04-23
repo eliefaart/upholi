@@ -25,5 +25,5 @@ pub fn use_album_share(album_id: String) -> (UseStateHandle<Option<LibraryShare>
         use_effect_with_deps(move |_| refresh_share.emit(()), album_id);
     }
 
-    return (share, refresh_share);
+    (share, refresh_share)
 }

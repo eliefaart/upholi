@@ -2,7 +2,7 @@ use yew::prelude::*;
 
 #[hook]
 pub fn use_library_photos() -> (UseStateHandle<Vec<crate::models::LibraryPhoto>>, Callback<()>) {
-    let photos = use_state(|| vec![]);
+    let photos = use_state(Vec::new);
 
     let refresh_photos = {
         let photos = photos.clone();
@@ -21,5 +21,5 @@ pub fn use_library_photos() -> (UseStateHandle<Vec<crate::models::LibraryPhoto>>
         use_effect_with_deps(move |_| refresh_photos.emit(()), ());
     }
 
-    return (photos, refresh_photos);
+    (photos, refresh_photos)
 }

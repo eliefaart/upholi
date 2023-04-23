@@ -22,5 +22,5 @@ pub fn use_album(album_id: String) -> (UseStateHandle<Option<AlbumHydrated>>, Ca
     let use_effect_refresh_album = refresh_album.clone();
     use_effect_with_deps(move |_| use_effect_refresh_album.emit(()), album_id);
 
-    return (album, refresh_album);
+    (album, refresh_album)
 }

@@ -37,7 +37,6 @@ pub fn edit_album_button(props: &EditAlbumButtonProps) -> Html {
         let on_submitted = props.on_submitted.clone();
         let dialog_state = dialog_state.clone();
         let album_title_ref = album_title_ref.clone();
-        let refresh_album = refresh_album.clone();
 
         move |_| {
             let album_title_input = album_title_ref.cast::<HtmlInputElement>();
@@ -51,13 +50,13 @@ pub fn edit_album_button(props: &EditAlbumButtonProps) -> Html {
                     let refresh_album = refresh_album.clone();
 
                     wasm_bindgen_futures::spawn_local(async move {
-                        let id = WASM_CLIENT
+                        WASM_CLIENT
                             .update_album_title_tags(&album_id, &album_title, vec![])
                             .await
                             .unwrap();
                         dialog_state.set(false);
                         refresh_album.emit(());
-                        on_submitted.emit(id);
+                        on_submitted.emit(());
                     });
                 }
             }

@@ -23,7 +23,7 @@ pub struct AlbumPageProps {
 #[function_component(AlbumPage)]
 pub fn album_page(props: &AlbumPageProps) -> Html {
     let (album, refresh_album) = use_album(props.id.clone());
-    let selected_photos = use_state(|| Vec::<String>::new());
+    let selected_photos = use_state(Vec::<String>::new);
     let navigator = use_navigator().unwrap();
     let n_photos_selected = (*selected_photos).len();
 
@@ -44,7 +44,7 @@ pub fn album_page(props: &AlbumPageProps) -> Html {
                 html! {
                     <>
                         <h1>{ &album.title }</h1>
-                        <Gallery photos={album.photos.clone()} selected_photos={selected_photos}/>
+                        <Gallery photos={album.photos} selected_photos={selected_photos}/>
                     </>
                 }
             }
@@ -55,7 +55,6 @@ pub fn album_page(props: &AlbumPageProps) -> Html {
     };
 
     let header_actions_left = {
-        let selected_photos = selected_photos.clone();
         let on_set_selected_photos = selected_photos.clone();
         let on_removed_selected_photos = selected_photos.clone();
         let refresh_album = refresh_album.clone();
@@ -115,20 +114,19 @@ pub fn album_page(props: &AlbumPageProps) -> Html {
         }
     };
 
-    let on_photos_uploaded_album_id = props.id.clone();
-    let on_photos_uploaded_refresh_album = refresh_album.clone();
-    let on_photos_uploaded = move |progress: FileUploadProgress| {
-        if let Some(photo_id) = progress.uploaded_photo_id {
-            let album_id = on_photos_uploaded_album_id.clone();
-            let refresh_album = on_photos_uploaded_refresh_album.clone();
-            // TODO: Possible race condition modifying album if uploads finish too fast after each other
-            wasm_bindgen_futures::spawn_local(async move {
-                WASM_CLIENT
-                    .add_photos_to_album(&album_id, &vec![photo_id])
-                    .await
-                    .unwrap();
-                refresh_album.emit(());
-            });
+    let on_photos_uploaded = {
+        let album_id = props.id.clone();
+
+        move |progress: FileUploadProgress| {
+            if let Some(photo_id) = progress.uploaded_photo_id {
+                let album_id = album_id.clone();
+                let refresh_album = refresh_album.clone();
+                // TODO: Possible race condition modifying album if uploads finish too fast after each other
+                wasm_bindgen_futures::spawn_local(async move {
+                    WASM_CLIENT.add_photos_to_album(&album_id, &[photo_id]).await.unwrap();
+                    refresh_album.emit(());
+                });
+            }
         }
     };
 

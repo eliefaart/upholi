@@ -27,5 +27,5 @@ pub fn use_share_album(share_id: String) -> (UseStateHandle<Option<AlbumHydrated
         use_effect_with_deps(move |_| refresh_share.emit(()), share_id);
     }
 
-    return (state, refresh_share);
+    (state, refresh_share)
 }

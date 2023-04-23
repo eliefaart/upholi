@@ -41,7 +41,7 @@ pub fn gallery_detail(props: &GalleryDetailProps) -> Html {
             };
 
             html! {
-                <Button label="" on_click={on_click.clone()}>
+                <Button label="" on_click={on_click}>
                     <IconChevronLeft/>
                 </Button>
             }

@@ -18,7 +18,7 @@ pub fn share_page(props: &SharePageProps) -> Html {
     let (album, refresh_album) = use_share_album(props.id.to_string());
     let authorized = use_is_authorized_for_share(&props.id);
     let auth_attempt_made = use_state(|| false);
-    let selected_photos = use_state(|| vec![]);
+    let selected_photos = use_state(Vec::new);
 
     {
         let refresh_album = refresh_album.clone();
@@ -33,11 +33,9 @@ pub fn share_page(props: &SharePageProps) -> Html {
     let on_try_authorize = {
         let share_id = props.id.to_string();
         let auth_attempt_made = auth_attempt_made.clone();
-        let refresh_album = refresh_album.clone();
 
         Callback::from(move |password: String| {
             let share_id = share_id.clone();
-            let password = password.clone();
             let auth_attempt_made = auth_attempt_made.clone();
             let refresh_album = refresh_album.clone();
 
@@ -59,7 +57,7 @@ pub fn share_page(props: &SharePageProps) -> Html {
             html! {
                 <>
                     <h1>{ &album.title }</h1>
-                    <Gallery photos={album.photos.clone()} selected_photos={selected_photos}/>
+                    <Gallery photos={album.photos} selected_photos={selected_photos}/>
                 </>
             }
         } else {

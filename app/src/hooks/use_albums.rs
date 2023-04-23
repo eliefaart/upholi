@@ -2,7 +2,7 @@ use yew::prelude::*;
 
 #[hook]
 pub fn use_albums() -> (UseStateHandle<Vec<crate::models::Album>>, Callback<()>) {
-    let albums = use_state(|| vec![]);
+    let albums = use_state(Vec::new);
 
     let refresh_albums = {
         let albums_state = albums.clone();
@@ -21,5 +21,5 @@ pub fn use_albums() -> (UseStateHandle<Vec<crate::models::Album>>, Callback<()>)
         use_effect_with_deps(move |_| refresh_albums.emit(()), ());
     }
 
-    return (albums, refresh_albums);
+    (albums, refresh_albums)
 }

@@ -2,7 +2,7 @@ use yew::prelude::*;
 
 #[hook]
 pub fn use_photo_src(photo_id: &str, variant: upholi_lib::PhotoVariant) -> UseStateHandle<String> {
-    let src = use_state(|| String::new());
+    let src = use_state(String::new);
 
     {
         let src = src.clone();
@@ -21,5 +21,5 @@ pub fn use_photo_src(photo_id: &str, variant: upholi_lib::PhotoVariant) -> UseSt
         );
     }
 
-    return src;
+    src
 }

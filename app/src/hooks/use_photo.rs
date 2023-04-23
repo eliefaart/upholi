@@ -24,5 +24,5 @@ pub fn use_photo(photo_id: &str) -> UseStateHandle<Option<Photo>> {
         );
     }
 
-    return state;
+    state
 }

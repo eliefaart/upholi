@@ -46,7 +46,7 @@ pub fn dialog(props: &DialogProps) -> Html {
         }
     };
 
-    create_portal(dialog, modal_host.into())
+    create_portal(dialog, modal_host)
 }
 
 #[derive(Properties, PartialEq)]

@@ -3,7 +3,7 @@ use yew::prelude::*;
 
 #[hook]
 pub fn use_shares() -> UseStateHandle<Vec<LibraryShare>> {
-    let state = use_state(|| vec![]);
+    let state = use_state(Vec::new);
 
     {
         let state = state.clone();
@@ -18,5 +18,5 @@ pub fn use_shares() -> UseStateHandle<Vec<LibraryShare>> {
         );
     }
 
-    return state;
+    state
 }

@@ -15,7 +15,6 @@ pub fn albums_page() -> Html {
         let albums = albums.clone();
         use_effect_with_deps(
             move |_| {
-                let albums = albums.clone();
                 wasm_bindgen_futures::spawn_local(async move {
                     let library_albums = WASM_CLIENT.get_albums().await.unwrap();
                     albums.set(library_albums);
@@ -45,7 +44,6 @@ pub fn albums_page() -> Html {
         .collect::<Html>();
 
     let header_actions = {
-        let refresh_albums = refresh_albums.clone();
         let on_created = move |_| refresh_albums.emit(());
         html! {
             <CreateAlbumButton on_created={on_created}/>

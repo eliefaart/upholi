@@ -64,7 +64,7 @@ pub fn add_to_album_button(props: &AddToAlbumButtonProps) -> Html {
                     title="Choose album"
                     confirm_action={add_to_album}
                     cancel_action={hide_dialog}>
-                <PickAlbum selected_album={selected_album.clone()}/>
+                <PickAlbum selected_album={selected_album}/>
             </ConfirmDialog>
         </>
     }

@@ -14,7 +14,7 @@ use yew::prelude::*;
 #[function_component(HomePage)]
 pub fn home_page() -> Html {
     let (photos, refresh_photos) = use_library_photos();
-    let selected_photos = use_state(|| Vec::<String>::new());
+    let selected_photos = use_state(Vec::<String>::new);
     let photos: Vec<AlbumPhoto> = (*photos).clone().into_iter().map(|photo| photo.into()).collect();
 
     let on_click_delete_photos = (*selected_photos).clone();
@@ -68,13 +68,11 @@ pub fn home_page() -> Html {
         }),
     };
 
-    let upload_progress_refresh_photos = refresh_photos.clone();
-
     html! {
         <PageLayout header_actions_left={header_actions_left} header_actions_right={header_actions_right}>
             <DropUpload on_upload_status_changed={move |progress: FileUploadProgress| {
                 if progress.status == FileUploadStatus::Done {
-                    upload_progress_refresh_photos.emit(());
+                    refresh_photos.emit(());
                 }}}>
                 <Gallery photos={photos} selected_photos={selected_photos} />
             </DropUpload>

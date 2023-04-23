@@ -21,7 +21,7 @@ pub struct ShareAlbumButtonProps {
 #[function_component(ShareAlbumButton)]
 pub fn share_album_button(props: &ShareAlbumButtonProps) -> Html {
     let (share, refresh_share) = use_album_share(props.album_id.to_string());
-    let form = use_state(|| ShareFormData::default());
+    let form = use_state(ShareFormData::default);
     let dialog_state = use_state(|| false);
     let form_checkbox_share_ref = use_node_ref();
     let form_text_password_ref = use_node_ref();
@@ -64,7 +64,6 @@ pub fn share_album_button(props: &ShareAlbumButtonProps) -> Html {
         let share = share.clone();
         let album_id = props.album_id.clone();
         let on_submitted = props.on_submitted.clone();
-        let refresh_share = refresh_share.clone();
 
         let form_checkbox_share_ref = form_checkbox_share_ref.clone();
         let form_text_password_ref = form_text_password_ref.clone();
@@ -87,10 +86,8 @@ pub fn share_album_button(props: &ShareAlbumButtonProps) -> Html {
                 wasm_bindgen_futures::spawn_local(async move {
                     if do_share {
                         WASM_CLIENT.upsert_share(&album_id, &password).await.unwrap();
-                    } else {
-                        if let Some(share) = share {
-                            WASM_CLIENT.delete_share(&share.id).await.unwrap();
-                        }
+                    } else if let Some(share) = share {
+                        WASM_CLIENT.delete_share(&share.id).await.unwrap();
                     }
 
                     refresh_share.emit(());
@@ -116,8 +113,8 @@ pub fn share_album_button(props: &ShareAlbumButtonProps) -> Html {
     };
 
     let dialog_visible = *dialog_state;
-    let is_shared = (*form).share;
-    let password = (*form).password.clone();
+    let is_shared = form.share;
+    let password = form.password.clone();
 
     html! {
         <>
@@ -137,13 +134,13 @@ pub fn share_album_button(props: &ShareAlbumButtonProps) -> Html {
                             onchange={toggle_form_shared.clone()}/>
                         <span>{"Share via URL"}</span>
                     </label>
-                    <label style={if !is_shared {format!("display: none;")} else {String::new()}}>
+                    <label style={if !is_shared {"display: none;".to_string()} else {String::new()}}>
                         {"Password"}
                         <input type="text" ref={form_text_password_ref} value={password}/>
                     </label>
                     {html! {
                         if let Some(share) = &(*share) {
-                            <label style={if !is_shared {format!("display: none;")} else {String::new()}}>
+                            <label style={if !is_shared {"display: none;".to_string()} else {String::new()}}>
                                 {"URL"}
                                 <ShareUrl share_id={share.id.clone()}/>
                             </label>

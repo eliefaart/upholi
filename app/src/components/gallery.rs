@@ -83,13 +83,13 @@ pub fn gallery(props: &GalleryProps) -> Html {
     let photos = use_memo(
         |(available_width, photos, selected_photos)| {
             if let Some(available_width) = available_width {
-                let photos = compute_sizes(&photos, *available_width, MIN_HEIGHT, MAX_HEIGHT, GAP_SIZE);
+                let photos = compute_sizes(photos, *available_width, MIN_HEIGHT, MAX_HEIGHT, GAP_SIZE);
                 photos
                     .into_iter()
                     .map(|ResizedPhoto { photo, width, height }| {
                         let photo_id = photo.id.clone();
                         let selected = selected_photos.contains(&photo.id);
-                        let class = selected.then(|| format!("selected"));
+                        let class = selected.then(|| "selected".to_string());
 
                         let photo_opened = photo_opened.clone();
                         let on_click_photo_id = photo.id.clone();
@@ -139,15 +139,15 @@ struct ResizedPhoto<'a> {
     height: f32,
 }
 
-fn compute_sizes<'a>(
-    photos: &'a Vec<AlbumPhoto>,
+fn compute_sizes(
+    photos: &[AlbumPhoto],
     available_width: f32,
     min_height: f32,
     max_height: f32,
     gap_size: f32,
 ) -> Vec<ResizedPhoto> {
     let mut rows: Vec<Vec<ResizedPhoto>> = photos
-        .into_iter()
+        .iter()
         // Normalize all photos to minimum height
         .map(|photo| {
             let shrink_ratio = photo.height as f32 / min_height;
@@ -181,8 +181,8 @@ fn compute_sizes<'a>(
         let bloat_ratio = available_width / row_width;
 
         for mut photo in row {
-            photo.width = photo.width * bloat_ratio;
-            photo.height = photo.height * bloat_ratio;
+            photo.width *= bloat_ratio;
+            photo.height *= bloat_ratio;
         }
     }
 
@@ -193,12 +193,12 @@ fn compute_sizes<'a>(
     if let Some(last_row) = last_row {
         for photo in last_row {
             if photo.height > max_height {
-                photo.width = photo.width / (photo.height / max_height);
+                photo.width /= photo.height / max_height;
                 photo.height = max_height;
             }
         }
     }
 
     // Unwrap rows back into a list of (resized)photos
-    rows.into_iter().flat_map(|row| row).collect()
+    rows.into_iter().flatten().collect()
 }
