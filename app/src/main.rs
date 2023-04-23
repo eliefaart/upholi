@@ -1,6 +1,6 @@
 use api_client::ApiClient;
 use once_cell::sync::Lazy;
-use pages::{AlbumPage, AlbumsPage, HomePage, LoginPage, NotFoundPage, PhotoPage, RegisterPage, SharePage, SharedPage};
+use pages::{AlbumPage, AlbumsPage, HomePage, LoginPage, NotFoundPage, RegisterPage, SharePage, SharedPage};
 use wasm_bindgen::UnwrapThrowExt;
 use wasm_client::WasmClient;
 use web_sys::Document;
@@ -44,11 +44,9 @@ pub enum Route {
     Albums,
     #[at("/album/:id")]
     Album { id: String },
-    #[at("/photo/:id")]
-    Photo { id: String },
     #[at("/shared")]
     Shared,
-    #[at("/share/:id")]
+    #[at("/s/:id")]
     Share { id: String },
     #[at("/login")]
     Login,
@@ -64,7 +62,6 @@ fn switch(routes: Route) -> Html {
         Route::Home => html! { <HomePage/> },
         Route::Albums => html! { <AlbumsPage/> },
         Route::Album { id } => html! { <AlbumPage id={id}/> },
-        Route::Photo { id } => html! { <PhotoPage id={id} /> },
         Route::Shared => html! { <SharedPage/> },
         Route::Share { id } => html! {<SharePage id={id}/>},
         Route::Login => html! { <LoginPage/> },

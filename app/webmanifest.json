@@ -1,0 +1,16 @@
+﻿{
+	"short_name": "upholi",
+	"name": "upholi",
+	"start_url": "/",
+	"background_color": "#000",
+	"theme_color": "#2ce1fe",
+	"display": "standalone",
+	"orientation": "portrait",
+	"icons": [
+		{
+			"src": "/images/icon.png",
+			"type": "image/png",
+			"sizes": "192x192"
+		}
+	]
+}
