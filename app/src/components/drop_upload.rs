@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::WASM_CLIENT;
 use js_sys::Uint8Array;
 use weblog::console_error;
@@ -10,6 +12,12 @@ pub enum FileUploadStatus {
     Uploading,
     Done,
     Failed,
+}
+
+impl Display for FileUploadStatus {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]

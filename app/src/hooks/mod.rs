@@ -8,6 +8,7 @@ pub mod use_photo;
 pub mod use_photo_src;
 pub mod use_share_album;
 pub mod use_shares;
+pub mod use_upload_queue;
 
 pub use use_album::*;
 pub use use_album_share::*;
@@ -19,3 +20,4 @@ pub use use_photo::*;
 pub use use_photo_src::*;
 pub use use_share_album::*;
 pub use use_shares::*;
+pub use use_upload_queue::*;

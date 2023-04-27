@@ -1,4 +1,6 @@
+use crate::components::{FileUploader, UploadProgress};
 use api_client::ApiClient;
+use bounce::BounceRoot;
 use once_cell::sync::Lazy;
 use pages::{AlbumPage, AlbumsPage, HomePage, LoginPage, NotFoundPage, RegisterPage, SharePage, SharedPage};
 use wasm_bindgen::UnwrapThrowExt;
@@ -73,10 +75,13 @@ fn switch(routes: Route) -> Html {
 #[function_component(App)]
 fn app() -> Html {
     html! {
-        <BrowserRouter>
-            <Switch<Route> render={switch} />
-            <div id="modal-host"/>
-        </BrowserRouter>
+        <BounceRoot>
+            <BrowserRouter>
+                <Switch<Route> render={switch} />
+                <FileUploader/>
+                <div id="modal-host"/>
+            </BrowserRouter>
+        </BounceRoot>
     }
 }
 

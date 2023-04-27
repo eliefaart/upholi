@@ -11,6 +11,7 @@ pub mod photo_exif_button;
 pub mod remove_from_album_button;
 pub mod set_album_cover_button;
 pub mod share_album_button;
+pub mod upload_button;
 
 pub use add_to_album_button::*;
 pub use confirm_button::*;
@@ -23,6 +24,7 @@ pub use photo_exif_button::*;
 pub use remove_from_album_button::*;
 pub use set_album_cover_button::*;
 pub use share_album_button::*;
+pub use upload_button::*;
 
 #[derive(PartialEq)]
 pub enum IconPosition {

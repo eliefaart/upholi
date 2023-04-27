@@ -1,0 +1,13 @@
+.upload-progress {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  background-color: var(--colorBackgroundAlt);
+  border-top-left-radius: $borderRadius;
+  padding: $spacing;
+}
+
+.upload-progress-item {
+  display: flex;
+  gap: $spacing;
+}

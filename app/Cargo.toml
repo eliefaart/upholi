@@ -27,3 +27,5 @@ weblog = "0.3.0"
 yew = { version = "0.20", features = ["csr"] }
 yew-hooks = "0.2.0"
 yew-router = "0.17.0"
+bounce = "0.6.1"
+crossbeam = "0.8.2"

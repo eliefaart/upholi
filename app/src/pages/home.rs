@@ -5,6 +5,7 @@ use crate::{
         gallery::Gallery,
         icons::IconClose,
         layouts::PageLayout,
+        UploadButton,
     },
     hooks::use_library_photos::use_library_photos,
     models::AlbumPhoto,
@@ -56,7 +57,7 @@ pub fn home_page() -> Html {
         }),
     };
     let header_actions_right = match n_photos_selected {
-        0 => None,
+        0 => Some(html! {<UploadButton/>}),
         _ => Some(html! {
             <>
                 <Button label={format!("{n_photos_selected} selected")}
