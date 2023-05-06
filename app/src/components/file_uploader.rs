@@ -1,77 +1,78 @@
 use crate::{
-    components::UploadProgress,
+    components::{FileUploadStatus, UploadProgress},
     hooks::{UploadQueue, UploadQueueItem},
+    WASM_CLIENT,
 };
-use bounce::{use_atom, use_atom_value};
-use crossbeam::channel::bounded;
+use bounce::{use_atom, use_atom_setter};
+use js_sys::Uint8Array;
 use yew::prelude::*;
-use yew_hooks::use_effect_once;
 
 #[function_component(FileUploader)]
 pub fn file_uploader() -> Html {
-    let upload_queue = use_atom_value::<UploadQueue>();
-    let channel = use_state(|| bounded::<UploadQueueItem>(2));
+    let upload_queue = use_atom::<UploadQueue>();
+    let setter = use_atom_setter::<UploadQueue>();
+    let processing = use_state(Vec::<String>::new);
 
     {
-        let sender = channel.0.clone();
+        let processing = processing.clone();
+
         use_effect_with_deps(
             move |upload_queue| {
-                weblog::console_log!(upload_queue.as_ref().queue.len());
+                if !upload_queue.is_empty() {
+                    let mut currently_processing = (*processing).clone();
+                    let batch: Vec<UploadQueueItem> = upload_queue
+                        .into_iter()
+                        .filter(|item| !currently_processing.contains(&item.filename))
+                        .map(|item| item.to_owned())
+                        .collect();
+                    currently_processing.extend(batch.iter().map(|item| item.filename.clone()));
+                    processing.set(currently_processing);
 
-                for item in &upload_queue.queue {
-                    if let Err(error) = sender.send(item.to_owned()) {
-                        weblog::console_error!(format!("{:?}", error));
+                    let mut set_status = {
+                        let mut batch = batch.clone();
+
+                        move |file_name: &str, status: FileUploadStatus| {
+                            weblog::console_log!(&format!("{file_name} .. {status:?}"));
+
+                            if let Some(mut queue_item) = batch.iter_mut().find(|item| &item.filename == file_name) {
+                                queue_item.status = status;
+                                setter(UploadQueue {
+                                    queue: batch.to_owned(),
+                                })
+                            }
+                        }
+                    };
+
+                    if !batch.is_empty() {
+                        wasm_bindgen_futures::spawn_local(async move {
+                            weblog::console_log!(&format!("Batch! {}", batch.len()));
+
+                            for queue_item in batch {
+                                set_status(&queue_item.filename, FileUploadStatus::Processing);
+
+                                let promise = queue_item.file.array_buffer();
+                                let js_value = wasm_bindgen_futures::JsFuture::from(promise).await.unwrap();
+                                let array = Uint8Array::new(&js_value);
+                                let bytes: Vec<u8> = array.to_vec();
+
+                                //set_status(&mut file_progress, FileUploadStatus::Uploading);
+                                match WASM_CLIENT.upload_photo(&bytes).await {
+                                    Ok(_upload_result) => {
+                                        //file_progress.uploaded_photo_id = Some(upload_result.photo_id);
+                                        set_status(&queue_item.filename, FileUploadStatus::Done);
+                                    }
+                                    Err(error) => {
+                                        set_status(&queue_item.filename, FileUploadStatus::Failed);
+                                        weblog::console_error!(format!("{error:?}"));
+                                    }
+                                }
+                            }
+                        });
                     }
                 }
             },
-            upload_queue,
+            upload_queue.queue.clone(),
         );
-    }
-
-    {
-        use_effect_once(move || {
-            let receiver = channel.1.clone();
-            wasm_bindgen_futures::spawn_local(async move {
-                weblog::console_log!("#1");
-                // loop {
-                //     thread::sleep(Duration::from_secs(1));
-
-                // }
-
-                // loop {
-                //     // match receiver.try_recv() {
-                //     //     Ok(item) => {
-                //     //         weblog::console_log!("abc");
-                //     //         weblog::console_log!(item.filename);
-                //     //     }
-                //     //     Err(error) => weblog::console_error!(format!("{:?}", error)),
-                //     // }
-                // }
-
-                // match receiver.try_recv() {
-                //     Ok(item) => {
-                //         weblog::console_log!("abc");
-                //         weblog::console_log!(item.filename);
-                //     }
-                //     Err(error) => weblog::console_error!(format!("{:?}", error)),
-                // }
-
-                match receiver.recv_timeout(std::time::Duration::from_secs(10)) {
-                    Ok(item) => {
-                        weblog::console_log!("abc");
-                        weblog::console_log!(item.filename);
-                    }
-                    Err(error) => weblog::console_error!(format!("{:?}", error)),
-                }
-
-                // for item in receiver.recv_timeout(std::time::Duration::from_secs(10)) {
-                //     weblog::console_log!("abc");
-                //     weblog::console_log!(item.filename.clone());
-                // }
-                weblog::console_log!("#2");
-            });
-            || {}
-        })
     }
 
     html! {

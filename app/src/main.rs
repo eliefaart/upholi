@@ -1,4 +1,4 @@
-use crate::components::{FileUploader, UploadProgress};
+use crate::components::FileUploader;
 use api_client::ApiClient;
 use bounce::BounceRoot;
 use once_cell::sync::Lazy;

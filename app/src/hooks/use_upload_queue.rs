@@ -1,7 +1,6 @@
 use crate::components::FileUploadStatus;
 use bounce::Atom;
 // use std::cell::RefCell;
-use yew::prelude::*;
 
 // const STATE: RefCell<Vec<UploadQueueItem>> = RefCell::new(Vec::<UploadQueueItem>::new());
 // const STATE2: RefCell<UseStateHandle<Vec<UploadQueueItem>>> = RefCell::new(use_state(|| Vec::<UploadQueueItem>::new()));
