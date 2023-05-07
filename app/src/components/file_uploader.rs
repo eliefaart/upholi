@@ -13,8 +13,6 @@ pub fn file_uploader() -> Html {
     let slice_state = use_slice::<UploadQueue>();
 
     {
-        let processing = processing.clone();
-        //let queue_rc = slice.clone();
         let slice = slice_state.clone();
 
         use_effect_with_deps(
@@ -26,7 +24,6 @@ pub fn file_uploader() -> Html {
                         .clone()
                         .into_iter()
                         .filter(|item| !currently_processing.contains(&item.filename))
-                        .map(|item| item.to_owned())
                         .collect();
                     currently_processing.extend(batch.iter().map(|item| item.filename.clone()));
                     processing.set(currently_processing);
