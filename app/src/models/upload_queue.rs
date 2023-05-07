@@ -9,6 +9,15 @@ pub struct UploadQueue {
     pub queue: Vec<UploadQueueItem>,
 }
 
+impl UploadQueue {
+    pub fn items_completed_len(&self) -> usize {
+        self.queue
+            .iter()
+            .filter(|item| item.status == FileUploadStatus::Done || item.status == FileUploadStatus::Exists)
+            .count()
+    }
+}
+
 #[derive(PartialEq, Clone)]
 pub struct UploadQueueItem {
     pub filename: String,

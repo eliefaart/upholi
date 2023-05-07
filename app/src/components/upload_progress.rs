@@ -34,10 +34,15 @@ pub fn upload_progress(_: &UploadProgressProps) -> Html {
         }
     };
 
+    let n_completed = slice.items_completed_len();
+    let n_total = slice.queue.len();
+    let progress_percentage = f32::floor((n_completed as f32 / n_total as f32) * 100f32);
+
     html! {
         if !slice.queue.is_empty() {
             <div class="upload-progress">
                 <div class="upload-progress-header">
+                    <span class="progress">{format!("Uploading {n_completed}/{n_total} ({progress_percentage}%)")}</span>
                     <Button label={""} on_click={clear_completed}>
                         <IconClose/>
                     </Button>

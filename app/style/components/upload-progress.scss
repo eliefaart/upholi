@@ -1,13 +1,26 @@
+$itemHeight: $buttonHeight;
+
 .upload-progress {
   position: fixed;
-  right: 0;
+  right: $spacing;
   bottom: 0;
   background-color: var(--colorBackgroundAlt);
   border-top-left-radius: $borderRadius;
+  border-top-right-radius: $borderRadius;
 
   .upload-progress-header {
+    display: flex;
     border-top-left-radius: $borderRadius;
-    background-color: lightseagreen;
+    border-top-right-radius: $borderRadius;
+    background-color: var(--colorBackgroundHeader);
+    border-bottom: 1px solid var(--colorAccent);
+    padding-left: $spacing;
+
+    .progress {
+      height: $itemHeight;
+      line-height: $itemHeight;
+      flex-grow: 1;
+    }
   }
 
   .upload-progress-items {
@@ -19,8 +32,6 @@
     padding: $spacing;
 
     .upload-progress-item {
-      $itemHeight: $buttonHeight;
-
       display: flex;
       gap: $spacing;
       height: $itemHeight;
