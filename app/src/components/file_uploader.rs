@@ -1,6 +1,6 @@
 use crate::{
     components::{FileUploadStatus, UploadProgress},
-    hooks::{UploadQueue, UploadQueueAction, UploadQueueItem},
+    models::{UploadQueue, UploadQueueAction, UploadQueueItem},
     WASM_CLIENT,
 };
 use bounce::use_slice;
@@ -30,8 +30,6 @@ pub fn file_uploader() -> Html {
 
                     let set_status = {
                         move |file_name: &str, status: FileUploadStatus| {
-                            weblog::console_log!(&format!(":: {file_name} -> {status:?}"));
-
                             slice.dispatch(UploadQueueAction::UpdateItemState {
                                 file_name: file_name.to_string(),
                                 status,
@@ -41,10 +39,8 @@ pub fn file_uploader() -> Html {
 
                     if !batch.is_empty() {
                         wasm_bindgen_futures::spawn_local(async move {
-                            weblog::console_log!(&format!("Batch! {}", batch.len()));
-
                             for queue_item in batch {
-                                set_status(&queue_item.filename, FileUploadStatus::Processing);
+                                set_status(&queue_item.filename, FileUploadStatus::Busy);
 
                                 let promise = queue_item.file.array_buffer();
                                 let js_value = wasm_bindgen_futures::JsFuture::from(promise).await.unwrap();

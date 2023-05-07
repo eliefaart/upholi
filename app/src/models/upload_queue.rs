@@ -1,23 +1,13 @@
-use std::rc::Rc;
-
 use crate::components::FileUploadStatus;
 use bounce::{Atom, Slice};
+use std::rc::Rc;
+use web_sys::{File, FileList};
 use yew::Reducible;
-// use std::cell::RefCell;
-
-// const STATE: RefCell<Vec<UploadQueueItem>> = RefCell::new(Vec::<UploadQueueItem>::new());
-// const STATE2: RefCell<UseStateHandle<Vec<UploadQueueItem>>> = RefCell::new(use_state(|| Vec::<UploadQueueItem>::new()));
 
 #[derive(Slice, Atom, PartialEq, Default, Clone)]
 pub struct UploadQueue {
     pub queue: Vec<UploadQueueItem>,
 }
-
-// impl Default for UploadQueue {
-//     fn default() -> Self {
-//         UploadQueue { queue: vec![] }
-//     }
-// }
 
 #[derive(PartialEq, Clone)]
 pub struct UploadQueueItem {
@@ -27,15 +17,28 @@ pub struct UploadQueueItem {
     pub object_url: String,
 }
 
+impl From<File> for UploadQueueItem {
+    fn from(file: File) -> Self {
+        let file_name = file.name().clone();
+        let object_url =
+            web_sys::Url::create_object_url_with_blob(&file).expect("Failed to create object url from file");
+
+        Self {
+            filename: file_name,
+            status: FileUploadStatus::Queued,
+            file,
+            object_url,
+        }
+    }
+}
+
 pub enum UploadQueueAction {
-    AddItem(UploadQueueItem),
+    AddToQueue(FileList),
     UpdateItemState {
         file_name: String,
         status: FileUploadStatus,
     },
-    RemoveCompleted, // RemoteItem {
-                     //     file_name: String,
-                     // },
+    RemoveCompleted,
 }
 
 impl Reducible for UploadQueue {
@@ -43,9 +46,15 @@ impl Reducible for UploadQueue {
 
     fn reduce(self: Rc<Self>, action: Self::Action) -> Rc<Self> {
         match action {
-            UploadQueueAction::AddItem(item) => {
+            UploadQueueAction::AddToQueue(filelist) => {
                 let mut queue = self.queue.clone();
-                queue.push(item);
+
+                for i in 0..filelist.length() {
+                    if let Some(file) = filelist.get(i) {
+                        queue.push(file.into());
+                    }
+                }
+
                 Self { queue }.into()
             }
             UploadQueueAction::UpdateItemState { file_name, status } => {
@@ -66,16 +75,3 @@ impl Reducible for UploadQueue {
         }
     }
 }
-
-// #[hook]
-// pub fn use_upload_queue() -> (UseStateHandle<Vec<UploadQueueItem>>, Callback<()>) {
-//     let state = use_state(|| STATE.into_inner());
-//     // vec![UploadQueueItem {
-//     //     filename: "test.jpg".to_string(),
-//     //     status: FileUploadStatus::Processing,
-//     // }]
-
-//     let update_or_something = { Callback::from(move |_| {}) };
-
-//     (state, update_or_something)
-// }

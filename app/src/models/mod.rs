@@ -5,11 +5,13 @@ pub use album::*;
 pub use library::*;
 pub use photo::*;
 pub use share::*;
+pub use upload_queue::*;
 
 mod album;
 mod library;
 mod photo;
 mod share;
+mod upload_queue;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct EncryptedItem {

@@ -1,10 +1,9 @@
 use super::FileUploadStatus;
 use crate::{
     components::{Button, IconClose},
-    hooks::use_upload_queue,
+    models::{UploadQueue, UploadQueueAction},
 };
 use bounce::use_slice;
-use use_upload_queue::{UploadQueue, UploadQueueAction};
 use yew::prelude::*;
 
 #[derive(Properties, PartialEq)]
