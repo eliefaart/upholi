@@ -4,10 +4,43 @@
   bottom: 0;
   background-color: var(--colorBackgroundAlt);
   border-top-left-radius: $borderRadius;
-  padding: $spacing;
-}
 
-.upload-progress-item {
-  display: flex;
-  gap: $spacing;
+  .upload-progress-header {
+    border-top-left-radius: $borderRadius;
+    background-color: lightseagreen;
+  }
+
+  .upload-progress-items {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing;
+    max-height: 275px;
+    overflow-y: scroll;
+    padding: $spacing;
+
+    .upload-progress-item {
+      $itemHeight: $buttonHeight;
+
+      display: flex;
+      gap: $spacing;
+      height: $itemHeight;
+      width: 325px;
+
+      .thumb {
+        height: $itemHeight;
+        width: $itemHeight;
+      }
+
+      span {
+        height: $itemHeight;
+        line-height: $itemHeight;
+
+        &.filename {
+          flex-grow: 1;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
+    }
+  }
 }

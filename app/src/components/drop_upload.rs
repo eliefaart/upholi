@@ -12,6 +12,7 @@ pub enum FileUploadStatus {
     Uploading,
     Done,
     Failed,
+    Exists,
 }
 
 impl Display for FileUploadStatus {

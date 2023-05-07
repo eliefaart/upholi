@@ -34,11 +34,14 @@ pub fn upload_button(_: &UploadButtonProps) -> Html {
                     for i in 0..filelist.length() {
                         if let Some(file) = filelist.get(i) {
                             let file_name = file.name().clone();
+                            let object_url = web_sys::Url::create_object_url_with_blob(&file)
+                                .expect("Failed to create object url from file");
 
                             upload_batch.push(UploadQueueItem {
                                 filename: file_name,
-                                status: FileUploadStatus::Processing,
-                                file: file,
+                                status: FileUploadStatus::Queued,
+                                file,
+                                object_url,
                             });
                         }
                     }

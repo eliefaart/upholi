@@ -1,11 +1,14 @@
+use std::rc::Rc;
+
 use crate::components::FileUploadStatus;
-use bounce::Atom;
+use bounce::{Atom, Slice};
+use yew::Reducible;
 // use std::cell::RefCell;
 
 // const STATE: RefCell<Vec<UploadQueueItem>> = RefCell::new(Vec::<UploadQueueItem>::new());
 // const STATE2: RefCell<UseStateHandle<Vec<UploadQueueItem>>> = RefCell::new(use_state(|| Vec::<UploadQueueItem>::new()));
 
-#[derive(Atom, PartialEq, Default, Clone)]
+#[derive(Slice, Atom, PartialEq, Default, Clone)]
 pub struct UploadQueue {
     pub queue: Vec<UploadQueueItem>,
 }
@@ -21,6 +24,37 @@ pub struct UploadQueueItem {
     pub filename: String,
     pub status: FileUploadStatus,
     pub file: web_sys::File,
+    pub object_url: String,
+}
+
+pub enum UploadQueueAction {
+    AddItem(UploadQueueItem),
+    UpdateItemState {
+        file_name: String,
+        status: FileUploadStatus,
+    },
+    // RemoteItem {
+    //     file_name: String,
+    // },
+}
+
+impl Reducible for UploadQueue {
+    type Action = UploadQueueAction;
+
+    fn reduce(self: Rc<Self>, action: Self::Action) -> Rc<Self> {
+        weblog::console_log!("lol");
+        match action {
+            UploadQueueAction::AddItem(item) => {
+                let mut updated = self.queue.clone();
+                updated.push(item);
+                Self { queue: updated }.into()
+            }
+            UploadQueueAction::UpdateItemState { file_name, status } => Self {
+                queue: self.queue.clone(),
+            }
+            .into(),
+        }
+    }
 }
 
 // #[hook]
