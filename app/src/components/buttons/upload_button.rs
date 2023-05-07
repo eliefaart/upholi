@@ -1,8 +1,8 @@
 use crate::{
     components::{buttons::Button, FileUploadStatus, IconUpload},
-    hooks::{UploadQueue, UploadQueueItem},
+    hooks::{UploadQueue, UploadQueueAction, UploadQueueItem},
 };
-use bounce::{use_atom, use_atom_value};
+use bounce::{use_atom, use_atom_value, use_slice};
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
 
@@ -14,6 +14,7 @@ pub fn upload_button(_: &UploadButtonProps) -> Html {
     let input_ref = use_node_ref();
     let upload_queue = use_atom_value::<UploadQueue>();
     let upload_state = use_atom::<UploadQueue>();
+    let slice = use_slice::<UploadQueue>();
 
     let on_click = {
         let input_ref = input_ref.clone();
@@ -37,12 +38,12 @@ pub fn upload_button(_: &UploadButtonProps) -> Html {
                             let object_url = web_sys::Url::create_object_url_with_blob(&file)
                                 .expect("Failed to create object url from file");
 
-                            upload_batch.push(UploadQueueItem {
+                            slice.dispatch(UploadQueueAction::AddItem(UploadQueueItem {
                                 filename: file_name,
                                 status: FileUploadStatus::Queued,
                                 file,
                                 object_url,
-                            });
+                            }));
                         }
                     }
 

@@ -3,8 +3,8 @@ use crate::{
     components::{Button, IconClose},
     hooks::use_upload_queue,
 };
-use bounce::{use_atom_setter, use_atom_value};
-use use_upload_queue::UploadQueue;
+use bounce::use_slice;
+use use_upload_queue::{UploadQueue, UploadQueueAction};
 use yew::prelude::*;
 
 #[derive(Properties, PartialEq)]
@@ -12,10 +12,9 @@ pub struct UploadProgressProps {}
 
 #[function_component(UploadProgress)]
 pub fn upload_progress(_: &UploadProgressProps) -> Html {
-    let upload_queue_setter = use_atom_setter::<UploadQueue>();
-    let queue = use_atom_value::<UploadQueue>();
-    let queue_items = queue
-        .as_ref()
+    let slice = use_slice::<UploadQueue>();
+
+    let queue_items = slice
         .queue
         .iter()
         .map(|queue_item| {
@@ -30,20 +29,14 @@ pub fn upload_progress(_: &UploadProgressProps) -> Html {
         .collect::<Html>();
 
     let clear_completed = {
-        let queue = queue.clone();
+        let slice = slice.clone();
         move |_| {
-            let items_not_done = queue
-                .queue
-                .clone()
-                .into_iter()
-                .filter(|item| item.status != FileUploadStatus::Done)
-                .collect();
-            upload_queue_setter(UploadQueue { queue: items_not_done });
+            slice.dispatch(UploadQueueAction::RemoveCompleted);
         }
     };
 
     html! {
-        if !queue.queue.is_empty() {
+        if !slice.queue.is_empty() {
             <div class="upload-progress">
                 <div class="upload-progress-header">
                     <Button label={""} on_click={clear_completed}>

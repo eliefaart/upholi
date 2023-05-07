@@ -33,26 +33,36 @@ pub enum UploadQueueAction {
         file_name: String,
         status: FileUploadStatus,
     },
-    // RemoteItem {
-    //     file_name: String,
-    // },
+    RemoveCompleted, // RemoteItem {
+                     //     file_name: String,
+                     // },
 }
 
 impl Reducible for UploadQueue {
     type Action = UploadQueueAction;
 
     fn reduce(self: Rc<Self>, action: Self::Action) -> Rc<Self> {
-        weblog::console_log!("lol");
         match action {
             UploadQueueAction::AddItem(item) => {
-                let mut updated = self.queue.clone();
-                updated.push(item);
-                Self { queue: updated }.into()
+                let mut queue = self.queue.clone();
+                queue.push(item);
+                Self { queue }.into()
             }
-            UploadQueueAction::UpdateItemState { file_name, status } => Self {
-                queue: self.queue.clone(),
+            UploadQueueAction::UpdateItemState { file_name, status } => {
+                let mut queue = self.queue.clone();
+                if let Some(mut queue_item) = queue.iter_mut().find(|item| item.filename == file_name) {
+                    queue_item.status = status;
+                }
+
+                Self { queue }.into()
             }
-            .into(),
+            UploadQueueAction::RemoveCompleted => {
+                let mut queue = self.queue.clone();
+
+                queue.retain(|item| item.status != FileUploadStatus::Done && item.status != FileUploadStatus::Exists);
+
+                Self { queue }.into()
+            }
         }
     }
 }
