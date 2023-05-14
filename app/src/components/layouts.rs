@@ -57,7 +57,7 @@ pub fn page_layout(props: &PageLayoutProps) -> Html {
                 {header_right}
             </header>
 
-            <main>
+            <main id="content">
                 {title}
                 {props.children.clone()}
             </main>

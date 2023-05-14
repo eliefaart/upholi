@@ -27,9 +27,10 @@ $itemHeight: $buttonHeight;
     display: flex;
     flex-direction: column;
     gap: $spacing;
-    max-height: 275px;
     overflow-y: scroll;
     padding: $spacing;
+    // max-height = combined item height + 4 gaps + padding top and bottom.
+    max-height: calc(($itemHeight * 5) + ($spacing * 4) + ($spacing * 2));
 
     .upload-progress-item {
       display: flex;

@@ -21,6 +21,7 @@ impl UploadQueue {
 #[derive(PartialEq, Clone)]
 pub struct UploadQueueItem {
     pub filename: String,
+    pub size: f64,
     pub status: FileUploadStatus,
     pub file: web_sys::File,
     pub object_url: String,
@@ -28,12 +29,13 @@ pub struct UploadQueueItem {
 
 impl From<File> for UploadQueueItem {
     fn from(file: File) -> Self {
-        let file_name = file.name().clone();
+        let file_name = file.name();
         let object_url =
             web_sys::Url::create_object_url_with_blob(&file).expect("Failed to create object url from file");
 
         Self {
             filename: file_name,
+            size: file.size(),
             status: FileUploadStatus::Queued,
             file,
             object_url,
@@ -60,7 +62,13 @@ impl Reducible for UploadQueue {
 
                 for i in 0..filelist.length() {
                     if let Some(file) = filelist.get(i) {
-                        queue.push(file.into());
+                        let file: UploadQueueItem = file.into();
+                        let already_in_queue = queue
+                            .iter()
+                            .any(|item| item.filename == file.filename && item.size == file.size);
+                        if !already_in_queue {
+                            queue.push(file);
+                        }
                     }
                 }
 

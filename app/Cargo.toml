@@ -22,7 +22,7 @@ upholi_lib = { path = "../lib" }
 uuid = { version = "0.8.1", features = ["wasm-bindgen"] }
 wasm-bindgen = { version = "0.2.78", features = ["serde-serialize"] }
 wasm-bindgen-futures = "0.4.28"
-web-sys = { version = "0.3.55", features = ["Window", "Location", "Storage", "DataTransfer", "Event", "EventTarget", "Node"] }
+web-sys = { version = "0.3.55", features = ["Window", "Location", "Storage", "DataTransfer", "Event", "EventTarget", "Node", "DomRect"] }
 weblog = "0.3.0"
 yew = { version = "0.20", features = ["csr"] }
 yew-hooks = "0.2.0"
