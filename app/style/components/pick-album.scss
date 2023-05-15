@@ -6,7 +6,7 @@ $pickAlbumEntryHeight: 70px;
 
     &.selected {
       color: var(--colorTextContrast);
-      background-color: var(--colorSpecial);
+      background-color: var(--colorSecondaryAccent);
       border-radius: $borderRadius;
     }
   }

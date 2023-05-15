@@ -1,5 +1,5 @@
 use crate::{
-    components::{buttons::Button, icons::IconRemove},
+    components::{icons::IconRemove, ConfirmButton},
     WASM_CLIENT,
 };
 use yew::prelude::*;
@@ -16,7 +16,7 @@ pub fn remove_from_album_button(props: &RemoveFromAlbumButtonProps) -> Html {
     let album_id = props.album_id.clone();
     let photo_ids = props.photo_ids.clone();
     let on_removed = props.on_removed.clone();
-    let set_cover = move |_| {
+    let on_click = move |_| {
         let album_id = album_id.clone();
         let photo_ids = photo_ids.clone();
         let on_removed = on_removed.clone();
@@ -29,9 +29,15 @@ pub fn remove_from_album_button(props: &RemoveFromAlbumButtonProps) -> Html {
         });
     };
 
+    let n_selected_photos = props.photo_ids.len();
+
     html! {
-        <Button label={"Remove from album"} on_click={set_cover}>
+        <ConfirmButton label="Remove from album"
+            on_click={on_click}
+            confirm_dialog_title="Remove photos from album?"
+            confirm_dialog_body={format!("{n_selected_photos} photos will be removed.")}
+            >
             <IconRemove/>
-        </Button>
+        </ConfirmButton>
     }
 }
