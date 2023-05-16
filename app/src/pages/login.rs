@@ -42,8 +42,6 @@ pub fn login_page() -> Html {
     };
 
     {
-        let navigator = navigator.clone();
-
         use_effect_with_deps(
             move |state| {
                 if state == &AuthStatus::Authenticated {
