@@ -1,16 +1,19 @@
-use crate::{components::Form, Route, WASM_CLIENT};
+use crate::{components::Form, models::AuthStatus, Route, WASM_CLIENT};
+use bounce::use_atom;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
 use yew_router::prelude::use_navigator;
 
 #[function_component(LoginPage)]
 pub fn login_page() -> Html {
+    let state = use_atom::<AuthStatus>();
     let auth_attempt_made = use_state(|| false);
     let username_ref = use_node_ref();
     let password_ref = use_node_ref();
     let navigator = use_navigator().unwrap();
 
     let on_click = {
+        let state = state.clone();
         let username_ref = username_ref.clone();
         let password_ref = password_ref.clone();
         let auth_attempt_made = auth_attempt_made.clone();
@@ -24,12 +27,12 @@ pub fn login_page() -> Html {
                 let password = password_input.value();
 
                 if !username.is_empty() && !password.is_empty() {
+                    let state = state.clone();
                     let auth_attempt_made = auth_attempt_made.clone();
-                    let navigator = navigator.clone();
 
                     wasm_bindgen_futures::spawn_local(async move {
                         match WASM_CLIENT.login(&username, &password).await {
-                            Ok(_) => navigator.push(&Route::Home),
+                            Ok(_) => state.set(AuthStatus::Authenticated),
                             Err(_) => auth_attempt_made.set(true),
                         };
                     });
@@ -37,6 +40,19 @@ pub fn login_page() -> Html {
             }
         })
     };
+
+    {
+        let navigator = navigator.clone();
+
+        use_effect_with_deps(
+            move |state| {
+                if state == &AuthStatus::Authenticated {
+                    navigator.push(&Route::Home);
+                }
+            },
+            (*state).clone(),
+        );
+    }
 
     html! {
         <Form title="Login"

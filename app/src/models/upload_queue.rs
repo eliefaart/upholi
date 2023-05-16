@@ -1,10 +1,10 @@
 use crate::components::FileUploadStatus;
-use bounce::{Atom, Slice};
+use bounce::Slice;
 use std::rc::Rc;
 use web_sys::{File, FileList};
 use yew::Reducible;
 
-#[derive(Slice, Atom, PartialEq, Default, Clone)]
+#[derive(Slice, PartialEq, Default, Clone)]
 pub struct UploadQueue {
     pub queue: Vec<UploadQueueItem>,
 }

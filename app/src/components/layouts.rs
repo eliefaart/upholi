@@ -1,7 +1,4 @@
-use crate::{
-    components::{dialog::Dialog, RequireAuth},
-    Route,
-};
+use crate::{components::RequireAuth, Route};
 use yew::prelude::*;
 use yew_router::prelude::*;
 
@@ -61,10 +58,6 @@ pub fn page_layout(props: &PageLayoutProps) -> Html {
                 {title}
                 {props.children.clone()}
             </main>
-
-            <Dialog visible={false} title="Dialog title">
-                <span>{"Dialog body"}</span>
-            </Dialog>
         </RequireAuth>
     }
 }

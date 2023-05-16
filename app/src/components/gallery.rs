@@ -26,7 +26,7 @@ pub fn gallery(props: &GalleryProps) -> Html {
     let photo_opened = use_state(|| None);
     let available_width = use_state(|| None);
     let photo_ids_allowed_to_load: UseStateHandle<Vec<String>> =
-        use_state(|| props.photos.iter().take(20).map(|p| p.id.to_string()).collect());
+        use_state(|| props.photos.iter().take(10).map(|p| p.id.to_string()).collect());
 
     let photo_ids: UseStateHandle<Vec<String>> = use_state(|| props.photos.iter().map(|p| p.id.to_string()).collect());
 
@@ -47,6 +47,7 @@ pub fn gallery(props: &GalleryProps) -> Html {
         let interval_ms = if !all_photos_loaded { 750 } else { 0 };
 
         // TODO: Re-determine this on scroll & resize events, throttled.
+        //  yew-hooks has a use_event hook.
 
         use_interval(
             move || {

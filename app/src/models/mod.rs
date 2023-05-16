@@ -2,12 +2,14 @@ use anyhow::Result;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 pub use album::*;
+pub use auth_status::*;
 pub use library::*;
 pub use photo::*;
 pub use share::*;
 pub use upload_queue::*;
 
 mod album;
+mod auth_status;
 mod library;
 mod photo;
 mod share;
