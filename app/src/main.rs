@@ -1,4 +1,3 @@
-use crate::components::FileUploader;
 use api_client::ApiClient;
 use bounce::BounceRoot;
 use once_cell::sync::Lazy;
@@ -8,6 +7,8 @@ use wasm_client::WasmClient;
 use web_sys::Document;
 use yew::prelude::*;
 use yew_router::{BrowserRouter, Routable, Switch};
+
+use crate::components::FileUploader;
 
 mod api_client;
 mod components;
@@ -77,7 +78,6 @@ fn app() -> Html {
     html! {
         <BounceRoot>
             <BrowserRouter>
-
                 <Switch<Route> render={switch} />
                 <FileUploader/>
                 <div id="modal-host"/>
@@ -88,41 +88,4 @@ fn app() -> Html {
 
 fn main() {
     yew::Renderer::<App>::new().render();
-}
-
-/// `use_throttle` demo
-#[function_component(UseThrottle)]
-pub fn throttle() -> Html {
-    let state = use_state(|| 0);
-
-    let throttle = {
-        let state = state.clone();
-        yew_hooks::use_throttle(
-            move || {
-                state.set(*state + 1);
-            },
-            2000,
-        )
-    };
-
-    let onclick = {
-        let throttle = throttle.clone();
-        Callback::from(move |_| throttle.run())
-    };
-
-    let oncancel = { Callback::from(move |_| throttle.cancel()) };
-
-    html! {
-        <div class="app">
-            <header class="app-header">
-                <div>
-                    <button {onclick}>{ "Click fast!" }</button>
-                    <button onclick={oncancel}>{ "Cancel throttle" }</button>
-                    <p>
-                        <b>{ "State: " }</b> {*state}
-                    </p>
-                </div>
-            </header>
-        </div>
-    }
 }

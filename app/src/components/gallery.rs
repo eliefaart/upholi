@@ -27,7 +27,6 @@ pub fn gallery(props: &GalleryProps) -> Html {
     let available_width = use_state(|| None);
     let photo_ids_allowed_to_load: UseStateHandle<Vec<String>> =
         use_state(|| props.photos.iter().take(10).map(|p| p.id.to_string()).collect());
-
     let photo_ids: UseStateHandle<Vec<String>> = use_state(|| props.photos.iter().map(|p| p.id.to_string()).collect());
 
     {

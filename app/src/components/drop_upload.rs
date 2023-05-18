@@ -7,14 +7,18 @@ use yew::prelude::*;
 pub enum FileUploadStatus {
     Queued,
     Busy,
-    Done,
+    Done { photo_id: String },
     Failed,
-    Exists,
+    Exists { photo_id: String },
 }
 
 impl Display for FileUploadStatus {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", self)
+        match self {
+            Self::Done { .. } => write!(f, "Done"),
+            Self::Exists { .. } => write!(f, "Exists"),
+            _ => write!(f, "{:?}", self),
+        }
     }
 }
 

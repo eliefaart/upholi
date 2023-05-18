@@ -7,9 +7,10 @@ use crate::{
         layouts::PageLayout,
         UploadButton,
     },
-    hooks::use_library_photos::use_library_photos,
+    hooks::{use_library_photos::use_library_photos, use_on_file_upload_finished},
     models::AlbumPhoto,
 };
+use use_on_file_upload_finished::FileStatus;
 use yew::prelude::*;
 
 #[function_component(HomePage)]
@@ -17,6 +18,11 @@ pub fn home_page() -> Html {
     let (photos, refresh_photos) = use_library_photos();
     let selected_photos = use_state(Vec::<String>::new);
     let photos: Vec<AlbumPhoto> = (*photos).clone().into_iter().map(|photo| photo.into()).collect();
+
+    {
+        let refresh_photos = refresh_photos.clone();
+        use_on_file_upload_finished(Callback::<Vec<FileStatus>>::from(move |_| refresh_photos.emit(())));
+    }
 
     let on_click_delete_photos = (*selected_photos).clone();
     let on_click_delete_refresh_photos = refresh_photos.clone();
@@ -72,9 +78,10 @@ pub fn home_page() -> Html {
     html! {
         <PageLayout header_actions_left={header_actions_left} header_actions_right={header_actions_right}>
             <DropUpload on_upload_status_changed={move |progress: FileUploadProgress| {
-                if progress.status == FileUploadStatus::Done {
+                if let FileUploadStatus::Done{ .. } = progress.status {
                     refresh_photos.emit(());
-                }}}>
+                }
+                }}>
                 <Gallery photos={photos} selected_photos={selected_photos} />
             </DropUpload>
         </PageLayout>

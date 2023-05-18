@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use crate::{
     components::{
         buttons::{
@@ -7,12 +9,14 @@ use crate::{
         gallery::Gallery,
         icons::IconClose,
         layouts::PageLayout,
-        ShareAlbumButton,
+        FileUploadStatus, ShareAlbumButton,
     },
-    hooks::use_album::use_album,
+    hooks::{use_album::use_album, use_on_file_upload_finished},
     Route, WASM_CLIENT,
 };
+use use_on_file_upload_finished::FileStatus;
 use yew::prelude::*;
+use yew_hooks::{use_interval, use_queue, UseQueueHandle};
 use yew_router::prelude::use_navigator;
 
 #[derive(Properties, PartialEq)]
@@ -26,6 +30,54 @@ pub fn album_page(props: &AlbumPageProps) -> Html {
     let selected_photos = use_state(Vec::<String>::new);
     let navigator = use_navigator().unwrap();
     let n_photos_selected = (*selected_photos).len();
+    let queue: UseQueueHandle<String> = use_queue(VecDeque::new());
+
+    {
+        let queue_empty = queue.current().is_empty();
+        let album_id = props.id.clone();
+        let refresh_album = refresh_album.clone();
+        let queue = queue.clone();
+
+        use_interval(
+            move || {
+                let mut photo_ids_to_add = vec![];
+                while let Some(id) = queue.pop_front() {
+                    weblog::console_log!(format!("-- {:?}", id));
+                    photo_ids_to_add.push(id);
+                }
+
+                let album_id = album_id.clone();
+                let refresh_album = refresh_album.clone();
+
+                wasm_bindgen_futures::spawn_local(async move {
+                    WASM_CLIENT
+                        .add_photos_to_album(&album_id, &photo_ids_to_add)
+                        .await
+                        .unwrap();
+                    refresh_album.emit(());
+                });
+            },
+            if queue_empty { 0 } else { 1000 },
+        )
+    }
+
+    {
+        use_on_file_upload_finished(Callback::from(move |files: Vec<FileStatus>| {
+            let photo_ids_to_add: VecDeque<String> = files
+                .iter()
+                .filter_map(|f| match &f.status {
+                    FileUploadStatus::Done { photo_id } | FileUploadStatus::Exists { photo_id } => {
+                        Some(photo_id.to_owned())
+                    }
+                    _ => None,
+                })
+                .collect();
+
+            for id in photo_ids_to_add {
+                queue.push_back(id);
+            }
+        }));
+    }
 
     let reset_selection = use_memo(
         |selected_photos| {
@@ -137,7 +189,6 @@ pub fn album_page(props: &AlbumPageProps) -> Html {
             <DropUpload on_upload_status_changed={on_photos_uploaded}>
                 {content}
             </DropUpload>
-
         </PageLayout>
     }
 }

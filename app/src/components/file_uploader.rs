@@ -48,13 +48,17 @@ pub fn file_uploader() -> Html {
                                 let bytes: Vec<u8> = array.to_vec();
 
                                 match WASM_CLIENT.upload_photo(&bytes).await {
-                                    Ok(_upload_result) => {
+                                    Ok(upload_result) => {
                                         set_status(
                                             &queue_item.filename,
-                                            if _upload_result.skipped {
-                                                FileUploadStatus::Exists
+                                            if upload_result.skipped {
+                                                FileUploadStatus::Exists {
+                                                    photo_id: upload_result.photo_id,
+                                                }
                                             } else {
-                                                FileUploadStatus::Done
+                                                FileUploadStatus::Done {
+                                                    photo_id: upload_result.photo_id,
+                                                }
                                             },
                                         );
                                     }

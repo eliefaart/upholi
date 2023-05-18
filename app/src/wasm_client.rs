@@ -376,6 +376,7 @@ impl<'a> WasmClient<'a> {
         self.update_album(id, &mut |album: &mut Album| {
             album.title = title.to_string();
             album.tags = tags.clone();
+            true
         })
         .await?;
         Ok(())
@@ -384,6 +385,7 @@ impl<'a> WasmClient<'a> {
     pub async fn update_album_cover(&self, id: &str, thumbnail_photo_id: &str) -> Result<()> {
         self.update_album(id, &mut |album: &mut Album| {
             album.thumbnail_photo_id = Some(thumbnail_photo_id.into());
+            true
         })
         .await?;
         Ok(())
@@ -391,11 +393,17 @@ impl<'a> WasmClient<'a> {
 
     pub async fn add_photos_to_album(&self, id: &str, photo_ids: &[String]) -> Result<()> {
         self.update_album(id, &mut |album: &mut Album| {
-            for id in photo_ids {
-                if !album.photos.contains(id) {
-                    album.photos.push(id.to_owned());
+            let any_photos_not_already_in = photo_ids.iter().any(|id| !album.photos.contains(id));
+
+            if any_photos_not_already_in {
+                for id in photo_ids {
+                    if !album.photos.contains(id) {
+                        album.photos.push(id.to_owned());
+                    }
                 }
             }
+
+            any_photos_not_already_in
         })
         .await?;
         Ok(())
@@ -412,6 +420,8 @@ impl<'a> WasmClient<'a> {
                     album.thumbnail_photo_id = None;
                 }
             }
+
+            true
         })
         .await?;
         Ok(())
@@ -606,21 +616,26 @@ impl<'a> WasmClient<'a> {
         Ok(())
     }
 
-    async fn update_album(&self, id: &str, modify_album: &mut dyn FnMut(&mut Album)) -> Result<()> {
+    /// Update an album
+    ///
+    /// * `modify_album` - function that modifies given album. Should return a boolean to indicate whether album was modified or not.
+    async fn update_album(&self, id: &str, modify_album: &mut dyn FnMut(&mut Album) -> bool) -> Result<()> {
         let library = self.get_library().await?;
         let mut album = self.get_album(id).await?.ok_or_else(|| anyhow!("Album not found"))?;
 
-        modify_album(&mut album);
+        let modified = modify_album(&mut album);
 
-        let album_key = self.get_item_encryption_key(&library, &album.id)?;
-        repository::set(id, album_key, album.into()).await?;
+        if modified {
+            let album_key = self.get_item_encryption_key(&library, &album.id)?;
+            repository::set(id, album_key, album.into()).await?;
 
-        // If a share exists for this album, then update it.
-        let share_for_album = self.get_share_for_album(id).await?;
-        if let Some(share) = share_for_album {
-            // TODO: This can be optimized. This only needs to update the item representing the share,
-            // not the share.holding the authentication info.
-            self.upsert_share(id, &share.password).await?;
+            // If a share exists for this album, then update it.
+            let share_for_album = self.get_share_for_album(id).await?;
+            if let Some(share) = share_for_album {
+                // TODO: This can be optimized. This only needs to update the item representing the share,
+                // not the share.holding the authentication info.
+                self.upsert_share(id, &share.password).await?;
+            }
         }
 
         Ok(())

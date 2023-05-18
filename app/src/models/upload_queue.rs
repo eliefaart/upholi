@@ -13,7 +13,10 @@ impl UploadQueue {
     pub fn items_completed_len(&self) -> usize {
         self.queue
             .iter()
-            .filter(|item| item.status == FileUploadStatus::Done || item.status == FileUploadStatus::Exists)
+            .filter(|item| {
+                matches!(item.status, FileUploadStatus::Done { .. })
+                    || matches!(item.status, FileUploadStatus::Exists { .. })
+            })
             .count()
     }
 }
@@ -85,7 +88,10 @@ impl Reducible for UploadQueue {
             UploadQueueAction::RemoveCompleted => {
                 let mut queue = self.queue.clone();
 
-                queue.retain(|item| item.status != FileUploadStatus::Done && item.status != FileUploadStatus::Exists);
+                queue.retain(|item| {
+                    !matches!(item.status, FileUploadStatus::Done { .. })
+                        && !matches!(item.status, FileUploadStatus::Exists { .. })
+                });
 
                 Self { queue }.into()
             }
