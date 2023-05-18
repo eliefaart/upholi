@@ -49,7 +49,7 @@ pub fn drop_upload(props: &DropUploadProps) -> Html {
     };
 
     html! {
-        <div style="height: 100%"
+        <div style="height: 95%"
             ondrop={on_drop}
             ondragover={|event: DragEvent| event.prevent_default()}>
             {props.children.clone()}

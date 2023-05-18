@@ -11,6 +11,7 @@ header {
   a {
     height: $headerHeight;
     line-height: $headerHeight;
+    user-select: none;
 
     .label {
       height: $headerHeight;
