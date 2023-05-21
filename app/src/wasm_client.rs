@@ -155,7 +155,6 @@ impl<'a> WasmClient<'a> {
             key: album_key.clone(),
             title: title.into(),
             thumbnail_photo_id: initial_photo_ids.first().map(|s| s.to_owned()),
-            tags: vec![],
             photos: initial_photo_ids,
         };
 
@@ -212,7 +211,6 @@ impl<'a> WasmClient<'a> {
         let album = AlbumHydrated {
             id: album.id.clone(),
             title: album.title.clone(),
-            tags: album.tags.clone(),
             photos: photos_in_album,
             thumbnail_photo: match album.thumbnail_photo_id.clone() {
                 Some(thumbnail_photo_id) => {
@@ -372,10 +370,9 @@ impl<'a> WasmClient<'a> {
         Ok(())
     }
 
-    pub async fn update_album_title_tags(&self, id: &str, title: &str, tags: Vec<String>) -> Result<()> {
+    pub async fn update_album_title(&self, id: &str, title: &str) -> Result<()> {
         self.update_album(id, &mut |album: &mut Album| {
             album.title = title.to_string();
-            album.tags = tags.clone();
             true
         })
         .await?;

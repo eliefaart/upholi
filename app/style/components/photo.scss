@@ -10,7 +10,7 @@
   transition: border-width 0.1s;
 
   &.selected {
-    border: 4px solid var(--colorText);
+    border: 6px solid var(--colorText);
   }
 
   &:hover {

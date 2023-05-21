@@ -50,10 +50,7 @@ pub fn edit_album_button(props: &EditAlbumButtonProps) -> Html {
                     let refresh_album = refresh_album.clone();
 
                     wasm_bindgen_futures::spawn_local(async move {
-                        WASM_CLIENT
-                            .update_album_title_tags(&album_id, &album_title, vec![])
-                            .await
-                            .unwrap();
+                        WASM_CLIENT.update_album_title(&album_id, &album_title).await.unwrap();
                         dialog_state.set(false);
                         refresh_album.emit(());
                         on_submitted.emit(());

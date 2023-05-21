@@ -1,7 +1,7 @@
 use crate::{
     components::{album_thumb::AlbumThumb, layouts::PageLayout, CreateAlbumButton},
     hooks::use_albums,
-    Route, WASM_CLIENT,
+    Route,
 };
 use yew::prelude::*;
 use yew_router::prelude::*;
@@ -10,19 +10,6 @@ use yew_router::prelude::*;
 pub fn albums_page() -> Html {
     let (albums, refresh_albums) = use_albums();
     let navigator = use_navigator().unwrap();
-
-    {
-        let albums = albums.clone();
-        use_effect_with_deps(
-            move |_| {
-                wasm_bindgen_futures::spawn_local(async move {
-                    let library_albums = WASM_CLIENT.get_albums().await.unwrap();
-                    albums.set(library_albums);
-                });
-            },
-            (),
-        );
-    }
 
     let albums = albums
         .iter()

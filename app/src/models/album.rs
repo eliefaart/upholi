@@ -8,7 +8,6 @@ pub struct Album {
     pub key: Vec<u8>,
     pub title: String,
     pub thumbnail_photo_id: Option<String>,
-    pub tags: Vec<String>,
     pub photos: Vec<String>,
 }
 
@@ -18,7 +17,6 @@ pub struct Album {
 pub struct AlbumHydrated {
     pub id: String,
     pub title: String,
-    pub tags: Vec<String>,
     pub photos: Vec<AlbumPhoto>,
     pub thumbnail_photo: Option<AlbumPhoto>,
 }
