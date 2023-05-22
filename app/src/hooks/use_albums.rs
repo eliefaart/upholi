@@ -13,7 +13,7 @@ pub fn use_albums() -> (UseStateHandle<Vec<crate::models::Album>>, Callback<()>)
             wasm_bindgen_futures::spawn_local(async move {
                 let mut albums = crate::WASM_CLIENT.get_albums().await.unwrap();
 
-                let regex_contnains_year = Regex::new(r".?(?<year>[0-9]{4}).?").unwrap();
+                let regex_contnains_year = Regex::new(r".?(?P<year>[0-9]{4}).?").unwrap();
 
                 // Sort albums.
                 // Basically albums are sorted by title alphabetically.
