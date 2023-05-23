@@ -58,7 +58,7 @@ button {
 
 @mixin button-filled {
   button {
-    background-color: var(--colorBackgroundHeader);
+    background-color: var(--colorBackgroundInput);
     border: 1px solid var(--colorBackground);
     border-radius: $borderRadius;
 

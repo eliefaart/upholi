@@ -6,12 +6,14 @@ use web_sys::Element;
 use yew::prelude::*;
 use yew_hooks::use_interval;
 
-// Desired minimum height of a gallery photo.
+/// Desired minimum height of a gallery photo.
 const MIN_HEIGHT: f32 = 175.;
-// Desired minimum height of a gallery photo.
+/// Desired minimum height of a gallery photo.
 const MAX_HEIGHT: f32 = 350.;
-// Pixels between each photo, as per CSS.
+/// Pixels between each photo, as per CSS.
 const GAP_SIZE: f32 = 5.;
+/// Numbers of photos to always load, regardless of if they have been in view
+const N_PHOTOS_TO_ALWAYS_LOAD: usize = 15;
 
 #[derive(PartialEq, Properties)]
 pub struct GalleryProps {
@@ -25,8 +27,7 @@ pub fn gallery(props: &GalleryProps) -> Html {
     let node_ref = use_node_ref();
     let photo_opened = use_state(|| None);
     let available_width = use_state(|| None);
-    let photo_ids_allowed_to_load: UseStateHandle<Vec<String>> =
-        use_state(|| props.photos.iter().take(10).map(|p| p.id.to_string()).collect());
+    let photo_ids_allowed_to_load: UseStateHandle<Vec<String>> = use_state(Vec::new);
     let photo_ids: UseStateHandle<Vec<String>> = use_state(|| props.photos.iter().map(|p| p.id.to_string()).collect());
 
     {
@@ -140,9 +141,10 @@ pub fn gallery(props: &GalleryProps) -> Html {
                 let photos = compute_sizes(photos, *available_width, MIN_HEIGHT, MAX_HEIGHT, GAP_SIZE);
                 photos
                     .into_iter()
-                    .map(|ResizedPhoto { photo, width, height }| {
+                    .enumerate()
+                    .map(|(idx, ResizedPhoto { photo, width, height })| {
                         let photo_id = photo.id.clone();
-                        let may_load = allowed_to_load.contains(&photo_id);
+                        let may_load = idx <= N_PHOTOS_TO_ALWAYS_LOAD || allowed_to_load.contains(&photo_id);
                         let selected = selected_photos.contains(&photo.id);
                         let class = selected.then(|| "selected".to_string());
 
