@@ -2,7 +2,7 @@ use api_client::ApiClient;
 use bounce::BounceRoot;
 use once_cell::sync::Lazy;
 use pages::{AlbumPage, AlbumsPage, HomePage, LoginPage, NotFoundPage, RegisterPage, SharePage, SharedPage};
-use wasm_bindgen::UnwrapThrowExt;
+use wasm_bindgen::{prelude::wasm_bindgen, UnwrapThrowExt};
 use wasm_client::WasmClient;
 use web_sys::Document;
 use yew::prelude::*;
@@ -31,6 +31,12 @@ static ORIGIN: Lazy<String> = Lazy::new(|| {
 });
 static API_CLIENT: Lazy<ApiClient> = Lazy::new(|| ApiClient::new(&format!("{}/api", ORIGIN.as_str())));
 static WASM_CLIENT: Lazy<WasmClient> = Lazy::new(|| WasmClient::new(&API_CLIENT));
+
+#[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(js_name = offerAsFileDownload)]
+    fn offer_as_file_download(filename: &str, src: &str);
+}
 
 pub fn get_document() -> Document {
     web_sys::window()
