@@ -1,6 +1,6 @@
 use upholi_lib::ids::id_with_length;
 
-mod aes128;
+mod aes256;
 
 pub struct EncryptionResult {
     pub nonce: String,
@@ -12,19 +12,19 @@ fn generate_string(length: usize) -> Vec<u8> {
 }
 
 pub mod symmetric {
-    use super::{aes128, EncryptionResult};
+    use super::{aes256, EncryptionResult};
     use anyhow::Result;
 
     pub fn generate_key() -> Vec<u8> {
-        aes128::generate_key()
+        aes256::generate_key()
     }
 
     pub fn generate_nonce() -> Vec<u8> {
-        aes128::generate_nonce()
+        aes256::generate_nonce()
     }
 
     pub fn derive_key_from_string(input: &str, salt: &str) -> Result<Vec<u8>> {
-        aes128::derive_key_from_string(input, salt)
+        aes256::derive_key_from_string(input, salt)
     }
 
     /// Encrypt bytes
@@ -35,7 +35,7 @@ pub mod symmetric {
 
     /// Encrypt bytes
     pub fn encrypt_slice_with_nonce(key: &[u8], nonce: &[u8], data: &[u8]) -> Result<EncryptionResult> {
-        let encrypted = aes128::encrypt(key, nonce, data)?;
+        let encrypted = aes256::encrypt(key, nonce, data)?;
 
         Ok(EncryptionResult {
             nonce: String::from_utf8(nonce.into())?,
@@ -45,7 +45,7 @@ pub mod symmetric {
 
     /// Decrypt bytes
     pub fn decrypt_slice(key: &[u8], nonce: &[u8], data: &[u8]) -> Result<Vec<u8>> {
-        let decypted_bytes = aes128::decrypt(key, nonce, data)?;
+        let decypted_bytes = aes256::decrypt(key, nonce, data)?;
         Ok(decypted_bytes)
     }
 

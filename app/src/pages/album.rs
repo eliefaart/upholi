@@ -42,7 +42,6 @@ pub fn album_page(props: &AlbumPageProps) -> Html {
             move || {
                 let mut photo_ids_to_add = vec![];
                 while let Some(id) = queue.pop_front() {
-                    weblog::console_log!(format!("-- {:?}", id));
                     photo_ids_to_add.push(id);
                 }
 

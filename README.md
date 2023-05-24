@@ -20,7 +20,7 @@ End-to-end encrypted personal photo library. Upload and view photos, sort them i
 This project is primarily a hobby project for personal use, and not recommended to use in production. It is also a work in progress and I may still make breaking changes to the interface and data models until the application is released as v1
 
 ## Encryption
-All files and data are end-to-end encrypted, with a few small exceptions. All encryption is done with AES using a 128-bit key.
+All files and data are end-to-end encrypted, with a few small exceptions. All encryption is done with AES using a 256-bit key.
 
 ### What is not encrypted?
 The following information is not encrypted, and/or can be determined by someone with full access to the database and storage:

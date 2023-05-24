@@ -1,10 +1,10 @@
 use aes_gcm_siv::aead::{Aead, NewAead};
-use aes_gcm_siv::{Aes128GcmSiv, Key, Nonce};
+use aes_gcm_siv::{Aes256GcmSiv, Key, Nonce};
 use anyhow::{anyhow, Result};
 use image::EncodableLayout;
 use upholi_lib::passwords::{get_hash_from_phc, hash_password_with_salt};
 
-const KEY_LENGTH: usize = 16;
+const KEY_LENGTH: usize = 32;
 const NONCE_LENGTH: usize = 12;
 
 pub fn generate_key() -> Vec<u8> {
@@ -49,12 +49,12 @@ pub fn decrypt(key: &[u8], nonce: &[u8], bytes: &[u8]) -> Result<Vec<u8>> {
     }
 }
 
-fn get_cipher(key: &[u8]) -> Result<Aes128GcmSiv> {
+fn get_cipher(key: &[u8]) -> Result<Aes256GcmSiv> {
     if key.len() != KEY_LENGTH {
         Err(anyhow!("Encryption key must be {KEY_LENGTH} bytes"))
     } else {
         let key = Key::from_slice(key);
-        Ok(Aes128GcmSiv::new(key))
+        Ok(Aes256GcmSiv::new(key))
     }
 }
 
@@ -76,7 +76,7 @@ mod tests {
 
     #[test]
     fn encrypt_decrypt() {
-        let key = b"e0ca4c29d5504e8d";
+        let key = b"e0ca4c29d5504e8de0ca4c29d5504e8d";
         let nonce = b"452b4dd698de";
         let bytes = b"message";
 
