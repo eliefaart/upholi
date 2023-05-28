@@ -60,7 +60,7 @@ pub mod symmetric {
 
             let encrypted_data = encrypt_slice(key, bytes).unwrap();
 
-            assert!(encrypted_data.nonce.len() > 0);
+            assert!(!encrypted_data.nonce.is_empty());
             assert!(encrypted_data.bytes.len() >= bytes.len());
         }
 
@@ -70,7 +70,7 @@ pub mod symmetric {
             let key = &generate_key();
 
             let encrypted_data = encrypt_slice(key, bytes).unwrap();
-            let decrypted_data = decrypt_slice(key, &encrypted_data.nonce.as_bytes(), &encrypted_data.bytes).unwrap();
+            let decrypted_data = decrypt_slice(key, encrypted_data.nonce.as_bytes(), &encrypted_data.bytes).unwrap();
 
             assert_eq!(decrypted_data, bytes);
         }

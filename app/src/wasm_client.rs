@@ -327,24 +327,27 @@ impl<'a> WasmClient<'a> {
     }
 
     pub async fn delete_photos(&self, ids: &[String]) -> Result<()> {
-        let library = self.get_library().await?;
+        // let library = self.get_library().await?;
         let albums = self.get_albums().await?;
 
-        for mut album in albums {
-            let n_before = album.photos.len();
-            album.photos.retain(|photo_id| !ids.contains(photo_id));
-            let n_removed = n_before - album.photos.len();
+        for album in albums {
+            self.update_album(&album.id, &mut |album: &mut Album| {
+                let album_needs_updating = album.photos.iter().any(|photo_id| ids.contains(photo_id));
 
-            if n_removed > 0 {
-                if let Some(id) = &album.thumbnail_photo_id {
-                    if ids.contains(id) {
-                        album.thumbnail_photo_id = None;
+                if album_needs_updating {
+                    album.photos.retain(|photo_id| !ids.contains(photo_id));
+
+                    if let Some(id) = &album.thumbnail_photo_id {
+                        if ids.contains(id) {
+                            album.thumbnail_photo_id = None;
+                        }
                     }
                 }
 
-                let album_key = self.get_item_encryption_key(&library, &album.id)?;
-                repository::set(&album.id.clone(), album_key, album.into()).await?;
-            }
+                album_needs_updating
+            })
+            .await
+            .unwrap_throw();
         }
 
         self.update_library(&mut |library: &mut Library| {
