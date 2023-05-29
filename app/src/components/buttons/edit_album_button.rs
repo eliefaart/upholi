@@ -1,6 +1,6 @@
 use crate::{
     components::{buttons::Button, dialog::ConfirmDialog, IconHashTag},
-    hooks::use_album,
+    hooks::{use_album, use_overlay},
     WASM_CLIENT,
 };
 use web_sys::HtmlInputElement;
@@ -16,6 +16,7 @@ pub struct EditAlbumButtonProps {
 pub fn edit_album_button(props: &EditAlbumButtonProps) -> Html {
     let (album, refresh_album) = use_album(props.album_id.to_string());
     let dialog_state = use_state(|| false);
+    let (_, set_overlay) = use_overlay();
     let album_title_ref = use_node_ref();
 
     let show_dialog = {
@@ -41,6 +42,8 @@ pub fn edit_album_button(props: &EditAlbumButtonProps) -> Html {
         move |_| {
             let album_title_input = album_title_ref.cast::<HtmlInputElement>();
 
+            set_overlay.emit(true);
+
             if let Some(album_title_input) = album_title_input {
                 let album_title = album_title_input.value();
                 if !album_title.is_empty() {
@@ -48,10 +51,12 @@ pub fn edit_album_button(props: &EditAlbumButtonProps) -> Html {
                     let on_submitted = on_submitted.clone();
                     let dialog_state = dialog_state.clone();
                     let refresh_album = refresh_album.clone();
+                    let set_overlay = set_overlay.clone();
 
                     wasm_bindgen_futures::spawn_local(async move {
                         WASM_CLIENT.update_album_title(&album_id, &album_title).await.unwrap();
                         dialog_state.set(false);
+                        set_overlay.emit(false);
                         refresh_album.emit(());
                         on_submitted.emit(());
                     });

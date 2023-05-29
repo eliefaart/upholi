@@ -327,9 +327,9 @@ impl<'a> WasmClient<'a> {
     }
 
     pub async fn delete_photos(&self, ids: &[String]) -> Result<()> {
-        // let library = self.get_library().await?;
         let albums = self.get_albums().await?;
 
+        // Remove photo from all albums that contain them, and update their shares (if any)
         for album in albums {
             self.update_album(&album.id, &mut |album: &mut Album| {
                 let album_needs_updating = album.photos.iter().any(|photo_id| ids.contains(photo_id));
@@ -350,12 +350,14 @@ impl<'a> WasmClient<'a> {
             .unwrap_throw();
         }
 
+        // Remove photos from library
         self.update_library(&mut |library: &mut Library| {
             library.photos.retain(|photo| !ids.contains(&photo.id));
             Ok(())
         })
         .await?;
 
+        // Delete photo files
         let file_ids = ids
             .iter()
             .flat_map(|id| {

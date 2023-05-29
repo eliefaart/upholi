@@ -1,6 +1,6 @@
 use crate::{
     components::{buttons::Button, dialog::ConfirmDialog, IconShare, ShareUrl},
-    hooks::use_album_share,
+    hooks::{use_album_share, use_overlay},
     WASM_CLIENT,
 };
 use web_sys::HtmlInputElement;
@@ -23,6 +23,7 @@ pub fn share_album_button(props: &ShareAlbumButtonProps) -> Html {
     let (share, refresh_share) = use_album_share(props.album_id.to_string());
     let form = use_state(ShareFormData::default);
     let dialog_state = use_state(|| false);
+    let (_, set_overlay) = use_overlay();
     let form_checkbox_share_ref = use_node_ref();
     let form_text_password_ref = use_node_ref();
 
@@ -75,6 +76,8 @@ pub fn share_album_button(props: &ShareAlbumButtonProps) -> Html {
             if let (Some(form_checkbox_share_ref), Some(form_text_password_ref)) =
                 (form_checkbox_share_ref, form_text_password_ref)
             {
+                set_overlay.emit(true);
+
                 let share = (*share).clone();
                 let album_id = album_id.clone();
                 let on_submitted = on_submitted.clone();
@@ -82,6 +85,7 @@ pub fn share_album_button(props: &ShareAlbumButtonProps) -> Html {
 
                 let do_share = form_checkbox_share_ref.checked();
                 let password = form_text_password_ref.value();
+                let set_overlay = set_overlay.clone();
 
                 wasm_bindgen_futures::spawn_local(async move {
                     if do_share {
@@ -89,7 +93,7 @@ pub fn share_album_button(props: &ShareAlbumButtonProps) -> Html {
                     } else if let Some(share) = share {
                         WASM_CLIENT.delete_share(&share.id).await.unwrap();
                     }
-
+                    set_overlay.emit(false);
                     refresh_share.emit(());
                     on_submitted.emit(());
                 });

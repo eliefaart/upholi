@@ -8,7 +8,7 @@ use web_sys::Document;
 use yew::prelude::*;
 use yew_router::{BrowserRouter, Routable, Switch};
 
-use crate::components::FileUploader;
+use crate::components::{FileUploader, Overlay};
 
 mod api_client;
 mod components;
@@ -86,6 +86,7 @@ fn app() -> Html {
             <BrowserRouter>
                 <Switch<Route> render={switch} />
                 <FileUploader/>
+                <Overlay/>
                 <div id="modal-host"/>
             </BrowserRouter>
         </BounceRoot>

@@ -1,6 +1,6 @@
 use crate::{
     components::{ConfirmButton, IconDelete, ShareUrl},
-    hooks::use_album,
+    hooks::{use_album, use_overlay},
     models::LibraryShare,
     WASM_CLIENT,
 };
@@ -15,6 +15,7 @@ pub struct ShareInfoProps {
 #[function_component(ShareInfo)]
 pub fn share_info(props: &ShareInfoProps) -> Html {
     let (album, _) = use_album(props.share.album_id.clone());
+    let (_, set_overlay) = use_overlay();
 
     let delete_share = {
         let share_id = props.share.id.clone();
@@ -23,9 +24,13 @@ pub fn share_info(props: &ShareInfoProps) -> Html {
         move |_| {
             let share_id = share_id.clone();
             let on_deleted = on_deleted.clone();
+            let set_overlay = set_overlay.clone();
+
+            set_overlay.emit(true);
 
             wasm_bindgen_futures::spawn_local(async move {
                 WASM_CLIENT.delete_share(&share_id).await.unwrap();
+                set_overlay.emit(false);
                 on_deleted.emit(());
             });
         }

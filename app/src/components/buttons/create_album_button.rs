@@ -1,5 +1,6 @@
 use crate::{
     components::{buttons::Button, dialog::ConfirmDialog, IconCreate},
+    hooks::use_overlay,
     WASM_CLIENT,
 };
 use web_sys::HtmlInputElement;
@@ -13,6 +14,7 @@ pub struct CreateAlbumButtonProps {
 #[function_component(CreateAlbumButton)]
 pub fn create_album_button(props: &CreateAlbumButtonProps) -> Html {
     let dialog_state = use_state(|| false);
+    let (_, set_overlay) = use_overlay();
     let album_title_ref = use_node_ref();
 
     let show_dialog = {
@@ -42,10 +44,14 @@ pub fn create_album_button(props: &CreateAlbumButtonProps) -> Html {
                 if !album_title.is_empty() {
                     let on_created = on_created.clone();
                     let dialog_state = dialog_state.clone();
+                    let set_overlay = set_overlay.clone();
+
+                    set_overlay.emit(true);
 
                     wasm_bindgen_futures::spawn_local(async move {
                         let id = WASM_CLIENT.create_album(&album_title, vec![]).await.unwrap();
                         dialog_state.set(false);
+                        set_overlay.emit(false);
                         on_created.emit(id)
                     });
                 }

@@ -1,5 +1,6 @@
 use crate::{
     components::{buttons::Button, dialog::ConfirmDialog, icons::IconAddToAlbum, PickAlbum},
+    hooks::use_overlay,
     WASM_CLIENT,
 };
 use yew::prelude::*;
@@ -13,6 +14,7 @@ pub struct AddToAlbumButtonProps {
 #[function_component(AddToAlbumButton)]
 pub fn add_to_album_button(props: &AddToAlbumButtonProps) -> Html {
     let dialog_state = use_state(|| false);
+    let (_, set_overlay) = use_overlay();
     let selected_album: UseStateHandle<Option<String>> = use_state(|| None);
 
     let show_dialog = {
@@ -35,17 +37,21 @@ pub fn add_to_album_button(props: &AddToAlbumButtonProps) -> Html {
         let dialog_state = dialog_state.clone();
         let selected_album = selected_album.clone();
         move |_| {
-            let photo_ids = photo_ids.clone();
-            let on_added = on_added.clone();
-            let dialog_state = dialog_state.clone();
-
             if let Some(selected_album) = (*selected_album).clone() {
+                set_overlay.emit(true);
+
+                let photo_ids = photo_ids.clone();
+                let on_added = on_added.clone();
+                let dialog_state = dialog_state.clone();
+                let set_overlay = set_overlay.clone();
+
                 wasm_bindgen_futures::spawn_local(async move {
                     WASM_CLIENT
                         .add_photos_to_album(&selected_album, &photo_ids)
                         .await
                         .unwrap();
                     dialog_state.set(false);
+                    set_overlay.emit(false);
                     on_added.emit(())
                 });
             }
