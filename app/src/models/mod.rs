@@ -23,9 +23,8 @@ pub struct EncryptedItem {
 
 impl EncryptedItem {
     pub fn from<T: Serialize>(key: &[u8], item: &T) -> Result<Self> {
-        let json = serde_json::to_string(item)?;
-        let bytes = json.as_bytes();
-        let encrypt_result = crate::encryption::symmetric::encrypt_slice(key, bytes)?;
+        let bytes = bincode::serialize(item)?;
+        let encrypt_result = crate::encryption::symmetric::encrypt_slice(key, &bytes)?;
         let base64 = base64::encode_config(encrypt_result.bytes, base64::STANDARD);
         Ok(Self {
             base64,
@@ -37,7 +36,7 @@ impl EncryptedItem {
         let nonce = self.nonce.as_bytes();
         let bytes = base64::decode_config(&self.base64, base64::STANDARD)?;
         let bytes = crate::encryption::symmetric::decrypt_slice(key, nonce, &bytes)?;
-        Ok(serde_json::from_slice(&bytes)?)
+        Ok(bincode::deserialize(&bytes)?)
     }
 }
 
