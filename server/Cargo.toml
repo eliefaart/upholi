@@ -9,7 +9,7 @@ edition = "2021"
 upholi_lib = { path = "../lib" }
 anyhow = "1.0.65"
 async_once = "0.2.6"
-axum = { version = "0.5.16", features = ["multipart"] }
+axum = { version = "0.6.18", features = ["multipart"] }
 bson = "2.3.0"
 config = "0.13.3"
 cookie = "0.17.0"
@@ -18,7 +18,7 @@ mongodb = "2.2.2"
 serde = "1.0"
 tokio = { version = "1.19.2", features = ["full"] }
 tower-cookies = "0.9.0"
-tower-http = { version = "0.3.4", features = ["fs", "cors"] }
+tower-http = { version = "0.4.0", features = ["fs", "cors"] }
 azure_core = "0.6.0"
 azure_storage = "0.7.0"
 azure_storage_blobs = "0.7.0"

@@ -2,10 +2,10 @@ use crate::settings::Settings;
 use anyhow::Result;
 use axum::{
     async_trait,
-    extract::{FromRequest, RequestParts},
-    http::{HeaderMap, HeaderValue, StatusCode},
+    extract::{DefaultBodyLimit, FromRequestParts},
+    http::{request::Parts, HeaderMap, HeaderValue, StatusCode},
     middleware::Next,
-    response::{IntoResponse, Response},
+    response::Response,
     routing::{delete, get, get_service, post},
     Router,
 };
@@ -45,13 +45,9 @@ async fn main() {
     let mut index_file_router = Router::new();
 
     for path in virtual_page_paths {
-        index_file_router = index_file_router.nest(
+        index_file_router = index_file_router.nest_service(
             path,
-            get_service(tower_http::services::ServeFile::new(format!(
-                "{}/index.html",
-                SETTINGS.server.wwwroot_path
-            )))
-            .handle_error(on_io_error),
+            tower_http::services::ServeFile::new(format!("{}/index.html", SETTINGS.server.wwwroot_path)),
         );
     }
 
@@ -68,12 +64,19 @@ async fn main() {
         .route("/share/:id/auth", get(is_authorized_for_share).post(authorize_share))
         .route("/item", get(get_item_ids).delete(delete_items))
         .route("/item/:id", get(get_item).post(set_item).delete(delete_item))
-        .route("/file", get(get_file_ids).post(set_files).delete(delete_files))
+        .route(
+            "/file",
+            get(get_file_ids)
+                .post(set_files)
+                .layer(DefaultBodyLimit::max(52_428_800))
+                .delete(delete_files),
+        )
         .route("/file/:id", get(get_file).delete(delete_file));
+
     let app = Router::new()
         .nest("/api", api_routes)
         .merge(index_file_router)
-        .fallback(get_service(ServeDir::new(&SETTINGS.server.wwwroot_path)).handle_error(on_io_error))
+        .fallback(get_service(ServeDir::new(&SETTINGS.server.wwwroot_path)))
         .layer(cors)
         .layer(CookieManagerLayer::new())
         .layer(axum::middleware::from_fn(session_cookie_layer));
@@ -88,19 +91,14 @@ async fn main() {
     axum::Server::bind(&addr).serve(app.into_make_service()).await.unwrap();
 }
 
-async fn on_io_error(_err: std::io::Error) -> impl IntoResponse {
-    StatusCode::INTERNAL_SERVER_ERROR
-}
-
 #[async_trait]
-impl<B> FromRequest<B> for Session
+impl<S> FromRequestParts<S> for Session
 where
-    B: Send,
+    S: Send + Sync,
 {
     type Rejection = StatusCode;
-
-    async fn from_request(req: &mut RequestParts<B>) -> Result<Self, Self::Rejection> {
-        let session_id = get_session_id_from_headers(req.headers())
+    async fn from_request_parts(parts: &mut Parts, _: &S) -> Result<Self, Self::Rejection> {
+        let session_id = get_session_id_from_headers(&parts.headers)
             .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
             .ok_or(StatusCode::UNAUTHORIZED)?;
 
@@ -112,16 +110,16 @@ where
 }
 
 #[async_trait]
-impl<B> FromRequest<B> for UserId
+impl<S> FromRequestParts<S> for UserId
 where
-    B: Send,
+    S: Send + Sync,
 {
     type Rejection = StatusCode;
-
-    async fn from_request(req: &mut RequestParts<B>) -> Result<Self, Self::Rejection> {
-        let session = Session::from_request(req).await?;
+    async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
+        let session = Session::from_request_parts(parts, state).await?;
         let user_id = session.user_id.ok_or(StatusCode::UNAUTHORIZED)?;
         Ok(UserId(user_id))
+        //Err(StatusCode::INTERNAL_SERVER_ERROR)
     }
 }
 
