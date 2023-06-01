@@ -1,5 +1,5 @@
 use anyhow::{anyhow, Result};
-use image::{DynamicImage, GenericImageView, ImageFormat};
+use image::{DynamicImage, ImageFormat};
 
 const DIMENSIONS_THUMB: u32 = 300;
 const DIMENSIONS_PREVIEW: u32 = 1600;
@@ -49,8 +49,8 @@ impl Image {
             width,
             height,
             bytes_original: bytes.to_vec(),
-            bytes_thumbnail: Self::get_image_bytes(&image_thumbnail),
-            bytes_preview: Self::get_image_bytes(&image_preview),
+            bytes_thumbnail: Self::get_image_bytes(&image_thumbnail)?,
+            bytes_preview: Self::get_image_bytes(&image_preview)?,
         })
     }
 
@@ -99,7 +99,7 @@ impl Image {
 
     /// Clone an image
     fn clone_image(image: &DynamicImage) -> Result<DynamicImage> {
-        Self::get_image_from_bytes(&Self::get_image_bytes(image))
+        Self::get_image_from_bytes(&Self::get_image_bytes(image)?)
     }
 
     /// Convert image bytes to image object
@@ -111,21 +111,10 @@ impl Image {
     }
 
     /// Get bytes from image in Jpeg format
-    fn get_image_bytes(image: &DynamicImage) -> Vec<u8> {
-        let mut buffer: Vec<u8> = Vec::new();
-        let write_result = image.write_to(&mut buffer, ImageFormat::Jpeg);
-        match write_result {
-            Ok(_x) => (),
-            Err(e) => println!("{e}"),
-        }
-        buffer
+    fn get_image_bytes(image: &DynamicImage) -> Result<Vec<u8>> {
+        let buffer: Vec<u8> = Vec::new();
+        let mut cursor = std::io::Cursor::new(buffer);
+        image.write_to(&mut cursor, ImageFormat::Jpeg)?;
+        Ok(cursor.into_inner())
     }
 }
-
-/*
-    A PNG file in bytes, to use for test cases later.
-    let minipng = [137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1,
-               0, 0, 0, 1, 8, 0, 0, 0, 0, 58, 126, 155, 85, 0, 0, 0, 10, 73, 68, 65, 84,
-               8, 215, 99, 248, 15, 0, 1, 1, 1, 0, 27, 182, 238, 86, 0, 0, 0, 0, 73, 69,
-               78, 68, 174, 66, 96, 130];
-*/
