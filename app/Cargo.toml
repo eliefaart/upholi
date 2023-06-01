@@ -1,6 +1,6 @@
 [package]
 name = "upholi_app"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Eric Liefaart"]
 license = "AGPL-3.0-only"
 edition = "2021"
