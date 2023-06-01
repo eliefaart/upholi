@@ -1,10 +1,10 @@
-use anyhow::Result;
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
-
 pub use album::*;
+use anyhow::Result;
 pub use auth_status::*;
+use base64::prelude::*;
 pub use library::*;
 pub use photo::*;
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 pub use share::*;
 pub use upload_queue::*;
 
@@ -25,7 +25,7 @@ impl EncryptedItem {
     pub fn from<T: Serialize>(key: &[u8], item: &T) -> Result<Self> {
         let bytes = bincode::serialize(item)?;
         let encrypt_result = crate::encryption::symmetric::encrypt_slice(key, &bytes)?;
-        let base64 = base64::encode_config(encrypt_result.bytes, base64::STANDARD);
+        let base64 = BASE64_STANDARD.encode(encrypt_result.bytes);
         Ok(Self {
             base64,
             nonce: encrypt_result.nonce,
@@ -34,7 +34,7 @@ impl EncryptedItem {
 
     pub fn decrypt<TDecrypted: DeserializeOwned>(&self, key: &[u8]) -> Result<TDecrypted> {
         let nonce = self.nonce.as_bytes();
-        let bytes = base64::decode_config(&self.base64, base64::STANDARD)?;
+        let bytes = BASE64_STANDARD.decode(&self.base64)?;
         let bytes = crate::encryption::symmetric::decrypt_slice(key, nonce, &bytes)?;
         Ok(bincode::deserialize(&bytes)?)
     }

@@ -12,6 +12,7 @@ use crate::repository;
 use crate::repository::ItemVariant;
 use crate::{encryption, hashing};
 use anyhow::{anyhow, Result};
+use base64::prelude::*;
 use serde::Serialize;
 use upholi_lib::http::request::{CreateUserRequest, UpsertShareRequest};
 use upholi_lib::ids::id;
@@ -319,7 +320,7 @@ impl<'a> WasmClient<'a> {
                 .await?
                 .ok_or_else(|| anyhow!("File '{file_id}' not found"))?;
             let photo_bytes = decrypt_slice(&encryption_key, nonce.as_bytes(), &encrypted_bytes)?;
-            let photo_base64 = base64::encode_config(photo_bytes, base64::STANDARD);
+            let photo_base64 = BASE64_STANDARD.encode(photo_bytes);
 
             let src = format!("data:{};base64,{}", photo.content_type, photo_base64);
             Ok(src)

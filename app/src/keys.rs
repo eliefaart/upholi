@@ -1,10 +1,10 @@
+use crate::{encryption, hashing};
 use anyhow::{anyhow, Result};
+use base64::prelude::*;
 use once_cell::sync::Lazy;
 use std::sync::RwLock;
 use wasm_bindgen::UnwrapThrowExt;
 use web_sys::Storage;
-
-use crate::{encryption, hashing};
 
 const LOCAL_STORAGE_KEY_MASTER_KEY: &str = "master-key";
 const LOCAL_STORAGE_KEY_SHARE_KEY_PREFIX: &str = "share-key";
@@ -13,7 +13,7 @@ static MASTER_KEY: Lazy<RwLock<Vec<u8>>> = Lazy::new(|| {
     let storage = get_local_storage();
     let stored_key = storage.get_item(LOCAL_STORAGE_KEY_MASTER_KEY).unwrap_throw();
     let key = match stored_key {
-        Some(key) => base64::decode_config(key, base64::STANDARD).unwrap_throw(),
+        Some(key) => BASE64_STANDARD.decode(key).unwrap_throw(),
         None => vec![],
     };
 
@@ -27,7 +27,7 @@ pub fn get_master_key() -> Vec<u8> {
 
 /// Set user's master encryption key
 pub fn set_master_key(key: &Vec<u8>) {
-    let key_str = &base64::encode_config(key, base64::STANDARD);
+    let key_str = &BASE64_STANDARD.encode(key);
     let mut master_key = MASTER_KEY.write().unwrap_throw();
     *master_key = key.clone();
 
@@ -41,7 +41,7 @@ pub fn get_share_key(share_id: &str) -> Result<Option<Vec<u8>>> {
     let storage_key = get_storage_key_for_share(share_id);
     match storage.get_item(&storage_key).unwrap_throw() {
         Some(share_key) => {
-            let share_key = base64::decode_config(share_key, base64::STANDARD)?;
+            let share_key = BASE64_STANDARD.decode(share_key)?;
             Ok(Some(share_key))
         }
         None => Ok(None),
@@ -52,7 +52,7 @@ pub fn get_share_key(share_id: &str) -> Result<Option<Vec<u8>>> {
 pub fn set_share_key(share_id: &str, key: &[u8]) -> Result<()> {
     let storage = get_local_storage();
     let storage_key = get_storage_key_for_share(share_id);
-    let key_str = &base64::encode_config(key, base64::STANDARD);
+    let key_str = &BASE64_STANDARD.encode(key);
     storage
         .set_item(&storage_key, key_str)
         .map_err(|_| anyhow!("Error writing share key to storage"))?;
