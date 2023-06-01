@@ -191,12 +191,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "904dfeac50f3cdaba28fc6f57fdcddb75f49ed61346676a78c4ffe55877802fd"
 
 [[package]]
-name = "base64ct"
-version = "1.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8c3c1a368f70d6cf7302d78f8f7093da241fb8e8807c05cc9e51a125895a6d5b"
-
-[[package]]
 name = "bitflags"
 version = "1.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1241,17 +1235,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "password-hash"
-version = "0.4.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7676374caaee8a325c9e7a2ae557f216c5563a171d6997b0ef8a65af35147700"
-dependencies = [
- "base64ct",
- "rand_core 0.6.3",
- "subtle",
-]
-
-[[package]]
 name = "paste"
 version = "1.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1274,14 +1257,12 @@ dependencies = [
 
 [[package]]
 name = "pbkdf2"
-version = "0.11.0"
+version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "83a0692ec44e4cf1ef28ca317f14f8f07da2d95ec3fa01f86e4467b725e60917"
+checksum = "f0ca0b5a68607598bf3bad68f32227a8164f6254833f84eafaac409cd6746c31"
 dependencies = [
  "digest",
  "hmac",
- "password-hash",
- "sha2",
 ]
 
 [[package]]
@@ -2318,7 +2299,7 @@ version = "0.2.0"
 dependencies = [
  "anyhow",
  "nanoid",
- "pbkdf2 0.11.0",
+ "pbkdf2 0.12.1",
  "serde",
 ]
 

@@ -14,7 +14,7 @@ pub fn hash_password(password: &str) -> Result<String> {
 /// Hashes password using algorithm pbkdf2-sha512 and using given salt
 /// Returns the full PHC hash string.
 pub fn hash_password_with_salt(password: &str, salt: &str) -> Result<String> {
-    let salt = pbkdf2::password_hash::SaltString::b64_encode(salt.as_bytes()).map_err(|error| anyhow!("{error:?}"))?;
+    let salt = pbkdf2::password_hash::SaltString::encode_b64(salt.as_bytes()).map_err(|error| anyhow!("{error:?}"))?;
     let phc = Pbkdf2
         .hash_password(password.as_bytes(), &salt)
         .map_err(|error| anyhow!("{error:?}"))?;
@@ -48,7 +48,7 @@ mod tests {
         let phc = hash_password(password).unwrap();
         let valid = verify_password_hash(password, &phc);
 
-        assert_eq!(valid, true);
+        assert!(valid);
     }
 
     #[test]
@@ -59,6 +59,6 @@ mod tests {
         let phc = hash_password_with_salt(password, salt).unwrap();
         let valid = verify_password_hash(password, &phc);
 
-        assert_eq!(valid, true);
+        assert!(valid);
     }
 }
