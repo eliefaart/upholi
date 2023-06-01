@@ -126,12 +126,12 @@ dependencies = [
 
 [[package]]
 name = "azure_core"
-version = "0.6.0"
+version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e691a99e962919e047217367613b3dd39d7510ef1cebbe1e04980117d8fab42f"
+checksum = "8145944236fd41c52140108c98b7e46da0f64be494bce7340b03a84c166e059d"
 dependencies = [
  "async-trait",
- "base64 0.13.1",
+ "base64 0.21.2",
  "bytes",
  "dyn-clone",
  "futures",
@@ -140,11 +140,11 @@ dependencies = [
  "log",
  "paste",
  "pin-project",
+ "quick-xml",
  "rand 0.8.5",
  "reqwest",
  "rustc_version 0.4.0",
  "serde",
- "serde-xml-rs",
  "serde_json",
  "time",
  "url",
@@ -153,21 +153,19 @@ dependencies = [
 
 [[package]]
 name = "azure_storage"
-version = "0.7.0"
+version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8f53f36301c968007aa54f40a39cf95bb710f47b3fe2ed360fc82d8080854621"
+checksum = "ac51cec052458f949d230895144f25cb325e61e79f4b6a47f750502888e54b7b"
 dependencies = [
  "RustyXML",
  "async-trait",
  "azure_core",
- "base64 0.13.1",
  "bytes",
  "futures",
  "hmac",
  "log",
  "once_cell",
  "serde",
- "serde-xml-rs",
  "serde_derive",
  "serde_json",
  "sha2",
@@ -178,20 +176,18 @@ dependencies = [
 
 [[package]]
 name = "azure_storage_blobs"
-version = "0.7.0"
+version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7d965285e7d3ebe8c34d921149bb2f1972ccba71ac5588cb82cfe9252a9578b5"
+checksum = "faf2a451fefb055410fbc9e26e54a1863d1e930125a4346487e2d2d5f64081cb"
 dependencies = [
  "RustyXML",
  "azure_core",
  "azure_storage",
- "base64 0.13.1",
  "bytes",
  "futures",
  "log",
  "md5",
  "serde",
- "serde-xml-rs",
  "serde_derive",
  "serde_json",
  "time",
@@ -1505,6 +1501,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a1d01941d82fa2ab50be1e79e6714289dd7cde78eba4c074bc5a4374f650dfe0"
 
 [[package]]
+name = "quick-xml"
+version = "0.28.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0ce5e73202a820a31f8a0ee32ada5e21029c81fd9e3ebf668a40832e4219d9d1"
+dependencies = [
+ "memchr",
+ "serde",
+]
+
+[[package]]
 name = "quote"
 version = "1.0.28"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1844,18 +1850,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2113ab51b87a539ae008b5c6c02dc020ffa39afd2d83cffcb3f4eb2722cebec2"
 dependencies = [
  "serde_derive",
-]
-
-[[package]]
-name = "serde-xml-rs"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fb3aa78ecda1ebc9ec9847d5d3aba7d618823446a049ba2491940506da6e2782"
-dependencies = [
- "log",
- "serde",
- "thiserror",
- "xml-rs",
 ]
 
 [[package]]
@@ -2831,12 +2825,6 @@ checksum = "05f360fc0b24296329c78fda852a1e9ae82de9cf7b27dae4b7f62f118f77b9ed"
 dependencies = [
  "tap",
 ]
-
-[[package]]
-name = "xml-rs"
-version = "0.8.13"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2d8f380ae16a37b30e6a2cf67040608071384b1450c189e61bea3ff57cde922d"
 
 [[package]]
 name = "yaml-rust"

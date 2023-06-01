@@ -169,10 +169,12 @@ pub fn get_cached_shares() -> Result<Vec<Share>> {
     let cache = CACHE.read().unwrap();
     let shares = cache
         .iter()
-        .filter(|(_, item)| matches!(item, ItemVariant::Share(_)))
-        .map(|(_, item)| match item {
-            ItemVariant::Share(share) => share.to_owned(),
-            _ => todo!(),
+        .filter_map(|(_, item)| {
+            if let ItemVariant::Share(share) = item {
+                Some(share.to_owned())
+            } else {
+                None
+            }
         })
         .collect();
     Ok(shares)
