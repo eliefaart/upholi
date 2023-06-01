@@ -6,7 +6,7 @@ license = "AGPL-3.0-only"
 edition = "2021"
 
 [dependencies]
-aes-gcm-siv = "0.10.3"
+aes-gcm-siv = "0.11.1"
 anyhow = "1.0.65"
 async-trait = "0.1.57"
 base64 = "0.13.0"

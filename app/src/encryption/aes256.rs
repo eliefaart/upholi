@@ -1,4 +1,4 @@
-use aes_gcm_siv::aead::{Aead, NewAead};
+use aes_gcm_siv::aead::{Aead, KeyInit};
 use aes_gcm_siv::{Aes256GcmSiv, Key, Nonce};
 use anyhow::{anyhow, Result};
 use image::EncodableLayout;
@@ -53,7 +53,7 @@ fn get_cipher(key: &[u8]) -> Result<Aes256GcmSiv> {
     if key.len() != KEY_LENGTH {
         Err(anyhow!("Encryption key must be {KEY_LENGTH} bytes"))
     } else {
-        let key = Key::from_slice(key);
+        let key = Key::<Aes256GcmSiv>::from_slice(key);
         Ok(Aes256GcmSiv::new(key))
     }
 }
