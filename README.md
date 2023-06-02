@@ -5,7 +5,7 @@
 End-to-end encrypted personal photo library. Upload and view photos, sort them in albums, and share albums via a public password-protected link.
 
 <p align="center">
-  <img width="550" height="477" src="https://github.com/eliefaart/upholi/blob/main/.github/preview.png?raw=true">
+  <img width="525" height="376" src="https://github.com/eliefaart/upholi/blob/main/.github/preview.png?raw=true">
 </p>
 
 ## Repository anatomy
