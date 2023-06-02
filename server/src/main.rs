@@ -18,7 +18,6 @@ use handlers::{files::*, items::*, shares::*, user::*};
 use lazy_static::lazy_static;
 use model::Session;
 use tower_cookies::{Cookie, CookieManagerLayer};
-use tower_http::cors::{Any, CorsLayer};
 use tower_http::services::ServeDir;
 use upholi_lib::ids::id;
 
@@ -51,11 +50,6 @@ async fn main() {
         );
     }
 
-    let cors = CorsLayer::new()
-        .allow_methods(Any)
-        .allow_headers(Any)
-        .allow_origin("http://127.0.0.1:8080".parse::<HeaderValue>().unwrap());
-
     let api_routes = Router::new()
         .route("/user", get(get_user).post(create_user))
         .route("/user/auth", post(authenticate_user))
@@ -77,7 +71,6 @@ async fn main() {
         .nest("/api", api_routes)
         .merge(index_file_router)
         .fallback(get_service(ServeDir::new(&SETTINGS.server.wwwroot_path)))
-        .layer(cors)
         .layer(CookieManagerLayer::new())
         .layer(axum::middleware::from_fn(session_cookie_layer));
 
@@ -119,7 +112,6 @@ where
         let session = Session::from_request_parts(parts, state).await?;
         let user_id = session.user_id.ok_or(StatusCode::UNAUTHORIZED)?;
         Ok(UserId(user_id))
-        //Err(StatusCode::INTERNAL_SERVER_ERROR)
     }
 }
 
@@ -136,8 +128,7 @@ async fn session_cookie_layer<B>(mut req: axum::http::Request<B>, next: Next<B>)
             .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?,
     };
 
-    let request_is_secure = req.uri().scheme_str().unwrap_or("") == "https";
-    let session_cookie = create_sesson_cookie(session_id, request_is_secure);
+    let session_cookie = create_sesson_cookie(session_id);
 
     // Add the newly created session to the request
     if !request_contains_session {
@@ -180,13 +171,13 @@ async fn create_new_session() -> Result<String> {
     Ok(session.id)
 }
 
-fn create_sesson_cookie<'a>(session_id: String, secure: bool) -> Cookie<'a> {
+fn create_sesson_cookie<'a>(session_id: String) -> Cookie<'a> {
     let mut expires_on = OffsetDateTime::now_utc();
     expires_on += Duration::days(SESSION_COOKIE_EXPIRATION_TIME_DAYS);
     Cookie::build(SESSION_COOKIE_NAME, session_id)
         .path("/")
         .http_only(true)
-        .secure(secure)
+        .secure(true)
         .expires(expires_on)
         .same_site(SameSite::Strict)
         .finish()
