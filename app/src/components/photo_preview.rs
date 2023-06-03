@@ -4,7 +4,7 @@ use yew::prelude::*;
 
 #[derive(Properties, PartialEq)]
 pub struct PhotoPreviewProps {
-    pub photo_id: String,
+    pub photo_id: AttrValue,
 }
 
 #[function_component(PhotoPreview)]

@@ -5,6 +5,7 @@ use crate::{
 use web_sys::Element;
 use yew::prelude::*;
 use yew_hooks::use_interval;
+use yew_router::prelude::{use_location, use_navigator, use_route};
 
 /// Desired minimum height of a gallery photo.
 const MIN_HEIGHT: f32 = 175.;
@@ -13,7 +14,7 @@ const MAX_HEIGHT: f32 = 350.;
 /// Pixels between each photo, as per CSS.
 const GAP_SIZE: f32 = 5.;
 /// Numbers of photos to always load, regardless of if they have been in view
-const N_PHOTOS_TO_ALWAYS_LOAD: usize = 15;
+const N_PHOTOS_TO_ALWAYS_LOAD: usize = 5;
 
 #[derive(PartialEq, Properties)]
 pub struct GalleryProps {
@@ -24,8 +25,10 @@ pub struct GalleryProps {
 
 #[function_component(Gallery)]
 pub fn gallery(props: &GalleryProps) -> Html {
+    let navigator = use_navigator().unwrap();
+    let location = use_location().unwrap();
+    let route = use_route::<crate::Route>().unwrap();
     let node_ref = use_node_ref();
-    let photo_opened = use_state(|| None);
     let available_width = use_state(|| None);
     let photo_ids_allowed_to_load: UseStateHandle<Vec<String>> = use_state(Vec::new);
     let photo_ids: UseStateHandle<Vec<String>> = use_state(|| props.photos.iter().map(|p| p.id.to_string()).collect());
@@ -148,10 +151,11 @@ pub fn gallery(props: &GalleryProps) -> Html {
                         let selected = selected_photos.contains(&photo.id);
                         let class = selected.then(|| "selected".to_string());
 
-                        let photo_opened = photo_opened.clone();
+                        let route = route.clone();
+                        let navigator = navigator.clone();
                         let on_click_photo_id = photo.id.clone();
                         let on_click = Callback::from(move |_| {
-                            photo_opened.set(Some(on_click_photo_id.clone()));
+                            navigator.push_with_state(&route, on_click_photo_id.clone());
                         });
 
                         let on_context_menu_on_photo_clicked = on_photo_clicked.clone();
@@ -200,9 +204,15 @@ pub fn gallery(props: &GalleryProps) -> Html {
     html! {
         <div class="gallery" ref={node_ref}>
             {(*photos).clone()}
-            <GalleryDetail
-                photos={props.photos.clone()}
-                photo_id={photo_opened}/>
+            {
+                html!{
+                if let Some(state) = location.state::<String>() {
+                    <GalleryDetail
+                        photos={props.photos.clone()}
+                        photo_id={(*state).clone()}/>
+                }
+            }
+            }
         </div>
     }
 }
