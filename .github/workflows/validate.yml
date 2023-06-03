@@ -4,6 +4,7 @@ on:
   push:
     branches-ignore:
       - main
+      - dev
     paths:
       - .github/workflows/validate.yml
       - app/**
