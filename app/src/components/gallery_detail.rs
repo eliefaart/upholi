@@ -3,7 +3,9 @@ use crate::{
         Button, DownloadPhotoButton, IconChevronLeft, IconChevronRight, IconClose, PhotoExifButton, PhotoPreview,
     },
     models::AlbumPhoto,
+    RouteQuery,
 };
+use wasm_bindgen::UnwrapThrowExt;
 use yew::prelude::*;
 use yew_router::prelude::{use_navigator, use_route};
 
@@ -49,7 +51,10 @@ pub fn gallery_detail(props: &GalleryDetailProps) -> Html {
             let route = route.clone();
 
             if let Some(target_photo) = target_photo.clone() {
-                navigator.replace_with_state(&route, target_photo.id);
+                let query = RouteQuery {
+                    photo_id: target_photo.id,
+                };
+                navigator.replace_with_query(&route, &query).unwrap_throw();
             }
         };
 
@@ -68,7 +73,10 @@ pub fn gallery_detail(props: &GalleryDetailProps) -> Html {
             let route = route.clone();
 
             if let Some(target_photo) = target_photo.clone() {
-                navigator.replace_with_state(&route, target_photo.id);
+                let query = RouteQuery {
+                    photo_id: target_photo.id,
+                };
+                navigator.replace_with_query(&route, &query).unwrap_throw();
             }
         };
 

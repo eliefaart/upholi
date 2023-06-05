@@ -1,7 +1,9 @@
 use crate::{
     components::{photo::Photo, GalleryDetail, PhotoPlaceholder},
     models::AlbumPhoto,
+    RouteQuery,
 };
+use wasm_bindgen::UnwrapThrowExt;
 use web_sys::Element;
 use yew::prelude::*;
 use yew_hooks::use_interval;
@@ -155,7 +157,10 @@ pub fn gallery(props: &GalleryProps) -> Html {
                         let navigator = navigator.clone();
                         let on_click_photo_id = photo.id.clone();
                         let on_click = Callback::from(move |_| {
-                            navigator.push_with_state(&route, on_click_photo_id.clone());
+                            let query = RouteQuery {
+                                photo_id: on_click_photo_id.clone(),
+                            };
+                            navigator.push_with_query(&route, &query).unwrap_throw();
                         });
 
                         let on_context_menu_on_photo_clicked = on_photo_clicked.clone();
@@ -206,12 +211,12 @@ pub fn gallery(props: &GalleryProps) -> Html {
             {(*photos).clone()}
             {
                 html!{
-                if let Some(state) = location.state::<String>() {
-                    <GalleryDetail
-                        photos={props.photos.clone()}
-                        photo_id={(*state).clone()}/>
+                    if let Ok(query) = location.query::<RouteQuery>() {
+                        <GalleryDetail
+                            photos={props.photos.clone()}
+                            photo_id={query.photo_id}/>
+                    }
                 }
-            }
             }
         </div>
     }

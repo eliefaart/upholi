@@ -2,6 +2,7 @@ use api_client::ApiClient;
 use bounce::BounceRoot;
 use once_cell::sync::Lazy;
 use pages::{AlbumPage, AlbumsPage, HomePage, LoginPage, NotFoundPage, RegisterPage, SharePage, SharedPage};
+use serde::{Deserialize, Serialize};
 use wasm_bindgen::{prelude::wasm_bindgen, UnwrapThrowExt};
 use wasm_client::WasmClient;
 use web_sys::Document;
@@ -64,6 +65,13 @@ pub enum Route {
     #[not_found]
     #[at("/404")]
     NotFound,
+}
+
+/// Query string parameters
+#[derive(Serialize, Deserialize)]
+pub struct RouteQuery {
+    /// Photo opened in the GalleryDetail component.
+    pub photo_id: String,
 }
 
 fn switch(routes: Route) -> Html {

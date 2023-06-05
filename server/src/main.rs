@@ -34,7 +34,7 @@ lazy_static! {
 }
 
 const SESSION_COOKIE_NAME: &str = "session";
-const SESSION_COOKIE_EXPIRATION_TIME_DAYS: i64 = 30;
+const SESSION_COOKIE_EXPIRATION_TIME_DAYS: i64 = 60;
 
 pub struct UserId(String);
 
