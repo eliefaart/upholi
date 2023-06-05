@@ -33,7 +33,7 @@ lazy_static! {
     pub static ref SETTINGS: Settings = Settings::new();
 }
 
-const SESSION_COOKIE_NAME: &str = "session";
+const SESSION_COOKIE_NAME: &str = ".qweqwee";
 const SESSION_COOKIE_EXPIRATION_TIME_DAYS: i64 = 60;
 
 pub struct UserId(String);
