@@ -1,13 +1,26 @@
-use crate::{components::Form, Route, WASM_CLIENT};
+use crate::{components::Form, hooks::use_authenticated, models::AuthStatus, Route, WASM_CLIENT};
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
 use yew_router::prelude::use_navigator;
 
 #[function_component(RegisterPage)]
 pub fn register() -> Html {
+    let state = use_authenticated();
     let username_ref = use_node_ref();
     let password_ref = use_node_ref();
     let navigator = use_navigator().unwrap();
+
+    {
+        let navigator = navigator.clone();
+        use_effect_with_deps(
+            move |state| {
+                if state == &AuthStatus::Authenticated {
+                    navigator.replace(&Route::Home);
+                }
+            },
+            (*state).clone(),
+        );
+    }
 
     let on_click_create = {
         let username_ref = username_ref.clone();
@@ -33,13 +46,15 @@ pub fn register() -> Html {
     };
 
     html! {
-        <Form title="Create new user" on_submit={on_click_create}>
-            <label>{"Username"}
-                <input ref={username_ref} type="text"/>
-            </label>
-            <label>{"Password"}
-                <input ref={password_ref} type="password"/>
-            </label>
-        </Form>
+        if *state != AuthStatus::Fetching {
+            <Form title="Create new user" on_submit={on_click_create}>
+                <label>{"Username"}
+                    <input ref={username_ref} type="text"/>
+                </label>
+                <label>{"Password"}
+                    <input ref={password_ref} type="password"/>
+                </label>
+            </Form>
+        }
     }
 }

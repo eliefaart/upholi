@@ -1,12 +1,11 @@
-use crate::{components::Form, models::AuthStatus, Route, WASM_CLIENT};
-use bounce::use_atom;
+use crate::{components::Form, hooks::use_authenticated, models::AuthStatus, Route, WASM_CLIENT};
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
 use yew_router::prelude::use_navigator;
 
 #[function_component(LoginPage)]
 pub fn login_page() -> Html {
-    let state = use_atom::<AuthStatus>();
+    let state = use_authenticated();
     let auth_attempt_made = use_state(|| false);
     let username_ref = use_node_ref();
     let password_ref = use_node_ref();
@@ -45,7 +44,7 @@ pub fn login_page() -> Html {
         use_effect_with_deps(
             move |state| {
                 if state == &AuthStatus::Authenticated {
-                    navigator.push(&Route::Home);
+                    navigator.replace(&Route::Home);
                 }
             },
             (*state).clone(),
@@ -53,15 +52,17 @@ pub fn login_page() -> Html {
     }
 
     html! {
-        <Form title="Login"
-            on_submit={on_click}
-            status={if *auth_attempt_made {"Incorrect password"} else {""}}>
-            <label>{"Username"}
-                <input ref={username_ref} type="text"/>
-            </label>
-            <label>{"Password"}
-                <input ref={password_ref} type="password"/>
-            </label>
-        </Form>
+        if *state != AuthStatus::Fetching {
+            <Form title="Login"
+                on_submit={on_click}
+                status={if *auth_attempt_made {"Incorrect password"} else {""}}>
+                <label>{"Username"}
+                    <input ref={username_ref} type="text"/>
+                </label>
+                <label>{"Password"}
+                    <input ref={password_ref} type="password"/>
+                </label>
+            </Form>
+        }
     }
 }
