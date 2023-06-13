@@ -13,9 +13,7 @@ button {
   display: flex;
   justify-content: center;
   white-space: nowrap;
-
-  height: $buttonHeight;
-  line-height: $buttonHeight;
+  align-items: center;
 
   &:empty {
     display: none;

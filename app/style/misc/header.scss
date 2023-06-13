@@ -9,9 +9,8 @@ header {
 
   button,
   a {
-    height: $headerHeight;
-    line-height: $headerHeight;
     user-select: none;
+    align-self: center;
 
     .label {
       height: $headerHeight;
