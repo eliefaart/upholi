@@ -76,7 +76,7 @@ pub fn button(props: &ButtonProps) -> Html {
     html! {
         <button onclick={on_click} class={classes}>
             {icon_left}
-            <span class="label">{&props.label}</span>
+            {&props.label}
             {icon_right}
         </button>
     }

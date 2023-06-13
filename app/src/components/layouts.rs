@@ -16,9 +16,9 @@ pub struct PageLayoutProps {
 pub fn page_layout(props: &PageLayoutProps) -> Html {
     let header = html! {
         <nav>
-            <RouteLink route={Route::Home} label="Library"/>
-            <RouteLink route={Route::Albums} label="Albums"/>
-            <RouteLink route={Route::Shared} label="Shared"/>
+            <span><RouteLink route={Route::Home} label="Library"/></span>
+            <span><RouteLink route={Route::Albums} label="Albums"/></span>
+            <span><RouteLink route={Route::Shared} label="Shared"/></span>
         </nav>
     };
 

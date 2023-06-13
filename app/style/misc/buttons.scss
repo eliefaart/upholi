@@ -14,13 +14,11 @@ button {
   justify-content: center;
   white-space: nowrap;
 
-  .label {
-    height: $buttonHeight;
-    line-height: $buttonHeight;
+  height: $buttonHeight;
+  line-height: $buttonHeight;
 
-    &:empty {
-      display: none;
-    }
+  &:empty {
+    display: none;
   }
 
   &:hover {
