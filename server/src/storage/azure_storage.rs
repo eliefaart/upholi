@@ -22,7 +22,9 @@ impl AzureStorageProvider {
         let file_bytes: Vec<u8> = bytes.iter().map(|byte| byte.to_owned()).collect();
 
         let blob = self.get_blob_client(container, name);
-        blob.put_block_blob(file_bytes).await.map_err(|error| anyhow!("{error:?}"))?;
+        blob.put_block_blob(file_bytes)
+            .await
+            .map_err(|error| anyhow!("{error:?}"))?;
         Ok(())
     }
 
@@ -59,7 +61,11 @@ impl AzureStorageProvider {
 
     /// Create container with given name, if it doesn't already exist.
     pub async fn container_exists(&self, container_name: &str) -> Result<bool> {
-        let mut stream = self.blob_client.list_containers().prefix(container_name.to_string()).into_stream();
+        let mut stream = self
+            .blob_client
+            .list_containers()
+            .prefix(container_name.to_string())
+            .into_stream();
 
         while let Some(page) = stream.next().await {
             let containers = page?.containers;

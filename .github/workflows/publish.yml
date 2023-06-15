@@ -9,7 +9,6 @@ on:
       - .github/workflows/publish.yml
       - Dockerfile
       - app/**
-      - wasm/**
       - server/**
       - lib/**
 
@@ -21,59 +20,41 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - name: Setup node.js
-        uses: actions/setup-node@v1
-        with:
-          node-version: 14.x
-
-      - name: Build WASM
+      - name: install trunk
         run: |
-          cd ./wasm
-          cargo install wasm-pack
-          wasm-pack build --target web
-          mkdir --parents ../app/wwwroot/dist/
-          mv ./pkg/wasm_bg.wasm ../app/wwwroot/dist/wasm.wasm
+          cargo install --locked trunk
+          rustup target add wasm32-unknown-unknown
 
-      - name: Test WASM
+      - name: build app
         run: |
-          cd ./wasm
-          cargo build --release --verbose
+          cd ./app
+          trunk build --release
 
-      - name: Build server
+      - name: test app
+        run: |
+          cd ./app
+          cargo test --release --verbose
+
+      - name: build server
         run: |
           cd ./server
           cargo build --release --verbose
 
-      - name: Test server
+      - name: test server
         run: |
           cd ./server
           cargo test --release --verbose
 
-      - name: Install packages
-        run: |
-          cd ./app
-          npm install
-
-      - name: Lint
-        run: |
-          cd ./app
-          npm run lint
-
-      - name: Build
-        run: |
-          cd ./app
-          npm run build
-
-      - name: Authenticate to githib registry
+      - name: authenticate to githib registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      - name: Build docker
+      - name: build docker
         run: |
           docker build . --file Dockerfile --tag $IMAGE_NAME
 
-      - name: Publish docker
+      - name: publish docker
         run: |
           IMAGE_ID=ghcr.io/${{ github.repository }}/$IMAGE_NAME
 

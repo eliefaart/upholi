@@ -1,0 +1,19 @@
+.share-info {
+  background-color: var(--colorBackgroundHeader);
+  border-radius: $borderRadius;
+  padding: $spacing;
+  flex: 300px 0 0;
+
+  span {
+    height: $buttonHeight;
+    line-height: $buttonHeight;
+  }
+
+  .share-url {
+    grid-column: 1 / span 2;
+  }
+
+  display: grid;
+  grid-template-columns: auto $buttonHeight;
+  row-gap: $spacing;
+}

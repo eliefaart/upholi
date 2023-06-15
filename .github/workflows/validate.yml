@@ -1,0 +1,91 @@
+name: validate
+
+on:
+  push:
+    branches-ignore:
+      - main
+      - dev
+    paths:
+      - .github/workflows/validate.yml
+      - app/**
+      - server/**
+      - lib/**
+
+jobs:
+  validate-lib:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: lib - build
+        run: |
+          cd ./lib
+          cargo build --verbose
+
+      - name: lib - test
+        run: |
+          cd ./lib
+          cargo test --verbose
+
+      - name: lib - clippy
+        run: |
+          cd ./lib
+          cargo clippy --all -- -D warnings
+
+      - name: lib - format
+        run: |
+          cd ./lib
+          cargo fmt --all -- --check
+
+  validate-app:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: app - build
+        run: |
+          cd ./app
+          cargo build --verbose
+
+      - name: app - test
+        run: |
+          cd ./app
+          cargo test --verbose
+
+      - name: app - clippy
+        run: |
+          cd ./app
+          cargo clippy --all -- -D warnings
+
+      - name: app - format
+        run: |
+          cd ./app
+          cargo fmt --all -- --check
+
+  validate-server:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: server - build
+        run: |
+          cd ./server
+          cargo build --verbose
+
+      - name: server - test
+        run: |
+          cd ./server
+          cargo test --verbose
+
+      - name: server - clippy
+        run: |
+          cd ./server
+          cargo clippy --all -- -D warnings
+
+      - name: server - format
+        run: |
+          cd ./server
+          cargo fmt --all -- --check

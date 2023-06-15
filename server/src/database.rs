@@ -266,7 +266,11 @@ pub async fn delete_items<T: DbItem>(ids: &[String], user_id: &str) -> Result<()
     Ok(())
 }
 
-async fn get<T: DeserializeOwned + Unpin + Send + Sync>(collection_name: &str, id_name: &str, id: &str) -> Result<Option<T>> {
+async fn get<T: DeserializeOwned + Unpin + Send + Sync>(
+    collection_name: &str,
+    id_name: &str,
+    id: &str,
+) -> Result<Option<T>> {
     let collection = DB.get().await.collection::<T>(collection_name);
     let doc = collection
         .find_one(

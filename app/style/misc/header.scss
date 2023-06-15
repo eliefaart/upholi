@@ -1,0 +1,40 @@
+header {
+  background-color: var(--colorBackgroundHeader);
+  border-radius: $borderRadius;
+  padding: 0 $spacing;
+  display: flex;
+  flex-direction: row;
+
+  height: $headerHeight;
+
+  button,
+  a {
+    user-select: none;
+    align-self: center;
+
+    .label {
+      height: $headerHeight;
+      line-height: $headerHeight;
+    }
+  }
+
+  nav {
+    display: flex;
+    gap: $spacingLarge;
+  }
+
+  .space {
+    flex: 1 1 auto;
+  }
+
+  .actions {
+    justify-content: flex-end;
+    display: flex;
+    flex-direction: row;
+    gap: $spacing;
+
+    > * {
+      align-self: center;
+    }
+  }
+}

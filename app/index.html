@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, initial-scale=1.0, minimum-scale=1, maximum-scale=1"
+    />
+    <meta charset="utf-8" />
+    <meta name="theme-color" content="#2c2e4e" />
+    <title>upholi</title>
+    <link rel="icon" href="assets/images/icon.png" type="image/png" />
+    <link rel="manifest" href="webmanifest.json" />
+
+    <link data-trunk rel="copy-dir" href="assets/" />
+    <link data-trunk rel="scss" href="style/main.scss" />
+    <link data-trunk rel="copy-file" href="robots.txt" />
+    <link data-trunk rel="copy-file" href="webmanifest.json" />
+    <link data-trunk rel="copy-file" href="sw.js" />
+    <script>
+      function offerAsFileDownload(filename, src) {
+        const aElement = document.createElement("a");
+        aElement.href = src;
+        aElement.download = filename;
+        aElement.click();
+      }
+    </script>
+  </head>
+  <body></body>
+</html>

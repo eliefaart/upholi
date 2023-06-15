@@ -1,0 +1,64 @@
+form {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing;
+}
+
+input {
+  border: 1px solid var(--colorBackground);
+  border-radius: $borderRadius;
+  height: $buttonHeight;
+  color: var(--colorText);
+  background-color: var(--colorBackgroundInput);
+  padding-left: $spacing;
+
+  &:focus {
+    border-color: var(--colorAccent);
+  }
+}
+
+.checkbox-input {
+  display: grid;
+  grid-template-columns: $inputCheckboxHeight auto;
+
+  input {
+    height: $inputCheckboxHeight;
+  }
+
+  span {
+    line-height: $inputCheckboxHeight;
+  }
+}
+
+form.form {
+  align-self: center;
+  width: 90%;
+  max-width: 500px;
+  border-radius: $borderRadius;
+  background-color: var(--colorBackgroundAlt);
+  margin-top: $headerHeight;
+  padding: $spacing;
+
+  display: flex;
+  flex-direction: column;
+  gap: $spacing;
+
+  @include button-filled;
+
+  .footer {
+    display: flex;
+    flex-direction: row;
+
+    .status {
+      flex: 1;
+      line-height: $buttonHeight;
+      color: var(--colorError);
+    }
+  }
+}

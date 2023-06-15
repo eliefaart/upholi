@@ -13,7 +13,10 @@ pub async fn get_user(UserId(_): UserId) -> StatusCode {
     StatusCode::OK
 }
 
-pub async fn create_user(session: Session, Json(user_info): Json<CreateUserRequest>) -> Result<impl IntoResponse, StatusCode> {
+pub async fn create_user(
+    session: Session,
+    Json(user_info): Json<CreateUserRequest>,
+) -> Result<impl IntoResponse, StatusCode> {
     let result = handler_create_user(&user_info)
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
@@ -42,7 +45,10 @@ async fn handler_create_user(user_info: &CreateUserRequest) -> Result<CreatedRes
     }
 }
 
-pub async fn authenticate_user(session: Session, Json(credentials): Json<AuthenticateUserRequest>) -> impl IntoResponse {
+pub async fn authenticate_user(
+    session: Session,
+    Json(credentials): Json<AuthenticateUserRequest>,
+) -> impl IntoResponse {
     let user = get_user_by_username(&credentials.username)
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?

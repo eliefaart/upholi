@@ -1,0 +1,22 @@
+.photo-exif-wrapper {
+  position: absolute;
+  top: $headerHeight + $spacingLarge;
+  border-radius: $borderRadius;
+  padding: $spacing;
+  background-color: var(--colorBackground);
+}
+
+.photo-exif {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing;
+
+  .photo-exif-property {
+    display: flex;
+    flex-direction: column;
+
+    .title {
+      font-weight: bold;
+    }
+  }
+}

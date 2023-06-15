@@ -70,7 +70,10 @@ pub async fn delete_file(UserId(user_id): UserId, Path(id): Path<String>) -> Res
     }
 }
 
-pub async fn delete_files(UserId(user_id): UserId, Json(request): Json<DeleteManyRequest>) -> Result<StatusCode, StatusCode> {
+pub async fn delete_files(
+    UserId(user_id): UserId,
+    Json(request): Json<DeleteManyRequest>,
+) -> Result<StatusCode, StatusCode> {
     for id in request.ids {
         delete_file(UserId(user_id.clone()), Path(id)).await?;
     }

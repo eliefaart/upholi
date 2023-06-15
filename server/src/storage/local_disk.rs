@@ -42,7 +42,10 @@ impl LocalDiskStorageProvider {
         let path = Path::new(base_path);
         let path = path.join(photo_relative_path);
 
-        Ok(path.to_str().ok_or_else(|| anyhow!("Empty directory path"))?.to_string())
+        Ok(path
+            .to_str()
+            .ok_or_else(|| anyhow!("Empty directory path"))?
+            .to_string())
     }
 
     /// Returns the absolute path to photo storage base directory
@@ -50,7 +53,10 @@ impl LocalDiskStorageProvider {
     fn get_photos_base_path<'a>() -> Result<&'a str> {
         let path_info = Path::new(&crate::SETTINGS.storage.directory_photos);
         if !path_info.exists() {
-            return Err(anyhow!("Path {} does not exist", &crate::SETTINGS.storage.directory_photos));
+            return Err(anyhow!(
+                "Path {} does not exist",
+                &crate::SETTINGS.storage.directory_photos
+            ));
         }
 
         let photos_path = path_info.to_str().ok_or_else(|| anyhow!("Empty directory path"))?;

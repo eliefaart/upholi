@@ -1,0 +1,29 @@
+$pickAlbumEntryHeight: 70px;
+
+.pick-album {
+  .pick-album-entry {
+    margin: $spacing 0;
+
+    &.selected {
+      color: var(--colorTextContrast);
+      background-color: var(--colorAccent);
+      border-radius: $borderRadius;
+    }
+  }
+
+  .album-thumb {
+    display: flex;
+    flex-direction: row;
+    gap: $spacingLarge;
+
+    .img {
+      width: $pickAlbumEntryHeight;
+      height: $pickAlbumEntryHeight;
+    }
+
+    .title {
+      flex: 1;
+      line-height: $pickAlbumEntryHeight;
+    }
+  }
+}
