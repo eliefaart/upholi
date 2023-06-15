@@ -17,7 +17,7 @@ End-to-end encrypted personal photo library. Upload and view photos, sort them i
 | lib       | A rust crate that contains some types and functionality that 'app' and 'server' share. |
 
 ## Development status
-This project is primarily a hobby project for personal use, and not recommended to use in production. It is also a work in progress and I may still make breaking changes to the interface and data models until the application is released as v1
+This project is a hobby project for personal use, and not recommended to use in production. It is also a work in progress and I will likely be make breaking changes to the interface and data models until the application is released as v1.
 
 ## Encryption
 All files and data are end-to-end encrypted, with a few small exceptions. All encryption is done with AES using a 256-bit key.
