@@ -83,7 +83,7 @@ pub fn gallery(props: &GalleryProps) -> Html {
         );
     }
 
-    let on_photo_clicked = {
+    let on_select_photo = {
         let selected_photos = props.selected_photos.clone();
         Callback::from(move |url: String| {
             let mut temp = selected_photos.to_vec();
@@ -153,22 +153,33 @@ pub fn gallery(props: &GalleryProps) -> Html {
                         let selected = selected_photos.contains(&photo.id);
                         let class = selected.then(|| "selected".to_string());
 
-                        let route = route.clone();
-                        let navigator = navigator.clone();
-                        let on_click_photo_id = photo.id.clone();
-                        let on_click = Callback::from(move |_| {
-                            let query = RouteQuery {
-                                photo_id: on_click_photo_id.clone(),
-                            };
-                            navigator.push_with_query(&route, &query).unwrap_throw();
-                        });
+                        let on_click = {
+                            let photo_id = photo.id.clone();
+                            let selecting = !selected_photos.is_empty();
+                            let route = route.clone();
+                            let navigator = navigator.clone();
+                            let on_select_photo = on_select_photo.clone();
 
-                        let on_context_menu_on_photo_clicked = on_photo_clicked.clone();
-                        let on_context_menu_photo_id = photo.id.clone();
-                        let on_context_menu = Callback::from(move |event: MouseEvent| {
-                            event.prevent_default();
-                            on_context_menu_on_photo_clicked.emit(on_context_menu_photo_id.clone());
-                        });
+                            Callback::from(move |_| {
+                                let photo_id = photo_id.clone();
+                                if selecting {
+                                    on_select_photo.emit(photo_id)
+                                } else {
+                                    let query = RouteQuery { photo_id };
+                                    navigator.push_with_query(&route, &query).unwrap_throw();
+                                }
+                            })
+                        };
+
+                        let on_context_menu = {
+                            let on_select_photo = on_select_photo.clone();
+                            let photo_id = photo.id.clone();
+
+                            Callback::from(move |event: MouseEvent| {
+                                event.prevent_default();
+                                on_select_photo.emit(photo_id.clone());
+                            })
+                        };
 
                         if may_load {
                             html! {
