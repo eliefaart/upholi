@@ -16,7 +16,7 @@ const MAX_HEIGHT: f32 = 350.;
 /// Pixels between each photo, as per CSS.
 const GAP_SIZE: f32 = 5.;
 /// Numbers of photos to always load, regardless of if they have been in view
-const N_PHOTOS_TO_ALWAYS_LOAD: usize = 5;
+const N_PHOTOS_TO_ALWAYS_LOAD: usize = 20;
 
 #[derive(PartialEq, Properties)]
 pub struct GalleryProps {
