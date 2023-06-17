@@ -75,3 +75,7 @@ a {
     color: var(--colorAccent);
   }
 }
+
+img {
+  user-select: none;
+}

@@ -102,9 +102,9 @@ pub fn gallery_detail(props: &GalleryDetailProps) -> Html {
                     <div class="spacing"/>
                     {close_button}
                 </div>
-                <div class="photo">
-                    <PhotoPreview photo_id={&props.photo_id}/>
-                </div>
+
+                <PhotoPreview photo_id={&props.photo_id}/>
+
                 <div class="footer">
                     {prev_button}
                     {count}

@@ -1,5 +1,5 @@
 use crate::{
-    components::{photo::Photo, GalleryDetail, PhotoPlaceholder},
+    components::{gallery_photo::GalleryPhoto, GalleryDetail, PhotoPlaceholder},
     models::AlbumPhoto,
     RouteQuery,
 };
@@ -183,7 +183,7 @@ pub fn gallery(props: &GalleryProps) -> Html {
 
                         if may_load {
                             html! {
-                                <Photo
+                                <GalleryPhoto
                                     class={class}
                                     photo_id={photo_id}
                                     width={width}
