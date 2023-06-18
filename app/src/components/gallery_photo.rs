@@ -34,7 +34,7 @@ pub fn gallery_photo(props: &PhotoProps) -> Html {
         <div
             ref={node_ref}
             id={props.photo_id.clone()}
-            class={format!("photo {class}")}
+            class={format!("gallery-photo {class}")}
             style={style}
             onclick={move |_| on_click.emit(()) }
             oncontextmenu={move |event| on_context_menu.emit(event) }
