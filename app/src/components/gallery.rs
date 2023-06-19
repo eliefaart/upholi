@@ -1,5 +1,5 @@
 use crate::{
-    components::{photo::Photo, GalleryDetail, PhotoPlaceholder},
+    components::{gallery_photo::GalleryPhoto, GalleryDetail, PhotoPlaceholder},
     models::AlbumPhoto,
     RouteQuery,
 };
@@ -16,7 +16,7 @@ const MAX_HEIGHT: f32 = 350.;
 /// Pixels between each photo, as per CSS.
 const GAP_SIZE: f32 = 5.;
 /// Numbers of photos to always load, regardless of if they have been in view
-const N_PHOTOS_TO_ALWAYS_LOAD: usize = 5;
+const N_PHOTOS_TO_ALWAYS_LOAD: usize = 20;
 
 #[derive(PartialEq, Properties)]
 pub struct GalleryProps {
@@ -183,7 +183,7 @@ pub fn gallery(props: &GalleryProps) -> Html {
 
                         if may_load {
                             html! {
-                                <Photo
+                                <GalleryPhoto
                                     class={class}
                                     photo_id={photo_id}
                                     width={width}

@@ -1,19 +1,5 @@
 .photo {
-  // min-width: 250px;
-  // min-height: 175px;
-  border-radius: $borderRadius;
-  background-color: var(--colorBackgroundAlt);
-  background-size: cover;
-  background-position: center center;
-  background-repeat: no-repeat;
-  box-sizing: border-box;
-  transition: border-width 0.1s;
-
-  &.selected {
-    border: 6px solid var(--colorText);
-  }
-
-  &:hover {
-    cursor: pointer;
+  img {
+    position: relative;
   }
 }

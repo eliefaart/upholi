@@ -1,3 +1,4 @@
+use crate::components::{FileUploader, Overlay};
 use api_client::ApiClient;
 use bounce::BounceRoot;
 use once_cell::sync::Lazy;
@@ -8,8 +9,6 @@ use wasm_client::WasmClient;
 use web_sys::Document;
 use yew::prelude::*;
 use yew_router::{BrowserRouter, Routable, Switch};
-
-use crate::components::{FileUploader, Overlay};
 
 mod api_client;
 mod components;
