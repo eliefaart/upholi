@@ -46,6 +46,42 @@ pub struct PhotoPreviewProps {
     pub photo_id: AttrValue,
 }
 
+fn clamp_photo_offset(offset: &mut XY, zoom: f64, container_node: &NodeRef, photo_node: &NodeRef) {
+    let (container_width, container_height) = {
+        if let Some(element) = container_node.cast::<HtmlElement>() {
+            (element.client_width(), element.client_height())
+        } else {
+            (0, 0)
+        }
+    };
+    let (photo_width, photo_height) = {
+        if let Some(element) = photo_node.cast::<HtmlElement>() {
+            (
+                (element.scroll_width() as f64 * zoom) as i32,
+                (element.scroll_height() as f64 * zoom) as i32,
+            )
+        } else {
+            (0, 0)
+        }
+    };
+
+    offset.0 = if container_width > photo_width {
+        0
+    } else {
+        let left_min = (container_width - photo_width) / 2;
+        let left_max = -left_min;
+        offset.0.clamp(left_min, left_max)
+    };
+
+    offset.1 = if container_height > photo_height {
+        0
+    } else {
+        let top_min = (container_height - photo_height) / 2;
+        let top_max = -top_min;
+        offset.1.clamp(top_min, top_max)
+    };
+}
+
 #[function_component(PhotoPreview)]
 pub fn photo_preview(props: &PhotoPreviewProps) -> Html {
     let container_node = use_node_ref();
@@ -54,14 +90,10 @@ pub fn photo_preview(props: &PhotoPreviewProps) -> Html {
     let src = (*src).clone();
     let view_state = use_state(PhotoViewState::default);
 
-    let toggle_zoom = use_callback(
+    let reset_zoom = use_callback(
         move |_, view_state| {
             if view_state.zoom != 1.0 {
                 view_state.set(PhotoViewState::default());
-            } else {
-                let mut new_state = **view_state;
-                new_state.zoom = 2.0;
-                view_state.set(new_state);
             }
         },
         view_state.clone(),
@@ -81,6 +113,30 @@ pub fn photo_preview(props: &PhotoPreviewProps) -> Html {
         view_state.clone(),
     );
 
+    let on_wheel = {
+        let photo_node = photo_node.clone();
+        let container_node = container_node.clone();
+
+        use_callback(
+            move |event: WheelEvent, view_state| {
+                let mut new_state = **view_state;
+
+                let zooming_in = event.delta_y() < 0.;
+                let zoom_step_percentage = if zooming_in { 15. } else { -15. };
+                let zoom = new_state.zoom + ((new_state.zoom / 100.) * zoom_step_percentage);
+                let zoom = f64::clamp(zoom, 1.0, 3.0);
+
+                let mut offset = view_state.offset;
+                clamp_photo_offset(&mut offset, zoom, &container_node, &photo_node);
+
+                new_state.zoom = zoom;
+                new_state.offset = offset;
+                view_state.set(new_state);
+            },
+            view_state.clone(),
+        )
+    };
+
     let on_mouse_down = use_callback(
         |_: MouseEvent, set_panning| {
             set_panning.emit(true);
@@ -96,19 +152,15 @@ pub fn photo_preview(props: &PhotoPreviewProps) -> Html {
     );
 
     let on_touch_start = use_callback(
-        |event: TouchEvent, set_panning| {
+        |_: TouchEvent, set_panning| {
             set_panning.emit(true);
-            event.prevent_default();
-            event.stop_immediate_propagation();
         },
         set_panning.clone(),
     );
 
     let on_touch_end = use_callback(
-        |event: TouchEvent, set_panning| {
+        |_: TouchEvent, set_panning| {
             set_panning.emit(false);
-            event.prevent_default();
-            event.stop_immediate_propagation();
         },
         set_panning,
     );
@@ -122,24 +174,6 @@ pub fn photo_preview(props: &PhotoPreviewProps) -> Html {
                 let (client_x, client_y) = client_xy;
 
                 if view_state.is_panning {
-                    let (container_width, container_height) = {
-                        if let Some(element) = container_node.cast::<HtmlElement>() {
-                            (element.client_width(), element.client_height())
-                        } else {
-                            (0, 0)
-                        }
-                    };
-                    let (photo_width, photo_height) = {
-                        if let Some(element) = photo_node.cast::<HtmlElement>() {
-                            (
-                                element.client_width() * view_state.zoom as i32,
-                                element.client_height() * view_state.zoom as i32,
-                            )
-                        } else {
-                            (0, 0)
-                        }
-                    };
-
                     let current = XY(client_x, client_y);
                     let mut offset = view_state.offset;
 
@@ -147,21 +181,7 @@ pub fn photo_preview(props: &PhotoPreviewProps) -> Html {
                         let delta = current - prev;
                         offset += delta;
 
-                        offset.0 = if container_width > photo_width {
-                            0
-                        } else {
-                            let left_min = (container_width - photo_width) / 2;
-                            let left_max = -left_min;
-                            offset.0.clamp(left_min, left_max)
-                        };
-
-                        offset.1 = if container_height > photo_height {
-                            0
-                        } else {
-                            let top_min = (container_height - photo_height) / 2;
-                            let top_max = -top_min;
-                            offset.1.clamp(top_min, top_max)
-                        };
+                        clamp_photo_offset(&mut offset, view_state.zoom, &container_node, &photo_node);
                     }
 
                     let mut new_state = **view_state;
@@ -210,13 +230,13 @@ pub fn photo_preview(props: &PhotoPreviewProps) -> Html {
             onmouseup={on_mouse_up.clone()}
             ontouchstart={on_touch_start}
             ontouchend={on_touch_end}
-
+            onwheel={on_wheel}
             onmouseleave={on_mouse_up}
 
             onmousemove={on_mouse_move}
             ontouchmove={on_touch_move}
 
-            ondblclick={toggle_zoom}
+            ondblclick={reset_zoom}
         >
             <img ref={photo_node}
                 src={src}
