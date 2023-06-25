@@ -204,18 +204,13 @@ pub fn photo_preview(props: &PhotoPreviewProps) -> Html {
                 let mut new_state = **view_state;
 
                 if let Some(prev_distance) = new_state.finger_distance {
-                    let photo_width = {
-                        if let Some(element) = photo_node.cast::<HtmlElement>() {
-                            element.scroll_width() as f64 * view_state.zoom
-                        } else {
-                            0.
-                        }
-                    };
-                    let delta = prev_distance - finger_distance;
-
-                    let zoom_step = (delta / photo_width) * 100.;
-                    let zoom_step = (view_state.zoom / 100.) * zoom_step;
-                    new_state.zoom += zoom_step;
+                    if let Some(photo_element) = photo_node.cast::<HtmlElement>() {
+                        let photo_width = photo_element.client_width() as f64;
+                        let delta = prev_distance - finger_distance;
+                        let zoom_step = ((delta / photo_width) * 100.).abs();
+                        let zoom_step = (view_state.zoom / 100.) * zoom_step;
+                        new_state.zoom += zoom_step;
+                    }
                 }
 
                 new_state.finger_distance = Some(finger_distance);
