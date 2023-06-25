@@ -10,6 +10,7 @@ struct PhotoViewState {
     offset: XY,
     is_panning: bool,
     previous: Option<XY>,
+    finger_distance: Option<f64>,
 }
 
 impl Default for PhotoViewState {
@@ -17,8 +18,9 @@ impl Default for PhotoViewState {
         Self {
             zoom: 1.0,
             offset: Default::default(),
-            is_panning: Default::default(),
-            previous: Default::default(),
+            is_panning: false,
+            previous: None,
+            finger_distance: None,
         }
     }
 }
@@ -194,6 +196,35 @@ pub fn photo_preview(props: &PhotoPreviewProps) -> Html {
         )
     };
 
+    let pinch = {
+        let photo_node = photo_node.clone();
+
+        use_callback(
+            move |finger_distance: f64, view_state| {
+                let mut new_state = **view_state;
+
+                if let Some(prev_distance) = new_state.finger_distance {
+                    let photo_width = {
+                        if let Some(element) = photo_node.cast::<HtmlElement>() {
+                            element.scroll_width() as f64 * view_state.zoom
+                        } else {
+                            0.
+                        }
+                    };
+                    let delta = prev_distance - finger_distance;
+
+                    let zoom_step = (delta / photo_width) * 100.;
+                    let zoom_step = (view_state.zoom / 100.) * zoom_step;
+                    new_state.zoom += zoom_step;
+                }
+
+                new_state.finger_distance = Some(finger_distance);
+                view_state.set(new_state);
+            },
+            view_state.clone(),
+        )
+    };
+
     let on_mouse_move = use_callback(
         move |event: MouseEvent, pan| {
             pan.emit((event.client_x(), event.client_y()));
@@ -202,7 +233,7 @@ pub fn photo_preview(props: &PhotoPreviewProps) -> Html {
     );
 
     let on_touch_move = use_callback(
-        move |event: TouchEvent, pan| {
+        move |event: TouchEvent, (pan, pinch)| {
             let n_touches = event.touches().length();
             let mut touches = vec![];
             for i in 0..n_touches {
@@ -211,12 +242,34 @@ pub fn photo_preview(props: &PhotoPreviewProps) -> Html {
                 }
             }
 
-            let touch_x = touches.iter().map(|t| t.client_x()).sum::<i32>() / n_touches as i32;
-            let touch_y = touches.iter().map(|t| t.client_y()).sum::<i32>() / n_touches as i32;
+            {
+                // Handle panning
+                // Touch position is average X and Y of all touches
 
-            pan.emit((touch_x, touch_y));
+                let touch_x = touches.iter().map(|t| t.client_x()).sum::<i32>() / n_touches as i32;
+                let touch_y = touches.iter().map(|t| t.client_y()).sum::<i32>() / n_touches as i32;
+
+                pan.emit((touch_x, touch_y));
+            }
+
+            {
+                // Handle pinch zooming
+                // Only take the first two touches into account for now
+
+                if n_touches >= 2 {
+                    let touch_1 = touches.get(0).unwrap();
+                    let touch_2 = touches.get(1).unwrap();
+                    let t1_x = touch_1.client_x() as f64;
+                    let t1_y = touch_1.client_y() as f64;
+                    let t2_x = touch_2.client_x() as f64;
+                    let t2_y = touch_2.client_y() as f64;
+
+                    let distance = (t2_x - t1_x).powf(2.) + (t2_y - t1_y).powf(2.);
+                    pinch.emit(distance);
+                }
+            }
         },
-        pan,
+        (pan, pinch),
     );
 
     let style = format!(
