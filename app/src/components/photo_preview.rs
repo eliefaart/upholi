@@ -207,9 +207,9 @@ pub fn photo_preview(props: &PhotoPreviewProps) -> Html {
                     if let Some(photo_element) = photo_node.cast::<HtmlElement>() {
                         let photo_width = photo_element.client_width() as f64;
                         let delta = prev_distance - finger_distance;
-                        let zoom_step = ((delta / photo_width) * 100.).abs();
+                        let zoom_step = (delta / photo_width) * 100.;
                         let zoom_step = (view_state.zoom / 100.) * zoom_step;
-                        new_state.zoom += zoom_step;
+                        new_state.zoom -= zoom_step;
                     }
                 }
 
@@ -259,7 +259,7 @@ pub fn photo_preview(props: &PhotoPreviewProps) -> Html {
                     let t2_x = touch_2.client_x() as f64;
                     let t2_y = touch_2.client_y() as f64;
 
-                    let distance = (t2_x - t1_x).powf(2.) + (t2_y - t1_y).powf(2.);
+                    let distance = ((t2_x - t1_x).powf(2.) + (t2_y - t1_y).powf(2.)).sqrt();
                     pinch.emit(distance);
                 }
             }
