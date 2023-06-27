@@ -27,12 +27,11 @@ impl PhotoViewState {
             if let Some(prev) = self.previous {
                 let delta = current - prev;
                 offset += delta;
-
-                clamp_photo_offset(&mut offset, self.zoom, container_node, photo_node);
             }
 
             self.offset = offset;
             self.previous = Some(current);
+            self.clamp_photo_offset(container_node, photo_node);
         }
     }
 
@@ -52,13 +51,44 @@ impl PhotoViewState {
     }
 
     fn set_zoom(&mut self, target_zoom: f64, container_node: &NodeRef, photo_node: &NodeRef) {
-        let target_zoom = f64::clamp(target_zoom, ZOOM_FACTOR_MIN, ZOOM_FACTOR_MAX);
+        self.zoom = f64::clamp(target_zoom, ZOOM_FACTOR_MIN, ZOOM_FACTOR_MAX);
+        self.clamp_photo_offset(container_node, photo_node);
+    }
 
-        let mut offset = self.offset;
-        clamp_photo_offset(&mut offset, target_zoom, container_node, photo_node);
+    fn clamp_photo_offset(&mut self, container_node: &NodeRef, photo_node: &NodeRef) {
+        let (container_width, container_height) = {
+            if let Some(element) = container_node.cast::<HtmlElement>() {
+                (element.client_width(), element.client_height())
+            } else {
+                (0, 0)
+            }
+        };
+        let (photo_width, photo_height) = {
+            if let Some(element) = photo_node.cast::<HtmlElement>() {
+                (
+                    (element.scroll_width() as f64 * self.zoom) as i32,
+                    (element.scroll_height() as f64 * self.zoom) as i32,
+                )
+            } else {
+                (0, 0)
+            }
+        };
 
-        self.zoom = target_zoom;
-        self.offset = offset;
+        self.offset.0 = if container_width > photo_width {
+            0
+        } else {
+            let left_min = (container_width - photo_width) / 2;
+            let left_max = -left_min;
+            self.offset.0.clamp(left_min, left_max)
+        };
+
+        self.offset.1 = if container_height > photo_height {
+            0
+        } else {
+            let top_min = (container_height - photo_height) / 2;
+            let top_max = -top_min;
+            self.offset.1.clamp(top_min, top_max)
+        };
     }
 }
 
@@ -95,42 +125,6 @@ impl Sub for XY {
 #[derive(Properties, PartialEq)]
 pub struct PhotoPreviewProps {
     pub photo_id: AttrValue,
-}
-
-fn clamp_photo_offset(offset: &mut XY, zoom: f64, container_node: &NodeRef, photo_node: &NodeRef) {
-    let (container_width, container_height) = {
-        if let Some(element) = container_node.cast::<HtmlElement>() {
-            (element.client_width(), element.client_height())
-        } else {
-            (0, 0)
-        }
-    };
-    let (photo_width, photo_height) = {
-        if let Some(element) = photo_node.cast::<HtmlElement>() {
-            (
-                (element.scroll_width() as f64 * zoom) as i32,
-                (element.scroll_height() as f64 * zoom) as i32,
-            )
-        } else {
-            (0, 0)
-        }
-    };
-
-    offset.0 = if container_width > photo_width {
-        0
-    } else {
-        let left_min = (container_width - photo_width) / 2;
-        let left_max = -left_min;
-        offset.0.clamp(left_min, left_max)
-    };
-
-    offset.1 = if container_height > photo_height {
-        0
-    } else {
-        let top_min = (container_height - photo_height) / 2;
-        let top_max = -top_min;
-        offset.1.clamp(top_min, top_max)
-    };
 }
 
 #[function_component(PhotoPreview)]
