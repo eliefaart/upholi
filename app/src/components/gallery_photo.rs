@@ -14,8 +14,8 @@ pub struct PhotoProps {
     pub on_context_menu: Callback<MouseEvent>,
 }
 
-#[function_component(Photo)]
-pub fn photo(props: &PhotoProps) -> Html {
+#[function_component(GalleryPhoto)]
+pub fn gallery_photo(props: &PhotoProps) -> Html {
     let node_ref = use_node_ref();
     let src = use_photo_src(&props.photo_id, PhotoVariant::Thumbnail);
     let class = props.class.clone().unwrap_or_default();
@@ -34,7 +34,7 @@ pub fn photo(props: &PhotoProps) -> Html {
         <div
             ref={node_ref}
             id={props.photo_id.clone()}
-            class={format!("photo {class}")}
+            class={format!("gallery-photo {class}")}
             style={style}
             onclick={move |_| on_click.emit(()) }
             oncontextmenu={move |event| on_context_menu.emit(event) }
