@@ -18,7 +18,6 @@ pub fn page_layout(props: &PageLayoutProps) -> Html {
         <nav>
             <RouteLink route={Route::Home} label="Library"/>
             <RouteLink route={Route::Albums} label="Albums"/>
-            <RouteLink route={Route::Shared} label="Shared"/>
         </nav>
     };
 

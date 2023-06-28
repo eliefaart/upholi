@@ -2,7 +2,7 @@ use crate::components::{FileUploader, Overlay};
 use api_client::ApiClient;
 use bounce::BounceRoot;
 use once_cell::sync::Lazy;
-use pages::{AlbumPage, AlbumsPage, HomePage, LoginPage, NotFoundPage, RegisterPage, SharePage, SharedPage};
+use pages::{AlbumPage, AlbumsPage, HomePage, LoginPage, NotFoundPage, RegisterPage, SharePage};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::{prelude::wasm_bindgen, UnwrapThrowExt};
 use wasm_client::WasmClient;
@@ -53,8 +53,6 @@ pub enum Route {
     Albums,
     #[at("/album/:id")]
     Album { id: String },
-    #[at("/shared")]
-    Shared,
     #[at("/s/:id")]
     Share { id: String },
     #[at("/login")]
@@ -78,7 +76,6 @@ fn switch(routes: Route) -> Html {
         Route::Home => html! { <HomePage/> },
         Route::Albums => html! { <AlbumsPage/> },
         Route::Album { id } => html! { <AlbumPage id={id}/> },
-        Route::Shared => html! { <SharedPage/> },
         Route::Share { id } => html! {<SharePage id={id}/>},
         Route::Login => html! { <LoginPage/> },
         Route::Register => html! { <RegisterPage/> },

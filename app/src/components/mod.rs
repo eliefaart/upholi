@@ -15,7 +15,6 @@ pub mod photo_placeholder;
 pub mod photo_preview;
 pub mod pick_album;
 pub mod require_auth;
-pub mod share_info;
 pub mod share_url;
 pub mod upload_progress;
 
@@ -36,6 +35,5 @@ pub use photo_placeholder::*;
 pub use photo_preview::*;
 pub use pick_album::*;
 pub use require_auth::*;
-pub use share_info::*;
 pub use share_url::*;
 pub use upload_progress::*;
