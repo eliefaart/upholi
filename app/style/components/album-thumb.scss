@@ -20,12 +20,16 @@
   }
 
   .title {
+    display: flex;
     max-width: 25vw;
-    display: inline-block;
     width: 160px;
     line-height: $buttonHeight;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+
+    span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1 auto;
+    }
   }
 }
