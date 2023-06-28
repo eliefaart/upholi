@@ -40,7 +40,7 @@ pub struct UserId(String);
 
 #[tokio::main]
 async fn main() {
-    let virtual_page_paths: [&str; 7] = ["/404", "/login", "/register", "/albums", "/album/", "/shared", "/s/"];
+    let virtual_page_paths: [&str; 6] = ["/404", "/login", "/register", "/albums", "/album/", "/s/"];
     let mut index_file_router = Router::new();
 
     for path in virtual_page_paths {
