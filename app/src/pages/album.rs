@@ -9,7 +9,7 @@ use crate::{
         gallery::Gallery,
         icons::IconClose,
         layouts::PageLayout,
-        FileUploadStatus, ShareAlbumButton,
+        BackButton, FileUploadStatus, ShareAlbumButton,
     },
     hooks::{use_album::use_album, use_on_file_upload_finished},
     Route, WASM_CLIENT,
@@ -88,30 +88,13 @@ pub fn album_page(props: &AlbumPageProps) -> Html {
         selected_photos.clone(),
     );
 
-    let content = {
-        let selected_photos = selected_photos.clone();
-        match (*album).clone() {
-            Some(album) => {
-                html! {
-                    <>
-                        <h1>{ &album.title }</h1>
-                        <Gallery photos={album.photos} selected_photos={selected_photos}/>
-                    </>
-                }
-            }
-            None => {
-                html! {}
-            }
-        }
-    };
-
     let header_actions_left = {
         let on_set_selected_photos = selected_photos.clone();
         let on_removed_selected_photos = selected_photos.clone();
         let refresh_album = refresh_album.clone();
 
         match n_photos_selected {
-            0 => None,
+            0 => Some(html! {<BackButton/>}),
             _ => Some(html! { <>
                 {html! {
                     if n_photos_selected == 1 {
@@ -150,7 +133,7 @@ pub fn album_page(props: &AlbumPageProps) -> Html {
                         on_submitted={move |_| refresh_album.emit(()) }/>
                     <DeleteAlbumButton
                         album_id={props.id.clone()}
-                        on_deleted={move |_| { navigator.replace(&Route::Albums) }}/>
+                        on_deleted={move |_| { navigator.replace(&Route::Home) }}/>
                 </>
             }),
             _ => Some(html! {
@@ -181,8 +164,30 @@ pub fn album_page(props: &AlbumPageProps) -> Html {
         }
     };
 
+    let content = {
+        match (*album).clone() {
+            Some(album) => {
+                html! {
+                    <>
+                        <Gallery photos={album.photos} selected_photos={selected_photos}/>
+                    </>
+                }
+            }
+            None => {
+                html! {}
+            }
+        }
+    };
+
+    let album_title = if let Some(album) = (*album).clone() {
+        album.title
+    } else {
+        String::new()
+    };
+
     html! {
         <PageLayout
+            title={album_title}
             header_actions_left={header_actions_left}
             header_actions_right={header_actions_right}>
             <DropUpload on_upload_status_changed={on_photos_uploaded}>

@@ -1,9 +1,8 @@
 header {
-  background-color: var(--colorBackgroundHeader);
-  border-radius: $borderRadius;
   padding: 0 $spacing;
   display: flex;
   flex-direction: row;
+  gap: $spacingLarge;
 
   height: $headerHeight;
 
@@ -18,9 +17,10 @@ header {
     }
   }
 
-  nav {
-    display: flex;
-    gap: $spacingLarge;
+  .title {
+    align-self: center;
+    font-size: 2em;
+    font-weight: bold;
   }
 
   .space {

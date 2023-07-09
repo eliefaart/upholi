@@ -5,6 +5,8 @@ use yew_router::prelude::*;
 #[derive(Properties, PartialEq)]
 pub struct PageLayoutProps {
     #[prop_or_default]
+    pub class: Classes,
+    #[prop_or_default]
     pub title: AttrValue,
     #[prop_or_default]
     pub children: Children,
@@ -14,20 +16,11 @@ pub struct PageLayoutProps {
 
 #[function_component(PageLayout)]
 pub fn page_layout(props: &PageLayoutProps) -> Html {
-    let header = html! {
-        <nav>
-            <RouteLink route={Route::Home} label="Library"/>
-            <RouteLink route={Route::Albums} label="Albums"/>
-        </nav>
-    };
-
     let header_left = html! {
         if let Some(header_actions_left) = props.header_actions_left.clone() {
             <div class="actions">
                 {header_actions_left}
             </div>
-        } else {
-            {header}
         }
     };
 
@@ -39,22 +32,22 @@ pub fn page_layout(props: &PageLayoutProps) -> Html {
         }
     };
 
-    let title = html! {
-        if !props.title.is_empty() {
-            <h1>{&props.title}</h1>
-        }
-    };
+    let header_empty =
+        props.title.is_empty() && props.header_actions_left.is_none() && props.header_actions_right.is_none();
 
     html! {
         <RequireAuth>
-            <header>
-                {header_left}
-                <div class="space"/>
-                {header_right}
-            </header>
-
-            <main id="content">
-                {title}
+            if !header_empty {
+                <header>
+                    {header_left}
+                    <div class="space"/>
+                    {header_right}
+                </header>
+            }
+            <main id="content" class={props.class.clone()}>
+                if !props.title.is_empty() {
+                    <h1>{&props.title}</h1>
+                }
                 {props.children.clone()}
             </main>
         </RequireAuth>
