@@ -1,8 +1,18 @@
 .open-library-button {
+  display: flex;
   height: 120px;
   width: 340px;
   border-radius: $borderRadius;
   background-color: #c29354;
-  padding: $spacing;
   cursor: pointer;
+
+  div {
+    display: flex;
+    flex: 1;
+    padding: $spacing;
+
+    h1 {
+      align-self: center;
+    }
+  }
 }

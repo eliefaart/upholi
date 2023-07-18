@@ -5,6 +5,7 @@ use crate::{
 };
 use bounce::use_slice;
 use js_sys::Uint8Array;
+use weblog::console_error;
 use yew::prelude::*;
 
 #[function_component(FileUploader)]
@@ -49,6 +50,15 @@ pub fn file_uploader() -> Html {
 
                                 match WASM_CLIENT.upload_photo(&bytes).await {
                                     Ok(upload_result) => {
+                                        if let Some(album_id) = queue_item.target_album_id {
+                                            let result = WASM_CLIENT
+                                                .add_photos_to_album(&album_id, &[upload_result.photo_id.clone()])
+                                                .await;
+                                            if let Err(error) = result {
+                                                console_error!(format!("{error}"));
+                                            }
+                                        }
+
                                         set_status(
                                             &queue_item.filename,
                                             if upload_result.skipped {

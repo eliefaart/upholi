@@ -1,3 +1,12 @@
 .drop-upload {
-  flex: 1;
+  position: relative;
+
+  .hover-overlay {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: 100%;
+    border-radius: $borderRadius;
+    background-color: rgba(113, 164, 194, 0.62);
+  }
 }

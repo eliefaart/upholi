@@ -1,5 +1,5 @@
 use crate::{
-    components::IconShare,
+    components::{DropUpload, IconShare},
     hooks::{use_photo_src::use_photo_src, use_shares},
     models::Album,
     Route,
@@ -33,16 +33,18 @@ pub fn album_thumb(props: &AlbumThumbProps) -> Html {
     let is_shared = shares.iter().any(|share| share.album_id == props.album.id);
 
     html! {
-        <div class={"album-thumb"} onclick={on_click}>
-            <div
-                class={"img"}
-                style={format!("background-image: url({})", &(*src))}/>
-            <div class={"title"}>
-                <span>{&props.album.title}</span>
-                if is_shared {
-                    <IconShare/>
-                }
+        <DropUpload class="album-thumb" target_album_id={props.album.id.clone()}>
+            <div onclick={on_click}>
+                <div
+                    class={"img"}
+                    style={format!("background-image: url({})", &(*src))}/>
+                <div class={"title"}>
+                    <span>{&props.album.title}</span>
+                    if is_shared {
+                        <IconShare/>
+                    }
+                </div>
             </div>
-        </div>
+        </DropUpload>
     }
 }

@@ -1,4 +1,4 @@
-use crate::Route;
+use crate::{components::DropUpload, Route};
 use yew::prelude::*;
 use yew_router::prelude::use_navigator;
 
@@ -16,8 +16,10 @@ pub fn open_library_button() -> Html {
     };
 
     html! {
-        <div class="open-library-button" onclick={open_library}>
-            <h1>{"Library"}</h1>
-        </div>
+        <DropUpload class="open-library-button">
+            <div onclick={open_library}>
+                <h1>{"Library"}</h1>
+            </div>
+        </DropUpload>
     }
 }

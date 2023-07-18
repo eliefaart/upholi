@@ -1,7 +1,7 @@
 use crate::{
     components::{
         buttons::{AddToAlbumButton, Button, DeletePhotosButton, IconPosition},
-        drop_upload::{DropUpload, FileUploadProgress, FileUploadStatus},
+        drop_upload::DropUpload,
         gallery::Gallery,
         icons::IconClose,
         layouts::PageLayout,
@@ -77,11 +77,7 @@ pub fn library_page() -> Html {
 
     html! {
         <PageLayout header_actions_left={header_actions_left} header_actions_right={header_actions_right}>
-            <DropUpload on_upload_status_changed={move |progress: FileUploadProgress| {
-                if let FileUploadStatus::Done{ .. } = progress.status {
-                    refresh_photos.emit(());
-                }
-                }}>
+            <DropUpload>
                 <Gallery photos={photos} selected_photos={selected_photos} />
             </DropUpload>
         </PageLayout>
