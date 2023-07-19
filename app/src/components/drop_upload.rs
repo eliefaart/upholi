@@ -1,4 +1,7 @@
-use crate::models::{UploadQueue, UploadQueueAction};
+use crate::{
+    components::IconUpload,
+    models::{UploadQueue, UploadQueueAction},
+};
 use bounce::use_slice;
 use std::fmt::Display;
 use yew::prelude::*;
@@ -80,7 +83,10 @@ pub fn drop_upload(props: &DropUploadProps) -> Html {
             ondragleave={on_drag_end}>
             {props.children.clone()}
             if *hovering {
-                <div class="hover-overlay" style={"pointer-events: none;"}></div>
+                <div class="hover-overlay">
+                    <IconUpload/>
+                    <span>{"Drop to upload"}</span>
+                </div>
             }
         </div>
     }

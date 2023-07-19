@@ -24,9 +24,6 @@ pub fn library_page() -> Html {
         use_on_file_upload_finished(Callback::<Vec<FileStatus>>::from(move |_| refresh_photos.emit(())));
     }
 
-    let on_click_delete_photos = (*selected_photos).clone();
-    let on_click_delete_refresh_photos = refresh_photos.clone();
-
     let reset_selection = use_memo(
         |selected_photos| {
             let selected_photos = selected_photos.clone();
@@ -53,10 +50,10 @@ pub fn library_page() -> Html {
                         }}
                     />
                     <DeletePhotosButton
-                        selected_photos={on_click_delete_photos}
+                        selected_photos={(*selected_photos).clone()}
                         on_deleted={move|_| {
                             on_deleted_selected_photos.set(vec![]);
-                            on_click_delete_refresh_photos.emit(());
+                            refresh_photos.emit(());
                         }}/>
                 </>
             }

@@ -75,7 +75,6 @@ pub fn album_page(props: &AlbumPageProps) -> Html {
 
     let header_actions_right = {
         let refresh_album_share = refresh_album.clone();
-        let refresh_album = refresh_album.clone();
 
         match n_photos_selected {
             0 => Some(html! {
