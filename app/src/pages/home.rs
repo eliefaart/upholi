@@ -8,27 +8,19 @@ use yew::prelude::*;
 pub fn home_page() -> Html {
     let (albums, refresh_albums) = use_albums();
 
-    let header_actions = {
-        let on_created = move |_| refresh_albums.emit(());
-        html! {
-            <CreateAlbumButton on_created={on_created}/>
-        }
-    };
-
     let albums = albums
         .iter()
         .map(|album| {
-            html! {
-                <AlbumThumb album={album.clone()}/>
-            }
+            html! { <AlbumThumb album={album.clone()}/> }
         })
         .collect::<Html>();
 
     html! {
-        <PageLayout class="home" header_actions_right={header_actions}>
+        <PageLayout class="home"
+            //header_actions_left={html!{<h2>{"Home"}</h2>}}
+            header_actions_right={html!{<CreateAlbumButton on_created={move |_| refresh_albums.emit(())}/>}}>
             <OpenLibraryButton/>
-            <hr style={"width: 100%; color: #ad33a5;"}/>
-            <div class={"library-items"}>
+            <div class="albums">
                 {albums}
             </div>
         </PageLayout>

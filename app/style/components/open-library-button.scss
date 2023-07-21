@@ -1,17 +1,19 @@
 .open-library-button {
   display: flex;
-  height: 120px;
+  height: 60px;
   width: 340px;
-  border-radius: $borderRadius;
-  background-color: #c29354;
   cursor: pointer;
 
-  div {
+  .background {
     display: flex;
     flex: 1;
     padding: $spacing;
+    border-radius: $borderRadius;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
 
-    h1 {
+    h2 {
       align-self: center;
     }
   }

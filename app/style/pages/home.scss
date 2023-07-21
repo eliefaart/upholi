@@ -2,9 +2,19 @@
   display: flex;
   flex-direction: column;
   gap: $spacingLarge;
+
+  .space {
+    flex: 1 1 auto;
+  }
 }
 
-.library-items {
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacingLarge;
+}
+
+.albums {
   display: flex;
   flex-wrap: wrap;
   gap: $spacingLarge;

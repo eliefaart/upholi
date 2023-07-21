@@ -37,8 +37,8 @@ html {
     display: flex;
     height: 100dvh;
     flex-direction: column;
-    padding: $spacing $spacing 0 $spacing;
-    gap: $spacing;
+    padding: $spacingLarge $spacingLarge 0 $spacingLarge;
+    gap: $spacingLarge;
 
     main {
       flex: 1;
@@ -51,6 +51,7 @@ html {
 }
 
 @import "components/album-thumb.scss";
+@import "components/create-album-button.scss";
 @import "components/dialog.scss";
 @import "components/drop-upload.scss";
 @import "components/gallery-detail.scss";

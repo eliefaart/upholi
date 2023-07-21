@@ -1,0 +1,10 @@
+.create-album-button {
+  display: flex;
+  border-radius: $borderRadius;
+  background-color: #43768b;
+  cursor: pointer;
+
+  button {
+    height: 60px;
+  }
+}
