@@ -25,16 +25,12 @@ pub fn open_library_button() -> Html {
         )
     };
 
-    // center center no-repeat center/cover
-
     html! {
         <DropUpload class="open-library-button">
             <div
                 class="background"
                 onclick={open_library}
-                // style={format!("background: linear-gradient(85deg, rgb(36, 176, 150), rgba(0, 0, 0, 0.2)), center/cover url({})", &(*src))}
                 style={format!("background: linear-gradient(85deg, rgba(0,0,0,0.7), rgba(0, 0, 0, 0.2)), center/cover url({})", &(*src))}
-                //style={format!("background-image: url({})", &(*src))}
                 >
                 <h2>{"Library"}</h2>
             </div>

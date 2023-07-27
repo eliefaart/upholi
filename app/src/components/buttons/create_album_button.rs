@@ -66,10 +66,6 @@ pub fn create_album_button(props: &CreateAlbumButtonProps) -> Html {
             <Button label={"New album"} on_click={show_dialog}>
                 <IconCreate/>
             </Button>
-            // <div class="create-album-button" onclick={show_dialog}>
-            //     <IconCreate/>
-            //     <h2>{"Album"}</h2>
-            // </div>
             <ConfirmDialog
                 visible={dialog_visible}
                 title="Create album"
