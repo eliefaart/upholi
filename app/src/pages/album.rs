@@ -122,7 +122,7 @@ pub fn album_page(props: &AlbumPageProps) -> Html {
     };
 
     html! {
-        <PageLayout
+        <PageLayout class="album"
             title={album_title}
             header_actions_left={header_actions_left}
             header_actions_right={header_actions_right}>

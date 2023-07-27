@@ -73,7 +73,9 @@ pub fn library_page() -> Html {
     };
 
     html! {
-        <PageLayout header_actions_left={header_actions_left} header_actions_right={header_actions_right}>
+        <PageLayout class="library"
+            header_actions_left={header_actions_left}
+            header_actions_right={header_actions_right}>
             <DropUpload>
                 <Gallery photos={photos} selected_photos={selected_photos} />
             </DropUpload>

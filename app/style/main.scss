@@ -37,8 +37,8 @@ html {
     display: flex;
     height: 100dvh;
     flex-direction: column;
-    padding: $spacingLarge $spacingLarge 0 $spacingLarge;
-    gap: $spacingLarge;
+    padding: $spacing $spacing 0 $spacing;
+    gap: $spacing;
 
     main {
       flex: 1;
@@ -69,6 +69,8 @@ html {
 @import "misc/forms.scss";
 @import "misc/header.scss";
 @import "pages/home.scss";
+@import "pages/library.scss";
+@import "pages/album.scss";
 
 a {
   color: var(--colorText);

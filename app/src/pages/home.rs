@@ -17,9 +17,9 @@ pub fn home_page() -> Html {
 
     html! {
         <PageLayout class="home"
-            //header_actions_left={html!{<h2>{"Home"}</h2>}}
             header_actions_right={html!{<CreateAlbumButton on_created={move |_| refresh_albums.emit(())}/>}}>
             <OpenLibraryButton/>
+            <hr style={"width: 100%; border-color: var(--colorText);"}/>
             <div class="albums">
                 {albums}
             </div>
