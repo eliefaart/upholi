@@ -3,6 +3,7 @@ $pickAlbumEntryHeight: 70px;
 .pick-album {
   .pick-album-entry {
     margin: $spacing 0;
+    cursor: pointer;
 
     &.selected {
       color: var(--colorTextContrast);
@@ -11,7 +12,7 @@ $pickAlbumEntryHeight: 70px;
     }
   }
 
-  .album-thumb {
+  .pick-album-thumb {
     display: flex;
     flex-direction: row;
     gap: $spacingLarge;
