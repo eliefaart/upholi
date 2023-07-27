@@ -1,5 +1,8 @@
-use crate::{components::album_thumb::AlbumThumb, hooks::use_albums};
+use crate::hooks::{use_albums, use_photo_src};
+use upholi_lib::PhotoVariant;
 use yew::prelude::*;
+
+use super::AlbumThumbProps;
 
 #[derive(Properties, PartialEq)]
 pub struct PickAlbumProps {
@@ -28,7 +31,7 @@ pub fn pick_album(props: &PickAlbumProps) -> Html {
                 <div
                     class={classes!("pick-album-entry", { if is_selected {"selected"} else { "" } } )}
                     onclick={on_click}>
-                    <AlbumThumb album={album.clone()}/>
+                    <PickAlbumThumb album={album.clone()}/>
                 </div>
             }
         })
@@ -38,5 +41,21 @@ pub fn pick_album(props: &PickAlbumProps) -> Html {
         <div class="pick-album">
             {albums_html}
         </div>
+    }
+}
+
+#[function_component(PickAlbumThumb)]
+fn pick_album_thumb(props: &AlbumThumbProps) -> Html {
+    let src = use_photo_src(
+        &props.album.thumbnail_photo_id.clone().unwrap_or_default(),
+        PhotoVariant::Thumbnail,
+    );
+    html! {
+    <div class="pick-album-thumb">
+        <div
+            class={"pick-album-thumb img"}
+            style={format!("background-image: url({})", &(*src))}/>
+        <span class="title">{&props.album.title}</span>
+    </div>
     }
 }
