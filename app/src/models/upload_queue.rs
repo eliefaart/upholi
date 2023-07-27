@@ -28,6 +28,8 @@ pub struct UploadQueueItem {
     pub status: FileUploadStatus,
     pub file: web_sys::File,
     pub object_url: String,
+    /// Album to add this file to once uploaded
+    pub target_album_id: Option<String>,
 }
 
 impl From<File> for UploadQueueItem {
@@ -42,12 +44,16 @@ impl From<File> for UploadQueueItem {
             status: FileUploadStatus::Queued,
             file,
             object_url,
+            target_album_id: None,
         }
     }
 }
 
 pub enum UploadQueueAction {
-    AddToQueue(FileList),
+    AddToQueue {
+        filelist: FileList,
+        target_album_id: Option<String>,
+    },
     UpdateItemState {
         file_name: String,
         status: FileUploadStatus,
@@ -60,12 +66,16 @@ impl Reducible for UploadQueue {
 
     fn reduce(self: Rc<Self>, action: Self::Action) -> Rc<Self> {
         match action {
-            UploadQueueAction::AddToQueue(filelist) => {
+            UploadQueueAction::AddToQueue {
+                filelist,
+                target_album_id,
+            } => {
                 let mut queue = self.queue.clone();
 
                 for i in 0..filelist.length() {
                     if let Some(file) = filelist.get(i) {
-                        let file: UploadQueueItem = file.into();
+                        let mut file: UploadQueueItem = file.into();
+                        file.target_album_id = target_album_id.clone();
                         let already_in_queue = queue
                             .iter()
                             .any(|item| item.filename == file.filename && item.size == file.size);
@@ -79,7 +89,7 @@ impl Reducible for UploadQueue {
             }
             UploadQueueAction::UpdateItemState { file_name, status } => {
                 let mut queue = self.queue.clone();
-                if let Some(mut queue_item) = queue.iter_mut().find(|item| item.filename == file_name) {
+                if let Some(queue_item) = queue.iter_mut().find(|item| item.filename == file_name) {
                     queue_item.status = status;
                 }
 

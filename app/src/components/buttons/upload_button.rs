@@ -28,7 +28,10 @@ pub fn upload_button(_: &UploadButtonProps) -> Html {
         move |_| {
             if let Some(input_ref) = input_ref.cast::<HtmlInputElement>() {
                 if let Some(filelist) = input_ref.files() {
-                    slice.dispatch(UploadQueueAction::AddToQueue(filelist));
+                    slice.dispatch(UploadQueueAction::AddToQueue {
+                        filelist,
+                        target_album_id: None,
+                    });
                 }
             }
         }

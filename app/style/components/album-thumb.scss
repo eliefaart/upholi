@@ -1,4 +1,5 @@
 .album-thumb {
+  display: flex;
   position: relative;
   cursor: pointer;
 
@@ -30,6 +31,10 @@
       text-overflow: ellipsis;
       white-space: nowrap;
       flex: 1 auto;
+    }
+
+    svg {
+      scale: 0.8;
     }
   }
 }

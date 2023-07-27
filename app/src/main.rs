@@ -2,7 +2,7 @@ use crate::components::{FileUploader, Overlay};
 use api_client::ApiClient;
 use bounce::BounceRoot;
 use once_cell::sync::Lazy;
-use pages::{AlbumPage, AlbumsPage, HomePage, LoginPage, NotFoundPage, RegisterPage, SharePage};
+use pages::{AlbumPage, HomePage, LibraryPage, LoginPage, NotFoundPage, RegisterPage, SharePage};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::{prelude::wasm_bindgen, UnwrapThrowExt};
 use wasm_client::WasmClient;
@@ -49,8 +49,8 @@ pub fn get_document() -> Document {
 pub enum Route {
     #[at("/")]
     Home,
-    #[at("/albums")]
-    Albums,
+    #[at("/library")]
+    Library,
     #[at("/album/:id")]
     Album { id: String },
     #[at("/s/:id")]
@@ -74,7 +74,7 @@ pub struct RouteQuery {
 fn switch(routes: Route) -> Html {
     match routes {
         Route::Home => html! { <HomePage/> },
-        Route::Albums => html! { <AlbumsPage/> },
+        Route::Library => html! { <LibraryPage/> },
         Route::Album { id } => html! { <AlbumPage id={id}/> },
         Route::Share { id } => html! {<SharePage id={id}/>},
         Route::Login => html! { <LoginPage/> },

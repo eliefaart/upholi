@@ -1,5 +1,6 @@
 .photo-exif-wrapper {
   position: absolute;
+  z-index: 1;
   top: $headerHeight + $spacingLarge;
   border-radius: $borderRadius;
   padding: $spacing;

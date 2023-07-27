@@ -1,5 +1,5 @@
 use crate::{
-    components::{buttons::Button, dialog::ConfirmDialog, IconCreate},
+    components::{dialog::ConfirmDialog, Button, IconCreate},
     hooks::use_overlay,
     WASM_CLIENT,
 };
@@ -63,7 +63,7 @@ pub fn create_album_button(props: &CreateAlbumButtonProps) -> Html {
 
     html! {
         <>
-            <Button label={"Create album"} on_click={show_dialog}>
+            <Button label={"New album"} on_click={show_dialog}>
                 <IconCreate/>
             </Button>
             <ConfirmDialog

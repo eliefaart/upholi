@@ -281,7 +281,7 @@ fn compute_sizes(
         let row_width: f32 = row.iter().map(|p| p.width + gap_size).sum::<f32>() - gap_size;
         let bloat_ratio = available_width / row_width;
 
-        for mut photo in row {
+        for photo in row {
             photo.width *= bloat_ratio;
             photo.height *= bloat_ratio;
         }

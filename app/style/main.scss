@@ -44,16 +44,21 @@ html {
       flex: 1;
       width: 100%;
       overflow: auto;
+      display: flex;
+      flex-direction: column;
     }
   }
 }
 
 @import "components/album-thumb.scss";
+@import "components/create-album-button.scss";
 @import "components/dialog.scss";
+@import "components/drop-upload.scss";
 @import "components/gallery-detail.scss";
 @import "components/gallery-photo.scss";
 @import "components/gallery.scss";
 @import "components/icons.scss";
+@import "components/open-library-button.scss";
 @import "components/overlay.scss";
 @import "components/photo-exif.scss";
 @import "components/photo.scss";
@@ -63,7 +68,9 @@ html {
 @import "misc/buttons.scss";
 @import "misc/forms.scss";
 @import "misc/header.scss";
-@import "pages/albums.scss";
+@import "pages/home.scss";
+@import "pages/library.scss";
+@import "pages/album.scss";
 
 a {
   color: var(--colorText);

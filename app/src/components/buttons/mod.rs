@@ -1,12 +1,14 @@
 use yew::prelude::*;
 
 pub mod add_to_album_button;
+pub mod back_button;
 pub mod confirm_button;
 pub mod create_album_button;
 pub mod delete_album_button;
 pub mod delete_photos_button;
 pub mod download_photo_button;
 pub mod edit_album_button;
+pub mod open_library_button;
 pub mod photo_exif_button;
 pub mod remove_from_album_button;
 pub mod set_album_cover_button;
@@ -14,12 +16,14 @@ pub mod share_album_button;
 pub mod upload_button;
 
 pub use add_to_album_button::*;
+pub use back_button::*;
 pub use confirm_button::*;
 pub use create_album_button::*;
 pub use delete_album_button::*;
 pub use delete_photos_button::*;
 pub use download_photo_button::*;
 pub use edit_album_button::*;
+pub use open_library_button::*;
 pub use photo_exif_button::*;
 pub use remove_from_album_button::*;
 pub use set_album_cover_button::*;
