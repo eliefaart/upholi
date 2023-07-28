@@ -51,11 +51,11 @@ fn pick_album_thumb(props: &AlbumThumbProps) -> Html {
         PhotoVariant::Thumbnail,
     );
     html! {
-    <div class="pick-album-thumb">
-        <div
-            class={"pick-album-thumb img"}
-            style={format!("background-image: url({})", &(*src))}/>
-        <span class="title">{&props.album.title}</span>
-    </div>
+        <div class="pick-album-thumb">
+            <div
+                class={"pick-album-thumb img"}
+                style={format!("background-image: url({})", &(*src))}/>
+            <span class="title">{&props.album.title}</span>
+        </div>
     }
 }

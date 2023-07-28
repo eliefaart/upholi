@@ -11,7 +11,7 @@ pub fn home_page() -> Html {
     let albums = albums
         .iter()
         .map(|album| {
-            html! { <AlbumThumb album={album.clone()}/> }
+            html! { <AlbumThumb key={album.id.clone()} album={album.clone()}/> }
         })
         .collect::<Html>();
 
